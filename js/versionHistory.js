@@ -27,11 +27,27 @@
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.0.7 (b4)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2607.png"],
+            features: [
+                "优化改进",
+                "- 界面优化：版本更新记录选择版本部分显示日期范围信息",
+                "- 功能增强：版本更新记录添加状态tag显示（版本维护中、更新已结束、已过时版本）",
+                "- 界面优化：登录页用户协议与隐私政策窗口图标改为横向排列",
+                "- 界面优化：调整用户协议与隐私政策窗口图标与边框的距离",
+                "修复问题",
+                "- 界面修复：关于版本更新记录中正序/倒叙排列错误的问题"
+            ]
+        },
+        {
             version: "RC 2.6.0.6 (b4)",
             date: "2026-04-27",
             tag: "normal",
             tagText: "常规更新",
-            images: [],
+            images: ["./images/2606.png"],
             features: [
                 "优化改进",
                 "- 界面优化：关于启动器窗口改为与用户名片相同的大小和排版",
@@ -510,6 +526,16 @@ const versionHistoryData = {
     ],
     homepageUpdateContent: [
         {
+            version: "RC 1.0.3.2 (a2)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化改进",
+                "- 功能调整：游戏大厅中暂时屏蔽游戏原声带功能",
+            ]
+        },
+        {
             version: "RC 1.0.3.1 (a2)",
             date: "2026-04-18",
             tag: "important",
@@ -724,7 +750,7 @@ const versionHistoryData = {
     // 过时版本记录 - 主页面记录 (RC-H)
     outdatedHomepageContent: [
         {
-            version: "BETA-H 4.0.0 ",
+            version: "RC-H 4.0.0 ",
             date: "无记录",
             tag: "",
             tagText: "",
@@ -1050,11 +1076,23 @@ function loadVersionHistory() {
             }
             return 0;
         }).forEach(function(key) {
-            sortedGroups.push({ 
+            var group = { 
                 majorVersion: key, 
                 versions: grouped[key].versions, 
                 isRC: grouped[key].isRC 
-            });
+            };
+            
+            // 计算最早和最晚日期
+            if (group.versions.length > 0) {
+                // 按日期倒序排序
+                group.versions.sort(function(a, b) {
+                    return new Date(b.date) - new Date(a.date);
+                });
+                group.startDate = group.versions[0].date;
+                group.endDate = group.versions[group.versions.length - 1].date;
+            }
+            
+            sortedGroups.push(group);
         });
         
         return sortedGroups;
@@ -1131,6 +1169,29 @@ function loadVersionHistory() {
                             this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
                         });
                         
+                        // 确定版本状态
+                        var versionStatus = '';
+                        var statusColor = '';
+                        
+                        // 检查是否是过时版本记录
+                        var isOutdated = parentId === 'outdatedSubButtons';
+                        
+                        if (isOutdated) {
+                            versionStatus = '已过时版本';
+                            statusColor = '#999';
+                        } else {
+                            // 对于当前版本，判断维护状态
+                            // 假设最新的主版本是维护中的
+                            var latestVersion = groupedVersions[0].majorVersion;
+                            if (group.majorVersion === latestVersion) {
+                                versionStatus = '版本维护中';
+                                statusColor = '#4CAF50';
+                            } else {
+                                versionStatus = '更新已结束';
+                                statusColor = '#f44336';
+                            }
+                        }
+                        
                         // 设置按钮内容
                         groupButton.innerHTML = `
                             <div class="version-header">
@@ -1138,7 +1199,9 @@ function loadVersionHistory() {
                                 <div class="version-header-content">
                                     <button style="padding: 4px 12px; border: none; border-radius: 12px; font-size: 12px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0;">查看详细内容 <span style="margin-left: 4px;">▶</span></button>
                                 </div>
-                                <span class="version-date" style="font-size: 14px; color: #666; margin-left: auto;">共 ${group.versions.length} 个版本</span>
+                                <span style="font-size: 14px; color: #666; margin-left: auto; margin-right: 10px;">从 ${group.startDate} 至 ${group.endDate} 的更新</span>
+                                <span class="version-date" style="font-size: 14px; color: #666; margin-left: 0; margin-right: 10px;">共 ${group.versions.length} 个版本</span>
+                                <span style="padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${statusColor}; color: white;">${versionStatus}</span>
                             </div>
                         `;
                         
@@ -1350,7 +1413,27 @@ function loadVersionHistory() {
                             contentArea.appendChild(controlsContainer);
                             
                             // 初始生成版本历史内容（默认倒序）
-                            group.versions.forEach(function(versionItem) {
+                            var sortedVersions = [...group.versions];
+                            sortedVersions.sort(function(a, b) {
+                                // 提取版本号进行比较
+                                var aMatch = a.version.match(/RC\s+(\d+)\.(\d+)\.(\d+)\.(\d+)/);
+                                var bMatch = b.version.match(/RC\s+(\d+)\.(\d+)\.(\d+)\.(\d+)/);
+                                
+                                if (aMatch && bMatch) {
+                                    var aVersion = aMatch.slice(1).map(Number);
+                                    var bVersion = bMatch.slice(1).map(Number);
+                                    
+                                    for (var i = 0; i < 4; i++) {
+                                        if (aVersion[i] !== bVersion[i]) {
+                                            return bVersion[i] - aVersion[i]; // 倒序
+                                        }
+                                    }
+                                }
+                                
+                                return 0;
+                            });
+                            
+                            sortedVersions.forEach(function(versionItem) {
                                 var versionElement = document.createElement('div');
                                 versionElement.className = 'version-item';
                                 

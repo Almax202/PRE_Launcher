@@ -1738,6 +1738,7 @@ body.page-transition-in {
 .privacy-modal-content .alert-icon {
     flex-shrink: 0;
     margin-bottom: 0;
+    margin-right: 15px;
 }
 
 .terms-modal-content h3,
