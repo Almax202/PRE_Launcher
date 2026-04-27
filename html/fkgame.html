@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点击方块小游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/homepage.css">
+    <link rel="stylesheet" href="../css/achievement.css">
+    <link rel="stylesheet" href="../css/fkgame.css">
+    <script src="../js/developer-config.js"></script>
+    <script src="../js/versionManager.js"></script>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-avatar">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-username">点击方块游戏</div>
+                    <div class="sidebar-uid">RC 1.3.0</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-item menu-header">
+                    <span>游戏控制</span>
+                </div>
+                <div class="menu-item" id="sidebarStartGameBtn">
+                    <i class="fas fa-play-circle"></i>
+                    <span>开始游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarResetGameBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>重置游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarAchievementBtn">
+                    <i class="fas fa-trophy"></i>
+                    <span>成就</span>
+                </div>
+                <div class="menu-item" id="sidebarUpdateBtn">
+                    <i class="fas fa-bell"></i>
+                    <span>版本更新公告</span>
+                </div>
+                <div class="menu-item" id="sidebarLangSwitchBtn">
+                    <i class="fas fa-language"></i>
+                    <span>切换语言</span>
+                </div>
+                <div class="menu-item" id="sidebarBackHomeBtn">
+                    <i class="fas fa-home"></i>
+                    <span>返回首页</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-center" id="userCenter">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">未登录</div>
+                        <div class="user-id" id="userId">ID: ---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-main-content">
+            <div class="game-header">
+                <h1>点击方块游戏</h1>
+                <p>在限定时间内点击随机出现的方块，点击越多，得分越高</p>
+            </div>
+            
+            <div class="game-body">
+                <div class="game-info-bar">
+                    <div class="game-info-item" data-lang="score">得分: <span id="score">0</span></div>
+                    <div class="game-info-item" data-lang="remainingTime">剩余时间: <span id="time">30</span>s</div>
+                    <div class="difficulty-select-container" id="difficultyBox" data-lang="difficulty">
+                        难度:
+                        <select class="difficulty-select" id="difficultySelect">
+                            <option value="easy" data-lang="easy">简单</option>
+                            <option value="medium" data-lang="medium">中等</option>
+                            <option value="hard" data-lang="hard">困难</option>
+                        </select>
+                    </div>
+                    <div class="custom-time-container" data-lang="customTime">
+                        自定义时间:
+                        <input type="number" class="custom-time-input" id="customTimeInput" value="30" min="1" max="300">
+                        <span class="custom-time-tip" data-lang="customTimeTip">(最多5分钟/300秒)</span>
+                    </div>
+                </div>
+
+                <div class="game-area-wrapper">
+                    <div class="game-area" id="gameArea">
+                        <div class="game-over" id="gameOver" data-lang="gameOver">游戏结束!</div>
+                    </div>
+                </div>
+
+                <div class="ranking-container">
+                    <div class="ranking-header">
+                        <div class="ranking-title" data-lang="ranking">游戏排行榜</div>
+                        <button class="reset-ranking-btn" id="resetRankingBtn" data-lang="resetRanking">重置排行榜</button>
+                    </div>
+                    <ul class="ranking-list" id="rankingList">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排行榜弹窗 -->
+    <div class="modal" id="rankingModal">
+        <div class="modal-content">
+            <h3 data-lang="congratulations">恭喜你完成游戏！</h3>
+            <p data-lang="finalScore">你的最终得分: <span id="finalScore">0</span></p>
+            <input type="text" class="modal-input" id="playerName" placeholder="请输入你的名字" maxlength="6" data-lang="enterName">
+            <div class="modal-btn-group">
+                <button class="confirm-btn" id="confirmBtn" data-lang="confirmAdd">确认添加</button>
+                <button class="cancel-btn" id="cancelBtn" data-lang="cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认重置弹窗 -->
+    <div class="modal" id="confirmResetModal">
+        <div class="modal-content confirm-modal-content">
+            <h3 data-lang="confirmResetTitle">确认重置</h3>
+            <p data-lang="confirmResetMessage">确定要重置排行榜吗？此操作将清空所有排行榜数据。</p>
+            <div class="modal-btn-group">
+                <button class="confirm-btn confirm-reset-btn" id="confirmResetBtn" data-lang="confirmReset">确认重置</button>
+                <button class="cancel-btn cancel-reset-btn" id="cancelResetBtn" data-lang="cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 版本更新公告弹窗（带翻页+版本切换） -->
+    <div class="modal" id="updateModal">
+        <div class="modal-content update-modal-content">
+            <h3 data-lang="updateAnnouncement">版本更新公告</h3>
+            <!-- 翻页控制器 -->
+            <div class="update-pagination">
+                <button class="pagination-btn" id="prevPage" data-lang="prevPage">上一页</button>
+                <span class="page-info" id="pageInfo" data-lang="pageInfo">第 1 / 2 页</span>
+                <button class="pagination-btn" id="nextPage" data-lang="nextPage">下一页</button>
+            </div>
+            <!-- 公告内容容器 -->
+            <div class="update-content" id="updateContent">
+                <div class="update-page" data-page="1" data-version="release">
+                    <p>本次更新时间：2026-03-26</p>
+                    <p>版本号：RC 1.3.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>优化 界面风格统一</li>
+                        <li>新增 重置排行榜功能</li>
+                        <li>新增 个人中心页面快捷跳转</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="2" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-03-24</p>
+                    <p>版本号：RC 1.2.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 游戏成就系统</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="3" data-version="release">
+                    <p>本次更新时间：2026-02-28</p>
+                    <p>版本号：RC 1.1.2</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>删除 更多游戏按钮</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="4" data-version="release">
+                    <p>本次更新时间：2026-02-27</p>
+                    <p>版本号：RC 1.1.1</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>优化 查看版本公告时固定窗口大小使其不会来回变动</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="5" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：RC 1.1</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 英文语言</li>
+                        <li>新增 中英文语言切换按钮</li>
+                        <li>新增 版本更新公告重要更新提示</li>
+                    </ul>
+                    <p>通告：目前正在进行多语种适配，预计将在不久之后的版本实装更多语言（例如日语和韩语），请持续关注GBG游戏。</p>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="6" data-version="release">
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：RC 1.0.1.2</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 版本更新公告切换正式版(RC)/测试版(Beta)按钮</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="7" data-version="release">
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：RC 1.0.1.1</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>优化 点击版本更新公告时，窗口的淡入，淡出效果</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="8" data-version="release">
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：RC 1.0.1</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>修复 返回首页按钮未正确生效的问题</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="9" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：RC 1.0.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>通告 游戏正式上线，版本自动更替已从Beta转至RC</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="10" data-version="beta">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：Beta v0.1.4</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>修复 由版本更新公告导致全局卡死，无法正常进行游戏的问题</li>
+                        <li>修复 更改难度时背景颜色并未正确生效的问题</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="11" data-version="beta">
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：Beta v0.1.3.1</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>优化 公告排版及其显示逻辑</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="12" data-version="beta">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：Beta v0.1.3</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 版本更新公告功能</li>
+                        <li>新增 游戏排行榜功能</li>
+                        <li>新增 游戏成就系统（部分）</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="13" data-version="beta">
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：Beta v0.1.2</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>优化 游戏界面布局</li>
+                        <li>优化 游戏难度设置</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="14" data-version="beta">
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：Beta v0.1.1</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>修复 游戏计时器问题</li>
+                        <li>优化 游戏响应速度</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+
+                <div class="update-page" data-page="15" data-version="beta">
+                    <p>本次更新时间：2026-02-26</p>
+                    <p>版本号：Beta v0.1.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>游戏首次发布Beta版本</li>
+                        <li>基础游戏功能实现</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games</p>
+                </div>
+            </div>
+            <div class="modal-btn-group">
+                <button class="close-btn" id="closeUpdateModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="modal" id="achievementModal">
+        <div class="modal-content achievement-modal-content">
+            <h3 data-lang="achievements">游戏成就</h3>
+            <div class="achievement-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="achievementTotal">0</div>
+                    <div class="stat-label">总成就</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="achievementUnlocked">0</div>
+                    <div class="stat-label">已解锁</div>
+                </div>
+            </div>
+            <div id="achievementList" class="achievement-list"></div>
+            <div class="modal-btn-group">
+                <button class="close-btn" id="closeAchievementModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+        if (!currentUser.username) {
+            window.location.href = '../index.html';
+        }
+
+        function getUserGameData(gameKey, defaultValue) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (user && user.gameData && user.gameData[gameKey] !== undefined) {
+                return user.gameData[gameKey];
+            }
+            
+            return defaultValue;
+        }
+
+        function setUserGameData(gameKey, value) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (userIndex !== -1) {
+                if (!users[userIndex].gameData) {
+                    users[userIndex].gameData = {};
+                }
+                users[userIndex].gameData[gameKey] = value;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+            }
+        }
+
+        const langConfig = {
+            zh: {
+                score: '得分: ',
+                remainingTime: '剩余时间: ',
+                difficulty: '难度: ',
+                easy: '简单',
+                medium: '中等',
+                hard: '困难',
+                customTime: '自定义时间: ',
+                customTimeTip: '(最多5分钟/300秒)',
+                startGame: '开始游戏',
+                resetGame: '重置游戏',
+                backHome: '返回首页',
+                gameOver: '游戏结束!',
+                ranking: '游戏排行榜',
+                resetRanking: '重置排行榜',
+                confirmResetTitle: '确认重置',
+                confirmResetMessage: '确定要重置排行榜吗？此操作将清空所有排行榜数据。',
+                confirmReset: '确认重置',
+                congratulations: '恭喜你完成游戏！',
+                finalScore: '你的最终得分: ',
+                enterName: '请输入你的名字',
+                confirmAdd: '确认添加',
+                cancel: '取消',
+                achievements: '游戏成就',
+                updateAnnouncement: '版本更新公告',
+                prevPage: '上一页',
+                nextPage: '下一页',
+                pageInfo: '第 {current} / {total} 页',
+                moreGamesTip: '更多游戏即将上线，敬请期待！'
+            },
+            en: {
+                score: 'Score: ',
+                remainingTime: 'Time Left: ',
+                difficulty: 'Difficulty: ',
+                easy: 'Easy',
+                medium: 'Medium',
+                hard: 'Hard',
+                customTime: 'Custom Time: ',
+                customTimeTip: '(Max 5 minutes/300 seconds)',
+                startGame: 'Start Game',
+                resetGame: 'Reset Game',
+                backHome: 'Back Home',
+                gameOver: 'Game Over!',
+                ranking: 'Game Ranking',
+                resetRanking: 'Reset Ranking',
+                confirmResetTitle: 'Confirm Reset',
+                confirmResetMessage: 'Are you sure you want to reset the ranking? This will clear all ranking data.',
+                confirmReset: 'Confirm Reset',
+                congratulations: 'Congratulations!',
+                finalScore: 'Your final score: ',
+                enterName: 'Enter your name',
+                confirmAdd: 'Confirm',
+                cancel: 'Cancel',
+                achievements: 'Achievements',
+                updateAnnouncement: 'Update Announcement',
+                prevPage: 'Previous',
+                nextPage: 'Next',
+                pageInfo: 'Page {current} / {total}',
+                moreGamesTip: 'More games coming soon!'
+            }
+        };
+
+        var currentLang = localStorage.getItem('fkgameLang') || 'zh';
+
+        function changeLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('fkgameLang', currentLang);
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            var texts = langConfig[currentLang];
+            
+            document.querySelectorAll('[data-lang="score"]').forEach(function(el) {
+                el.innerHTML = texts.score + '<span id="score">' + document.getElementById('score').textContent + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="remainingTime"]').forEach(function(el) {
+                el.innerHTML = texts.remainingTime + '<span id="time">' + document.getElementById('time').textContent + '</span>s';
+            });
+            
+            document.querySelectorAll('[data-lang="difficulty"]').forEach(function(el) {
+                el.innerHTML = texts.difficulty + '<select class="difficulty-select" id="difficultySelect"><option value="easy" data-lang="easy">' + texts.easy + '</option><option value="medium" data-lang="medium">' + texts.medium + '</option><option value="hard" data-lang="hard">' + texts.hard + '</option></select>';
+                document.getElementById('difficultySelect').value = document.getElementById('difficultySelect').value;
+            });
+            
+            document.querySelectorAll('[data-lang="customTime"]').forEach(function(el) {
+                el.innerHTML = texts.customTime + '<input type="number" class="custom-time-input" id="customTimeInput" value="' + document.getElementById('customTimeInput').value + '" min="1" max="300"><span class="custom-time-tip">' + texts.customTimeTip + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="startGame"]').forEach(function(el) {
+                el.textContent = texts.startGame;
+            });
+            
+            document.querySelectorAll('[data-lang="resetGame"]').forEach(function(el) {
+                el.textContent = texts.resetGame;
+            });
+            
+            document.querySelectorAll('[data-lang="backHome"]').forEach(function(el) {
+                el.textContent = texts.backHome;
+            });
+            
+            document.querySelectorAll('[data-lang="gameOver"]').forEach(function(el) {
+                el.textContent = texts.gameOver;
+            });
+            
+            document.querySelectorAll('[data-lang="ranking"]').forEach(function(el) {
+                el.textContent = texts.ranking;
+            });
+            
+            document.querySelectorAll('[data-lang="congratulations"]').forEach(function(el) {
+                el.textContent = texts.congratulations;
+            });
+            
+            document.querySelectorAll('[data-lang="finalScore"]').forEach(function(el) {
+                el.innerHTML = texts.finalScore + '<span id="finalScore">' + document.getElementById('finalScore').textContent + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="enterName"]').forEach(function(el) {
+                el.setAttribute('placeholder', texts.enterName);
+            });
+            
+            document.querySelectorAll('[data-lang="confirmAdd"]').forEach(function(el) {
+                el.textContent = texts.confirmAdd;
+            });
+            
+            document.querySelectorAll('[data-lang="cancel"]').forEach(function(el) {
+                el.textContent = texts.cancel;
+            });
+            
+            document.querySelectorAll('[data-lang="achievements"]').forEach(function(el) {
+                el.textContent = texts.achievements;
+            });
+            
+            document.querySelectorAll('[data-lang="updateAnnouncement"]').forEach(function(el) {
+                el.textContent = texts.updateAnnouncement;
+            });
+            
+            document.querySelectorAll('[data-lang="prevPage"]').forEach(function(el) {
+                el.textContent = texts.prevPage;
+            });
+            
+            document.querySelectorAll('[data-lang="nextPage"]').forEach(function(el) {
+                el.textContent = texts.nextPage;
+            });
+            
+            document.querySelectorAll('[data-lang="pageInfo"]').forEach(function(el) {
+                el.textContent = texts.pageInfo.replace('{current}', currentPage).replace('{total}', totalPages);
+            });
+
+            document.querySelectorAll('[data-lang="resetRanking"]').forEach(function(el) {
+                el.textContent = texts.resetRanking;
+            });
+
+            document.querySelectorAll('[data-lang="confirmResetTitle"]').forEach(function(el) {
+                el.textContent = texts.confirmResetTitle;
+            });
+
+            document.querySelectorAll('[data-lang="confirmResetMessage"]').forEach(function(el) {
+                el.textContent = texts.confirmResetMessage;
+            });
+
+            document.querySelectorAll('[data-lang="confirmReset"]').forEach(function(el) {
+                el.textContent = texts.confirmReset;
+            });
+        }
+
+        let gameTimer = null;
+        let gameRunning = false;
+        let score = 0;
+        let timeLeft = 30;
+        let targetElement = null;
+        let comboCount = 0;
+        let difficulty = 'easy';
+
+        const difficultySettings = {
+            easy: { size: 70, duration: 2000, points: 1 },
+            medium: { size: 60, duration: 1500, points: 2 },
+            hard: { size: 50, duration: 1000, points: 3 }
+        };
+
+        const fkAchievementDefs = [
+            {
+                id: 'first_game',
+                name: '初试锋芒',
+                desc: '完成第一局游戏',
+                icon: 'fa-trophy',
+                condition: () => getUserGameData('gamesPlayed', 0) >= 1
+            },
+            {
+                id: 'score_100',
+                name: '百发百中',
+                desc: '单局得分达到100分',
+                icon: 'fa-star',
+                condition: () => getUserGameData('highScore', 0) >= 100
+            },
+            {
+                id: 'score_200',
+                name: '神射手',
+                desc: '单局得分达到200分',
+                icon: 'fa-bullseye',
+                condition: () => getUserGameData('highScore', 0) >= 200
+            },
+            {
+                id: 'games_10',
+                name: '游戏达人',
+                desc: '累计完成10局游戏',
+                icon: 'fa-gamepad',
+                condition: () => getUserGameData('gamesPlayed', 0) >= 10
+            },
+            {
+                id: 'combo_master',
+                name: '连击大师',
+                desc: '在一局游戏中连续点击20个方块不失误',
+                icon: 'fa-fire',
+                condition: () => getUserGameData('maxCombo', 0) >= 20
+            },
+            {
+                id: 'speed_king',
+                name: '速度之王',
+                desc: '在困难难度下，10秒内获得50分',
+                icon: 'fa-bolt',
+                condition: () => false
+            },
+            {
+                id: 'perfect_start',
+                name: '完美开局',
+                desc: '在游戏开始前5秒内获得20分',
+                icon: 'fa-rocket',
+                condition: () => false
+            },
+            {
+                id: 'total_score_1000',
+                name: '千分王者',
+                desc: '累计获得1000分',
+                icon: 'fa-crown',
+                condition: () => getUserGameData('totalScore', 0) >= 1000
+            },
+            {
+                id: 'games_100',
+                name: '百战百胜',
+                desc: '累计完成100局游戏',
+                icon: 'fa-medal',
+                condition: () => getUserGameData('gamesPlayed', 0) >= 100
+            },
+            {
+                id: 'fk_complete',
+                name: '精确点击',
+                desc: '解锁点击方块所有成就',
+                icon: 'fa-crown',
+                game: 'special',
+                condition: () => fkAchievements.length >= 10
+            }
+        ];
+
+        let fkAchievements = getUserGameData('achievements', []);
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(gameTimer);
+                gameRunning = false;
+                document.getElementById('gameOver').style.display = 'block';
+                showRankingModal();
+                saveGameData();
+            }
+        }
+
+        function generateTarget() {
+            if (!gameRunning) return;
+            
+            var gameArea = document.getElementById('gameArea');
+            var areaWidth = gameArea.clientWidth;
+            var areaHeight = gameArea.clientHeight;
+            
+            if (targetElement) {
+                targetElement.remove();
+            }
+            
+            var settings = difficultySettings[difficulty];
+            var size = settings.size;
+            var maxX = areaWidth - size;
+            var maxY = areaHeight - size;
+            var x = Math.random() * maxX;
+            var y = Math.random() * maxY;
+            
+            targetElement = document.createElement('div');
+            targetElement.className = 'target';
+            targetElement.style.width = size + 'px';
+            targetElement.style.height = size + 'px';
+            targetElement.style.left = x + 'px';
+            targetElement.style.top = y + 'px';
+            targetElement.style.backgroundColor = getRandomColor();
+            
+            targetElement.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!gameRunning) return;
+                
+                score += settings.points;
+                comboCount++;
+                document.getElementById('score').textContent = score;
+                
+                targetElement.remove();
+                targetElement = null;
+                
+                setTimeout(generateTarget, settings.duration);
+            });
+            
+            gameArea.appendChild(targetElement);
+        }
+
+        function getRandomColor() {
+            var colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            
+            gameRunning = true;
+            score = 0;
+            timeLeft = parseInt(document.getElementById('customTimeInput').value);
+            comboCount = 0;
+            document.getElementById('score').textContent = score;
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('gameOver').style.display = 'none';
+            
+            if (targetElement) {
+                targetElement.remove();
+                targetElement = null;
+            }
+            
+            clearInterval(gameTimer);
+            gameTimer = setInterval(updateTimer, 1000);
+            
+            setTimeout(generateTarget, 500);
+        }
+
+        function resetGame() {
+            clearInterval(gameTimer);
+            gameRunning = false;
+            score = 0;
+            timeLeft = parseInt(document.getElementById('customTimeInput').value);
+            comboCount = 0;
+            document.getElementById('score').textContent = score;
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('gameOver').style.display = 'none';
+            
+            if (targetElement) {
+                targetElement.remove();
+                targetElement = null;
+            }
+        }
+
+        function showRankingModal() {
+            var modal = document.getElementById('rankingModal');
+            document.getElementById('finalScore').textContent = score;
+            modal.classList.add('active');
+        }
+
+        function saveGameData() {
+            var gamesPlayed = getUserGameData('gamesPlayed', 0) + 1;
+            var highScore = getUserGameData('highScore', 0);
+            if (score > highScore) {
+                highScore = score;
+            }
+            var maxCombo = getUserGameData('maxCombo', 0);
+            if (comboCount > maxCombo) {
+                maxCombo = comboCount;
+            }
+            
+            var totalScore = getUserGameData('totalScore', 0) + score;
+            
+            setUserGameData('gamesPlayed', gamesPlayed);
+            setUserGameData('highScore', highScore);
+            setUserGameData('maxCombo', maxCombo);
+            setUserGameData('totalScore', totalScore);
+            
+            checkAchievements();
+        }
+
+        function checkAchievements() {
+            fkAchievementDefs.forEach(function(achievement) {
+                if (!fkAchievements.includes(achievement.id) && achievement.condition()) {
+                    fkAchievements.push(achievement.id);
+                    setUserGameData('achievements', fkAchievements);
+                    saveAchievementTime(achievement.id);
+                    showAchievementUnlock(achievement);
+                }
+            });
+        }
+
+        function saveAchievementTime(achievementId) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (userIndex !== -1) {
+                if (!users[userIndex].achievementTimes) {
+                    users[userIndex].achievementTimes = {};
+                }
+                if (!users[userIndex].achievementTimes[achievementId]) {
+                    users[userIndex].achievementTimes[achievementId] = Date.now();
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                }
+            }
+        }
+
+        function showAchievementUnlock(achievement) {
+            alert('🏆 成就解锁: ' + achievement.name + '\n' + achievement.desc);
+        }
+
+        function getAchievementTime(achievementId) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (!user || !user.achievementTimes) {
+                return '';
+            }
+            
+            var timestamp = user.achievementTimes[achievementId];
+            if (!timestamp) {
+                return '';
+            }
+            
+            var date = new Date(timestamp);
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            var hours = String(date.getHours()).padStart(2, '0');
+            var minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+        }
+
+        function showAchievements() {
+            var modal = document.getElementById('achievementModal');
+            var achievementList = document.getElementById('achievementList');
+            achievementList.innerHTML = '';
+            
+            // 更新统计信息
+            document.getElementById('achievementTotal').textContent = fkAchievementDefs.length;
+            document.getElementById('achievementUnlocked').textContent = fkAchievements.length;
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('active');
+            }, 10);
+            
+            fkAchievementDefs.forEach(function(achievement) {
+                var isUnlocked = fkAchievements.includes(achievement.id) || DeveloperConfig.getAchievementsUnlocked();
+                var isCompleted = achievement.condition();
+                
+                var achievementItem = document.createElement('div');
+                var className = 'achievement-item' + (isUnlocked ? ' unlocked' : ' locked');
+                if (achievement.game === 'special') {
+                    className += ' special-achievement';
+                }
+                achievementItem.className = className;
+                
+                var progressPercent = 0;
+                var progressText = '';
+                
+                if (isUnlocked) {
+                    progressPercent = 100;
+                    progressText = '已完成';
+                } else if (achievement.id === 'first_game') {
+                    var gamesPlayed = getUserGameData('gamesPlayed', 0);
+                    progressPercent = gamesPlayed >= 1 ? 100 : 0;
+                    progressText = gamesPlayed >= 1 ? '1/1' : '0/1';
+                } else if (achievement.id === 'score_100') {
+                    var highScore = getUserGameData('highScore', 0);
+                    progressPercent = Math.min((highScore / 100) * 100, 100);
+                    progressText = highScore + '/100';
+                } else if (achievement.id === 'score_200') {
+                    var highScore = getUserGameData('highScore', 0);
+                    progressPercent = Math.min((highScore / 200) * 100, 100);
+                    progressText = highScore + '/200';
+                } else if (achievement.id === 'games_10') {
+                    var gamesPlayed = getUserGameData('gamesPlayed', 0);
+                    progressPercent = Math.min((gamesPlayed / 10) * 100, 100);
+                    progressText = gamesPlayed + '/10';
+                } else if (achievement.id === 'combo_master') {
+                    var maxCombo = getUserGameData('maxCombo', 0);
+                    progressPercent = Math.min((maxCombo / 20) * 100, 100);
+                    progressText = maxCombo + '/20';
+                } else if (achievement.id === 'speed_king') {
+                    progressPercent = 0;
+                    progressText = '未完成';
+                } else if (achievement.id === 'perfect_start') {
+                    progressPercent = 0;
+                    progressText = '未完成';
+                } else if (achievement.id === 'total_score_1000') {
+                    var totalScore = getUserGameData('totalScore', 0);
+                    progressPercent = Math.min((totalScore / 1000) * 100, 100);
+                    progressText = totalScore + '/1000';
+                } else if (achievement.id === 'games_100') {
+                    var gamesPlayed = getUserGameData('gamesPlayed', 0);
+                    progressPercent = Math.min((gamesPlayed / 100) * 100, 100);
+                    progressText = gamesPlayed + '/100';
+                } else if (achievement.id === 'fk_complete') {
+                    progressPercent = Math.min((fkAchievements.length / 10) * 100, 100);
+                    progressText = fkAchievements.length + '/10';
+                } else {
+                    progressPercent = isCompleted ? 100 : 0;
+                    progressText = isCompleted ? '已完成' : '未完成';
+                }
+                
+                achievementItem.innerHTML = '<div class="achievement-icon"><i class="fas ' + achievement.icon + '"></i></div>' +
+                                      '<div class="achievement-info">' +
+                                      '<div class="achievement-name">' + achievement.name + '</div>' +
+                                      '<div class="achievement-desc">' + achievement.desc + '</div>' +
+                                      '<div class="achievement-progress">' +
+                                      '<div class="progress-bar">' +
+                                      '<div class="progress-fill" style="width: ' + progressPercent + '%"></div>' +
+                                      '</div>' +
+                                      '<span class="progress-text">' + progressText + '</span>' +
+                                      '</div>' +
+                                      '</div>' +
+                                      (isUnlocked ? '<div class="achievement-time">' + getAchievementTime(achievement.id) + '</div>' : '');
+                
+                achievementList.appendChild(achievementItem);
+            });
+            
+            modal.classList.add('active');
+        }
+
+        function loadRankings() {
+            var rankings = getUserGameData('fkRankings', []);
+            var rankingList = document.getElementById('rankingList');
+            rankingList.innerHTML = '';
+            
+            rankings.sort(function(a, b) {
+                return b.score - a.score;
+            });
+            
+            rankings.slice(0, 10).forEach(function(ranking, index) {
+                var item = document.createElement('li');
+                item.className = 'ranking-item';
+                item.innerHTML = '<span>' + (index + 1) + '. ' + ranking.name + '</span>' +
+                              '<span>' + ranking.score + ' 分</span>';
+                rankingList.appendChild(item);
+            });
+        }
+
+        function addRanking() {
+            var name = document.getElementById('playerName').value.trim();
+            if (!name) {
+                alert('请输入名字');
+                return;
+            }
+            
+            var rankings = getUserGameData('fkRankings', []);
+            rankings.push({
+                name: name,
+                score: score,
+                date: new Date().toISOString()
+            });
+            
+            setUserGameData('fkRankings', rankings);
+            
+            var modal = document.getElementById('rankingModal');
+            modal.classList.remove('show');
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+            
+            loadRankings();
+        }
+
+        function resetRankings() {
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.add('active');
+        }
+
+        function confirmReset() {
+            setUserGameData('fkRankings', []);
+            loadRankings();
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.remove('active');
+        }
+
+        function cancelReset() {
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.remove('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('page-transition-in');
+            setTimeout(function() {
+                document.body.classList.remove('page-transition-in');
+            }, 500);
+
+            loadCurrentUser();
+            loadRankings();
+            updateLanguage();
+            initializeMenu();
+            initializeModals();
+            initializeDifficulty();
+        });
+
+        function loadCurrentUser() {
+            var userName = document.getElementById('userName');
+            var userId = document.getElementById('userId');
+
+            if (currentUser.username) {
+                userName.textContent = currentUser.username;
+                if (currentUser.userId) {
+                    userId.textContent = 'ID: ' + currentUser.userId;
+                } else {
+                    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userId) {
+                        userId.textContent = 'ID: ' + user.userId;
+                    }
+                }
+            } else {
+                userName.textContent = '未登录';
+                userId.textContent = 'ID: ---';
+            }
+        }
+
+        function initializeMenu() {
+            (document.getElementById('sidebarStartGameBtn') || { addEventListener: function() {} }).addEventListener('click', startGame);
+            (document.getElementById('sidebarResetGameBtn') || { addEventListener: function() {} }).addEventListener('click', resetGame);
+            (document.getElementById('sidebarAchievementBtn') || { addEventListener: function() {} }).addEventListener('click', showAchievements);
+            (document.getElementById('sidebarUpdateBtn') || { addEventListener: function() {} }).addEventListener('click', showUpdateModal);
+            (document.getElementById('sidebarLangSwitchBtn') || { addEventListener: function() {} }).addEventListener('click', changeLanguage);
+            (document.getElementById('sidebarBackHomeBtn') || { addEventListener: function() {} }).addEventListener('click', function() {
+                window.location.href = 'homepage4.0.html';
+            });
+
+            (document.getElementById('userCenter') || { addEventListener: function() {} }).addEventListener('click', function() {
+                if (!currentUser.username) {
+                    alert('请先登录');
+                    return;
+                }
+                window.open('account-settings.html', '_blank');
+            });
+        }
+
+        function initializeModals() {
+            document.getElementById('confirmBtn').addEventListener('click', addRanking);
+            
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                var modal = document.getElementById('rankingModal');
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('closeUpdateModal').addEventListener('click', function() {
+                var modal = document.getElementById('updateModal');
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('closeAchievementModal').addEventListener('click', function() {
+                var modal = document.getElementById('achievementModal');
+                modal.classList.remove('active');
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                }, 300);
+            });
+
+            document.getElementById('resetRankingBtn').addEventListener('click', function() {
+                resetRankings();
+            });
+
+            document.getElementById('confirmResetBtn').addEventListener('click', function() {
+                confirmReset();
+            });
+
+            document.getElementById('cancelResetBtn').addEventListener('click', function() {
+                cancelReset();
+            });
+            
+            document.querySelectorAll('.modal').forEach(function(modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                        setTimeout(function() {
+                            modal.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        }
+
+        function initializeDifficulty() {
+            document.getElementById('difficultySelect').addEventListener('change', function() {
+                difficulty = this.value;
+                var difficultyBox = document.getElementById('difficultyBox');
+                difficultyBox.className = 'difficulty-select-container ' + difficulty;
+            });
+        }
+
+        function showUpdateModal() {
+            var modal = document.getElementById('updateModal');
+            modal.classList.add('active');
+            
+            currentPage = 1;
+            totalPages = 15;
+            updatePagination();
+        }
+
+        var currentPage = 1;
+        var totalPages = 15;
+
+        function updatePagination() {
+            document.getElementById('pageInfo').textContent = langConfig[currentLang].pageInfo.replace('{current}', currentPage).replace('{total}', totalPages);
+            
+            document.querySelectorAll('.update-page').forEach(function(page) {
+                page.classList.remove('active');
+            });
+            
+            var activePage = document.querySelector('.update-page[data-page="' + currentPage + '"]');
+            if (activePage) {
+                activePage.classList.add('active');
+            }
+        }
+
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+            }
+        });
+
+        document.getElementById('gameArea').addEventListener('click', function() {
+            if (gameRunning) {
+                comboCount = 0;
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 更新版本号显示
+            if (typeof updateVersionDisplay === 'function') {
+                updateVersionDisplay('fkgame');
+            }
+        });
+    </script>
+</body>
+</html>
