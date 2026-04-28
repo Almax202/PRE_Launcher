@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.0.9 (b4)",
+    login: "RC 2.6.0.10 (b4)",
 
     // 游戏大厅版本号
     homepage: "RC 1.0.3.2 (a2)",
@@ -19,7 +19,7 @@ const versionInfo = {
     snakegame: "RC 1.1.0",
 
     // 内部版本号
-    launcher: "20260428.26090.1190.b4.50"
+    launcher: "20260428.26010.b4.51"
 };
 // 启动器信息
 const launcherInfo = {

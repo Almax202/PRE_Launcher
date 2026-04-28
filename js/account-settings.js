@@ -3409,6 +3409,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginHistoryElement.appendChild(noHistoryItem);
             }
         }
+        
+        // 绑定清除所有按钮点击事件
+        var clearAllBtn = document.getElementById('clearAllLoginHistory');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', function() {
+                clearAllLoginHistory();
+            });
+        }
     }
     
     function deleteLoginHistory(index) {
@@ -3467,6 +3475,71 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadLoginHistory();
                 
                 showAlert('登录记录已删除');
+            }
+            
+            modal.classList.remove('show');
+            setTimeout(function() {
+                document.body.removeChild(modal);
+            }, 300);
+        });
+    }
+    
+    function clearAllLoginHistory() {
+        // 显示确认弹窗
+        var modal = document.createElement('div');
+        modal.className = 'custom-alert';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="alert-content" style="max-width: 400px;">
+                <div class="alert-icon" style="color: #e74c3c;">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h3>确认删除</h3>
+                <p style="color: #666; margin: 15px 0;">您确认要删除所有登录历史记录吗？删除后将无法恢复。</p>
+                <div class="modal-buttons">
+                    <button class="alert-confirm" id="clearAllCancel" style="background-color: #95a5a6;">取消</button>
+                    <button class="alert-confirm" id="clearAllConfirm" style="background-color: #e74c3c;">确认删除</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        setTimeout(function() {
+            modal.classList.add('show');
+        }, 10);
+        
+        // 点击取消按钮
+        document.getElementById('clearAllCancel').addEventListener('click', function() {
+            modal.classList.remove('show');
+            setTimeout(function() {
+                document.body.removeChild(modal);
+            }, 300);
+        });
+        
+        // 点击确认删除按钮
+        document.getElementById('clearAllConfirm').addEventListener('click', function() {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (user) {
+                // 清空所有登录历史
+                user.loginHistory = [];
+                
+                // 保存更新后的用户信息
+                var userIndex = users.findIndex(function(u) {
+                    return u.username === currentUser.username;
+                });
+                if (userIndex !== -1) {
+                    users[userIndex] = user;
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                }
+                
+                // 重新加载登录历史
+                loadLoginHistory();
+                
+                showAlert('所有登录记录已删除');
             }
             
             modal.classList.remove('show');

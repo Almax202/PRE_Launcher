@@ -431,6 +431,34 @@ body.page-transition-in {
     white-space: nowrap;
 }
 
+.card-header .clear-all-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.card-header .clear-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.card-header .clear-all-btn:active {
+    transform: translateY(0);
+}
+
 .card-icon {
     width: 50px;
     height: 50px;

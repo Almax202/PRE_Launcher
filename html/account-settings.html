@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="账户设置 - PRE Launcher">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>账户设置 - PRE的游戏启动器</title>
-    <link rel="stylesheet" href="../css/denglu.css" />
-    <link rel="stylesheet" href="../css/account-settings.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="../js/settings.js"></script>
-    <script src="../js/accountlang.js"></script>
-    <script src="../js/versionManager.js"></script>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preload" href="../css/account-settings.css" as="style">
+    <link rel="stylesheet" href="../css/denglu.css">
+    <link rel="stylesheet" href="../css/account-settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+    <script src="../js/settings.js" defer></script>
+    <script src="../js/accountlang.js" defer></script>
+    <script src="../js/versionManager.js" defer></script>
 </head>
 <body>
     <div class="settings-container">
@@ -942,6 +950,10 @@
                                 <h3>登录历史</h3>
                                 <p>查看最近的登录记录</p>
                             </div>
+                            <button class="clear-all-btn" id="clearAllLoginHistory">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>清除所有</span>
+                            </button>
                         </div>
                         <div class="card-content">
                             <div class="login-history" id="loginHistory">

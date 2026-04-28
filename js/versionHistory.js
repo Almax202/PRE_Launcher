@@ -27,6 +27,30 @@
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.0.10 (b4)",
+            date: "2026-04-28",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/26010.png", "./images/26010_2.png"],
+            features: [
+                "新增功能",
+                "- 版权声明：在关于启动器的版权声明部分添加\"MIT License\"按钮",
+                "优化改进",
+                "- 界面优化：MIT License弹窗内容改为分页展示，提升阅读体验",
+                "- 界面体验：版本更新记录窗口优化更新公告显示区域与LIST列表对齐",
+                "- 界面体验：调整版本更新记录返回和排序按钮位置向上对齐",
+                "- 优化JavaScript代码，提取公共功能模块，减少重复代码",
+                "- 使用CSS变量系统，统一管理颜色和样式参数",
+                "- 优化资源加载，脚本改为延迟加载提升页面加载速度",
+                "- 图标库改为懒加载，减少初始加载时间",
+                "- 页面加载更加流畅快速",
+                "- 代码结构更加清晰易维护",
+                "- 为所有页面添加完善的Meta标签",
+                "- 支持PWA特性，提升移动端体验",
+                "- 移除无效的文件引用，清理代码",
+            ]
+        },
+        {
             version: "RC 2.6.0.9 (b4)",
             date: "2026-04-28",
             tag: "important",
@@ -1224,7 +1248,7 @@ function loadVersionHistory() {
                         margin-bottom: 20px;
                         font-size: 16px;
                     `;
-                    hintText.textContent = '请选择要查看的版本';
+                    hintText.textContent = ' 请选择要查看的版本更新 ';
                     contentArea.appendChild(hintText);
                     
                     // 生成主版本号分组按钮
@@ -1296,13 +1320,14 @@ function loadVersionHistory() {
                             controlsContainer.style.cssText = `
                                 display: flex;
                                 justify-content: space-between;
-                                align-items: center;
-                                margin-bottom: 20px;
+                                align-items: flex-start;
+                                margin-bottom: 0;
                                 position: sticky;
-                                top: 10px;
+                                top: 0;
                                 z-index: 100;
                                 background-color: none;
-                                padding: 10px 0;
+                                padding: 0;
+                                border-radius: 10px 10px 0 0;
                             `;
                             
                             // 按钮容器
@@ -1311,7 +1336,8 @@ function loadVersionHistory() {
                                 display: flex;
                                 align-items: center;
                                 gap: 10px;
-                                margin-bottom: 20px;
+                                margin-bottom: 5px;
+                                margin-top: 2px;
                             `;
                             
                             // 返回按钮
