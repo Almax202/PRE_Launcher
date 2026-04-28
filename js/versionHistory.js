@@ -27,6 +27,40 @@
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.0.9 (b4)",
+            date: "2026-04-28",
+            tag: "important",
+            tagText: "重要更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 版本管理：版本更新记录子按钮添加\"查看中\"tag，显示当前查看状态",
+                "- 字体调整：用户协议和隐私政策窗口添加字体大小调整按钮（支持12px-24px）",
+                "优化改进",
+                "- 自定义滚动条：用户协议目录侧边栏添加自定义滚动条样式",
+                "- 暗色模式：优化游戏大厅个人卡片、签到规则、退出登录悬浮气泡样式",
+                "- 响应式设计：今日运势窗口改为响应式布局，跟随浏览器窗口大小变动",
+                "- 界面体验：版本更新记录提示文本居中显示并添加等待图标",
+                "- 全屏显示：图片查看器窗口改为全屏显示",
+                "- 暗色模式：优化版本更新记录卡片和日期文本在暗色模式下的显示",
+                "修复问题",
+                "- 按钮修复：修复用户协议窗口返回顶部按钮不生效问题",
+                "- 主题修复：修复暗色主题设置后刷新页面变回亮色主题的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.8 (b4)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 界面修复：修复了过时版本记录中排序功能不生效的问题",
+                "- 界面修复：修复了版本日期范围显示倒叙的问题"
+            ]
+        },
+        {
             version: "RC 2.6.0.7 (b4)",
             date: "2026-04-27",
             tag: "normal",
@@ -973,7 +1007,16 @@ function loadVersionHistory() {
             // 显示子按钮
             var subButtons = document.getElementById('featureSubButtons');
             if (subButtons) {
-                subButtons.style.display = subButtons.style.display === 'none' ? 'block' : 'none';
+                var isHidden = subButtons.style.display === 'none';
+                subButtons.style.display = isHidden ? 'block' : 'none';
+                
+                // 如果是收起子按钮，隐藏所有"查看中"tag
+                if (!isHidden) {
+                    var allViewingTags = document.querySelectorAll('.viewing-tag');
+                    allViewingTags.forEach(function(tag) {
+                        tag.style.display = 'none';
+                    });
+                }
             }
             
             // 隐藏过时版本记录的子按钮
@@ -985,7 +1028,14 @@ function loadVersionHistory() {
             // 显示提示文本
             var contentArea = document.querySelector('.terms-content');
             if (contentArea) {
-                contentArea.innerHTML = '<p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 50px 0;">请选择要查看的功能更新</p>';
+                contentArea.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的功能更新</p>
+                    </div>
+                `;
             }
             
             // 确保其他导航项不处于active状态
@@ -1007,7 +1057,16 @@ function loadVersionHistory() {
             // 显示子按钮
             var subButtons = document.getElementById('outdatedSubButtons');
             if (subButtons) {
-                subButtons.style.display = subButtons.style.display === 'none' ? 'block' : 'none';
+                var isHidden = subButtons.style.display === 'none';
+                subButtons.style.display = isHidden ? 'block' : 'none';
+                
+                // 如果是收起子按钮，隐藏所有"查看中"tag
+                if (!isHidden) {
+                    var allViewingTags = document.querySelectorAll('.viewing-tag');
+                    allViewingTags.forEach(function(tag) {
+                        tag.style.display = 'none';
+                    });
+                }
             }
             
             // 隐藏选择功能更新的子按钮
@@ -1019,7 +1078,14 @@ function loadVersionHistory() {
             // 显示提示文本
             var contentArea = document.querySelector('.terms-content');
             if (contentArea) {
-                contentArea.innerHTML = '<p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 50px 0;">请选择要查看的功能更新</p>';
+                contentArea.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的过时版本记录</p>
+                    </div>
+                `;
             }
             
             // 确保其他导航项不处于active状态
@@ -1084,12 +1150,17 @@ function loadVersionHistory() {
             
             // 计算最早和最晚日期
             if (group.versions.length > 0) {
-                // 按日期倒序排序
+                // 按日期正序排序以获取最早和最晚日期
+                var sortedByDate = [...group.versions].sort(function(a, b) {
+                    return new Date(a.date) - new Date(b.date);
+                });
+                group.startDate = sortedByDate[0].date;
+                group.endDate = sortedByDate[sortedByDate.length - 1].date;
+                
+                // 按日期倒序排序版本列表
                 group.versions.sort(function(a, b) {
                     return new Date(b.date) - new Date(a.date);
                 });
-                group.startDate = group.versions[0].date;
-                group.endDate = group.versions[group.versions.length - 1].date;
             }
             
             sortedGroups.push(group);
@@ -1104,6 +1175,18 @@ function loadVersionHistory() {
         button.addEventListener('click', function(e) {
             // 阻止事件冒泡
             e.stopPropagation();
+            
+            // 隐藏所有"查看中"tag
+            var allViewingTags = document.querySelectorAll('.viewing-tag');
+            allViewingTags.forEach(function(tag) {
+                tag.style.display = 'none';
+            });
+            
+            // 显示当前按钮的"查看中"tag
+            var viewingTag = this.querySelector('.viewing-tag');
+            if (viewingTag) {
+                viewingTag.style.display = 'inline-block';
+            }
             
             var type = this.getAttribute('data-type');
             var contentArea = document.querySelector('.terms-content');
@@ -1133,9 +1216,9 @@ function loadVersionHistory() {
                     
                     // 添加提示文本
                     var hintText = document.createElement('p');
+                    hintText.className = 'version-selection-hint';
                     hintText.style.cssText = `
                         font-style: normal;
-                        color: black;
                         text-align: center;
                         padding: 20px 0;
                         margin-bottom: 20px;
@@ -1152,8 +1235,6 @@ function loadVersionHistory() {
                             margin: 15px 0;
                             padding: 15px;
                             border-radius: 8px;
-                            background-color: #fff;
-                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
                             cursor: pointer;
                             transition: all 0.3s ease;
                         `;
@@ -1199,8 +1280,8 @@ function loadVersionHistory() {
                                 <div class="version-header-content">
                                     <button style="padding: 4px 12px; border: none; border-radius: 12px; font-size: 12px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0;">查看详细内容 <span style="margin-left: 4px;">▶</span></button>
                                 </div>
-                                <span style="font-size: 14px; color: #666; margin-left: auto; margin-right: 10px;">从 ${group.startDate} 至 ${group.endDate} 的更新</span>
-                                <span class="version-date" style="font-size: 14px; color: #666; margin-left: 0; margin-right: 10px;">共 ${group.versions.length} 个版本</span>
+                                <span class="version-date-range" style="font-size: 14px; margin-left: auto; margin-right: 10px;">从 ${group.startDate} 至 ${group.endDate} 的更新</span>
+                                <span class="version-count" style="font-size: 14px; margin-left: 0; margin-right: 10px;">共 ${group.versions.length} 个版本</span>
                                 <span style="padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${statusColor}; color: white;">${versionStatus}</span>
                             </div>
                         `;
@@ -1319,12 +1400,16 @@ function loadVersionHistory() {
                                 var sortedVersions = [...group.versions];
                                 sortedVersions.sort(function(a, b) {
                                     // 提取版本号进行比较
-                                    var aMatch = a.version.match(/RC\s+(\d+)\.(\d+)\.(\d+)\.(\d+)/);
-                                    var bMatch = b.version.match(/RC\s+(\d+)\.(\d+)\.(\d+)\.(\d+)/);
+                                    var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                    var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
                                     
                                     if (aMatch && bMatch) {
                                         var aVersion = aMatch.slice(1).map(Number);
                                         var bVersion = bMatch.slice(1).map(Number);
+                                        
+                                        // 确保版本号数组长度一致
+                                        while (aVersion.length < 4) aVersion.push(0);
+                                        while (bVersion.length < 4) bVersion.push(0);
                                         
                                         for (var i = 0; i < 4; i++) {
                                             if (aVersion[i] !== bVersion[i]) {
@@ -1333,7 +1418,8 @@ function loadVersionHistory() {
                                         }
                                     }
                                     
-                                    return 0;
+                                    // 如果版本号格式不匹配，按日期排序
+                                    return isAscending ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
                                 });
                                 
                                 // 生成排序后的版本历史内容
@@ -1416,12 +1502,16 @@ function loadVersionHistory() {
                             var sortedVersions = [...group.versions];
                             sortedVersions.sort(function(a, b) {
                                 // 提取版本号进行比较
-                                var aMatch = a.version.match(/RC\s+(\d+)\.(\d+)\.(\d+)\.(\d+)/);
-                                var bMatch = b.version.match(/RC\s+(\d+)\.(\d+)\.(\d+)\.(\d+)/);
+                                var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
                                 
                                 if (aMatch && bMatch) {
                                     var aVersion = aMatch.slice(1).map(Number);
                                     var bVersion = bMatch.slice(1).map(Number);
+                                    
+                                    // 确保版本号数组长度一致
+                                    while (aVersion.length < 4) aVersion.push(0);
+                                    while (bVersion.length < 4) bVersion.push(0);
                                     
                                     for (var i = 0; i < 4; i++) {
                                         if (aVersion[i] !== bVersion[i]) {
@@ -1430,7 +1520,8 @@ function loadVersionHistory() {
                                     }
                                 }
                                 
-                                return 0;
+                                // 如果版本号格式不匹配，按日期倒序排序
+                                return new Date(b.date) - new Date(a.date);
                             });
                             
                             sortedVersions.forEach(function(versionItem) {

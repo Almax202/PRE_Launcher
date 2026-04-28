@@ -193,13 +193,14 @@
             }
         }
         
-        // 加载毛玻璃主题设置
-        function loadGlassThemeSettings() {
-            // 检查是否启用了毛玻璃主题
+        // 加载主题设置（包括暗色主题和毛玻璃主题）
+        function loadThemeSettings() {
+            // 检查是否启用了暗色主题或毛玻璃主题
             var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
             var glassMode = false;
             var glassTheme = null;
+            var isDarkMode = false;
             
             // 首先尝试从用户设置中获取
             if (currentUser && users.length > 0) {
@@ -208,6 +209,19 @@
                 });
                 
                 if (user && user.userProfile) {
+                    // 设置暗色主题
+                    isDarkMode = user.userProfile.theme === 'dark';
+                    if (isDarkMode) {
+                        document.body.classList.add('dark-mode');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                    }
+                    
+                    // 同步更新全局设置，防止被覆盖
+                    if (typeof SettingsManager !== 'undefined') {
+                        SettingsManager.set('darkMode', isDarkMode);
+                    }
+                    
                     glassMode = user.userProfile.theme === 'glass';
                     glassTheme = user.userProfile.glassTheme;
                 }
@@ -350,7 +364,7 @@
             loadCustomBackground();
             
             // 加载毛玻璃主题设置
-            loadGlassThemeSettings();
+            loadThemeSettings();
             
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const settingsSidebar = document.querySelector('.settings-sidebar');
@@ -955,8 +969,14 @@
                             <span>查看功能更新<ul>Feature Updates</ul></span>
                         </div>
                         <div class="sub-buttons" id="featureSubButtons" style="display: none;">
-                            <button class="sub-button" data-type="launcher">启动器更新</button>
-                            <button class="sub-button" data-type="homepage">主页面更新</button>
+                            <button class="sub-button" data-type="launcher">
+                                <span class="button-text">启动器更新</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="homepage">
+                                <span class="button-text">主页面更新</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
                         </div>
                     </div>
                     <div class="terms-nav-item" id="earlyUpdateNav">
@@ -965,8 +985,14 @@
                             <span>过时版本记录<ul>Outdated Versions</ul></span>
                         </div>
                         <div class="sub-buttons" id="outdatedSubButtons" style="display: none;">
-                            <button class="sub-button" data-type="launcher">启动器记录</button>
-                            <button class="sub-button" data-type="homepage">主页面记录</button>
+                            <button class="sub-button" data-type="launcher">
+                                <span class="button-text">启动器记录</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="homepage">
+                                <span class="button-text">主页面记录</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
                         </div>
                     </div>
                     <div class="terms-nav-item" id="demoModeNav" style="display: none;">
@@ -998,13 +1024,30 @@
 
     <div id="termsModal" class="custom-alert">
         <div class="alert-content terms-modal-content">
-            <div style="display: flex; align-items: center; margin-bottom: 20px; padding-left: 20px; padding-top: 10px;">
-                <div class="alert-icon" style="margin-right: 15px;">
-                    <i class="fas fa-file-contract"></i>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-left: 20px; padding-right: 20px; padding-top: 10px;">
+                <div style="display: flex; align-items: center;">
+                    <div class="alert-icon" style="margin-right: 15px;">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3 style="margin: 0;">用户协议</h3>
                 </div>
-                <h3 style="margin: 0;">用户协议</h3>
+                <div class="font-size-controls">
+                    <div class="font-size-btn-wrapper">
+                        <button class="font-size-btn" data-action="decrease">
+                            <span class="font-btn-icon">−</span>
+                        </button>
+                        <span class="font-btn-tooltip">减小字体</span>
+                    </div>
+                    <span class="font-size-display">16px</span>
+                    <div class="font-size-btn-wrapper">
+                        <button class="font-size-btn" data-action="increase">
+                            <span class="font-btn-icon">+</span>
+                        </button>
+                        <span class="font-btn-tooltip">增大字体</span>
+                    </div>
+                </div>
             </div>
-            <div id="termsContent"></div>
+            <div id="termsContent" class="agreement-content"></div>
             <div class="terms-modal-buttons">
                 <button class="alert-confirm" id="termsModalClose">关闭</button>
             </div>
@@ -1019,13 +1062,30 @@
 
     <div id="privacyModal" class="custom-alert">
         <div class="alert-content terms-modal-content">
-            <div style="display: flex; align-items: center; margin-bottom: 20px; padding-left: 20px; padding-top: 10px;">
-                <div class="alert-icon" style="margin-right: 15px;">
-                    <i class="fas fa-shield-alt"></i>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-left: 20px; padding-right: 20px; padding-top: 10px;">
+                <div style="display: flex; align-items: center;">
+                    <div class="alert-icon" style="margin-right: 15px;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 style="margin: 0;">隐私政策</h3>
                 </div>
-                <h3 style="margin: 0;">隐私政策</h3>
+                <div class="font-size-controls">
+                    <div class="font-size-btn-wrapper">
+                        <button class="font-size-btn" data-action="decrease">
+                            <span class="font-btn-icon">−</span>
+                        </button>
+                        <span class="font-btn-tooltip">减小字体</span>
+                    </div>
+                    <span class="font-size-display">16px</span>
+                    <div class="font-size-btn-wrapper">
+                        <button class="font-size-btn" data-action="increase">
+                            <span class="font-btn-icon">+</span>
+                        </button>
+                        <span class="font-btn-tooltip">增大字体</span>
+                    </div>
+                </div>
             </div>
-            <div id="privacyContent"></div>
+            <div id="privacyContent" class="agreement-content"></div>
             <div class="terms-modal-buttons">
                 <button class="alert-confirm" id="privacyModalClose">关闭</button>
             </div>
@@ -2424,10 +2484,17 @@
             setTimeout(function() {
                 versionHistoryModal.classList.add('show');
                 
-                // 显示默认提示文本
+                // 显示默认提示文本（包含等待图标）
                 var contentArea = document.querySelector('.terms-content');
                 if (contentArea) {
-                    contentArea.innerHTML = '<p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 50px 0;">请选择要查看的功能更新</p>';
+                    contentArea.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                            <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的功能更新</p>
+                        </div>
+                    `;
                 }
                 
                 // 重置导航项状态
@@ -2610,9 +2677,10 @@
         
         // 用户协议窗口返回顶部按钮
         document.getElementById('termsBackToTop').addEventListener('click', function() {
-            var termsContent = document.getElementById('termsContent');
-            if (termsContent) {
-                termsContent.scrollTo({
+            var termsModal = document.getElementById('termsModal');
+            var termsMain = termsModal.querySelector('.terms-main');
+            if (termsMain) {
+                termsMain.scrollTo({
                     top: 0,
                     behavior: 'smooth'
                 });
@@ -2668,6 +2736,57 @@
             if (e.target === this) {
                 document.getElementById('privacyModalClose').click();
             }
+        });
+        
+        // 字体大小调整功能
+        function setupFontSizeControls() {
+            var minFontSize = 12;
+            var maxFontSize = 24;
+            
+            // 获取所有字体大小控制按钮
+            var fontButtons = document.querySelectorAll('.font-size-btn');
+            
+            fontButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var action = this.getAttribute('data-action');
+                    var modal = this.closest('.custom-alert');
+                    var contentArea = modal.querySelector('.agreement-content');
+                    var display = modal.querySelector('.font-size-display');
+                    
+                    // 从当前显示获取字体大小
+                    var currentFontSize = parseInt(display.textContent);
+                    
+                    if (action === 'increase' && currentFontSize < maxFontSize) {
+                        currentFontSize += 2;
+                    } else if (action === 'decrease' && currentFontSize > minFontSize) {
+                        currentFontSize -= 2;
+                    }
+                    
+                    // 更新内容区域的字体大小
+                    if (contentArea) {
+                        contentArea.style.fontSize = currentFontSize + 'px';
+                    }
+                    
+                    // 更新模态框内所有文本的字体大小
+                    var textElements = modal.querySelectorAll('p, li, span, div');
+                    textElements.forEach(function(el) {
+                        // 排除字体大小控制区域
+                        if (!el.closest('.font-size-controls')) {
+                            el.style.fontSize = currentFontSize + 'px';
+                        }
+                    });
+                    
+                    // 更新显示
+                    if (display) {
+                        display.textContent = currentFontSize + 'px';
+                    }
+                });
+            });
+        }
+        
+        // 页面加载完成后初始化字体大小控制
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFontSizeControls();
         });
         
         document.querySelectorAll('.terms-nav-item').forEach(function(item) {

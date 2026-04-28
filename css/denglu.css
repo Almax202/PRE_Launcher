@@ -1765,6 +1765,38 @@ body.page-transition-in {
     max-height: calc(100vh - 200px);
 }
 
+/* 用户协议目录自定义滚动条 */
+.terms-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.terms-sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.terms-sidebar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.terms-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* 暗色模式下的自定义滚动条 */
+body.dark-mode .terms-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .terms-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .terms-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 .terms-nav-header {
     display: flex;
     justify-content: space-between;
@@ -1991,6 +2023,32 @@ body.dark-mode .sub-button {
 body.dark-mode .sub-button:hover {
     background: #667eea;
     color: white;
+}
+
+/* 子按钮内部布局 */
+.sub-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.button-text {
+    flex: 1;
+    text-align: left;
+}
+
+.viewing-tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-left: 10px;
+}
+
+body.dark-mode .viewing-tag {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 /* 版本图片样式 */
@@ -2355,15 +2413,16 @@ body.dark-mode .terms-main::-webkit-scrollbar-thumb {
 
 /* 图片查看器样式 */
 .image-viewer-content {
-    max-width: 1100px !important;
-    width: 90% !important;
-    height: 85vh;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     transform: scale(0.9);
     opacity: 0;
     transition: all 0.3s ease;
+    border-radius: 0;
 }
 
 #imageViewerModal.show .image-viewer-content {
@@ -2373,13 +2432,122 @@ body.dark-mode .terms-main::-webkit-scrollbar-thumb {
 
 .image-viewer-container {
     flex: 1;
-    margin: 20px;
+    margin: 0;
     text-align: center;
     overflow: auto;
     padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
+    border: none;
+    border-radius: 0;
     background: #f9f9f9;
+}
+
+/* 暗色模式下的图片查看器样式 */
+body.dark-mode .image-viewer-content {
+    background: rgba(30, 30, 50, 0.98);
+}
+
+body.dark-mode .image-viewer-container {
+    background: rgba(30, 30, 50, 0.98);
+}
+
+/* 协议内容字体样式 */
+.agreement-content {
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+/* 字体大小控制按钮样式 */
+.font-size-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f5f5f5;
+    padding: 4px;
+    border-radius: 20px;
+}
+
+.font-size-btn-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.font-size-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    color: #667eea;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.font-size-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+}
+
+.font-btn-icon {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.font-btn-tooltip {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.font-size-btn-wrapper:hover .font-btn-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.font-size-display {
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* 暗色模式下的字体大小控制按钮样式 */
+body.dark-mode .font-size-controls {
+    background: rgba(50, 50, 70, 0.8);
+}
+
+body.dark-mode .font-size-btn {
+    background: rgba(60, 60, 80, 0.9);
+    color: #667eea;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .font-size-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+body.dark-mode .font-size-display {
+    color: #ccc;
 }
 
 .terms-modal-buttons {
@@ -2466,6 +2634,47 @@ body.dark-mode .version-history-content::-webkit-scrollbar-thumb {
 
 body.dark-mode .version-history-content::-webkit-scrollbar-thumb:hover {
     background: #556cd6;
+}
+
+/* 版本选择提示文本样式 */
+.version-selection-hint {
+    color: #333;
+}
+
+body.dark-mode .version-selection-hint {
+    color: #fff;
+}
+
+/* 版本选择卡片样式 */
+.version-item {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.version-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .version-item {
+    background-color: rgba(50, 50, 70, 0.9);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .version-item:hover {
+    background-color: rgba(60, 60, 80, 0.95);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 版本日期范围和数量文本样式 */
+.version-date-range,
+.version-count {
+    color: #666;
+}
+
+body.dark-mode .version-date-range,
+body.dark-mode .version-count {
+    color: #ccc;
 }
 
 #apiUrlInput {
@@ -3149,6 +3358,42 @@ body.dark-mode .user-id {
     color: #999;
 }
 
+/* 暗色模式下的用户提示框样式 */
+body.dark-mode .user-tooltip {
+    background: rgba(30, 30, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .tooltip-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+body.dark-mode .tooltip-header i {
+    color: #667eea;
+}
+
+body.dark-mode .tooltip-label {
+    color: #999;
+}
+
+body.dark-mode .tooltip-value {
+    color: #e0e0e0;
+}
+
+body.dark-mode .tooltip-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .tooltip-link {
+    color: #667eea;
+}
+
+body.dark-mode .tooltip-link:hover {
+    color: #764ba2;
+}
+
 body.dark-mode .user-dropdown {
     background: rgba(30, 30, 50, 0.95);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
@@ -3512,7 +3757,7 @@ body.dark-mode .version-number {
 }
 
 body.dark-mode .version-date {
-    color: #999;
+    color: #ccc;
 }
 
 body.dark-mode .view-log-btn {
@@ -5062,6 +5307,18 @@ body.dark-mode .login-wrapper .login-container {
     opacity: 1;
     visibility: visible;
     top: -40px;
+}
+
+/* 暗色模式下的退出登录悬浮气泡样式 */
+body.dark-mode .logout-tooltip {
+    background: rgba(30, 30, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: #e0e0e0;
+}
+
+body.dark-mode .logout-tooltip::after {
+    border-top-color: rgba(30, 30, 50, 0.95);
 }
 
 /* 响应式设计 */

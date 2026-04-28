@@ -2644,6 +2644,9 @@
             color: white;
             max-width: 800px;
             width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-sizing: border-box;
         }
 
         .fortune-modal-header {
@@ -3392,6 +3395,70 @@
             color: #999;
         }
 
+        /* 暗色模式下的用户提示框样式 */
+        body.dark-mode .user-tooltip {
+            background: rgba(30, 30, 50, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .tooltip-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .tooltip-header i {
+            color: #667eea;
+        }
+
+        body.dark-mode .tooltip-label {
+            color: #999;
+        }
+
+        body.dark-mode .tooltip-value {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .user-center:hover .user-tooltip {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .tooltip-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #999;
+        }
+
+        /* 暗色模式下的退出登录悬浮气泡样式 */
+        body.dark-mode .logout-tooltip {
+            background: rgba(30, 30, 50, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .logout-tooltip::after {
+            border-top-color: rgba(30, 30, 50, 0.95);
+        }
+
+        /* 暗色模式下的签到规则样式 */
+        body.dark-mode .checkin-rules {
+            background: rgba(30, 30, 50, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .checkin-rules h4 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .checkin-rules li {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .checkin-rules li strong {
+            color: #667eea;
+        }
+
         body.dark-mode .settings-header {
             background: rgba(30, 30, 50, 0.8);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -3815,4 +3882,123 @@
 
         body.dark-mode .month-end-alert {
             color: #ff6b6b;
+        }
+
+        /* 运势弹窗自定义滚动条样式 */
+        .fortune-modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .fortune-modal-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .fortune-modal-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .fortune-modal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 暗色模式下的运势弹窗滚动条 */
+        body.dark-mode .fortune-modal-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .fortune-modal-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .fortune-modal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 运势弹窗响应式设计 */
+        @media (max-width: 768px) {
+            .fortune-modal-content {
+                width: 95%;
+                max-height: 90vh;
+                padding: 20px;
+            }
+
+            .fortune-modal-header h3 {
+                font-size: 22px;
+            }
+
+            .fortune-modal-header i {
+                font-size: 24px;
+            }
+
+            .fortune-icon-large {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+
+            .fortune-title {
+                font-size: 20px;
+            }
+
+            .fortune-details {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .fortune-detail-item {
+                padding: 12px;
+            }
+
+            .detail-label {
+                font-size: 13px;
+            }
+
+            .detail-value {
+                font-size: 14px;
+            }
+
+            .fortune-overview {
+                padding: 15px;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .fortune-modal-content {
+                width: 98%;
+                max-height: 92vh;
+                padding: 15px;
+            }
+
+            .fortune-modal-header h3 {
+                font-size: 18px;
+            }
+
+            .fortune-modal-header i {
+                font-size: 20px;
+            }
+
+            .fortune-icon-large {
+                width: 50px;
+                height: 50px;
+                font-size: 25px;
+            }
+
+            .fortune-title {
+                font-size: 18px;
+            }
+
+            .fortune-detail-item {
+                padding: 10px;
+            }
+
+            .detail-label {
+                font-size: 12px;
+            }
+
+            .detail-value {
+                font-size: 13px;
+            }
         }
