@@ -274,28 +274,51 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="form-group">
-                                <label>用户名</label>
-                                <div class="form-input-group">
-                                    <input type="text" id="accountUsername" readonly>
-                                    <button class="edit-btn" id="editUsernameBtn">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-user" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">用户名</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="text" id="accountUsername" readonly style="width: 150px;">
+                                    <button class="two-factor-btn" id="editUsernameBtn" style="padding: 6px 12px;">
                                         <i class="fas fa-edit"></i>
+                                        编辑
                                     </button>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>用户ID</label>
-                                <div class="form-input-group">
-                                    <input type="text" id="accountUid" readonly>
-                                    <button class="copy-btn" id="copyUidBtn">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-hashtag" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">用户ID</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="text" id="accountUid" readonly style="width: 150px;">
+                                    <button class="two-factor-btn" id="copyUidBtn" style="padding: 6px 12px;">
                                         <i class="fas fa-copy"></i>
+                                        复制
                                     </button>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>注册时间</label>
-                                <div class="form-input-group">
-                                    <input type="text" id="accountRegTime" readonly>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-calendar" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">注册时间</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="text" id="accountRegTime" readonly style="width: 150px;">
                                 </div>
                             </div>
                         </div>
@@ -312,15 +335,28 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="form-group">
-                                <label>个性签名</label>
-                                <textarea id="accountBio" maxlength="100" placeholder="写点什么..."></textarea>
-                                <div class="char-count"><span id="bioCount">0</span>/100</div>
+                            <div class="two-factor-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                                <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-pencil-alt" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                    <h4 style="margin: 0;">个性签名</h4>
+                                </div>
+                                <textarea id="accountBio" maxlength="100" placeholder="写点什么..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; resize: none; min-height: 80px;"></textarea>
+                                <div class="char-count" style="text-align: right;"><span id="bioCount">0</span>/100</div>
                             </div>
-                            <button class="submit-btn" id="saveProfileBtn">
-                                <i class="fas fa-save"></i>
-                                保存个性签名
-                            </button>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-save" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">保存个性签名</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="two-factor-btn" id="saveProfileBtn">
+                                    <i class="fas fa-save"></i>
+                                    保存
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -335,7 +371,11 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="form-group">
+                            <div class="two-factor-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                                <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-portrait" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                    <h4 style="margin: 0;">选择头像</h4>
+                                </div>
                                 <div class="avatar-selection">
                                     <div class="avatar-option selected" data-avatar="user">
                                         <i class="fas fa-user"></i>
@@ -359,17 +399,37 @@
                                         <i class="fas fa-upload"></i>
                                     </div>
                                 </div>
-                                <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
-                                <button class="upload-avatar-btn" id="uploadAvatarBtn">
-                                    <i class="fas fa-camera"></i>
-                                    上传自定义头像
-                                </button>
-                                <div class="avatar-size-hint">支持 JPG、PNG 格式，最大 2MB</div>
                             </div>
-                            <button class="submit-btn" id="saveAvatarBtn">
-                                <i class="fas fa-save"></i>
-                                保存头像设置
-                            </button>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-upload" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">上传自定义头像</h4>
+                                            <p style="margin: 0; font-size: 13px; color: #666;">支持 JPG、PNG 格式，最大 2MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                                <button class="two-factor-btn" id="uploadAvatarBtn">
+                                    <i class="fas fa-camera"></i>
+                                    上传
+                                </button>
+                            </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-save" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">保存头像设置</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="two-factor-btn" id="saveAvatarBtn">
+                                    <i class="fas fa-save"></i>
+                                    保存
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -384,32 +444,46 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="form-group">
-                                <label>邮箱地址</label>
-                                <div class="form-input-group">
-                                    <input type="email" id="accountEmail" placeholder="未绑定" readonly>
-                                    <button class="action-btn" id="bindEmailBtn">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-envelope" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">邮箱地址</h4>
+                                            <div class="verification-status" id="emailVerificationStatus" style="display: none;">
+                                                <i class="fas fa-check-circle"></i>
+                                                <span>已验证</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="email" id="accountEmail" placeholder="未绑定" readonly style="width: 150px;">
+                                    <button class="two-factor-btn" id="bindEmailBtn" style="padding: 6px 12px;">
                                         <i class="fas fa-plus"></i>
                                         <span id="bindEmailBtnText">绑定</span>
                                     </button>
                                 </div>
-                                <div class="verification-status" id="emailVerificationStatus" style="display: none;">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>已验证</span>
-                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>手机号码</label>
-                                <div class="form-input-group">
-                                    <input type="tel" id="accountPhone" placeholder="未绑定" readonly>
-                                    <button class="action-btn" id="bindPhoneBtn">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-phone" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">手机号码</h4>
+                                            <div class="verification-status" id="phoneVerificationStatus" style="display: none;">
+                                                <i class="fas fa-check-circle"></i>
+                                                <span>已验证</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="tel" id="accountPhone" placeholder="未绑定" readonly style="width: 150px;">
+                                    <button class="two-factor-btn" id="bindPhoneBtn" style="padding: 6px 12px;">
                                         <i class="fas fa-plus"></i>
                                         <span id="bindPhoneBtnText">绑定</span>
                                     </button>
-                                </div>
-                                <div class="verification-status" id="phoneVerificationStatus" style="display: none;">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>已验证</span>
                                 </div>
                             </div>
                         </div>
@@ -428,16 +502,24 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="form-group">
-                                <label>当前密码</label>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <h4>当前密码</h4>
+                                </div>
                                 <div class="form-input-group">
-                                    <input type="password" id="currentPassword" placeholder="请输入当前密码">
+                                    <input type="password" id="currentPassword" placeholder="请输入当前密码" style="width: 150px;">
                                 </div>
                             </div>
-                            <button class="submit-btn" id="verifyPasswordBtn">
-                                <i class="fas fa-lock"></i>
-                                验证密码
-                            </button>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <h4>验证密码</h4>
+                                    <p>验证后可修改密码</p>
+                                </div>
+                                <button class="two-factor-btn" id="verifyPasswordBtn">
+                                    <i class="fas fa-lock"></i>
+                                    <span>验证</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -452,8 +534,8 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>启用两步验证</h4>
                                     <p>登录时需要额外的验证码</p>
                                 </div>
@@ -462,15 +544,27 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="two-factor-actions" id="twoFactorActions" style="margin-top: 20px; display: none;">
-                                <button class="submit-btn" id="changeTwoFactorPinBtn" style="margin-bottom: 10px;">
-                                    <i class="fas fa-key"></i>
-                                    更改PIN码
-                                </button>
-                                <button class="submit-btn" id="updateSecurityQuestionsBtn">
-                                    <i class="fas fa-question-circle"></i>
-                                    更新安全问题
-                                </button>
+                            <div class="two-factor-actions" id="twoFactorActions" style="display: none;">
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <h4>更改PIN码</h4>
+                                        <p>修改您的两步验证PIN码</p>
+                                    </div>
+                                    <button class="two-factor-btn" id="changeTwoFactorPinBtn">
+                                        <i class="fas fa-key"></i>
+                                        更改
+                                    </button>
+                                </div>
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <h4>更新安全问题</h4>
+                                        <p>修改您的安全问题和答案</p>
+                                    </div>
+                                    <button class="two-factor-btn" id="updateSecurityQuestionsBtn">
+                                        <i class="fas fa-question-circle"></i>
+                                        更新
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -490,8 +584,8 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>公开个人资料</h4>
                                     <p>所有用户都可以查看您的资料</p>
                                 </div>
@@ -500,8 +594,8 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>显示在线状态</h4>
                                     <p>其他用户可以看到您是否在线</p>
                                 </div>
@@ -510,8 +604,8 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>允许好友请求</h4>
                                     <p>其他用户可以向您发送好友请求</p>
                                 </div>
@@ -534,8 +628,8 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>接收陌生人消息</h4>
                                     <p>非好友用户可以向您发送消息</p>
                                 </div>
@@ -544,8 +638,8 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>显示已读回执</h4>
                                     <p>发送者可以看到您是否已读消息</p>
                                 </div>
@@ -821,8 +915,8 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>系统通知</h4>
                                     <p>接收系统重要通知和更新</p>
                                 </div>
@@ -831,8 +925,8 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>游戏通知</h4>
                                     <p>接收游戏相关通知和活动</p>
                                 </div>
@@ -841,8 +935,8 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>活动通知</h4>
                                     <p>接收活动和促销信息</p>
                                 </div>
@@ -851,8 +945,8 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>营销通知</h4>
                                     <p>接收产品推广和优惠信息</p>
                                 </div>
@@ -875,20 +969,34 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="volume-item">
-                                <label>通知音量</label>
-                                <input type="range" min="0" max="100" value="80" id="notificationVolume">
-                                <span class="volume-value">80%</span>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <h4>通知音量</h4>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                    <input type="range" min="0" max="100" value="80" id="notificationVolume" style="flex: 1;">
+                                    <span style="width: 40px; text-align: right;">80%</span>
+                                </div>
                             </div>
-                            <div class="volume-item">
-                                <label>消息音效</label>
-                                <input type="range" min="0" max="100" value="60" id="messageVolume">
-                                <span class="volume-value">60%</span>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <h4>消息音效</h4>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                    <input type="range" min="0" max="100" value="60" id="messageVolume" style="flex: 1;">
+                                    <span style="width: 40px; text-align: right;">60%</span>
+                                </div>
                             </div>
-                            <button class="submit-btn" id="saveSoundBtn">
-                                <i class="fas fa-save"></i>
-                                保存声音设置
-                            </button>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <h4>保存声音设置</h4>
+                                    <p>保存当前的声音设置</p>
+                                </div>
+                                <button class="two-factor-btn" id="saveSoundBtn">
+                                    <i class="fas fa-save"></i>
+                                    <span>保存</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -906,36 +1014,32 @@
                         </div>
                         <div class="card-content">
                             <div class="devices-list" id="devicesList">
-                                <div class="device-item current">
-                                    <div class="device-icon">
-                                        <i class="fas fa-laptop"></i>
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-laptop" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4>Windows PC</h4>
+                                                <p>Chrome 浏览器 - 当前会话 - 北京, 中国</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="device-info">
-                                        <div class="device-name">Windows PC</div>
-                                        <div class="device-browser">Chrome 浏览器</div>
-                                        <div class="device-time">当前会话</div>
-                                        <div class="device-location">北京, 中国</div>
-                                    </div>
-                                    <div class="device-status">
-                                        <span class="status-badge current">当前设备</span>
-                                    </div>
+                                    <span class="status-badge current" style="padding: 4px 10px; background: #4CAF50; color: white; border-radius: 12px; font-size: 12px;">当前设备</span>
                                 </div>
-                                <div class="device-item">
-                                    <div class="device-icon">
-                                        <i class="fas fa-mobile-alt"></i>
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-mobile-alt" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4>iPhone 15</h4>
+                                                <p>Safari 浏览器 - 3天前 - 上海, 中国</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="device-info">
-                                        <div class="device-name">iPhone 15</div>
-                                        <div class="device-browser">Safari 浏览器</div>
-                                        <div class="device-time">3天前</div>
-                                        <div class="device-location">上海, 中国</div>
-                                    </div>
-                                    <div class="device-actions">
-                                        <button class="action-btn small danger">
-                                            <i class="fas fa-sign-out-alt"></i>
-                                            退出
-                                        </button>
-                                    </div>
+                                    <button class="two-factor-btn" style="padding: 6px 12px; background: #e74c3c;">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>退出</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -993,8 +1097,8 @@
                                 </div>
                             </div>
                             
-                            <div class="toggle-item">
-                                <div class="toggle-info">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
                                     <h4>启用硬件GPU加速</h4>
                                     <p>启用后将使用GPU进行页面渲染，提升性能</p>
                                 </div>
@@ -1007,43 +1111,70 @@
                             <div class="custom-theme-panel" id="customThemePanel" style="display: none;">
                                 <div class="custom-theme-section">
                                     <h4>颜色设置</h4>
-                                    <div class="color-mode-toggle">
-                                        <button class="color-mode-btn active" data-mode="rgb">RGB模式</button>
-                                        <button class="color-mode-btn" data-mode="palette">调色盘</button>
-                                    </div>
-                                    
-                                    <div class="rgb-controls" id="rgbControls">
-                                        <div class="rgb-slider-group">
-                                            <label>红色 (R)</label>
-                                            <input type="range" id="redSlider" min="0" max="255" value="255">
-                                            <span id="redValue">255</span>
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-palette" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                            <h4 style="margin: 0;">选择颜色模式</h4>
                                         </div>
-                                        <div class="rgb-slider-group">
-                                            <label>绿色 (G)</label>
-                                            <input type="range" id="greenSlider" min="0" max="255" value="255">
-                                            <span id="greenValue">255</span>
-                                        </div>
-                                        <div class="rgb-slider-group">
-                                            <label>蓝色 (B)</label>
-                                            <input type="range" id="blueSlider" min="0" max="255" value="255">
-                                            <span id="blueValue">255</span>
+                                        <div class="color-mode-toggle">
+                                            <button class="color-mode-btn active" data-mode="rgb">RGB模式</button>
+                                            <button class="color-mode-btn" data-mode="palette">调色盘</button>
                                         </div>
                                     </div>
                                     
-                                    <div class="palette-controls" id="paletteControls" style="display: none;">
-                                        <div class="color-palette">
-                                            <div class="color-swatch" data-color="#FF6B6B" style="background: #FF6B6B;"></div>
-                                            <div class="color-swatch" data-color="#4ECDC4" style="background: #4ECDC4;"></div>
-                                            <div class="color-swatch" data-color="#45B7D1" style="background: #45B7D1;"></div>
-                                            <div class="color-swatch" data-color="#96CEB4" style="background: #96CEB4;"></div>
-                                            <div class="color-swatch" data-color="#FFEAA7" style="background: #FFEAA7;"></div>
-                                            <div class="color-swatch" data-color="#DDA0DD" style="background: #DDA0DD;"></div>
-                                            <div class="color-swatch" data-color="#98D8C8" style="background: #98D8C8;"></div>
-                                            <div class="color-swatch" data-color="#F7DC6F" style="background: #F7DC6F;"></div>
-                                            <div class="color-swatch" data-color="#BB8FCE" style="background: #BB8FCE;"></div>
-                                            <div class="color-swatch" data-color="#85C1E9" style="background: #85C1E9;"></div>
-                                            <div class="color-swatch" data-color="#F8B739" style="background: #F8B739;"></div>
-                                            <div class="color-swatch" data-color="#52BE80" style="background: #52BE80;"></div>
+                                    <div id="rgbControls">
+                                        <div class="two-factor-item">
+                                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                                <i class="fas fa-square" style="color: #e74c3c; font-size: 18px; flex-shrink: 0;"></i>
+                                                <h4 style="margin: 0;">红色 (R)</h4>
+                                            </div>
+                                            <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                                <input type="range" id="redSlider" min="0" max="255" value="255">
+                                                <span id="redValue">255</span>
+                                            </div>
+                                        </div>
+                                        <div class="two-factor-item">
+                                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                                <i class="fas fa-square" style="color: #27ae60; font-size: 18px; flex-shrink: 0;"></i>
+                                                <h4 style="margin: 0;">绿色 (G)</h4>
+                                            </div>
+                                            <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                                <input type="range" id="greenSlider" min="0" max="255" value="255">
+                                                <span id="greenValue">255</span>
+                                            </div>
+                                        </div>
+                                        <div class="two-factor-item">
+                                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                                <i class="fas fa-square" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                                <h4 style="margin: 0;">蓝色 (B)</h4>
+                                            </div>
+                                            <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                                <input type="range" id="blueSlider" min="0" max="255" value="255">
+                                                <span id="blueValue">255</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="paletteControls" style="display: none;">
+                                        <div class="two-factor-item">
+                                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                                <i class="fas fa-paint-brush" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                                <h4 style="margin: 0;">选择颜色</h4>
+                                            </div>
+                                            <div class="color-palette">
+                                                <div class="color-swatch" data-color="#FF6B6B" style="background: #FF6B6B;"></div>
+                                                <div class="color-swatch" data-color="#4ECDC4" style="background: #4ECDC4;"></div>
+                                                <div class="color-swatch" data-color="#45B7D1" style="background: #45B7D1;"></div>
+                                                <div class="color-swatch" data-color="#96CEB4" style="background: #96CEB4;"></div>
+                                                <div class="color-swatch" data-color="#FFEAA7" style="background: #FFEAA7;"></div>
+                                                <div class="color-swatch" data-color="#DDA0DD" style="background: #DDA0DD;"></div>
+                                                <div class="color-swatch" data-color="#98D8C8" style="background: #98D8C8;"></div>
+                                                <div class="color-swatch" data-color="#F7DC6F" style="background: #F7DC6F;"></div>
+                                                <div class="color-swatch" data-color="#BB8FCE" style="background: #BB8FCE;"></div>
+                                                <div class="color-swatch" data-color="#85C1E9" style="background: #85C1E9;"></div>
+                                                <div class="color-swatch" data-color="#F8B739" style="background: #F8B739;"></div>
+                                                <div class="color-swatch" data-color="#52BE80" style="background: #52BE80;"></div>
+                                            </div>
                                         </div>
                                         <div class="custom-color-input">
                                             <label>自定义颜色</label>
@@ -1054,20 +1185,33 @@
                                 
                                 <div class="custom-theme-section">
                                     <h4>界面设置</h4>
-                                    <div class="slider-group">
-                                        <label>透明度</label>
-                                        <input type="range" id="opacitySlider" min="0.5" max="1" step="0.05" value="1">
-                                        <span id="opacityValue">100%</span>
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-eye" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                            <h4 style="margin: 0;">透明度</h4>
+                                        </div>
+                                        <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                            <input type="range" id="opacitySlider" min="0.5" max="1" step="0.05" value="1">
+                                            <span id="opacityValue">100%</span>
+                                        </div>
                                     </div>
-                                    <div class="slider-group">
-                                        <label>对比度</label>
-                                        <input type="range" id="contrastSlider" min="0.8" max="1.5" step="0.1" value="1">
-                                        <span id="contrastValue">100%</span>
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-adjust" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                            <h4 style="margin: 0;">对比度</h4>
+                                        </div>
+                                        <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                            <input type="range" id="contrastSlider" min="0.8" max="1.5" step="0.1" value="1">
+                                            <span id="contrastValue">100%</span>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div class="theme-preview">
-                                    <h4>预览</h4>
+                                <div class="two-factor-item" style="flex-direction: column; align-items: stretch; gap: 15px;">
+                                    <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                        <i class="fas fa-eye" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                        <h4 style="margin: 0;">预览</h4>
+                                    </div>
                                     <div class="preview-box" id="themePreviewBox">
                                         <div class="preview-content">
                                             <h3>示例文本</h3>
@@ -1077,30 +1221,51 @@
                                     </div>
                                 </div>
                                 
-                                <div class="theme-actions">
-                                    <button class="action-btn" id="applyCustomTheme">
-                                        <i class="fas fa-check"></i>
-                                        应用主题
-                                    </button>
-                                    <button class="action-btn secondary" id="resetCustomTheme">
-                                        <i class="fas fa-undo"></i>
-                                        重置
-                                    </button>
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                            <i class="fas fa-paintbrush" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4 style="margin: 0;">应用主题</h4>
+                                            </div>
+                                        </div>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">保存并应用当前主题设置</p>
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button class="two-factor-btn" id="applyCustomTheme">
+                                            <i class="fas fa-check"></i>
+                                            应用
+                                        </button>
+                                        <button class="two-factor-btn secondary" id="resetCustomTheme">
+                                            <i class="fas fa-undo"></i>
+                                            重置
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="glass-theme-panel" id="glassThemePanel" style="display: none;">
                                 <div class="glass-theme-section">
                                     <h4>毛玻璃效果设置</h4>
-                                    <div class="slider-group">
-                                        <label>透明度</label>
-                                        <input type="range" id="glassOpacitySlider" min="0.1" max="0.5" step="0.05" value="0.2">
-                                        <span id="glassOpacityValue">20%</span>
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-eye" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                            <h4 style="margin: 0;">透明度</h4>
+                                        </div>
+                                        <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                            <input type="range" id="glassOpacitySlider" min="0.1" max="0.5" step="0.05" value="0.2">
+                                            <span id="glassOpacityValue">20%</span>
+                                        </div>
                                     </div>
-                                    <div class="slider-group">
-                                        <label>模糊程度</label>
-                                        <input type="range" id="glassBlurSlider" min="5" max="20" step="1" value="10">
-                                        <span id="glassBlurValue">10px</span>
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-cloud" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                            <h4 style="margin: 0;">模糊程度</h4>
+                                        </div>
+                                        <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                            <input type="range" id="glassBlurSlider" min="5" max="20" step="1" value="10">
+                                            <span id="glassBlurValue">10px</span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1143,61 +1308,94 @@
                         </div>
                         <div class="card-content">
                             <div class="custom-background-section">
-                                <div class="form-group">
-                                    <label>上传背景图片</label>
-                                    <div class="background-upload">
-                                        <input type="file" id="backgroundUpload" accept="image/*" style="display: none;">
-                                        <button class="upload-background-btn" id="uploadBackgroundBtn">
-                                            <i class="fas fa-upload"></i>
-                                            选择图片
-                                        </button>
-                                        <div class="background-size-hint">支持 JPG、PNG 格式，最大 100MB</div>
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                            <i class="fas fa-image" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4 style="margin: 0;">上传背景图片</h4>
+                                            </div>
+                                        </div>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">支持 JPG、PNG 格式，最大 100MB</p>
                                     </div>
-                                    <div class="background-preview" id="backgroundPreview">
-                                        <div class="preview-placeholder">
-                                            <i class="fas fa-image"></i>
-                                            <span>预览</span>
+                                    <input type="file" id="backgroundUpload" accept="image/*" style="display: none;">
+                                    <button class="two-factor-btn" id="uploadBackgroundBtn">
+                                        <i class="fas fa-upload"></i>
+                                        选择图片
+                                    </button>
+                                </div>
+                                <div class="background-preview" id="backgroundPreview">
+                                    <div class="preview-placeholder">
+                                        <i class="fas fa-image"></i>
+                                        <span>预览</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                        <i class="fas fa-expand-arrows-alt" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                        <h4 style="margin: 0;">自适应方式</h4>
+                                    </div>
+                                    <select id="backgroundFit" class="two-factor-select">
+                                        <option value="cover">拉伸覆盖</option>
+                                        <option value="contain">等比缩放</option>
+                                        <option value="fill">拉伸填充</option>
+                                        <option value="repeat">平铺</option>
+                                        <option value="center">居中</option>
+                                        <option value="content">内容区域适配</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                            <i class="fas fa-eye" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4 style="margin: 0;">不透明度</h4>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>自适应方式</label>
-                                    <select id="backgroundFit">
-                                <option value="cover">拉伸覆盖</option>
-                                <option value="contain">等比缩放</option>
-                                <option value="fill">拉伸填充</option>
-                                <option value="repeat">平铺</option>
-                                <option value="center">居中</option>
-                                <option value="content">内容区域适配</option>
-                            </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>不透明度</label>
-                                    <div class="slider-group">
+                                    <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
                                         <input type="range" id="backgroundOpacity" min="0.1" max="1" step="0.1" value="1">
                                         <span id="opacityValue">100%</span>
                                     </div>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label>背景模糊</label>
-                                    <div class="slider-group">
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                            <i class="fas fa-cloud" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4 style="margin: 0;">背景模糊</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
                                         <input type="range" id="backgroundBlur" min="0" max="20" step="1" value="0">
                                         <span id="blurValue">0px</span>
                                     </div>
                                 </div>
                                 
-                                <div class="background-actions">
-                                    <button class="action-btn" id="applyBackground">
-                                        <i class="fas fa-check"></i>
-                                        应用背景
-                                    </button>
-                                    <button class="action-btn secondary" id="resetBackground">
-                                        <i class="fas fa-undo"></i>
-                                        重置背景
-                                    </button>
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                            <i class="fas fa-paintbrush" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4 style="margin: 0;">应用背景</h4>
+                                            </div>
+                                        </div>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">保存并应用当前背景设置</p>
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button class="two-factor-btn" id="applyBackground">
+                                            <i class="fas fa-check"></i>
+                                            应用
+                                        </button>
+                                        <button class="two-factor-btn secondary" id="resetBackground">
+                                            <i class="fas fa-undo"></i>
+                                            重置
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1214,9 +1412,12 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="language-selection">
-                                <label>界面语言</label>
-                                <select id="languageSelect">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-globe" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                    <h4 style="margin: 0;">界面语言</h4>
+                                </div>
+                                <select id="languageSelect" class="two-factor-select">
                                     <option value="zh">中文</option>
                                     <option value="en">English</option>
                                     <option value="ja">日本語</option>
@@ -1239,41 +1440,47 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="data-item">
-                                <div class="data-icon">
-                                    <i class="fas fa-download"></i>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-download" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">导出数据</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">下载您的账户数据副本</p>
                                 </div>
-                                <div class="data-info">
-                                    <h4>导出数据</h4>
-                                    <p>下载您的账户数据副本</p>
-                                </div>
-                                <button class="action-btn" id="exportDataBtn">
+                                <button class="two-factor-btn" id="exportDataBtn">
                                     <i class="fas fa-download"></i>
                                     导出
                                 </button>
                             </div>
-                            <div class="data-item">
-                                <div class="data-icon">
-                                    <i class="fas fa-upload"></i>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-upload" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">导入数据</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">从之前导出的数据文件恢复</p>
                                 </div>
-                                <div class="data-info">
-                                    <h4>导入数据</h4>
-                                    <p>从之前导出的数据文件恢复</p>
-                                </div>
-                                <button class="action-btn" id="importDataBtn">
+                                <button class="two-factor-btn" id="importDataBtn">
                                     <i class="fas fa-upload"></i>
                                     导入
                                 </button>
                             </div>
-                            <div class="data-item">
-                                <div class="data-icon">
-                                    <i class="fas fa-trash-alt"></i>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-trash-alt" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">清除缓存</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">清除本地缓存数据</p>
                                 </div>
-                                <div class="data-info">
-                                    <h4>清除缓存</h4>
-                                    <p>清除本地缓存数据</p>
-                                </div>
-                                <button class="action-btn" id="clearCacheBtn">
+                                <button class="two-factor-btn" id="clearCacheBtn">
                                     <i class="fas fa-trash-alt"></i>
                                     清除
                                 </button>
@@ -1292,69 +1499,64 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="danger-item">
-                                <div class="danger-icon">
-                                    <i class="fas fa-user-slash"></i>
+                            <div class="two-factor-item danger-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-user-slash" style="color: #e53e3e; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">注销账户</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">永久删除您的账户和所有数据</p>
                                 </div>
-                                <div class="danger-info">
-                                    <h4>注销账户</h4>
-                                    <p>永久删除您的账户和所有数据</p>
-                                </div>
-                                <button class="action-btn danger" id="deleteAccountBtn">
+                                <button class="two-factor-btn danger" id="deleteAccountBtn">
                                     <i class="fas fa-trash-alt"></i>
                                     注销账户
                                 </button>
                             </div>
-                            <div class="danger-item">
-                                <div class="danger-icon">
-                                    <i class="fas fa-sign-out-alt"></i>
+                            <div class="two-factor-item danger-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-sign-out-alt" style="color: #e53e3e; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">退出登录</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">退出当前账户</p>
                                 </div>
-                                <div class="danger-info">
-                                    <h4>退出登录</h4>
-                                    <p>退出当前账户</p>
-                                </div>
-                                <button class="action-btn danger" id="logoutBtn">
+                                <button class="two-factor-btn danger" id="logoutBtn">
                                     <i class="fas fa-sign-out-alt"></i>
                                     退出登录
                                 </button>
                             </div>
-                            <div class="danger-item">
-                                <div class="danger-icon">
-                                    <i class="fas fa-undo"></i>
+                            <div class="two-factor-item danger-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-undo" style="color: #e53e3e; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">重置所有设置</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">将所有设置恢复到默认状态</p>
                                 </div>
-                                <div class="danger-info">
-                                    <h4>重置所有设置</h4>
-                                    <p>将所有设置恢复到默认状态</p>
-                                </div>
-                                <button class="action-btn danger" id="resetSettingsBtn">
+                                <button class="two-factor-btn danger" id="resetSettingsBtn">
                                     <i class="fas fa-undo"></i>
                                     重置所有设置
                                 </button>
                             </div>
-                            <div class="danger-item">
-                                <div class="danger-icon">
-                                    <i class="fas fa-code"></i>
+                            <div class="two-factor-item danger-item" id="devModeItem">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-code" style="color: #e53e3e; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;" id="devModeTitle">开发者模式</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;" id="devModeDesc">进入开发者模式以使用高级功能</p>
                                 </div>
-                                <div class="danger-info">
-                                    <h4>开发者模式</h4>
-                                    <p>进入开发者模式以使用高级功能</p>
-                                </div>
-                                <button class="action-btn danger" id="enterDevModeBtn">
-                                    <i class="fas fa-code"></i>
-                                    进入开发者模式
-                                </button>
-                            </div>
-                            <div class="danger-item" id="exitDevModeItem" style="display: none;">
-                                <div class="danger-icon">
-                                    <i class="fas fa-power-off"></i>
-                                </div>
-                                <div class="danger-info">
-                                    <h4>退出开发者模式</h4>
-                                    <p>退出开发者模式将禁用高级功能</p>
-                                </div>
-                                <button class="action-btn danger" id="exitDevModeBtn">
-                                    <i class="fas fa-power-off"></i>
-                                    退出开发者模式
+                                <button class="two-factor-btn danger" id="devModeBtn">
+                                    <i class="fas fa-code" id="devModeIcon"></i>
+                                    <span id="devModeBtnText">进入开发者模式</span>
                                 </button>
                             </div>
                         </div>

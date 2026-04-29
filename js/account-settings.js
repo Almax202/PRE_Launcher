@@ -91,15 +91,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleBtn.style.display = 'flex';
             }
             
-            var enterDevModeBtn = document.getElementById('enterDevModeBtn');
-            if (enterDevModeBtn) {
-                enterDevModeBtn.style.display = 'none';
-            }
+            var devModeTitle = document.getElementById('devModeTitle');
+            var devModeDesc = document.getElementById('devModeDesc');
+            var devModeIcon = document.getElementById('devModeIcon');
+            var devModeBtnText = document.getElementById('devModeBtnText');
             
-            var exitDevModeItem = document.getElementById('exitDevModeItem');
-            if (exitDevModeItem) {
-                exitDevModeItem.style.display = 'flex';
-            }
+            if (devModeTitle) devModeTitle.textContent = '退出开发者模式';
+            if (devModeDesc) devModeDesc.textContent = '退出开发者模式将禁用高级功能';
+            if (devModeIcon) devModeIcon.className = 'fas fa-power-off';
+            if (devModeBtnText) devModeBtnText.textContent = '退出开发者模式';
             
             var testPageButton = document.getElementById('testPageButton');
             if (testPageButton) {
@@ -111,15 +111,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleBtn.style.display = 'none';
             }
             
-            var enterDevModeBtn = document.getElementById('enterDevModeBtn');
-            if (enterDevModeBtn) {
-                enterDevModeBtn.style.display = 'flex';
-            }
+            var devModeTitle = document.getElementById('devModeTitle');
+            var devModeDesc = document.getElementById('devModeDesc');
+            var devModeIcon = document.getElementById('devModeIcon');
+            var devModeBtnText = document.getElementById('devModeBtnText');
             
-            var exitDevModeItem = document.getElementById('exitDevModeItem');
-            if (exitDevModeItem) {
-                exitDevModeItem.style.display = 'none';
-            }
+            if (devModeTitle) devModeTitle.textContent = '开发者模式';
+            if (devModeDesc) devModeDesc.textContent = '进入开发者模式以使用高级功能';
+            if (devModeIcon) devModeIcon.className = 'fas fa-code';
+            if (devModeBtnText) devModeBtnText.textContent = '进入开发者模式';
             
             var testPageButton = document.getElementById('testPageButton');
             if (testPageButton) {
@@ -277,8 +277,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateSecurityQuestions();
         });
         
-        // 初始化两步验证状态
-        var twoFactorEnabled = localStorage.getItem('twoFactorAuth') !== null;
+        // 初始化两步验证状态（按用户隔离）
+        var twoFactorEnabled = currentUser.twoFactorAuth && currentUser.twoFactorAuth.enabled;
         document.getElementById('twoFactorAuth').checked = twoFactorEnabled;
         if (twoFactorEnabled) {
             document.getElementById('twoFactorActions').style.display = 'block';
@@ -568,8 +568,12 @@ document.addEventListener('DOMContentLoaded', function() {
             showResetSettingsConfirmModal();
         });
         
-        document.getElementById('enterDevModeBtn').addEventListener('click', function() {
-            showDevModeConfirmModal();
+        document.getElementById('devModeBtn').addEventListener('click', function() {
+            if (isDevModeEnabled()) {
+                showExitDevModeConfirmModal();
+            } else {
+                showDevModeConfirmModal();
+            }
         });
         
         document.getElementById('devModeConfirmCancel').addEventListener('click', function() {
@@ -621,9 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        document.getElementById('exitDevModeBtn').addEventListener('click', function() {
-            showExitDevModeConfirmModal();
-        });
+
         
         document.getElementById('exitDevModeCancel').addEventListener('click', function() {
             hideExitDevModeConfirmModal();
@@ -1209,9 +1211,9 @@ document.addEventListener('DOMContentLoaded', function() {
         resetTwoFactorCheckbox();
     }
     
-    // 重置两步验证复选框状态
+    // 重置两步验证复选框状态（按用户隔离）
     function resetTwoFactorCheckbox() {
-        var twoFactorEnabled = localStorage.getItem('twoFactorAuth') !== null;
+        var twoFactorEnabled = currentUser.twoFactorAuth && currentUser.twoFactorAuth.enabled;
         document.getElementById('twoFactorAuth').checked = twoFactorEnabled;
     }
     
@@ -1428,19 +1430,31 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 保存两步验证信息
-        localStorage.setItem('twoFactorAuth', pin);
+        // 保存两步验证信息到用户对象
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var userIndex = users.findIndex(function(u) {
+            return u.username === currentUser.username;
+        });
         
-        // 保存安全问题
-        var securityQuestions = {
-            question1: question1,
-            answer1: answer1,
-            question2: question2,
-            answer2: answer2,
-            question3: question3,
-            answer3: answer3
-        };
-        localStorage.setItem('securityQuestions', JSON.stringify(securityQuestions));
+        if (userIndex !== -1) {
+            users[userIndex].twoFactorAuth = {
+                enabled: true,
+                pin: pin,
+                securityQuestions: {
+                    question1: question1,
+                    answer1: answer1,
+                    question2: question2,
+                    answer2: answer2,
+                    question3: question3,
+                    answer3: answer3
+                }
+            };
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+            
+            // 更新当前用户对象
+            currentUser.twoFactorAuth = users[userIndex].twoFactorAuth;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
         
         // 隐藏模态框
         hideTwoFactorAuthModal();
@@ -1509,15 +1523,27 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 验证当前PIN码
-        var storedPin = localStorage.getItem('twoFactorAuth');
+        // 验证当前PIN码（按用户隔离）
+        var storedPin = currentUser.twoFactorAuth && currentUser.twoFactorAuth.pin;
         if (storedPin !== currentPin) {
             showAlert('当前PIN码错误');
             return;
         }
         
-        // 更新PIN码
-        localStorage.setItem('twoFactorAuth', newPin);
+        // 更新PIN码（按用户隔离）
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var userIndex = users.findIndex(function(u) {
+            return u.username === currentUser.username;
+        });
+        
+        if (userIndex !== -1) {
+            users[userIndex].twoFactorAuth.pin = newPin;
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+            
+            // 更新当前用户对象
+            currentUser.twoFactorAuth.pin = newPin;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
         
         // 隐藏模态框
         hideChangeTwoFactorPinModal();
@@ -1725,7 +1751,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     }
     
-    // 验证PIN码
+    // 验证PIN码（按用户隔离）
     function verifyTwoFactorPin() {
         var pin = document.getElementById('verifyTwoFactorPin').value;
         
@@ -1734,8 +1760,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 验证PIN码
-        var storedPin = localStorage.getItem('twoFactorAuth');
+        // 验证PIN码（按用户隔离）
+        var storedPin = currentUser.twoFactorAuth && currentUser.twoFactorAuth.pin;
         if (storedPin !== pin) {
             showAlert('PIN码错误');
             return;
@@ -1750,9 +1776,21 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (window.verifyAction === 'updateSecurityQuestions') {
             showUpdateSecurityQuestionsModal();
         } else if (window.verifyAction === 'disableTwoFactorAuth') {
-            // 禁用两步验证
-            localStorage.removeItem('twoFactorAuth');
-            localStorage.removeItem('securityQuestions');
+            // 禁用两步验证（按用户隔离）
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (userIndex !== -1) {
+                delete users[userIndex].twoFactorAuth;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+                
+                // 更新当前用户对象
+                delete currentUser.twoFactorAuth;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            
             document.getElementById('twoFactorAuth').checked = false;
             document.getElementById('twoFactorActions').style.display = 'none';
             showAlert('两步验证已禁用');
@@ -2100,21 +2138,30 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     <div class="editor-tools">
-                        <div class="tool-section">
-                            <h4>头像名称</h4>
-                            <input type="text" id="avatarNameInput" placeholder="输入头像名称">
+                        <div class="two-factor-item">
+                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-signature" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                <h4 style="margin: 0;">头像名称</h4>
+                            </div>
+                            <input type="text" id="avatarNameInput" placeholder="输入头像名称" style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 8px;">
                         </div>
-                        <div class="tool-section">
-                            <h4>裁剪</h4>
-                            <div class="crop-tools">
+                        <div class="two-factor-item">
+                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-crop" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                <h4 style="margin: 0;">裁剪</h4>
+                            </div>
+                            <div class="crop-tools" style="display: flex; gap: 8px;">
                                 <button class="crop-btn" data-size="1:1">1:1</button>
                                 <button class="crop-btn" data-size="4:3">4:3</button>
                                 <button class="crop-btn" data-size="16:9">16:9</button>
                             </div>
                         </div>
-                        <div class="tool-section">
-                            <h4>滤镜</h4>
-                            <div class="filter-tools">
+                        <div class="two-factor-item">
+                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-image" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                <h4 style="margin: 0;">滤镜</h4>
+                            </div>
+                            <div class="filter-tools" style="display: flex; gap: 8px;">
                                 <button class="filter-btn" data-filter="none">原图</button>
                                 <button class="filter-btn" data-filter="grayscale">黑白</button>
                                 <button class="filter-btn" data-filter="sepia">复古</button>
@@ -2122,21 +2169,34 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <button class="filter-btn" data-filter="brightness">明亮</button>
                             </div>
                         </div>
-                        <div class="tool-section">
-                            <h4>调整</h4>
-                            <div class="adjust-tools">
-                                <div class="adjust-item">
-                                    <label>亮度</label>
-                                    <input type="range" id="brightnessRange" min="0" max="200" value="100">
-                                </div>
-                                <div class="adjust-item">
-                                    <label>对比度</label>
-                                    <input type="range" id="contrastRange" min="0" max="200" value="100">
-                                </div>
-                                <div class="adjust-item">
-                                    <label>饱和度</label>
-                                    <input type="range" id="saturationRange" min="0" max="200" value="100">
-                                </div>
+                        <div class="two-factor-item">
+                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-sun" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                <h4 style="margin: 0;">亮度</h4>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                <input type="range" id="brightnessRange" min="0" max="200" value="100">
+                                <span id="brightnessValue">100%</span>
+                            </div>
+                        </div>
+                        <div class="two-factor-item">
+                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-adjust" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                <h4 style="margin: 0;">对比度</h4>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                <input type="range" id="contrastRange" min="0" max="200" value="100">
+                                <span id="contrastValue">100%</span>
+                            </div>
+                        </div>
+                        <div class="two-factor-item">
+                            <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-palette" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                <h4 style="margin: 0;">饱和度</h4>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                <input type="range" id="saturationRange" min="0" max="200" value="100">
+                                <span id="saturationValue">100%</span>
                             </div>
                         </div>
                     </div>
@@ -2183,7 +2243,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.add('active');
                 
                 var size = this.getAttribute('data-size');
-                // 这里可以实现裁剪功能
+                var ratioParts = size.split(':');
+                var ratio = parseInt(ratioParts[0]) / parseInt(ratioParts[1]);
+                
+                // 根据选择的比例调整裁剪区域
+                var editorImage = document.getElementById('editorImage');
+                var imgRatio = editorImage.naturalWidth / editorImage.naturalHeight;
+                
+                var newWidth, newHeight;
+                
+                if (ratio > imgRatio) {
+                    // 宽屏比例，以高度为准
+                    newHeight = 0.4;
+                    newWidth = newHeight * ratio;
+                } else {
+                    // 竖屏或正方形比例，以宽度为准
+                    newWidth = 0.4;
+                    newHeight = newWidth / ratio;
+                }
+                
+                // 确保不超过边界
+                newWidth = Math.min(newWidth, 0.9);
+                newHeight = Math.min(newHeight, 0.9);
+                
+                // 居中裁剪区域
+                cropArea.x = (1 - newWidth) / 2;
+                cropArea.y = (1 - newHeight) / 2;
+                cropArea.width = newWidth;
+                cropArea.height = newHeight;
+                
+                // 更新裁剪区域显示
+                updateCropOverlay();
             });
         });
         
@@ -3333,7 +3423,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (user && user.loginHistory && user.loginHistory.length > 0) {
                 user.loginHistory.forEach(function(record, index) {
                     var historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
+                    historyItem.className = 'two-factor-item history-item';
                     
                     // 格式化时间
                     var loginTime = new Date(record.timestamp);
@@ -3357,13 +3447,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     var statusIcon = index === 0 ? 'fa-check-circle' : 'fa-times-circle';
                     
                     historyItem.innerHTML = `
-                        <div class="history-icon">
-                            <i class="fas ${deviceIcon}"></i>
-                        </div>
-                        <div class="history-info">
-                            <div class="history-device">${record.device}</div>
-                            <div class="history-time">${formattedTime}</div>
-                            <div class="history-location">${record.location}</div>
+                        <div class="two-factor-info">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                <i class="fas ${deviceIcon}" style="color: #3498db; font-size: 18px;"></i>
+                                <div>
+                                    <h4 style="margin: 0;">${record.device}</h4>
+                                </div>
+                            </div>
+                            <p style="margin: 0; font-size: 13px; color: #666;">${formattedTime} · ${record.location}</p>
                         </div>
                         <div class="history-actions">
                             <button class="action-btn small danger delete-history-btn" data-index="${index}">
@@ -3390,19 +3481,16 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // 显示无登录历史提示
                 var noHistoryItem = document.createElement('div');
-                noHistoryItem.className = 'history-item';
+                noHistoryItem.className = 'two-factor-item history-item';
                 noHistoryItem.innerHTML = `
-                    <div class="history-icon">
-                        <i class="fas fa-history"></i>
-                    </div>
-                    <div class="history-info">
-                        <div class="history-device">无登录历史</div>
-                        <div class="history-time">-</div>
-                        <div class="history-location">-</div>
-                    </div>
-                    <div class="history-status">
-                        <i class="fas fa-info-circle"></i>
-                        暂无记录
+                    <div class="two-factor-info" style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                            <i class="fas fa-history" style="color: #999; font-size: 18px;"></i>
+                            <div>
+                                <h4 style="margin: 0;">无登录历史</h4>
+                            </div>
+                        </div>
+                        <p style="margin: 0; font-size: 13px; color: #666;">暂无登录记录</p>
                     </div>
                 `;
                 

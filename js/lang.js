@@ -53,6 +53,7 @@ const LangManager = (function() {
             confirmPassword: '确认密码',
             verify: '验证',
             reset: '重置',
+            forgotPasswordMessage: '请输入完整的手机号和邮箱进行验证',
             userAgreement: '用户协议',
             privacyPolicy: '隐私政策',
             iHaveRead: '我已阅读并同意',
@@ -159,6 +160,7 @@ const LangManager = (function() {
             confirmPassword: 'Confirm Password',
             verify: 'Verify',
             reset: 'Reset',
+            forgotPasswordMessage: 'Please enter your complete phone number and email for verification',
             userAgreement: 'User Agreement',
             privacyPolicy: 'Privacy Policy',
             iHaveRead: 'I have read and agree to the',
@@ -265,6 +267,7 @@ const LangManager = (function() {
             confirmPassword: 'パスワードを確認',
             verify: '検証',
             reset: 'リセット',
+            forgotPasswordMessage: '認証のために電話番号とメールアドレスを入力してください',
             userAgreement: 'ユーザー契約',
             privacyPolicy: 'プライバシーポリシー',
             iHaveRead: '私は読んで同意します',
@@ -371,6 +374,7 @@ const LangManager = (function() {
             confirmPassword: '비밀번호 확인',
             verify: '검증',
             reset: '재설정',
+            forgotPasswordMessage: '인증을 위해 전화번호와 이메일을 입력해주세요',
             userAgreement: '사용자 약관',
             privacyPolicy: '개인정보 정책',
             iHaveRead: '저는 읽고 동의합니다',
@@ -599,7 +603,7 @@ const LangManager = (function() {
             var forgotPasswordTitle = forgotPasswordModal.querySelector('h3');
             if (forgotPasswordTitle) forgotPasswordTitle.textContent = texts.forgotPasswordTitle;
             var forgotPasswordMessage = forgotPasswordModal.querySelector('p');
-            if (forgotPasswordMessage) forgotPasswordMessage.textContent = 'Please enter your complete phone number and email for verification';
+            if (forgotPasswordMessage) forgotPasswordMessage.textContent = texts.forgotPasswordMessage;
         }
         
         // 更新重置密码模态框

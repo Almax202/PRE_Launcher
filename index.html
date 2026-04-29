@@ -375,6 +375,24 @@
             // 加载毛玻璃主题设置
             loadThemeSettings();
             
+            // 用户协议勾选框处理
+            const loginAgreement = document.getElementById('loginAgreement');
+            const loginButton = document.getElementById('loginButton');
+            
+            function updateLoginButtonStatus() {
+                if (loginAgreement.checked) {
+                    loginButton.classList.remove('disabled');
+                } else {
+                    loginButton.classList.add('disabled');
+                }
+            }
+            
+            // 初始化按钮状态
+            updateLoginButtonStatus();
+            
+            // 监听勾选状态变化
+            loginAgreement.addEventListener('change', updateLoginButtonStatus);
+            
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const settingsSidebar = document.querySelector('.settings-sidebar');
             const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
@@ -810,18 +828,6 @@
                                 <div class="captcha-hint">点击刷新验证码</div>
                             </div>
                             
-                            <button type="button" id="loginButton" class="login-btn">
-                                <i class="fas fa-sign-in-alt"></i>
-                                登录
-                            </button>
-                            
-                            <div class="agreement-section">
-                                <input type="checkbox" id="loginAgreement">
-                                <label for="loginAgreement">
-                                    我已阅读并同意《<a href="#" class="agreement-link" data-type="terms">用户协议</a>》及其《<a href="#" class="agreement-link" data-type="privacy">隐私政策</a>》
-                                </label>
-                            </div>
-                            
                             <div class="password-section" id="passwordSection" style="display: none;">
                                 <div class="input-group">
                                     <i class="fas fa-lock"></i>
@@ -847,6 +853,18 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="agreement-section">
+                                <input type="checkbox" id="loginAgreement">
+                                <label for="loginAgreement">
+                                    我已阅读并同意《<a href="#" class="agreement-link" data-type="terms">用户协议</a>》及其《<a href="#" class="agreement-link" data-type="privacy">隐私政策</a>》
+                                </label>
+                            </div>
+                            
+                            <button type="button" id="loginButton" class="login-btn">
+                                <i class="fas fa-sign-in-alt"></i>
+                                登录
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -1266,9 +1284,61 @@
                 <i class="fas fa-envelope"></i>
                 <input type="email" id="forgotEmail" placeholder="请输入绑定的邮箱" style="width: 100%;">
             </div>
+            <div class="pin-reset-link">
+                <a href="#" id="usePinResetLink">使用PIN码重置</a>
+            </div>
             <div class="modal-buttons">
                 <button class="alert-confirm" id="forgotPasswordCancel">取消</button>
                 <button class="alert-confirm" id="forgotPasswordConfirm" style="background-color: #4CAF50;">验证</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pinResetModal" class="custom-alert">
+        <div class="alert-content" style="max-width: 450px;">
+            <div class="alert-icon" style="color: #3498db;">
+                <i class="fas fa-key"></i>
+            </div>
+            <h3 id="pinResetTitle">使用PIN码重置密码</h3>
+            
+            <div id="pinResetStep1" class="pin-reset-step">
+                <p style="color: #666; margin: 15px 0;">请输入账号检验是否启用了两步验证</p>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="pinResetUsername" placeholder="请输入用户名" style="width: 100%;">
+                </div>
+                <div class="modal-buttons">
+                    <button class="alert-confirm" id="pinResetCancel">取消</button>
+                    <button class="alert-confirm" id="pinResetStep1Next" style="background-color: #3498db;">下一步</button>
+                </div>
+            </div>
+            
+            <div id="pinResetStep2" class="pin-reset-step" style="display: none;">
+                <p style="color: #666; margin: 15px 0;">该账户已启用两步验证，请输入PIN码</p>
+                <div class="input-group">
+                    <i class="fas fa-shield-alt"></i>
+                    <input type="password" id="pinResetPin" placeholder="请输入PIN码" style="width: 100%;" maxlength="6">
+                </div>
+                <div class="modal-buttons">
+                    <button class="alert-confirm" id="pinResetBack">返回</button>
+                    <button class="alert-confirm" id="pinResetStep2Next" style="background-color: #3498db;">验证PIN码</button>
+                </div>
+            </div>
+            
+            <div id="pinResetStep3" class="pin-reset-step" style="display: none;">
+                <p style="color: #666; margin: 15px 0;">PIN码验证成功，请设置新密码</p>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="pinResetNewPassword" placeholder="请输入新密码" style="width: 100%;">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="pinResetConfirmPassword" placeholder="请确认新密码" style="width: 100%;">
+                </div>
+                <div class="modal-buttons">
+                    <button class="alert-confirm" id="pinResetStep3Cancel">取消</button>
+                    <button class="alert-confirm" id="pinResetStep3Confirm" style="background-color: #4CAF50;">确认重置</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1453,11 +1523,25 @@
                     const savedUsername = localStorage.getItem('savedUsername');
                     const savedPassword = localStorage.getItem('savedPassword');
                     
+                    // 获取用户信息（包含两步验证）
+                    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    const validUser = users.find(function(user) {
+                        return user.username === savedUsername && user.password === savedPassword;
+                    });
+                    
                     // 模拟登录成功
-                    localStorage.setItem('currentUser', JSON.stringify({
+                    var currentUserObj = {
                         username: savedUsername,
+                        userId: validUser ? validUser.userId : null,
                         loginTime: new Date().toISOString()
-                    }));
+                    };
+                    
+                    // 同步两步验证信息
+                    if (validUser && validUser.twoFactorAuth) {
+                        currentUserObj.twoFactorAuth = validUser.twoFactorAuth;
+                    }
+                    
+                    localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
                     
                     // 跳转到游戏大厅
                     window.location.href = 'html/homepage4.0.html';
@@ -2173,11 +2257,18 @@
                         loginBtn.innerHTML = originalText;
                         loginBtn.disabled = false;
                         
-                        localStorage.setItem('currentUser', JSON.stringify({
+                        var currentUserObj = {
                             username: username,
                             userId: validUser ? validUser.userId : null,
                             loginTime: new Date().toISOString()
-                        }));
+                        };
+                        
+                        // 同步两步验证信息
+                        if (validUser && validUser.twoFactorAuth) {
+                            currentUserObj.twoFactorAuth = validUser.twoFactorAuth;
+                        }
+                        
+                        localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
                         
                         updateUserCenter(username, validUser ? validUser.userId : null);
                         
@@ -2406,11 +2497,18 @@
                     localStorage.setItem('registeredUsers', JSON.stringify(users));
                 }
                 
-                localStorage.setItem('currentUser', JSON.stringify({
+                var currentUserObj = {
                     username: username,
                     userId: validUser ? validUser.userId : null,
                     loginTime: now.toISOString()
-                }));
+                };
+                
+                // 同步两步验证信息
+                if (validUser && validUser.twoFactorAuth) {
+                    currentUserObj.twoFactorAuth = validUser.twoFactorAuth;
+                }
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
                 
                 // 同步头像信息
                 if (validUser && validUser.userProfile) {
@@ -3101,6 +3199,165 @@
                     document.getElementById('resetPasswordModal').style.display = 'none';
                     showAlert('密码重置成功！请使用新密码登录');
                 }, 300);
+            } else {
+                showAlert('重置失败，请重试');
+            }
+        }
+        
+        document.getElementById('usePinResetLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('forgotPasswordModal').classList.remove('show');
+            setTimeout(function() {
+                document.getElementById('forgotPasswordModal').style.display = 'none';
+                showPinResetModal();
+            }, 300);
+        });
+        
+        document.getElementById('pinResetCancel').addEventListener('click', function() {
+            hidePinResetModal();
+        });
+        
+        document.getElementById('pinResetStep3Cancel').addEventListener('click', function() {
+            hidePinResetModal();
+        });
+        
+        document.getElementById('pinResetBack').addEventListener('click', function() {
+            showPinResetStep(1);
+        });
+        
+        document.getElementById('pinResetStep1Next').addEventListener('click', function() {
+            handlePinResetStep1();
+        });
+        
+        document.getElementById('pinResetStep2Next').addEventListener('click', function() {
+            handlePinResetStep2();
+        });
+        
+        document.getElementById('pinResetStep3Confirm').addEventListener('click', function() {
+            handlePinResetStep3();
+        });
+        
+        document.getElementById('pinResetModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                document.getElementById('pinResetCancel').click();
+            }
+        });
+        
+        function showPinResetModal() {
+            var modal = document.getElementById('pinResetModal');
+            document.getElementById('pinResetUsername').value = '';
+            document.getElementById('pinResetPin').value = '';
+            document.getElementById('pinResetNewPassword').value = '';
+            document.getElementById('pinResetConfirmPassword').value = '';
+            showPinResetStep(1);
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+        }
+        
+        function hidePinResetModal() {
+            var modal = document.getElementById('pinResetModal');
+            modal.classList.remove('show');
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        function showPinResetStep(step) {
+            document.querySelectorAll('.pin-reset-step').forEach(function(el) {
+                el.style.display = 'none';
+            });
+            document.getElementById('pinResetStep' + step).style.display = 'block';
+        }
+        
+        function handlePinResetStep1() {
+            var username = document.getElementById('pinResetUsername').value.trim();
+            
+            if (!username) {
+                showAlert('请输入用户名');
+                return;
+            }
+            
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === username;
+            });
+            
+            if (!user) {
+                showAlert('用户名不存在');
+                return;
+            }
+            
+            var twoFactorEnabled = user.twoFactorAuth && user.twoFactorAuth.enabled;
+            
+            if (!twoFactorEnabled) {
+                showAlert('该账户未启用两步验证，无法使用PIN码重置密码');
+                return;
+            }
+            
+            window.pinResetUser = username;
+            showPinResetStep(2);
+        }
+        
+        function handlePinResetStep2() {
+            var pin = document.getElementById('pinResetPin').value.trim();
+            
+            if (!pin) {
+                showAlert('请输入PIN码');
+                return;
+            }
+            
+            if (pin.length !== 6) {
+                showAlert('PIN码必须是6位数字');
+                return;
+            }
+            
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === window.pinResetUser;
+            });
+            
+            var storedPin = user && user.twoFactorAuth && user.twoFactorAuth.pin;
+            
+            if (pin !== storedPin) {
+                showAlert('PIN码错误，请重试');
+                return;
+            }
+            
+            showPinResetStep(3);
+        }
+        
+        function handlePinResetStep3() {
+            var newPassword = document.getElementById('pinResetNewPassword').value;
+            var confirmPassword = document.getElementById('pinResetConfirmPassword').value;
+            
+            if (!newPassword) {
+                showAlert('请输入新密码');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showAlert('密码至少需要6个字符');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('两次输入的密码不一致');
+                return;
+            }
+            
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(u) {
+                return u.username === window.pinResetUser;
+            });
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+                
+                hidePinResetModal();
+                showAlert('密码重置成功！请使用新密码登录');
             } else {
                 showAlert('重置失败，请重试');
             }
