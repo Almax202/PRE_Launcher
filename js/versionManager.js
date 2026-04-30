@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.0.11 (b4)",
+    login: "RC 2.6.1.0 (b4)",
 
     // 游戏大厅版本号
     homepage: "RC 1.0.3.2 (a2)",
@@ -19,15 +19,15 @@ const versionInfo = {
     snakegame: "RC 1.1.0",
 
     // 内部版本号
-    launcher: "20260429.26011.b4.51"
+    launcher: "20260430.26100.b4.64"
 };
 // 启动器信息
 const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-04-29",
-    patchDate: "2026-04-29",
+    buildDate: "2026-04-30",
+    patchDate: "2026-04-30",
     copyright: "© 2014-2026 GPY Games Studio",
     developer: "GPY Games Studio",
     purpose: "测试",

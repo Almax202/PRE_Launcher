@@ -494,8 +494,9 @@ const LangManager = (function() {
         if (sidebarMenuItems[0]) sidebarMenuItems[0].textContent = texts.loginAccount;
         if (sidebarMenuItems[1]) sidebarMenuItems[1].textContent = texts.registerAccount;
         if (sidebarMenuItems[2]) sidebarMenuItems[2].textContent = texts.settingsBtn;
-        if (sidebarMenuItems[3]) sidebarMenuItems[3].textContent = texts.versionHistoryBtn;
-        if (sidebarMenuItems[4]) sidebarMenuItems[4].textContent = texts.feedback;
+        if (sidebarMenuItems[3]) sidebarMenuItems[3].textContent = texts.feedback;
+        if (sidebarMenuItems[4]) sidebarMenuItems[4].textContent = texts.versionHistoryBtn;
+        if (sidebarMenuItems[5]) sidebarMenuItems[5].textContent = '开发者公告';
         
         // 更新版本信息
         var versionInfo = document.getElementById('versionInfo');

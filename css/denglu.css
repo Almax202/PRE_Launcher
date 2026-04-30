@@ -2668,13 +2668,315 @@ body.dark-mode .version-history-content::-webkit-scrollbar-thumb:hover {
     background: #556cd6;
 }
 
+/* 关于启动器窗口自定义滚动条 */
+#aboutLauncherModal .user-card-right::-webkit-scrollbar {
+    width: 6px;
+}
+
+#aboutLauncherModal .user-card-right::-webkit-scrollbar-track {
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 3px;
+}
+
+#aboutLauncherModal .user-card-right::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+#aboutLauncherModal .user-card-right::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #c44d69 0%, #e47fa1 100%);
+}
+
+/* 暗色模式下关于启动器窗口滚动条 */
+body.dark-mode #aboutLauncherModal .user-card-right::-webkit-scrollbar-track {
+    background: rgba(30, 30, 50, 0.5);
+}
+
+body.dark-mode #aboutLauncherModal .user-card-right::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%);
+}
+
+body.dark-mode #aboutLauncherModal .user-card-right::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #e48fb1 0%, #f49fc1 100%);
+}
+
+/* MIT License窗口自定义滚动条 */
+#mitLicenseModal .about-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#mitLicenseModal .about-content::-webkit-scrollbar-track {
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 3px;
+}
+
+#mitLicenseModal .about-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+#mitLicenseModal .about-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #c44d69 0%, #e47fa1 100%);
+}
+
+/* 暗色模式下MIT License窗口滚动条 */
+body.dark-mode #mitLicenseModal .about-content::-webkit-scrollbar-track {
+    background: rgba(30, 30, 50, 0.5);
+}
+
+body.dark-mode #mitLicenseModal .about-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%);
+}
+
+body.dark-mode #mitLicenseModal .about-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #e48fb1 0%, #f49fc1 100%);
+}
+
+/* Firefox 滚动条样式 */
+#aboutLauncherModal .user-card-right,
+#mitLicenseModal .about-content {
+    scrollbar-width: thin;
+    scrollbar-color: #d45d79 rgba(248, 249, 250, 0.5);
+}
+
+body.dark-mode #aboutLauncherModal .user-card-right,
+body.dark-mode #mitLicenseModal .about-content {
+    scrollbar-color: #d45d79 rgba(30, 30, 50, 0.5);
+}
+
+/* 开发者公告模态框样式 */
+#announcementModal {
+    z-index: 9998;
+}
+
+.announcement-modal-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0 !important;
+    padding: 20px !important;
+}
+
+/* 公告项样式 */
+.announcement-item {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+}
+
+body.dark-mode .announcement-item {
+    background: rgba(50, 50, 70, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.announcement-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+body.dark-mode .announcement-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.announcement-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px 0;
+    text-align: left;
+}
+
+body.dark-mode .announcement-title {
+    color: #e0e0e0;
+}
+
+.announcement-tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.announcement-tag.important {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+}
+
+.announcement-tag.update {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.announcement-tag.notice {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+}
+
+.announcement-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 13px;
+    color: #666;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: left;
+}
+
+body.dark-mode .announcement-meta {
+    color: #999;
+}
+
+.announcement-meta i {
+    margin-right: 5px;
+    color: #d45d79;
+}
+
+.announcement-id {
+    color: #999;
+    font-size: 12px;
+}
+
+body.dark-mode .announcement-id {
+    color: #666;
+}
+
+/* 公告内容样式 */
+.announcement-content {
+    line-height: 1.8;
+    text-align: left;
+}
+
+.announcement-content p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+body.dark-mode .announcement-content p {
+    color: #bbb;
+}
+
+.announcement-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* 公告图片样式 */
+.announcement-images {
+    margin: 15px 0;
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    justify-content: flex-start;
+}
+
+.announcement-images.single-image {
+    justify-content: flex-start;
+    overflow-x: visible;
+}
+
+.announcement-images::-webkit-scrollbar {
+    height: 6px;
+}
+
+.announcement-images::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.announcement-images::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+body.dark-mode .announcement-images::-webkit-scrollbar-track {
+    background: rgba(30, 30, 50, 0.5);
+}
+
+.announcement-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.announcement-image.single-image-item {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+/* 公告图片容器 */
+.announcement-images .image-container {
+    width: 200px;
+    height: 150px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-images .image-container.single-image-container {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 300px;
+}
+
+/* 公告模态框暗色模式样式 */
+body.dark-mode #announcementModal .terms-sidebar {
+    background: #2a2a2a;
+}
+
+body.dark-mode #announcementModal .terms-nav-title {
+    color: #e0e0e0;
+}
+
+body.dark-mode #announcementModal .terms-nav-item {
+    background: #3a3a3a;
+    border-color: #4a4a4a;
+    color: #bbb;
+}
+
+body.dark-mode #announcementModal .terms-nav-item:hover {
+    background: #d45d79;
+    color: white;
+    border-color: #d45d79;
+}
+
+body.dark-mode #announcementModal .terms-nav-item.active {
+    background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%);
+    color: white;
+    border-color: #d45d79;
+}
+
+body.dark-mode #announcementModal .terms-main {
+    background: #2a2a2a;
+}
+
 /* 版本选择提示文本样式 */
 .version-selection-hint {
     color: #333;
+    text-align: left;
 }
 
 body.dark-mode .version-selection-hint {
     color: #fff;
+    text-align: left;
 }
 
 /* 版本选择卡片样式 */
@@ -3682,6 +3984,7 @@ body.dark-mode .reset-btn:hover {
     margin-bottom: 10px;
     padding-bottom: 5px;
     gap: 10px;
+    text-align: left;
 }
 
 .version-header-content {
@@ -3695,12 +3998,14 @@ body.dark-mode .reset-btn:hover {
     font-size: 18px;
     font-weight: bold;
     color: #d45d79;
+    text-align: left;
 }
 
 .version-date {
     font-size: 14px;
     color: #666;
     margin-left: auto;
+    text-align: right;
 }
 
 .version-details {

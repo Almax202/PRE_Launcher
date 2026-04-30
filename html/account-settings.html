@@ -1311,6 +1311,21 @@
                                 <div class="two-factor-item">
                                     <div class="two-factor-info">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                            <i class="fas fa-images" style="color: #3498db; font-size: 18px;"></i>
+                                            <div>
+                                                <h4 style="margin: 0;">预设背景</h4>
+                                            </div>
+                                        </div>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">选择系统预设的精美背景图片</p>
+                                    </div>
+                                    <button class="two-factor-btn" id="presetBackgroundBtn">
+                                        <i class="fas fa-images"></i>
+                                        选择预设
+                                    </button>
+                                </div>
+                                <div class="two-factor-item">
+                                    <div class="two-factor-info">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
                                             <i class="fas fa-image" style="color: #3498db; font-size: 18px;"></i>
                                             <div>
                                                 <h4 style="margin: 0;">上传背景图片</h4>
@@ -2557,6 +2572,56 @@
     </div>
     
     <div id="deleteAccountOverlay" class="delete-account-overlay"></div>
+
+    <!-- 预设背景选择窗口 -->
+    <div id="presetBackgroundModal" class="preset-background-modal">
+        <div class="preset-background-container">
+            <div class="preset-background-header">
+                <h3>选择预设背景</h3>
+                <div class="preset-header-actions">
+                    <button class="refresh-preset-btn" id="refreshPresetBtn" title="刷新预设背景">
+                        <i class="fas fa-refresh"></i>
+                    </button>
+                    <button class="close-preset-modal" id="closePresetModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="preset-background-grid" id="presetBackgroundGrid">
+                <!-- 预设背景图片将通过JS动态添加 -->
+            </div>
+            <div class="preset-background-footer">
+                <button class="preset-btn preset-btn-cancel" id="cancelPresetBtn">取消</button>
+                <button class="preset-btn preset-btn-preview" id="previewPresetBtn">预览背景</button>
+                <button class="preset-btn preset-btn-confirm" id="confirmPresetBtn">确认应用</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 预览背景小窗口 -->
+    <div id="previewBackgroundPanel" class="preview-background-panel">
+        <div class="preview-panel-header">
+            <h4>预览背景</h4>
+            <button class="close-preview-panel" id="closePreviewPanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="preview-panel-content">
+            <div class="preview-image-container" id="previewImageContainer">
+                <div class="preview-placeholder">
+                    <i class="fas fa-image"></i>
+                    <p>请先选择一张背景图片</p>
+                </div>
+            </div>
+            <div class="preview-image-info" id="previewImageInfo">
+                <span id="previewImageName"></span>
+            </div>
+        </div>
+        <div class="preview-panel-footer">
+            <button class="preview-btn preview-btn-cancel" id="cancelPreviewBtn">关闭</button>
+            <button class="preview-btn preview-btn-confirm" id="confirmPreviewBtn">确认应用</button>
+        </div>
+    </div>
 
     <script src="../js/account-settings.js"></script>
 </body>

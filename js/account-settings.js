@@ -473,6 +473,49 @@ document.addEventListener('DOMContentLoaded', function() {
             resetBackgroundSettings();
         });
         
+        // 预设背景功能事件监听器
+        document.getElementById('presetBackgroundBtn').addEventListener('click', function() {
+            openPresetBackgroundModal();
+        });
+        
+        document.getElementById('closePresetModal').addEventListener('click', function() {
+            closePresetBackgroundModal();
+        });
+        
+        document.getElementById('presetBackgroundModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePresetBackgroundModal();
+            }
+        });
+        
+        document.getElementById('refreshPresetBtn').addEventListener('click', function() {
+            refreshPresetBackgrounds();
+        });
+        
+        document.getElementById('confirmPresetBtn').addEventListener('click', function() {
+            confirmPresetBackground();
+        });
+        
+        document.getElementById('cancelPresetBtn').addEventListener('click', function() {
+            cancelPresetBackground();
+        });
+        
+        document.getElementById('previewPresetBtn').addEventListener('click', function() {
+            previewPresetBackground();
+        });
+        
+        document.getElementById('closePreviewPanel').addEventListener('click', function() {
+            closePreviewPanel();
+        });
+        
+        document.getElementById('cancelPreviewBtn').addEventListener('click', function() {
+            cancelPreviewBackground();
+        });
+        
+        document.getElementById('confirmPreviewBtn').addEventListener('click', function() {
+            confirmPreviewBackground();
+        });
+        
         document.getElementById('exportDataBtn').addEventListener('click', function() {
             // 清空密码输入框
             document.getElementById('verifyPassword').value = '';
@@ -2656,6 +2699,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // 清空头像选择区域，只保留系统默认头像
         avatarSelection.innerHTML = '';
         
+        // 默认头像名称映射
+        var defaultAvatarNames = {
+            'user': '用户',
+            'robot': '机器人',
+            'cat': '猫咪',
+            'dog': '狗狗',
+            'dragon': '龙',
+            'ghost': '幽灵'
+        };
+        
         // 添加系统默认头像
         var defaultAvatars = ['user', 'robot', 'cat', 'dog', 'dragon', 'ghost'];
         defaultAvatars.forEach(function(avatar) {
@@ -2663,6 +2716,19 @@ document.addEventListener('DOMContentLoaded', function() {
             option.className = 'avatar-option';
             option.setAttribute('data-avatar', avatar);
             option.innerHTML = '<i class="fas fa-' + avatar + '"></i>';
+            
+            // 添加悬浮卡片（只显示名称）
+            var card = document.createElement('div');
+            card.className = 'avatar-hover-card';
+            card.innerHTML = `
+                <div class="avatar-card-content">
+                    <div class="avatar-card-header">
+                        <input type="text" class="avatar-name-input" readonly value="${defaultAvatarNames[avatar]}" disabled>
+                    </div>
+                </div>
+            `;
+            option.appendChild(card);
+            
             avatarSelection.appendChild(option);
         });
         
@@ -3299,7 +3365,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // 更新侧边栏版本号显示
         var sidebarVersionElement = document.getElementById('sidebarVersion');
         if (sidebarVersionElement) {
-            sidebarVersionElement.textContent = loginVersion;
+            var sidebarVersionSpan = sidebarVersionElement.querySelector('span');
+            if (sidebarVersionSpan) {
+                sidebarVersionSpan.textContent = loginVersion;
+            }
         }
         
         var securityResponseDateElement = document.getElementById('securityResponseDate');
@@ -3733,6 +3802,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 应用GPU加速设置
         applyGpuAcceleration();
+        
+        // 加载背景设置
+        if (userProfile.background) {
+            var backgroundSettings = userProfile.background;
+            
+            // 更新表单
+            document.getElementById('backgroundFit').value = backgroundSettings.fit || 'cover';
+            document.getElementById('backgroundOpacity').value = backgroundSettings.opacity || 1;
+            document.getElementById('opacityValue').textContent = Math.round((backgroundSettings.opacity || 1) * 100) + '%';
+            document.getElementById('backgroundBlur').value = backgroundSettings.blur || 0;
+            document.getElementById('blurValue').textContent = (backgroundSettings.blur || 0) + 'px';
+            
+            // 更新预览
+            if (backgroundSettings.image) {
+                var preview = document.getElementById('backgroundPreview');
+                preview.style.backgroundImage = 'url(' + backgroundSettings.image + ')';
+                preview.style.backgroundSize = backgroundSettings.fit || 'cover';
+                preview.style.backgroundPosition = 'center';
+                var placeholder = preview.querySelector('.preview-placeholder');
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
+            }
+            
+            // 应用到当前页面
+            applyBackgroundToPage(backgroundSettings);
+            
+            // 保存到localStorage供其他页面使用
+            localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
+        }
     }
     
     function applyGpuAcceleration() {
@@ -4252,6 +4351,11 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.onload = function(e) {
             try {
                 var base64 = e.target.result;
+                
+                // 清除之前可能设置的背景图片样式
+                preview.style.backgroundImage = '';
+                preview.style.backgroundSize = '';
+                preview.style.backgroundPosition = '';
                 
                 // 显示预览
                 preview.innerHTML = '<img src="' + base64 + '" alt="背景预览">';
@@ -6472,4 +6576,312 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 10);
         }
     }
+    
+    // 预设背景图片数据
+    var presetBackgrounds = [
+        {
+            id: 1,
+            name: '星空之夜',
+            url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&h=600&fit=crop'
+        },
+        {
+            id: 2,
+            name: '山脉日出',
+            url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=600&fit=crop'
+        },
+        {
+            id: 3,
+            name: '樱花飘落',
+            url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop'
+        },
+        {
+            id: 4,
+            name: '城市夜景',
+            url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&h=600&fit=crop'
+        },
+        {
+            id: 5,
+            name: '森林小径',
+            url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&h=600&fit=crop'
+        },
+        {
+            id: 6,
+            name: '海边日落',
+            url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop'
+        },
+        {
+            id: 7,
+            name: '雪景森林',
+            url: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&h=600&fit=crop'
+        },
+        {
+            id: 8,
+            name: '沙漠孤烟',
+            url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800&h=600&fit=crop'
+        },
+        {
+            id: 9,
+            name: '极光奇观',
+            url: 'https://images.unsplash.com/photo-1483347756197-71ef80e95f73?w=800&h=600&fit=crop'
+        }
+    ];
+    
+    // 当前选中的预设背景
+    var selectedPresetBackground = null;
+    
+    // 打开预设背景选择窗口
+    function openPresetBackgroundModal() {
+        var modal = document.getElementById('presetBackgroundModal');
+        if (modal) {
+            modal.classList.add('show');
+            selectedPresetBackground = null;
+            renderPresetBackgrounds();
+            updateConfirmButtonState();
+        }
+    }
+    
+    // 关闭预设背景选择窗口
+    function closePresetBackgroundModal() {
+        var modal = document.getElementById('presetBackgroundModal');
+        if (modal) {
+            modal.classList.remove('show');
+            selectedPresetBackground = null;
+        }
+    }
+    
+    // 刷新预设背景
+    function refreshPresetBackgrounds() {
+        var refreshBtn = document.getElementById('refreshPresetBtn');
+        if (refreshBtn) {
+            refreshBtn.classList.add('refreshing');
+        }
+        
+        setTimeout(function() {
+            renderPresetBackgrounds();
+            if (refreshBtn) {
+                refreshBtn.classList.remove('refreshing');
+            }
+            showAlert('预设背景已刷新');
+        }, 500);
+    }
+    
+    // 渲染预设背景图片
+    function renderPresetBackgrounds() {
+        var grid = document.getElementById('presetBackgroundGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        presetBackgrounds.forEach(function(background) {
+            var item = document.createElement('div');
+            item.className = 'preset-background-item' + (selectedPresetBackground && selectedPresetBackground.id === background.id ? ' selected' : '');
+            item.setAttribute('data-url', background.url);
+            item.setAttribute('data-name', background.name);
+            item.setAttribute('data-id', background.id);
+            
+            item.innerHTML = `
+                <img src="${background.url}" alt="${background.name}" loading="lazy">
+                <div class="preset-background-name">${background.name}</div>
+                ${selectedPresetBackground && selectedPresetBackground.id === background.id ? '<div class="preset-background-check"><i class="fas fa-check"></i></div>' : ''}
+            `;
+            
+            item.addEventListener('click', function() {
+                togglePresetBackgroundSelection(background);
+            });
+            
+            grid.appendChild(item);
+        });
+    }
+    
+    // 切换预设背景选中状态
+    function togglePresetBackgroundSelection(background) {
+        // 清除之前的选中状态
+        var previousSelected = document.querySelector('.preset-background-item.selected');
+        if (previousSelected) {
+            previousSelected.classList.remove('selected');
+            var checkIcon = previousSelected.querySelector('.preset-background-check');
+            if (checkIcon) {
+                checkIcon.remove();
+            }
+        }
+        
+        // 设置新的选中状态
+        if (selectedPresetBackground && selectedPresetBackground.id === background.id) {
+            selectedPresetBackground = null;
+        } else {
+            selectedPresetBackground = background;
+            var currentItem = document.querySelector('.preset-background-item[data-id="' + background.id + '"]');
+            if (currentItem) {
+                currentItem.classList.add('selected');
+                var checkDiv = document.createElement('div');
+                checkDiv.className = 'preset-background-check';
+                checkDiv.innerHTML = '<i class="fas fa-check"></i>';
+                currentItem.appendChild(checkDiv);
+            }
+        }
+        
+        updateConfirmButtonState();
+    }
+    
+    // 更新确认按钮状态
+    function updateConfirmButtonState() {
+        var confirmBtn = document.getElementById('confirmPresetBtn');
+        var previewBtn = document.getElementById('previewPresetBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = !selectedPresetBackground;
+        }
+        if (previewBtn) {
+            previewBtn.disabled = !selectedPresetBackground;
+        }
+    }
+    
+    // 预览背景
+    function previewPresetBackground() {
+        if (!selectedPresetBackground) return;
+        
+        closePresetBackgroundModal();
+        
+        var panel = document.getElementById('previewBackgroundPanel');
+        var container = document.getElementById('previewImageContainer');
+        var nameSpan = document.getElementById('previewImageName');
+        
+        if (panel && container && nameSpan) {
+            container.innerHTML = '<img src="' + selectedPresetBackground.url + '" alt="' + selectedPresetBackground.name + '">';
+            nameSpan.textContent = selectedPresetBackground.name;
+            panel.classList.add('show');
+        }
+    }
+    
+    // 关闭预览面板
+    function closePreviewPanel() {
+        var panel = document.getElementById('previewBackgroundPanel');
+        if (panel) {
+            panel.classList.remove('show');
+            selectedPresetBackground = null;
+        }
+    }
+    
+    // 确认预览应用
+    function confirmPreviewBackground() {
+        if (!selectedPresetBackground) return;
+        
+        var url = selectedPresetBackground.url;
+        var name = selectedPresetBackground.name;
+        
+        // 更新预览
+        var preview = document.getElementById('backgroundPreview');
+        if (preview) {
+            preview.style.backgroundImage = 'url(' + url + ')';
+            preview.style.backgroundSize = 'cover';
+            preview.style.backgroundPosition = 'center';
+            var placeholder = preview.querySelector('.preview-placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        }
+        
+        // 保存背景设置
+        var fit = document.getElementById('backgroundFit').value;
+        var opacity = parseFloat(document.getElementById('backgroundOpacity').value);
+        var blur = parseInt(document.getElementById('backgroundBlur').value);
+        
+        var backgroundSettings = {
+            image: url,
+            fit: fit,
+            opacity: opacity,
+            blur: blur,
+            useIndexedDB: false
+        };
+        
+        // 保存到用户配置
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var userIndex = users.findIndex(function(user) {
+            return user.username === currentUser.username;
+        });
+        
+        if (userIndex !== -1) {
+            if (!users[userIndex].userProfile) {
+                users[userIndex].userProfile = {};
+            }
+            users[userIndex].userProfile.background = backgroundSettings;
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+        
+        localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
+        
+        // 应用到当前页面
+        applyBackgroundToPage(backgroundSettings);
+        
+        closePreviewPanel();
+        
+        showAlert('背景图片已更新为 "' + name + '"');
+    }
+    
+    // 取消预览
+    function cancelPreviewBackground() {
+        closePreviewPanel();
+    }
+    
+    // 确认应用选中的预设背景
+    function confirmPresetBackground() {
+        if (!selectedPresetBackground) return;
+        
+        var url = selectedPresetBackground.url;
+        var name = selectedPresetBackground.name;
+        
+        // 更新预览
+        var preview = document.getElementById('backgroundPreview');
+        if (preview) {
+            preview.style.backgroundImage = 'url(' + url + ')';
+            preview.style.backgroundSize = 'cover';
+            preview.style.backgroundPosition = 'center';
+            var placeholder = preview.querySelector('.preview-placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        }
+        
+        // 保存背景设置
+        var fit = document.getElementById('backgroundFit').value;
+        var opacity = parseFloat(document.getElementById('backgroundOpacity').value);
+        var blur = parseInt(document.getElementById('backgroundBlur').value);
+        
+        var backgroundSettings = {
+            image: url,
+            fit: fit,
+            opacity: opacity,
+            blur: blur,
+            useIndexedDB: false
+        };
+        
+        // 保存到用户配置
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var userIndex = users.findIndex(function(user) {
+            return user.username === currentUser.username;
+        });
+        
+        if (userIndex !== -1) {
+            if (!users[userIndex].userProfile) {
+                users[userIndex].userProfile = {};
+            }
+            users[userIndex].userProfile.background = backgroundSettings;
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+        
+        localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
+        
+        // 应用到当前页面
+        applyBackgroundToPage(backgroundSettings);
+        
+        // 关闭窗口
+        closePresetBackgroundModal();
+        
+        showAlert('背景图片已更新为 "' + name + '"');
+    }
+    
+    // 取消选择
+    function cancelPresetBackground() {
+        closePresetBackgroundModal();
+    }
+    
 });
