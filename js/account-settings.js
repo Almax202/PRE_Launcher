@@ -3365,10 +3365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 更新侧边栏版本号显示
         var sidebarVersionElement = document.getElementById('sidebarVersion');
         if (sidebarVersionElement) {
-            var sidebarVersionSpan = sidebarVersionElement.querySelector('span');
-            if (sidebarVersionSpan) {
-                sidebarVersionSpan.textContent = loginVersion;
-            }
+            sidebarVersionElement.textContent = '' + loginVersion;
         }
         
         var securityResponseDateElement = document.getElementById('securityResponseDate');
@@ -6515,22 +6512,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function initializeTermsNavigation() {
         var navItems = document.querySelectorAll('.terms-nav-item');
-        var sections = document.querySelectorAll('.terms-section');
         
         navItems.forEach(function(item) {
             item.addEventListener('click', function() {
                 var targetId = this.getAttribute('data-target');
                 
-                navItems.forEach(function(navItem) {
+                var termsLayout = this.closest('.terms-layout');
+                
+                var navItemsInLayout = termsLayout.querySelectorAll('.terms-nav-item');
+                navItemsInLayout.forEach(function(navItem) {
                     navItem.classList.remove('active');
                 });
                 this.classList.add('active');
                 
-                sections.forEach(function(section) {
+                var sectionsInLayout = termsLayout.querySelectorAll('.terms-section');
+                sectionsInLayout.forEach(function(section) {
                     section.style.display = 'none';
                 });
                 
-                var targetSection = document.getElementById(targetId);
+                var targetSection = termsLayout.querySelector('#' + targetId);
                 if (targetSection) {
                     targetSection.style.display = 'block';
                     targetSection.style.animation = 'none';

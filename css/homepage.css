@@ -795,6 +795,10 @@
             pointer-events: auto;
         }
 
+        .theme-update-btn-group {
+            justify-content: center;
+        }
+
         .close-btn {
             padding: 10px 25px;
             border: none;

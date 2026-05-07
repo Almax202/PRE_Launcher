@@ -805,6 +805,17 @@
         </div>
     </div>
 
+    <!-- 主题更新检测弹窗 -->
+    <div class="modal" id="themeUpdateModal">
+        <div class="modal-content">
+            <h3>主题更新</h3>
+            <p>检测到主题更新，三秒后将自动刷新页面以应用新主题</p>
+            <div class="modal-btn-group theme-update-btn-group">
+                <button class="confirm-btn" id="themeCountdownBtn" disabled>还剩 <span id="themeCountdown">3</span> 秒</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 未登录提示弹窗 -->
     <div class="modal" id="loginRedirectModal">
         <div class="modal-content">
@@ -923,16 +934,77 @@
     </div>
 
     <script>
+        let currentThemeHash = '';
+        let themeCheckInterval = null;
+        
+        function getThemeSettingsHash() {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            var glassThemeSettings = localStorage.getItem('glassThemeSettings') || '';
+            
+            if (currentUser && users.length > 0) {
+                var user = users.find(function(u) {
+                    return u.username === currentUser.username;
+                });
+                if (user && user.userProfile) {
+                    return JSON.stringify({
+                        theme: user.userProfile.theme,
+                        glassTheme: user.userProfile.glassTheme,
+                        customTheme: user.userProfile.customTheme,
+                        glassThemeSettings: glassThemeSettings
+                    });
+                }
+            }
+            return glassThemeSettings;
+        }
+        
+        function showThemeUpdateModal() {
+            var modal = document.getElementById('themeUpdateModal');
+            var countdownEl = document.getElementById('themeCountdown');
+            var countdown = 3;
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('active');
+            }, 10);
+            
+            countdownEl.textContent = countdown;
+            
+            var timer = setInterval(function() {
+                countdown--;
+                countdownEl.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    location.reload();
+                }
+            }, 1000);
+        }
+        
+        function startThemeCheck() {
+            currentThemeHash = getThemeSettingsHash();
+            
+            themeCheckInterval = setInterval(function() {
+                var newHash = getThemeSettingsHash();
+                if (newHash !== currentThemeHash) {
+                    currentThemeHash = newHash;
+                    clearInterval(themeCheckInterval);
+                    showThemeUpdateModal();
+                }
+            }, 1000);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.add('page-transition-in');
             setTimeout(function() {
                 document.body.classList.remove('page-transition-in');
             }, 500);
 
-            initializeModals(); // 先初始化弹窗，确保 showLoginRedirectModal 函数已定义
+            initializeModals();
             loadCurrentUser();
             initializeMenu();
             initializeGameButtons();
+            startThemeCheck();
         });
 
         function loadCurrentUser() {
