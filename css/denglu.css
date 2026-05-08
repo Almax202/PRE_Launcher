@@ -4154,6 +4154,9 @@ body.dark-mode .version-modal-buttons {
 .sidebar-user-info {
     flex: 1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .sidebar-username {
@@ -4164,6 +4167,23 @@ body.dark-mode .version-modal-buttons {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.offline-mode-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 11px;
+    border-radius: 10px;
+    font-weight: 500;
+    width: fit-content;
+}
+
+.offline-mode-tag i {
+    font-size: 10px;
 }
 
 .sidebar-uid {

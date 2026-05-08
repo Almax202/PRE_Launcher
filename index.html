@@ -613,6 +613,10 @@
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-username">PRE Launcher</div>
+                    <div class="offline-mode-tag" id="loginOfflineModeTag" style="display: none;">
+                        <i class="fas fa-wifi"></i>
+                        <span>离线模式</span>
+                    </div>
                 </div>
             </div>
             
@@ -638,10 +642,14 @@
                     <span>版本更新</span>
                 </div>
                 <div class="menu-item" id="sidebarAnnouncement">
-                    <i class="fas fa-newspaper"></i>
-                    <span>开发者公告</span>
+                        <i class="fas fa-newspaper"></i>
+                        <span>开发者公告</span>
+                    </div>
+                    <div class="menu-item" id="sidebarOfflineMode" style="display: none;">
+                        <i class="fas" id="offlineModeIcon"></i>
+                        <span id="offlineModeText">离线模式</span>
+                    </div>
                 </div>
-            </div>
             
             <!-- 移动端按钮容器 -->
             <div class="mobile-buttons-container" id="mobileButtonsContainer">
@@ -917,6 +925,67 @@
         </div>
     </div>
 
+    <div id="offlineModeConfirmModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <h3>确认操作</h3>
+            </div>
+            <div class="confirm-body">
+                <p>确认要进入离线模式吗？进入后启动器的部分功能将受到限制</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn" id="offlineModeCancel">取消</button>
+                <button class="confirm-btn confirm-ok" id="offlineModeConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="onlineModeConfirmModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <h3>确认操作</h3>
+            </div>
+            <div class="confirm-body">
+                <p>确认要切换到在线模式吗？将尝试重新连接服务器</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn" id="onlineModeCancel">取消</button>
+                <button class="confirm-btn confirm-ok" id="onlineModeConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="noNetworkModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <h3>网络连接提示</h3>
+            </div>
+            <div class="confirm-body">
+                <p>当前无网络连接，请检查网络设置</p>
+                <p>是否进入离线模式？</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn" id="noNetworkCancel">取消</button>
+                <button class="confirm-btn confirm-ok" id="noNetworkEnterOffline">进入离线模式</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="networkRestoredModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <h3>网络连接恢复</h3>
+            </div>
+            <div class="confirm-body">
+                <p>检测到网络连接已恢复，是否重新上线？</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn" id="networkRestoredCancel">取消</button>
+                <button class="confirm-btn confirm-ok" id="networkRestoredConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
     <div id="notLoggedInModal" class="custom-confirm-modal" style="display: none;">
         <div class="confirm-content">
             <div class="confirm-header">
@@ -1132,13 +1201,26 @@
 
     <div id="registerModal" class="custom-alert">
         <div class="alert-content" style="max-width: 450px;">
-            <div class="alert-icon">
-                <i class="fas fa-user-plus"></i>
+            <!-- 无网络状态 -->
+            <div id="registerNoNetwork" style="display: none; text-align: center;">
+                <div class="alert-icon" style="color: #e74c3c;">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <h3 style="color: #e74c3c;">无网络连接</h3>
+                <div style="margin-top: 20px;">
+                    <button class="alert-confirm" id="registerNoNetworkBack" style="background-color: #95a5a6;">返回</button>
+                </div>
             </div>
-            <h3>注册新账号</h3>
             
-            <!-- 步骤1：输入用户名和密码 -->
-            <div id="registerStep1" class="register-step">
+            <!-- 正常注册内容 -->
+            <div id="registerContent">
+                <div class="alert-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h3>注册新账号</h3>
+                
+                <!-- 步骤1：输入用户名和密码 -->
+                <div id="registerStep1" class="register-step">
                 <div class="input-group">
                     <i class="fas fa-user"></i>
                     <input type="text" id="regUsername" placeholder="请输入用户名" style="width: 100%;">
@@ -1231,8 +1313,9 @@
             </div>
             
             <div class="login-link">
-                <span>已有账号？</span>
-                <a href="#" id="backToLogin">返回登录</a>
+                    <span>已有账号？</span>
+                    <a href="#" id="backToLogin">返回登录</a>
+                </div>
             </div>
         </div>
     </div>
@@ -1485,6 +1568,11 @@
                 document.getElementById('privacyContent').innerHTML = window.privacyPolicy.privacyPolicyHTML;
             }
             
+            updateOfflineModeButton();
+            
+            // 页面加载时检测网络状态
+            checkNetworkStatusOnLoad();
+            
             fetchCaptcha();
             loadSavedCredentials();
             checkAutoLogin();
@@ -1501,6 +1589,14 @@
             
             document.getElementById('serverSelect').addEventListener('change', function() {
                 toggleCustomServer(this.value === 'custom');
+            });
+            
+            window.addEventListener('online', function() {
+                updateOfflineModeButton();
+            });
+            
+            window.addEventListener('offline', function() {
+                updateOfflineModeButton();
             });
         });
         
@@ -1619,14 +1715,62 @@
             }
             if (isCaptchaLoading) return;
             
+            const isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            
+            if (isOfflineMode) {
+                generateLocalCaptcha('captchaImage', 'currentCaptchaCode');
+            } else {
+                fetchRemoteCaptcha('captchaImage', 'currentCaptchaCode');
+            }
+        }
+
+        function generateLocalCaptcha(elementId, codeVariableName) {
+            const captchaEl = document.getElementById(elementId);
+            isCaptchaLoading = true;
+            captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">加载中...</span>';
+            
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#fd79a8', '#a29bfe'];
+            
+            const fontSize = 20 + Math.floor(Math.random() * 8);
+            const rotateDeg = (Math.random() - 0.5) * 10;
+            
+            let captchaHtml = '';
+            for (let i = 0; i < code.length; i++) {
+                const charRotate = (Math.random() - 0.5) * 15;
+                const charColor = colors[Math.floor(Math.random() * colors.length)];
+                captchaHtml += `<span style="display: inline-block; transform: rotate(${charRotate}deg); color: ${charColor}; font-size: ${fontSize}px; font-weight: bold; margin: 0 2px; font-family: Arial, sans-serif;">${code[i]}</span>`;
+            }
+            
+            setTimeout(function() {
+                captchaEl.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; letter-spacing: 5px; transform: rotate(${rotateDeg}deg);">${captchaHtml}</div>`;
+                captchaEl.addEventListener('click', function(e) {
+                    fetchCaptcha(e);
+                });
+                window[codeVariableName] = code;
+                isCaptchaLoading = false;
+            }, 100);
+        }
+
+        function fetchRemoteCaptcha(elementId, codeVariableName) {
             if (!navigator.onLine) {
-                showAlert('无网络连接，请检查网络设置');
+                const captchaEl = document.getElementById(elementId);
+                captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none; color: #ff6b6b;">无网络连接</span>';
+                captchaEl.addEventListener('click', function(e) {
+                    fetchCaptcha(e);
+                });
+                window[codeVariableName] = '';
                 return;
             }
             
             if (captchaRetryCount >= MAX_CAPTCHA_RETRIES) {
                 console.error('验证码获取失败次数过多，已停止重试');
-                const captchaEl = document.getElementById('captchaImage');
+                const captchaEl = document.getElementById(elementId);
                 captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">获取失败<br>点击刷新</span>';
                 captchaEl.addEventListener('click', function(e) {
                     fetchCaptcha(e);
@@ -1634,7 +1778,7 @@
                 return;
             }
             
-            const captchaEl = document.getElementById('captchaImage');
+            const captchaEl = document.getElementById(elementId);
             isCaptchaLoading = true;
             captchaRetryCount++;
             captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">加载中...</span>';
@@ -1656,25 +1800,13 @@
                 captchaEl.addEventListener('click', function(e) {
                     fetchCaptcha(e);
                 });
-                window.currentCaptchaCode = code;
+                window[codeVariableName] = code;
                 isCaptchaLoading = false;
                 captchaRetryCount = 0;
             };
             img.onerror = function() {
-                if (!navigator.onLine) {
-                    showAlert('无网络连接，请检查网络设置');
-                } else {
-                    console.error('验证码图片加载失败');
-                    if (captchaRetryCount < MAX_CAPTCHA_RETRIES) {
-                        fetchCaptcha();
-                    } else {
-                        captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">获取失败<br>点击刷新</span>';
-                        captchaEl.addEventListener('click', function(e) {
-                            fetchCaptcha(e);
-                        });
-                    }
-                }
-                isCaptchaLoading = false;
+                console.error('验证码图片加载失败，切换到本地生成');
+                generateLocalCaptcha(elementId, codeVariableName);
             };
             img.src = imageUrl;
         }
@@ -1686,64 +1818,13 @@
             }
             if (isCaptchaLoading) return;
             
-            if (!navigator.onLine) {
-                showAlert('无网络连接，请检查网络设置');
-                return;
+            const isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            
+            if (isOfflineMode) {
+                generateLocalCaptcha('regCaptchaImage', 'currentRegCaptchaCode');
+            } else {
+                fetchRemoteCaptcha('regCaptchaImage', 'currentRegCaptchaCode');
             }
-            
-            if (captchaRetryCount >= MAX_CAPTCHA_RETRIES) {
-                console.error('验证码获取失败次数过多，已停止重试');
-                const captchaEl = document.getElementById('regCaptchaImage');
-                captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">获取失败<br>点击刷新</span>';
-                captchaEl.addEventListener('click', function(e) {
-                    fetchRegCaptcha(e);
-                });
-                return;
-            }
-            
-            const captchaEl = document.getElementById('regCaptchaImage');
-            isCaptchaLoading = true;
-            captchaRetryCount++;
-            captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">加载中...</span>';
-            
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 4; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            
-            const timestamp = Date.now();
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#fd79a8', '#a29bfe'];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            const imageUrl = `https://dummyimage.com/100x40/${randomColor.substring(1)}/ffffff&text=${code}&t=${timestamp}`;
-            
-            const img = new Image();
-            img.onload = function() {
-                captchaEl.innerHTML = `<img src="${imageUrl}" alt="验证码" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">`;
-                captchaEl.addEventListener('click', function(e) {
-                    fetchRegCaptcha(e);
-                });
-                window.currentRegCaptchaCode = code;
-                isCaptchaLoading = false;
-                captchaRetryCount = 0;
-            };
-            img.onerror = function() {
-                if (!navigator.onLine) {
-                    showAlert('无网络连接，请检查网络设置');
-                } else {
-                    console.error('验证码图片加载失败');
-                    if (captchaRetryCount < MAX_CAPTCHA_RETRIES) {
-                        fetchRegCaptcha();
-                    } else {
-                        captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">获取失败<br>点击刷新</span>';
-                        captchaEl.addEventListener('click', function(e) {
-                            fetchRegCaptcha(e);
-                        });
-                    }
-                }
-                isCaptchaLoading = false;
-            };
-            img.src = imageUrl;
         }
  
         function showAlert(message) {
@@ -1883,6 +1964,139 @@
             logoutConfirmModal.style.animation = 'fadeIn 0.3s ease';
         }
         
+        // 为离线模式/上线按钮添加点击事件处理
+        document.getElementById('sidebarOfflineMode').addEventListener('click', function() {
+            const isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            
+            if (isOfflineMode) {
+                // 当前是离线模式，显示上线确认弹窗
+                var onlineModeModal = document.getElementById('onlineModeConfirmModal');
+                onlineModeModal.style.display = 'flex';
+                onlineModeModal.style.animation = 'fadeIn 0.3s ease';
+            } else {
+                // 当前是在线模式，显示离线模式确认弹窗
+                var offlineModeModal = document.getElementById('offlineModeConfirmModal');
+                offlineModeModal.style.display = 'flex';
+                offlineModeModal.style.animation = 'fadeIn 0.3s ease';
+            }
+        });
+
+        // 离线模式确认弹窗 - 取消按钮
+        document.getElementById('offlineModeCancel').addEventListener('click', function() {
+            var offlineModeModal = document.getElementById('offlineModeConfirmModal');
+            offlineModeModal.style.display = 'none';
+        });
+
+        // 上线确认弹窗 - 取消按钮
+        document.getElementById('onlineModeCancel').addEventListener('click', function() {
+            var onlineModeModal = document.getElementById('onlineModeConfirmModal');
+            onlineModeModal.style.display = 'none';
+        });
+
+        // 网络恢复提示弹窗 - 取消按钮
+        document.getElementById('networkRestoredCancel').addEventListener('click', function() {
+            var networkRestoredModal = document.getElementById('networkRestoredModal');
+            networkRestoredModal.style.display = 'none';
+        });
+
+        // 网络恢复提示弹窗 - 确定按钮
+        document.getElementById('networkRestoredConfirm').addEventListener('click', function() {
+            var networkRestoredModal = document.getElementById('networkRestoredModal');
+            networkRestoredModal.style.display = 'none';
+            localStorage.removeItem('offlineMode');
+            location.reload();
+        });
+
+        // 监听网络状态变化 - 网络恢复
+        window.addEventListener('online', function() {
+            var isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            if (isOfflineMode) {
+                var networkRestoredModal = document.getElementById('networkRestoredModal');
+                networkRestoredModal.style.display = 'flex';
+                networkRestoredModal.style.animation = 'fadeIn 0.3s ease';
+            }
+        });
+
+        // 监听网络状态变化 - 网络断开
+        window.addEventListener('offline', function() {
+            var isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            if (!isOfflineMode) {
+                var noNetworkModal = document.getElementById('noNetworkModal');
+                noNetworkModal.style.display = 'flex';
+                noNetworkModal.style.animation = 'fadeIn 0.3s ease';
+            }
+        });
+
+        // 无网络提示弹窗 - 取消按钮
+        document.getElementById('noNetworkCancel').addEventListener('click', function() {
+            var noNetworkModal = document.getElementById('noNetworkModal');
+            noNetworkModal.style.display = 'none';
+        });
+
+        // 无网络提示弹窗 - 进入离线模式按钮
+        document.getElementById('noNetworkEnterOffline').addEventListener('click', function() {
+            var noNetworkModal = document.getElementById('noNetworkModal');
+            noNetworkModal.style.display = 'none';
+            localStorage.setItem('offlineMode', 'true');
+            location.reload();
+        });
+
+        // 离线模式确认弹窗 - 确定按钮
+        document.getElementById('offlineModeConfirm').addEventListener('click', function() {
+            localStorage.setItem('offlineMode', 'true');
+            location.reload();
+        });
+
+        // 上线确认弹窗 - 确定按钮
+        document.getElementById('onlineModeConfirm').addEventListener('click', function() {
+            localStorage.removeItem('offlineMode');
+            location.reload();
+        });
+
+        function updateOfflineModeButton() {
+            const isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            const isOnline = navigator.onLine;
+            const offlineModeBtn = document.getElementById('sidebarOfflineMode');
+            const iconEl = document.getElementById('offlineModeIcon');
+            const textEl = document.getElementById('offlineModeText');
+            const offlineModeTag = document.getElementById('loginOfflineModeTag');
+            
+            if (isOfflineMode) {
+                offlineModeBtn.style.display = 'flex';
+                iconEl.className = 'fas fa-wifi';
+                textEl.textContent = '上线';
+                if (offlineModeTag) {
+                    offlineModeTag.style.display = 'inline-flex';
+                }
+            } else if (!isOnline) {
+                offlineModeBtn.style.display = 'flex';
+                iconEl.className = 'fas fa-wifi';
+                textEl.textContent = '离线模式';
+                if (offlineModeTag) {
+                    offlineModeTag.style.display = 'none';
+                }
+            } else {
+                offlineModeBtn.style.display = 'none';
+                if (offlineModeTag) {
+                    offlineModeTag.style.display = 'none';
+                }
+            }
+        }
+
+        function checkNetworkStatusOnLoad() {
+            const isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            
+            if (!isOfflineMode && !navigator.onLine) {
+                setTimeout(function() {
+                    var noNetworkModal = document.getElementById('noNetworkModal');
+                    if (noNetworkModal) {
+                        noNetworkModal.style.display = 'flex';
+                        noNetworkModal.style.animation = 'fadeIn 0.3s ease';
+                    }
+                }, 500);
+            }
+        }
+
         // 为登出确认按钮添加事件监听器
         document.getElementById('logoutConfirm').addEventListener('click', function() {
             localStorage.removeItem('currentUser');
@@ -2390,6 +2604,15 @@
         }
 
         function handleLogin() {
+            var isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            
+            if (!isOfflineMode && !navigator.onLine) {
+                var noNetworkModal = document.getElementById('noNetworkModal');
+                noNetworkModal.style.display = 'flex';
+                noNetworkModal.style.animation = 'fadeIn 0.3s ease';
+                return;
+            }
+            
             var loginAgreement = document.getElementById('loginAgreement');
             var agreementSection = document.querySelector('.agreement-section');
             
@@ -2667,6 +2890,10 @@
         }
         
         document.getElementById('sidebarRegister').addEventListener('click', function() {
+            if (localStorage.getItem('offlineMode') === 'true') {
+                showAlert('当前为离线模式，请先上线');
+                return;
+            }
             showRegisterModal();
         });
         
@@ -2693,6 +2920,12 @@
         }
 
         document.getElementById('sidebarVersion').addEventListener('click', function() {
+            // 检查网络连接
+            if (!navigator.onLine) {
+                showAlert('无网络连接，请检查网络设置');
+                return;
+            }
+            
             var versionHistoryModal = document.getElementById('versionHistoryModal');
             versionHistoryModal.style.display = 'flex';
             setTimeout(function() {
@@ -2850,6 +3083,18 @@
         });
         
         document.getElementById('sidebarFeedback').addEventListener('click', function() {
+            // 检查是否为离线模式
+            if (localStorage.getItem('offlineMode') === 'true') {
+                showAlert('当前为离线模式，请先上线');
+                return;
+            }
+            
+            // 检查网络连接
+            if (!navigator.onLine) {
+                showAlert('无网络连接，请检查网络设置');
+                return;
+            }
+            
             var feedbackModal = document.getElementById('feedbackModal');
             feedbackModal.style.display = 'flex';
             setTimeout(function() {
@@ -3474,10 +3719,23 @@
         
         function showRegisterModal() {
             var registerModal = document.getElementById('registerModal');
+            var registerNoNetwork = document.getElementById('registerNoNetwork');
+            var registerContent = document.getElementById('registerContent');
+            
+            if (!navigator.onLine) {
+                registerNoNetwork.style.display = 'block';
+                registerContent.style.display = 'none';
+            } else {
+                registerNoNetwork.style.display = 'none';
+                registerContent.style.display = 'block';
+            }
+            
             registerModal.style.display = 'flex';
             setTimeout(function() {
                 registerModal.classList.add('show');
-                fetchRegCaptcha();
+                if (navigator.onLine) {
+                    fetchRegCaptcha();
+                }
             }, 10);
         }
         
@@ -3788,6 +4046,14 @@
             handleRegister();
         });
         
+        document.getElementById('registerNoNetworkBack').addEventListener('click', function() {
+            var registerModal = document.getElementById('registerModal');
+            registerModal.classList.remove('show');
+            setTimeout(function() {
+                registerModal.style.display = 'none';
+            }, 300);
+        });
+
         document.getElementById('goToLogin').addEventListener('click', function(e) {
             e.preventDefault();
             var registerModal = document.getElementById('registerModal');

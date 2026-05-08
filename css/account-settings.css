@@ -62,6 +62,8 @@ body.page-transition-in {
         transition: left 0.3s ease;
         z-index: 1000;
         box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .settings-sidebar.show {
@@ -253,6 +255,9 @@ body.page-transition-in {
 .sidebar-user-info {
     flex: 1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .sidebar-username {
@@ -269,6 +274,24 @@ body.page-transition-in {
     font-size: 13px;
     color: #666;
     margin-top: 5px;
+}
+
+.offline-mode-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 11px;
+    border-radius: 10px;
+    font-weight: 500;
+    width: fit-content;
+    margin-top: 5px;
+}
+
+.offline-mode-tag i {
+    font-size: 10px;
 }
 
 .sidebar-menu {

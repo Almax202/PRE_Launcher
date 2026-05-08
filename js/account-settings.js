@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadDeviceInfo();
     loadLoginHistory();
     
+    checkOfflineModeAndDisableFeatures();
+    
     function loadUserInfo() {
         var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
         var user = users.find(function(u) {
@@ -6882,6 +6884,94 @@ document.addEventListener('DOMContentLoaded', function() {
     // 取消选择
     function cancelPresetBackground() {
         closePresetBackgroundModal();
+    }
+    
+    function checkOfflineModeAndDisableFeatures() {
+        var isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+        
+        if (!isOfflineMode) {
+            return;
+        }
+        
+        var offlineModeTag = document.getElementById('accountOfflineModeTag');
+        if (offlineModeTag) {
+            offlineModeTag.style.display = 'inline-flex';
+        }
+        
+        var accountSection = document.getElementById('section-account');
+        var securitySection = document.getElementById('section-security');
+        var achievementsSection = document.getElementById('section-achievements');
+        var devicesSection = document.getElementById('section-devices');
+        var advancedSection = document.getElementById('section-advanced');
+        var accountManagementSection = document.getElementById('section-account-management');
+        
+        function disableElement(element, disabledClass) {
+            if (!element) return;
+            
+            var buttons = element.querySelectorAll('button, input[type="button"], input[type="submit"], .two-factor-btn, .game-selector-btn');
+            buttons.forEach(function(btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.title = '离线模式下不可用';
+            });
+            
+            var inputs = element.querySelectorAll('input:not([readonly]):not([type="checkbox"]):not([type="radio"]), textarea, select');
+            inputs.forEach(function(input) {
+                input.disabled = true;
+                input.style.opacity = '0.5';
+                input.style.cursor = 'not-allowed';
+            });
+            
+            var checkboxes = element.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.disabled = true;
+                checkbox.style.cursor = 'not-allowed';
+            });
+            
+            var links = element.querySelectorAll('a');
+            links.forEach(function(link) {
+                link.style.pointerEvents = 'none';
+                link.style.opacity = '0.5';
+            });
+        }
+        
+        disableElement(accountSection);
+        disableElement(securitySection);
+        disableElement(achievementsSection);
+        disableElement(devicesSection);
+        
+        if (advancedSection) {
+            var presetBackgroundBtn = document.getElementById('presetBackgroundBtn');
+            if (presetBackgroundBtn) {
+                presetBackgroundBtn.disabled = true;
+                presetBackgroundBtn.style.opacity = '0.5';
+                presetBackgroundBtn.style.cursor = 'not-allowed';
+                presetBackgroundBtn.title = '离线模式下不可用';
+            }
+        }
+        
+        if (accountManagementSection) {
+            var dataManagementCards = accountManagementSection.querySelectorAll('.section-card');
+            dataManagementCards.forEach(function(card) {
+                var cardHeader = card.querySelector('.card-header');
+                var cardTitle = cardHeader ? cardHeader.querySelector('h3') : null;
+                if (cardTitle && cardTitle.textContent === '数据管理') {
+                    disableElement(card);
+                }
+            });
+            
+            var dangerZoneCards = accountManagementSection.querySelectorAll('.section-card');
+            dangerZoneCards.forEach(function(card) {
+                var cardHeader = card.querySelector('.card-header');
+                var cardTitle = cardHeader ? cardHeader.querySelector('h3') : null;
+                if (cardTitle && cardTitle.textContent === '危险区域') {
+                    disableElement(card);
+                }
+            });
+        }
+        
+        showAlert('当前为离线模式，部分功能已禁用');
     }
     
 });

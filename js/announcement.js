@@ -14,12 +14,12 @@ const announcementData = {
     // 重要公告
     importantAnnouncements: [
         {
-            id: "PREAlmax",
+            id: "importantA-20260430",
             title: "启动器重大更新通知",
             date: "2026-04-30",
             tag: "important",
             tagText: "重要公告",
-            author: "GPY Games Studio",
+            author: "GPY Games Studio - PREAlmax",
             images: [],
             content: [
                 "尊敬的用户，我们很高兴地宣布，PRE Launcher 将迎来一次重大更新！",
@@ -40,7 +40,31 @@ const announcementData = {
     ],
     // 开发日志
     devLogs: [
-        
+        {
+            id: "devlog-20260508",
+            title: "RC 2.6.1.3 开发日志",
+            date: "2026-05-08",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.1.3 版本更新，主要带来了离线模式功能的全面升级！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 离线模式：登录页侧边栏新增离线模式功能，支持在无网络环境下使用启动器",
+                "• 离线模式标签：登录页和账户设置页左上角显示离线模式状态标签",
+                "• 网络状态检测：自动检测网络连接状态变化，智能提示用户切换模式",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 离线模式限制：离线模式下自动禁用账户信息修改、安全设置、成就系统、设备管理、数据管理等需要网络的功能",
+                "• 验证码优化：离线模式下自动切换为本地生成验证码，正常模式下通过API获取",
+                "• 用户体验：网络恢复时自动提示用户是否重新上线",
+                "[color:#ff6b6b]【技术细节】[/color]",
+                "• 实现了基于 localStorage 的离线模式状态管理",
+                "• 添加了 navigator.onLine 事件监听，实现网络状态实时检测",
+                "• 优化了验证码生成逻辑，支持在线/离线双模式",
+                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+            ]
+        }
     ]
 };
 
@@ -526,6 +550,12 @@ function generateAnnouncementModal() {
 
 // 显示公告模态框
 function showAnnouncementModal() {
+    // 检查网络连接
+    if (!navigator.onLine) {
+        showAlert('无网络连接，请检查网络设置');
+        return;
+    }
+    
     var modal = document.getElementById('announcementModal');
     if (!modal) {
         generateAnnouncementModal();
