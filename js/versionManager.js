@@ -1,22 +1,28 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.1.3 (b4)",
+    login: "RC 2.6.1.4 (b4)",
 
     // 游戏大厅版本号
-    homepage: "RC 1.0.3.2 (a2)",
+    homepage: "RC 1.0.3.3 (a2)",
 
     // 点击方块游戏版本号
-    fkgame: "RC 1.3.0",
+    fkgame: "RC 1.3.1",
 
     // 五子棋游戏版本号
-    wzqgame: "RC 1.2.0",
+    wzqgame: "RC 1.2.1",
  
     // 飞行器游戏版本号
-    fxqgame: "RC 1.2.0",
+    fxqgame: "RC 1.2.1",
 
     // 贪吃蛇游戏版本号
-    snakegame: "RC 1.1.0",
+    snakegame: "RC 1.0.1",
+
+    // 记忆卡牌游戏版本号
+    memorygame: "RC 1.1.1",
+
+    // 颜色匹配游戏版本号
+    colormatchgame: "RC 1.2.0",
 
     // 内部版本号
     launcher: "20260508.2613.b4.67"

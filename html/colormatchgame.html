@@ -28,7 +28,7 @@
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-username">颜色匹配游戏</div>
-                    <div class="sidebar-uid">RC 1.0.0</div>
+                    <div class="sidebar-uid" id="versionNumber">RC 1.0.0</div>
                 </div>
             </div>
             
@@ -906,6 +906,11 @@
             
             // 更新语言
             updateLanguage();
+            
+            // 更新版本号显示
+            if (typeof updateVersionDisplay === 'function') {
+                updateVersionDisplay('colormatchgame');
+            }
         });
     </script>
 </body>

@@ -131,7 +131,7 @@
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-username">记忆卡牌游戏</div>
-                    <div class="sidebar-uid">RC 1.0.0</div>
+                    <div class="sidebar-uid" id="versionNumber">RC 1.0.0</div>
                 </div>
             </div>
             
@@ -429,6 +429,11 @@
         
         // 初始化游戏
         initGame();
+        
+        // 初始化版本号显示
+        if (typeof updateVersionDisplay === 'function') {
+            updateVersionDisplay('memorygame');
+        }
     </script>
 </body>
 </html>

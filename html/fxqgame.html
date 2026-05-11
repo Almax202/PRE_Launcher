@@ -10,1754 +10,1120 @@
     <title>飞行器小游戏</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preload" href="../css/homepage.css" as="style">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="../css/homepage.css">
     <link rel="stylesheet" href="../css/achievement.css">
+    <link rel="stylesheet" href="../css/fxqgame.css">
     <script src="../js/versionManager.js" defer></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "微软雅黑", sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #dceeff 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .game-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 95%;
-            max-width: 1200px;
-            position: relative;
-            padding-bottom: 80px;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
-            flex-wrap: nowrap;
-            width: 100%;
-            overflow-x: auto;
-            padding: 5px 0;
-        }
-
-        .game-info {
-            display: flex;
-            gap: 10px;
-            font-size: 16px;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            flex-wrap: nowrap;
-        }
-
-        .score-box, .time-box, .difficulty-box, .custom-time-box, .ai-mode-box {
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 16px;
-            white-space: nowrap;
-            flex: 1;
-            text-align: center;
-            min-width: 120px;
-        }
-
-        .score-box {
-            background-color: #e8f4f8;
-        }
-
-        .time-box {
-            background-color: #f0f8fb;
-        }
-
-        .difficulty-box.easy {
-            background-color: #e6fffa;
-        }
-        .difficulty-box.medium {
-            background-color: #fefcbf;
-        }
-        .difficulty-box.hard {
-            background-color: #fed7d7;
-        }
-        .difficulty-box.nightmare {
-            background-color: #2d3748;
-            color: #fff;
-        }
-
-        .custom-time-box {
-            background-color: #f5f5f5;
-        }
-
-        .ai-mode-box {
-            background-color: #f5fafe;
-        }
-        .ai-switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-            margin-left: 8px;
-        }
-        .ai-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .ai-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 20px;
-        }
-        .ai-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .ai-slider {
-            background-color: #38b2ac;
-        }
-        input:checked + .ai-slider:before {
-            transform: translateX(20px);
-        }
-
-        .difficulty-select, .custom-time-input {
-            width: 60px;
-            margin-left: 8px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .custom-time-tip {
-            font-size: 12px;
-            color: #999;
-            margin-left: 5px;
-        }
-
-        .unlimited-time-checkbox {
-            margin-left: 8px;
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-
-        .lang-switch-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-            background-color: #38b2ac;
-            color: white;
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            z-index: 10;
-        }
-        .lang-switch-btn:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        .bottom-right-btns {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
-
-        .more-games-btn, .update-btn, .achievement-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .more-games-btn {
-            background-color: #9f7aea;
-            color: white;
-        }
-
-        .achievement-btn {
-            background-color: #f59e0b;
-            color: white;
-        }
-
-        .update-btn {
-            background-color: #48bb78;
-            color: white;
-        }
-
-        .more-games-btn:hover, .update-btn:hover, .achievement-btn:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        /* 飞行器游戏区域样式（替换原五子棋棋盘） */
-        .game-area {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            min-height: 500px;
-            background-color: #0a0a23; /* 太空背景 */
-            border: 2px dashed #666;
-            border-radius: 5px;
-            position: relative;
-            overflow: hidden;
-            cursor: none; /* 隐藏鼠标 */
-            margin-bottom: 20px;
-        }
-
-        /* 飞行器样式 */
-        .spaceship {
-            width: 40px;
-            height: 40px;
-            background-color: #4299e1;
-            position: absolute;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 0 10px #4299e1, 0 0 20px #4299e1;
-            z-index: 10;
-            transition: transform 0.05s ease;
-        }
-
-        /* 障碍物样式 */
-        .obstacle {
-            width: 30px;
-            height: 30px;
-            background-color: #e53e3e;
-            position: absolute;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #e53e3e, 0 0 20px #e53e3e;
-        }
-
-        /* 奖励样式 */
-        .reward {
-            width: 25px;
-            height: 25px;
-            background-color: #48bb78;
-            position: absolute;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #48bb78, 0 0 20px #48bb78;
-        }
-
-        /* 游戏提示 */
-        .chess-tip {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 18px;
-            color: #fff;
-            background-color: rgba(0,0,0,0.5);
-            padding: 5px 15px;
-            border-radius: 5px;
-            z-index: 15;
-        }
-
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 32px;
-            color: #e53e3e;
-            font-weight: bold;
-            display: none;
-            z-index: 20;
-            background-color: rgba(0,0,0,0.8);
-            padding: 20px 40px;
-            border-radius: 10px;
-        }
-
-        .btn {
-            padding: 10px 25px;
-            margin: 0 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .start-btn {
-            background-color: #4299e1;
-            color: white;
-        }
-
-        .reset-btn {
-            background-color: #e53e3e;
-            color: white;
-        }
-
-        .back-btn {
-            background-color: #38b2ac;
-            color: white;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        .ranking-container {
-            margin-top: 20px;
-            text-align: left;
-            padding: 15px;
-            background-color: #f5fafe;
-            border-radius: 8px;
-        }
-
-        .ranking-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #2d3748;
-        }
-
-        .ranking-list {
-            list-style: none;
-        }
-
-        .ranking-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 10px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 16px;
-        }
-
-        .ranking-item:nth-child(1) {
-            background-color: #fff3cd;
-            font-weight: bold;
-            color: #d69e2e;
-        }
-
-        .ranking-item:nth-child(2) {
-            background-color: #e9ecef;
-            font-weight: bold;
-            color: #6c757d;
-        }
-
-        .ranking-item:nth-child(3) {
-            background-color: #f8d7da;
-            font-weight: bold;
-            color: #721c24;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.show {
-            opacity: 1;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            text-align: left;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            transform: scale(0.95);
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-
-        .modal.show .modal-content {
-            transform: scale(1);
-        }
-
-        .modal h3 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #2d3748;
-            text-align: center;
-        }
-
-        .modal p {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: #4a5568;
-            line-height: 1.6;
-        }
-
-        .modal ul {
-            margin-left: 20px;
-            margin-bottom: 20px;
-            color: #4a5568;
-        }
-
-        .modal li {
-            margin-bottom: 8px;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .modal-btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .confirm-btn, .close-btn {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            color: white;
-        }
-
-        .confirm-btn {
-            background-color: #48bb78;
-        }
-
-        .cancel-btn, .close-btn {
-            background-color: #e53e3e;
-        }
-
-        .version-switch-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background-color: #667eea;
-            color: white;
-            z-index: 1;
-        }
-        .version-switch-btn:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        .important-update {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 5px 10px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            font-weight: bold;
-            display: block;
-        }
-
-        .footer-info {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            line-height: 1.8;
-        }
-
-        .update-content {
-            height: 300px !important;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-        }
-
-        .update-page {
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-        }
-
-        @media (max-width: 1200px) {
-            .game-info {
-                font-size: 14px;
-            }
-            .score-box, .time-box, .difficulty-box, .custom-time-box, .ai-mode-box {
-                padding: 8px 10px;
-                min-width: 100px;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .top-bar {
-                flex-wrap: wrap;
-            }
-            .game-info {
-                flex-wrap: wrap;
-                justify-content: center;
-                margin-bottom: 10px;
-            }
-            .score-box, .time-box, .difficulty-box, .custom-time-box, .ai-mode-box {
-                flex: none;
-                width: 45%;
-                margin: 5px;
-            }
-            .bottom-right-btns {
-                flex-wrap: wrap;
-                justify-content: center;
-                bottom: 15px;
-                right: 15px;
-            }
-            .game-area {
-                min-height: 350px;
-            }
-            .update-content {
-                height: 250px !important;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .game-info {
-                gap: 5px;
-            }
-            .score-box, .time-box, .difficulty-box, .custom-time-box, .ai-mode-box {
-                width: 100%;
-                margin: 3px 0;
-            }
-            .version-switch-btn {
-                bottom: 70px;
-                right: 20px;
-                padding: 6px 12px;
-                font-size: 13px;
-            }
-            .lang-switch-btn {
-                bottom: 70px;
-                left: 20px;
-                padding: 6px 12px;
-                font-size: 13px;
-            }
-            .game-area {
-                min-height: 300px;
-            }
-            .chess-tip {
-                font-size: 14px;
-                padding: 3px 10px;
-            }
-            .game-over {
-                font-size: 24px;
-                padding: 15px 30px;
-            }
-            .update-content {
-                height: 200px !important;
-            }
-        }
-    </style>
     <script src="../js/developer-config.js"></script>
 </head>
 <body>
-
-<div class="game-container">
-    <div class="top-bar">
-        <div class="game-info">
-            <div class="score-box" data-lang="score">得分: <span id="score">0</span></div>
-            <div class="time-box" data-lang="remainingTime">剩余时间: <span id="time">30</span>s
-                <input type="checkbox" class="unlimited-time-checkbox" id="unlimitedTimeCheckbox" data-lang="unlimitedTime">
-                <label for="unlimitedTimeCheckbox" data-lang="unlimitedTimeLabel">无限制</label>
-            </div>
-            <div class="difficulty-box easy" id="difficultyBox" data-lang="difficulty">
-                难度:
-                <select class="difficulty-select" id="difficultySelect">
-                    <option value="easy" data-lang="easy">简单</option>
-                    <option value="medium" data-lang="medium">中等</option>
-                    <option value="hard" data-lang="hard">困难</option>
-                    <option value="nightmare" data-lang="nightmare">梦魇</option>
-                </select>
-            </div>
-            <div class="custom-time-box" data-lang="customTime">
-                自定义时间:
-                <input type="number" class="custom-time-input" id="customTimeInput" value="30" min="1" max="300">
-                <span class="custom-time-tip" data-lang="customTimeTip">(最多5分钟/300秒)</span>
-            </div>
-            <div class="ai-mode-box" data-lang="aiMode">
-                自动飞行:
-                <label class="ai-switch">
-                    <input type="checkbox" id="aiModeSwitch">
-                    <span class="ai-slider"></span>
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <div class="game-area" id="gameArea">
-        <div class="chess-tip" id="chessTip">移动鼠标控制飞行器</div>
-        <div class="game-over" id="gameOver" data-lang="gameOver">游戏结束!</div>
-    </div>
-
-    <div class="btn-group">
-        <button class="btn start-btn" id="startBtn" data-lang="startGame">开始游戏</button>
-        <button class="btn reset-btn" id="resetBtn" data-lang="resetGame">重置游戏</button>
-        <button class="btn back-btn" id="backBtn" data-lang="backHome">返回首页</button>
-    </div>
-
-    <div class="ranking-container">
-        <div class="ranking-title" data-lang="ranking">游戏排行榜</div>
-        <ul class="ranking-list" id="rankingList">
-        </ul>
-    </div>
-
-    <div class="footer-info">
-        <p data-lang="gameVersion">游戏版本：RC 1.2.0</p>
-        <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
-    </div>
-
-    <button class="lang-switch-btn" id="langSwitchBtn">English</button>
-
-    <div class="bottom-right-btns">
-        <button class="achievement-btn" id="achievementBtn" data-lang="achievements">成就</button>
-        <button class="update-btn" id="updateBtn" data-lang="updateAnnouncement">版本更新公告</button>
-    </div>
-</div>
-
-<!-- 排行榜弹窗 -->
-<div class="modal" id="rankingModal">
-    <div class="modal-content">
-        <h3 data-lang="congratulations">恭喜你完成游戏！</h3>
-        <p data-lang="finalScore">你的最终得分: <span id="finalScore">0</span></p>
-        <input type="text" class="modal-input" id="playerName" placeholder="请输入你的名字" maxlength="6" data-lang="enterName">
-        <div class="modal-btn-group">
-            <button class="confirm-btn" id="confirmBtn" data-lang="confirmAdd">确认添加</button>
-            <button class="cancel-btn" id="cancelBtn" data-lang="cancel">取消</button>
-        </div>
-    </div>
-</div>
-
-<!-- 版本更新公告弹窗 -->
-<div class="modal" id="updateModal">
-    <div class="modal-content">
-        <h3 data-lang="updateAnnouncement">版本更新公告</h3>
-        <div class="update-pagination" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-            <button class="pagination-btn" id="prevPage" data-lang="prevPage" style="padding: 5px 15px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px;">上一页</button>
-            <span class="page-info" id="pageInfo" data-lang="pageInfo">第 1 / 2 页</span>
-            <button class="pagination-btn" id="nextPage" data-lang="nextPage" style="padding: 5px 15px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px;">下一页</button>
-        </div>
-        <div class="update-content" id="updateContent">        
-            
-            <div class="update-page" data-page="1" data-version="release">
-			    <span class="important-update">重要更新</span>
-			    <p>本次更新时间：2026-03-24</p>
-			    <p>版本号：RC 1.2.0</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-					<li>新增 成就系统</li>
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
-			</div>
-
-			<div class="update-page" data-page="1" data-version="release">
-			    <span class="important-update">重要更新</span>
-			    <p>本次更新时间：2026-02-27</p>
-			    <p>版本号：RC 1.1.0</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-					<li>新增 梦魇难度</li>
-			        <li>优化 顶部状态栏样式统一</li>
-			        <li>修复 上个版本并未正确修复的游戏结束后卡死问题</li>
-			        <li>增强 障碍物生成逻辑</li>
-					<li>增强 AI难度逻辑</li>
-					<li>删除 更多游戏按钮</li>
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
-			</div>
-			
-            <div class="update-page" data-page="2" data-version="release">
-                <span class="important-update">重要更新</span>
-                <p>本次更新时间：2026-02-27</p>
-                <p>版本号：RC 1.0.0</p>
-                <p>核心更新内容：</p>
-                <ul>
-					<p>通告 飞行器小游戏上线</p>
-                    <li>新增 自动飞行功能</li>
-                    <li>新增 时间无限制功能</li>
-                    <li>优化 顶部状态栏样式统一</li>
-                    <li>修复 游戏结束后卡死问题</li>
-                    <li>增强 障碍物生成逻辑</li>
-                </ul>
-                <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
-            </div>
-            
-			<div class="update-page" data-page="1" data-version="beta">
-			    <p>无内容</p>
-			</div>
-			
-        </div>
-        <div class="modal-btn-group">
-            <button class="close-btn" id="closeUpdateModal" data-lang="close" style="padding: 10px 25px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; color: white; background-color: #e53e3e;">关闭</button>
-        </div>
-        <button class="version-switch-btn" id="versionSwitchBtn">Beta</button>
-    </div>
-</div>
-
-<!-- 成就弹窗 -->
-<div class="modal" id="achievementModal">
-    <div class="modal-content achievement-modal-content">
-        <h3 data-lang="achievements">成就列表</h3>
-        <div class="achievement-stats">
-            <div class="stat-item">
-                <span class="stat-value" id="fxqUnlockedCount">0</span>
-                <span class="stat-label" data-lang="unlocked">已解锁</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="fxqTotalCount">10</span>
-                <span class="stat-label" data-lang="total">总计</span>
-            </div>
-        </div>
-        <div class="achievement-list" id="fxqAchievementList">
-        </div>
-        <div class="modal-btn-group">
-            <button class="close-btn" id="closeAchievementModal" data-lang="close">关闭</button>
-        </div>
-    </div>
-</div>
-
-<script>
-var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-
-if (!currentUser.username) {
-    window.location.href = '../index.html';
-}
-
-function getUserGameData(gameKey, defaultValue) {
-    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    var user = users.find(function(u) {
-        return u.username === currentUser.username;
-    });
-    
-    if (user && user.gameData && user.gameData[gameKey] !== undefined) {
-        return user.gameData[gameKey];
-    }
-    
-    return defaultValue;
-}
-
-function setUserGameData(gameKey, value) {
-    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    var userIndex = users.findIndex(function(u) {
-        return u.username === currentUser.username;
-    });
-    
-    if (userIndex !== -1) {
-        if (!users[userIndex].gameData) {
-            users[userIndex].gameData = {};
-        }
-        users[userIndex].gameData[gameKey] = value;
-        localStorage.setItem('registeredUsers', JSON.stringify(users));
-    }
-}
-
-// 多语言配置
-const langConfig = {
-    zh: {
-        score: '得分: ',
-        remainingTime: '剩余时间: ',
-        difficulty: '难度: ',
-        easy: '简单',
-        medium: '中等',
-        hard: '困难',
-        nightmare: '梦魇',
-        customTime: '自定义时间: ',
-        customTimeTip: '(最多5分钟/300秒)',
-        gameOver: '游戏结束!',
-        startGame: '开始游戏',
-        resetGame: '重置游戏',
-        backHome: '返回首页',
-        ranking: '游戏排行榜',
-        gameVersion: '游戏版本：',
-        moreGames: '更多游戏',
-        updateAnnouncement: '版本更新公告',
-        congratulations: '恭喜你完成游戏！',
-        finalScore: '你的最终得分: ',
-        enterName: '请输入你的名字',
-        confirmAdd: '确认添加',
-        cancel: '取消',
-        prevPage: '上一页',
-        nextPage: '下一页',
-        pageInfo: '第 {{current}} / {{total}} 页',
-        close: '关闭',
-        anonymousPlayer: '匿名玩家',
-        scoreUnit: ' 分',
-        moreGamesTip: '更多游戏即将上线！',
-        backHomeTip: '即将返回首页！',
-        importantUpdate: '重要更新',
-        achievements: '成就',
-        unlocked: '已解锁',
-        total: '总计',
-        blackTurn: '移动鼠标控制飞行器',
-        whiteTurn: '自动飞行中',
-        blackWin: '挑战成功！',
-        whiteWin: '撞到障碍物！',
-        timeUp: '时间到！',
-        aiMode: '自动飞行:',
-        unlimitedTime: '',
-        unlimitedTimeLabel: '无限制'
-    },
-    en: {
-        score: 'Score: ',
-        remainingTime: 'Remaining Time: ',
-        difficulty: 'Difficulty: ',
-        easy: 'Easy',
-        medium: 'Medium',
-        hard: 'Hard',
-        nightmare: 'Nightmare',
-        customTime: 'Custom Time: ',
-        customTimeTip: '(Max 5 mins/300 sec)',
-        gameOver: 'Game Over!',
-        startGame: 'Start Game',
-        resetGame: 'Reset Game',
-        backHome: 'Back to Home',
-        ranking: 'Game Ranking',
-        gameVersion: 'Game Version: RC 1.2.0',
-        moreGames: 'More Games',
-        updateAnnouncement: 'Version Update Notice',
-        congratulations: 'Congratulations on completing the game!',
-        finalScore: 'Your final score: ',
-        enterName: 'Please enter your name',
-        confirmAdd: 'Confirm Add',
-        cancel: 'Cancel',
-        prevPage: 'Previous Page',
-        nextPage: 'Next Page',
-        pageInfo: 'Page {{current}} / {{total}}',
-        close: 'Close',
-        anonymousPlayer: 'Anonymous Player',
-        scoreUnit: ' pts',
-        moreGamesTip: 'More games coming soon!',
-        backHomeTip: 'Returning to home page soon!',
-        importantUpdate: 'Important Update',
-        achievements: 'Achievements',
-        unlocked: 'Unlocked',
-        total: 'Total',
-        blackTurn: 'Move mouse to control spaceship',
-        whiteTurn: 'Auto flying',
-        blackWin: 'Challenge Success!',
-        whiteWin: 'Hit obstacle!',
-        timeUp: 'Time\'s up!',
-        aiMode: 'Auto Fly:',
-        unlimitedTime: '',
-        unlimitedTimeLabel: 'Unlimited'
-    }
-};
-
-// 当前语言状态
-let currentLang = 'zh';
-
-// 切换语言函数
-function switchLanguage() {
-    currentLang = currentLang === 'zh' ? 'en' : 'zh';
-    
-    const langBtn = document.getElementById('langSwitchBtn');
-    langBtn.textContent = currentLang === 'zh' ? 'English' : '中文';
-    
-    document.title = currentLang === 'zh' ? '飞行器小游戏' : 'Spaceship Mini Game';
-    
-    document.querySelectorAll('[data-lang]').forEach(el => {
-        const langKey = el.dataset.lang;
-        const originalHtml = el.dataset.originalHtml || el.innerHTML;
-        
-        if (!el.dataset.originalHtml) {
-            el.dataset.originalHtml = originalHtml;
-        }
-        
-        if (langKey === 'pageInfo') {
-            const currentPageNum = currentPage;
-            const totalPageNum = filteredPages.length;
-            el.textContent = langConfig[currentLang][langKey]
-                .replace('{{current}}', currentPageNum)
-                .replace('{{total}}', totalPageNum);
-        } else {
-            let newHtml = langConfig[currentLang][langKey];
-            if (originalHtml.includes('<span') || originalHtml.includes('<input') || originalHtml.includes('<select') || originalHtml.includes('<label')) {
-                const dynamicPart = originalHtml.replace(/[^<]*<[^>]*>.*<\/[^>]*>[^<]*/, match => match);
-                newHtml = newHtml + dynamicPart.substring(dynamicPart.indexOf('<'));
-            }
-            el.innerHTML = newHtml;
-        }
-        
-        if (el.tagName === 'INPUT' && el.placeholder) {
-            el.placeholder = langConfig[currentLang][langKey];
-        }
-        
-        if (el.tagName === 'OPTION') {
-            el.textContent = langConfig[currentLang][langKey];
-        }
-        
-        if (el.tagName === 'LABEL' && el.dataset.lang) {
-            el.textContent = langConfig[currentLang][langKey];
-        }
-    });
-    
-    document.querySelectorAll('.important-update').forEach(el => {
-        el.textContent = langConfig[currentLang].importantUpdate;
-    });
-    
-    document.querySelectorAll('.ranking-item').forEach(item => {
-        const scoreText = item.querySelector('span:last-child').textContent;
-        const num = scoreText.replace(/[^0-9]/g, '');
-        item.querySelector('span:last-child').textContent = num + langConfig[currentLang].scoreUnit;
-    });
-    
-    updateChessTip();
-}
-
-// 更新游戏提示文本
-function updateChessTip() {
-    const chessTip = document.getElementById('chessTip');
-    if (aiMode) {
-        chessTip.textContent = langConfig[currentLang].whiteTurn;
-    } else {
-        chessTip.textContent = langConfig[currentLang].blackTurn;
-    }
-}
-
-// 绑定语言切换按钮事件
-document.getElementById('langSwitchBtn').addEventListener('click', switchLanguage);
-
-// 翻页功能核心代码
-const updateModal = document.getElementById('updateModal');
-const prevPageBtn = document.getElementById('prevPage');
-const nextPageBtn = document.getElementById('nextPage');
-const pageInfo = document.getElementById('pageInfo');
-const updatePages = document.querySelectorAll('.update-page');
-const versionSwitchBtn = document.getElementById('versionSwitchBtn');
-let currentPage = 1;
-let currentVersion = 'release';
-let filteredPages = [];
-
-// 筛选版本页面
-function filterVersionPages(version) {
-    filteredPages = Array.from(updatePages).filter(page => page.dataset.version === version);
-    currentPage = 1;
-    pageInfo.textContent = langConfig[currentLang].pageInfo
-        .replace('{{current}}', currentPage)
-        .replace('{{total}}', filteredPages.length);
-    switchPage(1);
-    versionSwitchBtn.textContent = version === 'release' ? 'Beta' : 'RC';
-}
-
-// 初始化筛选正式版页面
-filterVersionPages(currentVersion);
-
-// 切换页面函数
-function switchPage(targetPage) {
-    updatePages.forEach(page => {
-        page.style.display = 'none';
-    });
-    if (filteredPages[targetPage - 1]) {
-        filteredPages[targetPage - 1].style.display = 'block';
-    }
-    currentPage = targetPage;
-    pageInfo.textContent = langConfig[currentLang].pageInfo
-        .replace('{{current}}', currentPage)
-        .replace('{{total}}', filteredPages.length);
-    prevPageBtn.disabled = currentPage === 1;
-    nextPageBtn.disabled = currentPage === filteredPages.length;
-    prevPageBtn.style.opacity = currentPage === 1 ? 0.5 : 1;
-    nextPageBtn.style.opacity = currentPage === filteredPages.length ? 0.5 : 1;
-}
-
-// 绑定翻页按钮事件
-prevPageBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-        switchPage(currentPage - 1);
-    }
-});
-
-nextPageBtn.addEventListener('click', () => {
-    if (currentPage < filteredPages.length) {
-        switchPage(currentPage + 1);
-    }
-});
-
-// 版本切换按钮事件
-versionSwitchBtn.addEventListener('click', () => {
-    currentVersion = currentVersion === 'release' ? 'beta' : 'release';
-    filterVersionPages(currentVersion);
-});
-
-// 关闭弹窗事件
-document.getElementById('closeUpdateModal').addEventListener('click', () => {
-    updateModal.classList.remove('show');
-    setTimeout(() => {
-        updateModal.style.display = 'none';
-    }, 300);
-});
-
-// 成就按钮点击事件
-(document.getElementById('achievementBtn') || { addEventListener: function() {} }).addEventListener('click', () => {
-    renderFxqAchievements();
-    (document.getElementById('achievementModal') || { style: {}, classList: { add: function() {} } }).style.display = 'flex';
-    setTimeout(() => {
-        (document.getElementById('achievementModal') || { classList: { add: function() {} } }).classList.add('show');
-    }, 10);
-});
-
-// 关闭成就弹窗事件
-(document.getElementById('closeAchievementModal') || { addEventListener: function() {} }).addEventListener('click', () => {
-    (document.getElementById('achievementModal') || { classList: { remove: function() {} } }).classList.remove('show');
-    setTimeout(() => {
-        (document.getElementById('achievementModal') || { style: {} }).style.display = 'none';
-    }, 300);
-});
-
-// 版本更新按钮点击事件
-(document.getElementById('updateBtn') || { addEventListener: function() {} }).addEventListener('click', () => {
-    updateModal.style.display = 'flex';
-    setTimeout(() => {
-        updateModal.classList.add('show');
-    }, 10);
-    currentVersion = 'release';
-    filterVersionPages(currentVersion);
-});
-
-// 点击弹窗外部关闭
-window.addEventListener('click', (e) => {
-    if (e.target === updateModal) {
-        updateModal.classList.remove('show');
-        setTimeout(() => {
-            updateModal.style.display = 'none';
-        }, 300);
-    }
-});
-
-// 难度切换样式同步
-document.getElementById('difficultySelect').addEventListener('change', function() {
-    const difficultyBox = document.getElementById('difficultyBox');
-    difficultyBox.classList.remove('easy', 'medium', 'hard', 'nightmare');
-    difficultyBox.classList.add(this.value);
-    // 更新障碍物速度和生成频率
-    setObstacleSpeed();
-    setObstacleSpawnRate();
-});
-
-// 取消排行榜弹窗
-document.getElementById('cancelBtn').addEventListener('click', function() {
-    document.getElementById('rankingModal').style.display = 'none';
-});
-
-// 确认添加排行榜
-document.getElementById('confirmBtn').addEventListener('click', function() {
-    const name = document.getElementById('playerName').value.trim() || langConfig[currentLang].anonymousPlayer;
-    const score = document.getElementById('finalScore').textContent;
-    const rankingList = document.getElementById('rankingList');
-    
-    const li = document.createElement('li');
-    li.className = 'ranking-item';
-    li.innerHTML = `<span>${name}</span><span>${score}${langConfig[currentLang].scoreUnit}</span>`;
-    
-    rankingList.appendChild(li);
-    document.getElementById('rankingModal').style.display = 'none';
-    document.getElementById('playerName').value = '';
-});
-
-// 自定义时间输入限制
-document.getElementById('customTimeInput').addEventListener('change', function() {
-    if (document.getElementById('unlimitedTimeCheckbox').checked) return;
-    
-    let value = parseInt(this.value);
-    if (isNaN(value)) value = 30;
-    if (value < 1) value = 1;
-    if (value > 300) value = 300;
-    this.value = value;
-    document.getElementById('time').textContent = value;
-    
-    if (gameRunning && !document.getElementById('unlimitedTimeCheckbox').checked) {
-        timeLeft = value;
-        updateTimerDisplay();
-    }
-});
-
-// 无时间限制复选框事件
-document.getElementById('unlimitedTimeCheckbox').addEventListener('change', function() {
-    const customTimeInput = document.getElementById('customTimeInput');
-    const timeDisplay = document.getElementById('time');
-    
-    if (this.checked) {
-        customTimeInput.disabled = true;
-        customTimeInput.style.opacity = 0.5;
-        timeDisplay.textContent = '∞';
-        if (gameRunning) {
-            clearInterval(gameTimer);
-            gameTimer = null;
-        }
-    } else {
-        customTimeInput.disabled = false;
-        customTimeInput.style.opacity = 1;
-        timeDisplay.textContent = customTimeInput.value;
-        if (gameRunning) {
-            clearInterval(gameTimer);
-            timeLeft = parseInt(customTimeInput.value);
-            gameTimer = setInterval(updateTimer, 1000);
-        }
-    }
-});
-
-// 飞行器游戏核心逻辑
-let gameTimer = null;
-let gameRunning = false;
-let score = 0;
-let timeLeft = 30;
-let aiMode = false; // 自动飞行模式
-let spaceship = null; // 飞行器元素
-let obstacles = []; // 障碍物数组
-let rewards = []; // 奖励数组
-let obstacleSpeed = 5; // 障碍物速度
-let obstacleSpawnRate = 1000; // 障碍物生成频率(ms)
-let obstacleSpawnTimer = null; // 障碍物生成定时器
-let autoFlyInterval = null; // 自动飞行定时器
-let gameArea = document.getElementById('gameArea');
-
-// 成就系统
-let fxqGamesPlayed = getUserGameData('fxqGamesPlayed', 0);
-let fxqAchievements = getUserGameData('fxqAchievements', []);
-let fxqHighScore = getUserGameData('fxqHighScore', 0);
-
-const fxqAchievementList = [
-    {
-        id: 'fxq_first_game',
-        name: '初次飞行',
-        desc: '完成第一次飞行',
-        icon: 'fa-rocket',
-        condition: () => fxqGamesPlayed >= 1
-    },
-    {
-        id: 'fxq_score_50',
-        name: '初级飞行员',
-        desc: '单局得分达到50分',
-        icon: 'fa-star',
-        condition: () => score >= 50
-    },
-    {
-        id: 'fxq_score_100',
-        name: '中级飞行员',
-        desc: '单局得分达到100分',
-        icon: 'fa-medal',
-        condition: () => score >= 100
-    },
-    {
-        id: 'fxq_score_200',
-        name: '高级飞行员',
-        desc: '单局得分达到200分',
-        icon: 'fa-trophy',
-        condition: () => score >= 200
-    },
-    {
-        id: 'fxq_games_5',
-        name: '飞行爱好者',
-        desc: '累计完成5局游戏',
-        icon: 'fa-plane',
-        condition: () => fxqGamesPlayed >= 5
-    },
-    {
-        id: 'fxq_games_10',
-        name: '飞行达人',
-        desc: '累计完成10局游戏',
-        icon: 'fa-fighter-jet',
-        condition: () => fxqGamesPlayed >= 10
-    },
-    {
-        id: 'fxq_easy_master',
-        name: '轻松过关',
-        desc: '在简单难度下完成一局游戏',
-        icon: 'fa-smile',
-        condition: () => document.getElementById('difficultySelect').value === 'easy' && score > 0
-    },
-    {
-        id: 'fxq_hard_master',
-        name: '困难征服者',
-        desc: '在困难难度下完成一局游戏',
-        icon: 'fa-fire',
-        condition: () => document.getElementById('difficultySelect').value === 'hard' && score > 0
-    },
-    {
-        id: 'fxq_nightmare_survivor',
-        name: '梦魇幸存者',
-        desc: '在梦魇难度下完成一局游戏',
-        icon: 'fa-skull',
-        condition: () => document.getElementById('difficultySelect').value === 'nightmare' && score > 0
-    },
-    {
-        id: 'fxq_perfect_score',
-        name: '完美飞行',
-        desc: '单局得分达到300分',
-        icon: 'fa-crown',
-        condition: () => score >= 300
-    }
-];
-
-function checkFxqAchievements() {
-    fxqGamesPlayed++;
-    setUserGameData('fxqGamesPlayed', fxqGamesPlayed);
-    
-    // 更新最高分
-    if (score > fxqHighScore) {
-        fxqHighScore = score;
-        setUserGameData('fxqHighScore', fxqHighScore);
-    }
-    
-    fxqAchievementList.forEach(achievement => {
-        if (fxqAchievements.includes(achievement.id)) return;
-        
-        let unlocked = false;
-        if (achievement.condition) {
-            unlocked = achievement.condition();
-        } else {
-            unlocked = true;
-        }
-        
-        if (unlocked) {
-            fxqAchievements.push(achievement.id);
-            setUserGameData('fxqAchievements', fxqAchievements);
-            showFxqAchievement(achievement);
-        }
-    });
-}
-
-function showFxqAchievement(achievement) {
-    const achievementPopup = document.createElement('div');
-    achievementPopup.className = 'achievement-popup';
-    achievementPopup.innerHTML = `
-        <div class="achievement-popup-content">
-            <div class="achievement-popup-icon">
-                <i class="fas ${achievement.icon}"></i>
-            </div>
-            <div class="achievement-popup-text">
-                <div class="achievement-popup-title">成就解锁！</div>
-                <div class="achievement-popup-name">${achievement.name}</div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(achievementPopup);
-    
-    setTimeout(() => {
-        achievementPopup.classList.add('show');
-    }, 10);
-    
-    setTimeout(() => {
-        achievementPopup.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(achievementPopup);
-        }, 300);
-    }, 3000);
-}
-
-function renderFxqAchievements() {
-    const achievementList = document.getElementById('fxqAchievementList');
-    achievementList.innerHTML = '';
-    
-    const unlockedCount = fxqAchievements.length;
-    document.getElementById('fxqUnlockedCount').textContent = unlockedCount;
-    
-    fxqAchievementList.forEach(achievement => {
-        const isUnlocked = fxqAchievements.includes(achievement.id) || DeveloperConfig.getAchievementsUnlocked();
-        const isCompleted = achievement.condition();
-        
-        let progressPercent = 0;
-        let progressText = '';
-        
-        if (isUnlocked) {
-            progressPercent = 100;
-            progressText = '已完成';
-        } else if (achievement.id === 'fxq_first_game') {
-            progressPercent = fxqGamesPlayed >= 1 ? 100 : 0;
-            progressText = fxqGamesPlayed >= 1 ? '1/1' : '0/1';
-        } else if (achievement.id === 'fxq_score_50') {
-            progressPercent = Math.min((fxqHighScore / 50) * 100, 100);
-            progressText = fxqHighScore + '/50';
-        } else if (achievement.id === 'fxq_score_100') {
-            progressPercent = Math.min((fxqHighScore / 100) * 100, 100);
-            progressText = fxqHighScore + '/100';
-        } else if (achievement.id === 'fxq_score_200') {
-            progressPercent = Math.min((fxqHighScore / 200) * 100, 100);
-            progressText = fxqHighScore + '/200';
-        } else if (achievement.id === 'fxq_score_300') {
-            progressPercent = Math.min((fxqHighScore / 300) * 100, 100);
-            progressText = fxqHighScore + '/300';
-        } else if (achievement.id === 'fxq_games_5') {
-            progressPercent = Math.min((fxqGamesPlayed / 5) * 100, 100);
-            progressText = fxqGamesPlayed + '/5';
-        } else if (achievement.id === 'fxq_games_10') {
-            progressPercent = Math.min((fxqGamesPlayed / 10) * 100, 100);
-            progressText = fxqGamesPlayed + '/10';
-        } else {
-            progressPercent = isCompleted ? 100 : 0;
-            progressText = isCompleted ? '已完成' : '未完成';
-        }
-        
-        const achievementItem = document.createElement('div');
-        achievementItem.className = 'achievement-item' + (isUnlocked ? ' unlocked' : ' locked');
-        achievementItem.innerHTML = `
-            <div class="achievement-icon">
-                <i class="fas ${achievement.icon}"></i>
-            </div>
-            <div class="achievement-info">
-                <div class="achievement-name">${achievement.name}</div>
-                <div class="achievement-desc">${achievement.desc}</div>
-                <div class="achievement-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                    </div>
-                    <span class="progress-text">${progressText}</span>
+    <div class="settings-container">
+        <div class="settings-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-avatar">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-username">飞行器游戏</div>
+                    <div class="sidebar-uid" id="versionNumber">RC 1.2.0</div>
                 </div>
             </div>
-        `;
-        achievementList.appendChild(achievementItem);
-    });
-}
-
-// AI难度配置（不同难度下的飞行策略）
-const aiDifficultyConfig = {
-    easy: { moveRange: 8, randomness: 0.7, avoidRange: 60 }, // 移动范围小、随机性高、躲避范围大
-    medium: { moveRange: 10, randomness: 0.5, avoidRange: 50 },
-    hard: { moveRange: 12, randomness: 0.3, avoidRange: 40 },
-    nightmare: { moveRange: 15, randomness: 0.1, avoidRange: 30 } // 移动范围大、随机性低、躲避范围极小
-};
-
-// 设置障碍物速度（根据难度）
-function setObstacleSpeed() {
-    const difficulty = document.getElementById('difficultySelect').value;
-    switch(difficulty) {
-        case 'easy':
-            obstacleSpeed = 3;
-            break;
-        case 'medium':
-            obstacleSpeed = 5;
-            break;
-        case 'hard':
-            obstacleSpeed = 8;
-            break;
-        case 'nightmare':
-            obstacleSpeed = 12;
-            break;
-    }
-}
-
-// 设置障碍物生成频率（根据难度）
-function setObstacleSpawnRate() {
-    const difficulty = document.getElementById('difficultySelect').value;
-    switch(difficulty) {
-        case 'easy':
-            obstacleSpawnRate = 1200; // 每1.2秒生成一个
-            break;
-        case 'medium':
-            obstacleSpawnRate = 800; // 每0.8秒生成一个
-            break;
-        case 'hard':
-            obstacleSpawnRate = 500; // 每0.5秒生成一个
-            break;
-        case 'nightmare':
-            obstacleSpawnRate = 300; // 每0.3秒生成一个，且每次生成2个
-            break;
-    }
-    // 如果游戏正在运行，重启生成定时器
-    if (gameRunning && obstacleSpawnTimer) {
-        clearInterval(obstacleSpawnTimer);
-        startObstacleSpawn();
-    }
-}
-
-// 更新计时器显示
-function updateTimerDisplay() {
-    document.getElementById('time').textContent = timeLeft;
-}
-
-// 计时器逻辑
-function updateTimer() {
-    timeLeft--;
-    updateTimerDisplay();
-    
-    if (timeLeft <= 0) {
-        endGame(langConfig[currentLang].timeUp);
-    }
-}
-
-// 创建飞行器
-function createSpaceship() {
-    // 清除现有飞行器
-    if (spaceship) {
-        gameArea.removeChild(spaceship);
-    }
-    
-    spaceship = document.createElement('div');
-    spaceship.className = 'spaceship';
-    spaceship.textContent = '🚀';
-    spaceship.style.left = (gameArea.clientWidth / 2 - 20) + 'px';
-    spaceship.style.top = (gameArea.clientHeight / 2 - 20) + 'px';
-    gameArea.appendChild(spaceship);
-}
-
-// 创建障碍物
-function createObstacle() {
-    const difficulty = document.getElementById('difficultySelect').value;
-    // 梦魇模式每次生成2个障碍物
-    const createCount = difficulty === 'nightmare' ? 2 : 1;
-    
-    for (let i = 0; i < createCount; i++) {
-        // 随机位置（只在右侧生成）
-        const obstacle = document.createElement('div');
-        obstacle.className = 'obstacle';
-        obstacle.textContent = '🚧';
+            
+            <div class="sidebar-menu">
+                <div class="menu-item menu-header">
+                    <span>游戏控制</span>
+                </div>
+                <div class="menu-item" id="sidebarStartGameBtn">
+                    <i class="fas fa-play-circle"></i>
+                    <span>开始游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarResetGameBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>重置游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarAchievementBtn">
+                    <i class="fas fa-trophy"></i>
+                    <span>成就</span>
+                </div>
+                <div class="menu-item" id="sidebarUpdateBtn">
+                    <i class="fas fa-bell"></i>
+                    <span>版本更新公告</span>
+                </div>
+                <div class="menu-item" id="sidebarLangSwitchBtn">
+                    <i class="fas fa-language"></i>
+                    <span>切换语言</span>
+                </div>
+                <div class="menu-item" id="sidebarBackHomeBtn">
+                    <i class="fas fa-home"></i>
+                    <span>返回首页</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-center" id="userCenter">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">未登录</div>
+                        <div class="user-id" id="userId">ID: ---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        const top = Math.random() * (gameArea.clientHeight - 30);
-        obstacle.style.left = gameArea.clientWidth + 'px';
-        obstacle.style.top = top + 'px';
-        
-        gameArea.appendChild(obstacle);
-        obstacles.push(obstacle);
-    }
-}
+        <div class="game-main-content">
+            <div class="game-header">
+                <h1>飞行器游戏</h1>
+                <p>移动鼠标控制飞行器，躲避障碍物获取高分</p>
+            </div>
+            
+            <div class="game-body">
+                <div class="game-info-bar">
+                    <div class="game-info-item" data-lang="score">得分: <span id="score">0</span></div>
+                    <div class="game-info-item" data-lang="remainingTime">剩余时间: <span id="time">30</span>s</div>
+                    <div class="difficulty-select-container" id="difficultyBox" data-lang="difficulty">
+                        难度:
+                        <select class="difficulty-select" id="difficultySelect">
+                            <option value="easy" data-lang="easy">简单</option>
+                            <option value="medium" data-lang="medium">中等</option>
+                            <option value="hard" data-lang="hard">困难</option>
+                            <option value="nightmare" data-lang="nightmare">梦魇</option>
+                        </select>
+                    </div>
+                    <div class="custom-time-container" data-lang="customTime">
+                        自定义时间:
+                        <input type="number" class="custom-time-input" id="customTimeInput" value="30" min="1" max="300">
+                        <span class="custom-time-tip" data-lang="customTimeTip">(最多5分钟/300秒)</span>
+                    </div>
+                    <div class="ai-mode-container" data-lang="aiMode">
+                        自动飞行:
+                        <label class="ai-switch">
+                            <input type="checkbox" id="aiModeSwitch">
+                            <span class="ai-slider"></span>
+                        </label>
+                    </div>
+                </div>
 
-// 创建奖励
-function createReward() {
-    const reward = document.createElement('div');
-    reward.className = 'reward';
-    reward.textContent = '⭐';
-    
-    const top = Math.random() * (gameArea.clientHeight - 25);
-    reward.style.left = gameArea.clientWidth + 'px';
-    reward.style.top = top + 'px';
-    
-    gameArea.appendChild(reward);
-    rewards.push(reward);
-}
+                <div class="game-area-wrapper">
+                    <div class="game-area" id="gameArea">
+                        <div class="chess-tip" id="chessTip">移动鼠标控制飞行器</div>
+                        <div class="game-over" id="gameOver" data-lang="gameOver">游戏结束!</div>
+                    </div>
+                </div>
 
-// 启动障碍物生成
-function startObstacleSpawn() {
-    // 先清除现有定时器
-    if (obstacleSpawnTimer) {
-        clearInterval(obstacleSpawnTimer);
-    }
-    // 生成障碍物
-    obstacleSpawnTimer = setInterval(() => {
-        if (!gameRunning) return;
-        createObstacle();
-        // 随机生成奖励（梦魇模式奖励生成概率降低）
-        const difficulty = document.getElementById('difficultySelect').value;
-        const rewardProbability = difficulty === 'nightmare' ? 0.05 : 0.2;
-        if (Math.random() < rewardProbability) {
-            createReward();
+                <div class="ranking-container">
+                    <div class="ranking-header">
+                        <div class="ranking-title" data-lang="ranking">游戏排行榜</div>
+                        <button class="reset-ranking-btn" id="resetRankingBtn" data-lang="resetRanking">重置排行榜</button>
+                    </div>
+                    <ul class="ranking-list" id="rankingList">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排行榜弹窗 -->
+    <div class="modal" id="rankingModal">
+        <div class="modal-content">
+            <h3 data-lang="congratulations">恭喜你完成游戏！</h3>
+            <p data-lang="finalScore">你的最终得分: <span id="finalScore">0</span></p>
+            <input type="text" class="modal-input" id="playerName" placeholder="请输入你的名字" maxlength="6" data-lang="enterName">
+            <div class="modal-btn-group">
+                <button class="confirm-btn" id="confirmBtn" data-lang="confirmAdd">确认添加</button>
+                <button class="cancel-btn" id="cancelBtn" data-lang="cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认重置弹窗 -->
+    <div class="modal" id="confirmResetModal">
+        <div class="modal-content confirm-modal-content">
+            <h3 data-lang="confirmResetTitle">确认重置</h3>
+            <p data-lang="confirmResetMessage">确定要重置排行榜吗？此操作将清空所有排行榜数据。</p>
+            <div class="modal-btn-group">
+                <button class="confirm-btn confirm-reset-btn" id="confirmResetBtn" data-lang="confirmReset">确认重置</button>
+                <button class="cancel-btn cancel-reset-btn" id="cancelResetBtn" data-lang="cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 版本更新公告弹窗（带翻页+版本切换） -->
+    <div class="modal" id="updateModal">
+        <div class="modal-content update-modal-content">
+            <h3 data-lang="updateAnnouncement">版本更新公告</h3>
+            <!-- 翻页控制器 -->
+            <div class="update-pagination">
+                <button class="pagination-btn" id="prevPage" data-lang="prevPage">上一页</button>
+                <span class="page-info" id="pageInfo" data-lang="pageInfo">第 1 / 2 页</span>
+                <button class="pagination-btn" id="nextPage" data-lang="nextPage">下一页</button>
+            </div>
+            <!-- 公告内容容器 -->
+            <div class="update-content" id="updateContent">        
+                <div class="update-page" data-page="1" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-03-24</p>
+                    <p>版本号：RC 1.2.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 成就系统</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
+                </div>
+
+                <div class="update-page" data-page="2" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-27</p>
+                    <p>版本号：RC 1.1.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 梦魇难度</li>
+                        <li>优化 顶部状态栏样式统一</li>
+                        <li>修复 上个版本并未正确修复的游戏结束后卡死问题</li>
+                        <li>增强 障碍物生成逻辑</li>
+                        <li>增强 AI难度逻辑</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
+                </div>
+
+                <div class="update-page" data-page="3" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-27</p>
+                    <p>版本号：RC 1.0.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <p>通告 飞行器小游戏上线</p>
+                        <li>新增 自动飞行功能</li>
+                        <li>新增 时间无限制功能</li>
+                        <li>优化 顶部状态栏样式统一</li>
+                        <li>修复 游戏结束后卡死问题</li>
+                        <li>增强 障碍物生成逻辑</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
+                </div>
+
+                <div class="update-page" data-page="1" data-version="beta">
+                    <p>无内容</p>
+                </div>
+            </div>
+            <div class="modal-btn-group">
+                <button class="close-btn" id="closeUpdateModal">关闭</button>
+            </div>
+            <button class="version-switch-btn" id="versionSwitchBtn">Beta</button>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="modal" id="achievementModal">
+        <div class="modal-content achievement-modal-content">
+            <h3 data-lang="achievements">游戏成就</h3>
+            <div class="achievement-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="achievementTotal">0</div>
+                    <div class="stat-label">总成就</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="achievementUnlocked">0</div>
+                    <div class="stat-label">已解锁</div>
+                </div>
+            </div>
+            <div id="achievementList" class="achievement-list"></div>
+            <div class="modal-btn-group">
+                <button class="close-btn" id="closeAchievementModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+        if (!currentUser.username) {
+            window.location.href = '../index.html';
         }
-    }, obstacleSpawnRate);
-}
 
-// 移动障碍物
-function moveObstacles() {
-    if (!gameRunning) return;
-    
-    // 移动所有障碍物
-    obstacles.forEach((obstacle, index) => {
-        const currentLeft = parseFloat(obstacle.style.left);
-        obstacle.style.left = (currentLeft - obstacleSpeed) + 'px';
-        
-        // 移除超出左侧的障碍物
-        if (currentLeft < -30) {
-            gameArea.removeChild(obstacle);
-            obstacles.splice(index, 1);
-            // 加分（梦魇模式加分翻倍）
-            const difficulty = document.getElementById('difficultySelect').value;
-            const scorePoints = difficulty === 'nightmare' ? 2 : 1;
-            addScore(scorePoints);
+        function getUserGameData(gameKey, defaultValue) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (user && user.gameData && user.gameData[gameKey] !== undefined) {
+                return user.gameData[gameKey];
+            }
+            
+            return defaultValue;
         }
-        
-        // 检测碰撞
-        if (checkCollision(spaceship, obstacle)) {
-            endGame(langConfig[currentLang].whiteWin);
-        }
-    });
-    
-    // 移动所有奖励
-    rewards.forEach((reward, index) => {
-        const currentLeft = parseFloat(reward.style.left);
-        reward.style.left = (currentLeft - obstacleSpeed) + 'px';
-        
-        // 移除超出左侧的奖励
-        if (currentLeft < -25) {
-            gameArea.removeChild(reward);
-            rewards.splice(index, 1);
-        }
-        
-        // 检测奖励收集
-        if (checkCollision(spaceship, reward)) {
-            gameArea.removeChild(reward);
-            rewards.splice(index, 1);
-            // 奖励加分（梦魇模式奖励加分更高）
-            const difficulty = document.getElementById('difficultySelect').value;
-            const rewardPoints = difficulty === 'nightmare' ? 10 : 5;
-            addScore(rewardPoints);
-        }
-    });
-    
-    requestAnimationFrame(moveObstacles);
-}
 
-// 碰撞检测
-function checkCollision(el1, el2) {
-    const rect1 = el1.getBoundingClientRect();
-    const rect2 = el2.getBoundingClientRect();
-    
-    return !(
-        rect1.right < rect2.left ||
-        rect1.left > rect2.right ||
-        rect1.bottom < rect2.top ||
-        rect1.top > rect2.bottom
-    );
-}
-
-// 加分
-function addScore(points) {
-    score += points;
-    document.getElementById('score').textContent = score;
-}
-
-// 自动飞行逻辑（根据难度调整策略）
-function autoFly() {
-    if (!aiMode || !spaceship || !gameRunning) return;
-    
-    const difficulty = document.getElementById('difficultySelect').value;
-    const aiConfig = aiDifficultyConfig[difficulty] || aiDifficultyConfig.easy;
-    
-    // 获取当前AI配置
-    const { moveRange, randomness, avoidRange } = aiConfig;
-    const currentTop = parseFloat(spaceship.style.top);
-    let newTop = currentTop;
-    
-    // 1. 检测附近障碍物，优先躲避
-    let closestObstacle = null;
-    let minDistance = Infinity;
-    
-    obstacles.forEach(obstacle => {
-        const obsRect = obstacle.getBoundingClientRect();
-        const shipRect = spaceship.getBoundingClientRect();
-        
-        // 只检测飞行器前方的障碍物
-        if (obsRect.left < shipRect.right + avoidRange && obsRect.right > shipRect.left) {
-            const distance = Math.abs(obsRect.top - shipRect.top);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestObstacle = obstacle;
+        function setUserGameData(gameKey, value) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (userIndex !== -1) {
+                if (!users[userIndex].gameData) {
+                    users[userIndex].gameData = {};
+                }
+                users[userIndex].gameData[gameKey] = value;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
             }
         }
-    });
-    
-    // 如果检测到需要躲避的障碍物
-    if (closestObstacle && minDistance < avoidRange) {
-        const obsTop = parseFloat(closestObstacle.style.top);
-        // 向上或向下躲避
-        newTop = obsTop > currentTop ? currentTop - moveRange : currentTop + moveRange;
-    } else {
-        // 无障碍物时随机移动（随机性根据难度调整）
-        if (Math.random() > randomness) {
-            newTop = currentTop + (Math.random() * moveRange * 2 - moveRange);
+
+        const langConfig = {
+            zh: {
+                score: '得分: ',
+                remainingTime: '剩余时间: ',
+                difficulty: '难度: ',
+                easy: '简单',
+                medium: '中等',
+                hard: '困难',
+                nightmare: '梦魇',
+                customTime: '自定义时间: ',
+                customTimeTip: '(最多5分钟/300秒)',
+                aiMode: '自动飞行:',
+                startGame: '开始游戏',
+                resetGame: '重置游戏',
+                backHome: '返回首页',
+                gameOver: '游戏结束!',
+                ranking: '游戏排行榜',
+                resetRanking: '重置排行榜',
+                confirmResetTitle: '确认重置',
+                confirmResetMessage: '确定要重置排行榜吗？此操作将清空所有排行榜数据。',
+                confirmReset: '确认重置',
+                congratulations: '恭喜你完成游戏！',
+                finalScore: '你的最终得分: ',
+                enterName: '请输入你的名字',
+                confirmAdd: '确认添加',
+                cancel: '取消',
+                achievements: '游戏成就',
+                updateAnnouncement: '版本更新公告',
+                prevPage: '上一页',
+                nextPage: '下一页',
+                pageInfo: '第 {current} / {total} 页',
+                blackTurn: '移动鼠标控制飞行器',
+                whiteTurn: '自动飞行中',
+                whiteWin: '撞到障碍物！',
+                timeUp: '时间到！'
+            },
+            en: {
+                score: 'Score: ',
+                remainingTime: 'Time Left: ',
+                difficulty: 'Difficulty: ',
+                easy: 'Easy',
+                medium: 'Medium',
+                hard: 'Hard',
+                nightmare: 'Nightmare',
+                customTime: 'Custom Time: ',
+                customTimeTip: '(Max 5 minutes/300 seconds)',
+                aiMode: 'Auto Fly:',
+                startGame: 'Start Game',
+                resetGame: 'Reset Game',
+                backHome: 'Back Home',
+                gameOver: 'Game Over!',
+                ranking: 'Game Ranking',
+                resetRanking: 'Reset Ranking',
+                confirmResetTitle: 'Confirm Reset',
+                confirmResetMessage: 'Are you sure you want to reset the ranking? This will clear all ranking data.',
+                confirmReset: 'Confirm Reset',
+                congratulations: 'Congratulations!',
+                finalScore: 'Your final score: ',
+                enterName: 'Enter your name',
+                confirmAdd: 'Confirm',
+                cancel: 'Cancel',
+                achievements: 'Achievements',
+                updateAnnouncement: 'Update Announcement',
+                prevPage: 'Previous',
+                nextPage: 'Next',
+                pageInfo: 'Page {current} / {total}',
+                blackTurn: 'Move mouse to control spaceship',
+                whiteTurn: 'Auto flying',
+                whiteWin: 'Hit obstacle!',
+                timeUp: "Time's up!"
+            }
+        };
+
+        var currentLang = localStorage.getItem('fxqgameLang') || 'zh';
+
+        function changeLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('fxqgameLang', currentLang);
+            updateLanguage();
         }
-    }
-    
-    // 边界检测
-    if (newTop < 0) newTop = 0;
-    if (newTop > gameArea.clientHeight - 40) newTop = gameArea.clientHeight - 40;
-    
-    spaceship.style.top = newTop + 'px';
-}
 
-// 开始游戏
-function startGame() {
-    // 重置游戏状态
-    resetGame(false);
-    
-    gameRunning = true;
-    aiMode = document.getElementById('aiModeSwitch').checked;
-    
-    // 更新提示
-    updateChessTip();
-    
-    // 创建飞行器
-    createSpaceship();
-    
-    // 设置计时器
-    if (!document.getElementById('unlimitedTimeCheckbox').checked) {
-        timeLeft = parseInt(document.getElementById('customTimeInput').value);
-        updateTimerDisplay();
-        gameTimer = setInterval(updateTimer, 1000);
-    }
-    
-    // 启动障碍物生成
-    setObstacleSpeed();
-    setObstacleSpawnRate();
-    startObstacleSpawn();
-    
-    // 启动自动飞行（如果开启）
-    if (aiMode) {
-        autoFlyInterval = setInterval(autoFly, 50);
-    }
-    
-    // 启动障碍物移动
-    moveObstacles();
-    
-    // 鼠标控制飞行器
-    gameArea.addEventListener('mousemove', (e) => {
-        if (!gameRunning || aiMode) return;
-        
-        const rect = gameArea.getBoundingClientRect();
-        const x = e.clientX - rect.left - 20;
-        const y = e.clientY - rect.top - 20;
-        
-        // 边界检测
-        const newX = Math.max(0, Math.min(x, rect.width - 40));
-        const newY = Math.max(0, Math.min(y, rect.height - 40));
-        
-        spaceship.style.left = newX + 'px';
-        spaceship.style.top = newY + 'px';
-    });
-}
+        function updateLanguage() {
+            var texts = langConfig[currentLang];
+            
+            document.querySelectorAll('[data-lang="score"]').forEach(function(el) {
+                el.innerHTML = texts.score + '<span id="score">' + document.getElementById('score').textContent + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="remainingTime"]').forEach(function(el) {
+                el.innerHTML = texts.remainingTime + '<span id="time">' + document.getElementById('time').textContent + '</span>s';
+            });
+            
+            document.querySelectorAll('[data-lang="difficulty"]').forEach(function(el) {
+                el.innerHTML = texts.difficulty + '<select class="difficulty-select" id="difficultySelect"><option value="easy" data-lang="easy">' + texts.easy + '</option><option value="medium" data-lang="medium">' + texts.medium + '</option><option value="hard" data-lang="hard">' + texts.hard + '</option><option value="nightmare" data-lang="nightmare">' + texts.nightmare + '</option></select>';
+                document.getElementById('difficultySelect').value = difficulty;
+            });
+            
+            document.querySelectorAll('[data-lang="customTime"]').forEach(function(el) {
+                el.innerHTML = texts.customTime + '<input type="number" class="custom-time-input" id="customTimeInput" value="' + document.getElementById('customTimeInput').value + '" min="1" max="300"><span class="custom-time-tip">' + texts.customTimeTip + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="aiMode"]').forEach(function(el) {
+                el.innerHTML = texts.aiMode + '<label class="ai-switch"><input type="checkbox" id="aiModeSwitch" ' + (aiMode ? 'checked' : '') + '><span class="ai-slider"></span></label>';
+            });
+            
+            document.querySelectorAll('[data-lang="ranking"]').forEach(function(el) {
+                el.textContent = texts.ranking;
+            });
+            
+            document.querySelectorAll('[data-lang="congratulations"]').forEach(function(el) {
+                el.textContent = texts.congratulations;
+            });
+            
+            document.querySelectorAll('[data-lang="finalScore"]').forEach(function(el) {
+                el.innerHTML = texts.finalScore + '<span id="finalScore">' + document.getElementById('finalScore').textContent + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="enterName"]').forEach(function(el) {
+                el.setAttribute('placeholder', texts.enterName);
+            });
+            
+            document.querySelectorAll('[data-lang="confirmAdd"]').forEach(function(el) {
+                el.textContent = texts.confirmAdd;
+            });
+            
+            document.querySelectorAll('[data-lang="cancel"]').forEach(function(el) {
+                el.textContent = texts.cancel;
+            });
+            
+            document.querySelectorAll('[data-lang="achievements"]').forEach(function(el) {
+                el.textContent = texts.achievements;
+            });
+            
+            document.querySelectorAll('[data-lang="updateAnnouncement"]').forEach(function(el) {
+                el.textContent = texts.updateAnnouncement;
+            });
+            
+            document.querySelectorAll('[data-lang="prevPage"]').forEach(function(el) {
+                el.textContent = texts.prevPage;
+            });
+            
+            document.querySelectorAll('[data-lang="nextPage"]').forEach(function(el) {
+                el.textContent = texts.nextPage;
+            });
+            
+            document.querySelectorAll('[data-lang="pageInfo"]').forEach(function(el) {
+                el.textContent = texts.pageInfo.replace('{current}', currentPage).replace('{total}', filteredPages.length);
+            });
 
-// 结束游戏
-function endGame(reason) {
-    gameRunning = false;
-    
-    // 清除定时器
-    clearInterval(gameTimer);
-    clearInterval(autoFlyInterval);
-    clearInterval(obstacleSpawnTimer);
-    gameTimer = null;
-    autoFlyInterval = null;
-    obstacleSpawnTimer = null;
-    
-    // 显示游戏结束提示
-    const gameOverEl = document.getElementById('gameOver');
-    gameOverEl.textContent = reason || langConfig[currentLang].gameOver;
-    gameOverEl.style.display = 'block';
-    
-    // 显示排行榜弹窗
-    document.getElementById('finalScore').textContent = score;
-    document.getElementById('rankingModal').style.display = 'flex';
-    setTimeout(() => {
-        document.getElementById('rankingModal').classList.add('show');
-    }, 10);
-    
-    // 检查成就解锁
-    checkFxqAchievements();
-}
+            document.querySelectorAll('[data-lang="resetRanking"]').forEach(function(el) {
+                el.textContent = texts.resetRanking;
+            });
 
-// 重置游戏
-function resetGame(fullReset = true) {
-    // 清除定时器
-    clearInterval(gameTimer);
-    clearInterval(autoFlyInterval);
-    clearInterval(obstacleSpawnTimer);
-    gameTimer = null;
-    autoFlyInterval = null;
-    obstacleSpawnTimer = null;
-    
-    // 清除元素
-    if (spaceship) {
-        gameArea.removeChild(spaceship);
-        spaceship = null;
-    }
-    
-    obstacles.forEach(obstacle => gameArea.removeChild(obstacle));
-    rewards.forEach(reward => gameArea.removeChild(reward));
-    obstacles = [];
-    rewards = [];
-    
-    // 重置状态
-    score = 0;
-    timeLeft = parseInt(document.getElementById('customTimeInput').value);
-    gameRunning = false;
-    
-    // 更新显示
-    document.getElementById('score').textContent = 0;
-    document.getElementById('time').textContent = document.getElementById('unlimitedTimeCheckbox').checked ? '∞' : timeLeft;
-    document.getElementById('gameOver').style.display = 'none';
-    
-    // 隐藏排行榜弹窗
-    document.getElementById('rankingModal').style.display = 'none';
-    document.getElementById('rankingModal').classList.remove('show');
-    
-    // 完全重置时重置难度样式
-    if (fullReset) {
-        document.getElementById('difficultyBox').className = 'difficulty-box easy';
-        document.getElementById('difficultySelect').value = 'easy';
-        setObstacleSpeed();
-        setObstacleSpawnRate();
-    }
-}
+            document.querySelectorAll('[data-lang="confirmResetTitle"]').forEach(function(el) {
+                el.textContent = texts.confirmResetTitle;
+            });
 
-// 绑定按钮事件
-document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('resetBtn').addEventListener('click', () => resetGame(true));
-document.getElementById('backBtn').addEventListener('click', () => {
-    window.location.href = 'rc4.0.0_index.html';
-});
-document.getElementById('moreGamesBtn').addEventListener('click', () => {
-    alert(langConfig[currentLang].moreGamesTip);
-});
+            document.querySelectorAll('[data-lang="confirmResetMessage"]').forEach(function(el) {
+                el.textContent = texts.confirmResetMessage;
+            });
 
-// 初始化
-setObstacleSpeed();
-setObstacleSpawnRate();
+            document.querySelectorAll('[data-lang="confirmReset"]').forEach(function(el) {
+                el.textContent = texts.confirmReset;
+            });
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 更新版本号显示
-    if (typeof updateVersionDisplay === 'function') {
-        updateVersionDisplay('fxqgame');
-    }
-});
-</script>
+            updateChessTip();
+        }
+
+        function updateChessTip() {
+            const chessTip = document.getElementById('chessTip');
+            chessTip.textContent = aiMode ? langConfig[currentLang].whiteTurn : langConfig[currentLang].blackTurn;
+        }
+
+        let gameTimer = null;
+        let gameRunning = false;
+        let score = 0;
+        let timeLeft = 30;
+        let aiMode = false;
+        let spaceship = null;
+        let obstacles = [];
+        let rewards = [];
+        let obstacleSpeed = 5;
+        let obstacleSpawnRate = 1000;
+        let obstacleSpawnTimer = null;
+        let autoFlyInterval = null;
+        let difficulty = 'easy';
+
+        const aiDifficultyConfig = {
+            easy: { moveRange: 8, randomness: 0.7, avoidRange: 60 },
+            medium: { moveRange: 10, randomness: 0.5, avoidRange: 50 },
+            hard: { moveRange: 12, randomness: 0.3, avoidRange: 40 },
+            nightmare: { moveRange: 15, randomness: 0.1, avoidRange: 30 }
+        };
+
+        const fxqAchievementDefs = [
+            {
+                id: 'fxq_first_game',
+                name: '初次飞行',
+                desc: '完成第一次飞行',
+                icon: 'fa-rocket',
+                condition: () => getUserGameData('fxqGamesPlayed', 0) >= 1
+            },
+            {
+                id: 'fxq_score_50',
+                name: '初级飞行员',
+                desc: '单局得分达到50分',
+                icon: 'fa-star',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 50
+            },
+            {
+                id: 'fxq_score_100',
+                name: '中级飞行员',
+                desc: '单局得分达到100分',
+                icon: 'fa-medal',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 100
+            },
+            {
+                id: 'fxq_score_200',
+                name: '高级飞行员',
+                desc: '单局得分达到200分',
+                icon: 'fa-trophy',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 200
+            },
+            {
+                id: 'fxq_games_5',
+                name: '飞行爱好者',
+                desc: '累计完成5局游戏',
+                icon: 'fa-plane',
+                condition: () => getUserGameData('fxqGamesPlayed', 0) >= 5
+            },
+            {
+                id: 'fxq_games_10',
+                name: '飞行达人',
+                desc: '累计完成10局游戏',
+                icon: 'fa-fighter-jet',
+                condition: () => getUserGameData('fxqGamesPlayed', 0) >= 10
+            },
+            {
+                id: 'fxq_easy_master',
+                name: '轻松过关',
+                desc: '在简单难度下完成一局游戏',
+                icon: 'fa-smile',
+                condition: () => false
+            },
+            {
+                id: 'fxq_hard_master',
+                name: '困难征服者',
+                desc: '在困难难度下完成一局游戏',
+                icon: 'fa-fire',
+                condition: () => false
+            },
+            {
+                id: 'fxq_nightmare_survivor',
+                name: '梦魇幸存者',
+                desc: '在梦魇难度下完成一局游戏',
+                icon: 'fa-skull',
+                condition: () => false
+            },
+            {
+                id: 'fxq_perfect_score',
+                name: '完美飞行',
+                desc: '单局得分达到300分',
+                icon: 'fa-crown',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 300
+            }
+        ];
+
+        let fxqAchievements = getUserGameData('fxqAchievements', []);
+
+        function setObstacleSpeed() {
+            switch(difficulty) {
+                case 'easy': obstacleSpeed = 3; break;
+                case 'medium': obstacleSpeed = 5; break;
+                case 'hard': obstacleSpeed = 8; break;
+                case 'nightmare': obstacleSpeed = 12; break;
+            }
+        }
+
+        function setObstacleSpawnRate() {
+            switch(difficulty) {
+                case 'easy': obstacleSpawnRate = 1200; break;
+                case 'medium': obstacleSpawnRate = 800; break;
+                case 'hard': obstacleSpawnRate = 500; break;
+                case 'nightmare': obstacleSpawnRate = 300; break;
+            }
+            if (gameRunning && obstacleSpawnTimer) {
+                clearInterval(obstacleSpawnTimer);
+                startObstacleSpawn();
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                endGame(langConfig[currentLang].timeUp);
+            }
+        }
+
+        function createSpaceship() {
+            if (spaceship) {
+                gameArea.removeChild(spaceship);
+            }
+            
+            spaceship = document.createElement('div');
+            spaceship.className = 'spaceship';
+            spaceship.textContent = '🚀';
+            spaceship.style.left = (gameArea.clientWidth / 2 - 20) + 'px';
+            spaceship.style.top = (gameArea.clientHeight / 2 - 20) + 'px';
+            gameArea.appendChild(spaceship);
+        }
+
+        function createObstacle() {
+            const difficulty = document.getElementById('difficultySelect').value;
+            const createCount = difficulty === 'nightmare' ? 2 : 1;
+            
+            for (let i = 0; i < createCount; i++) {
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.textContent = '🚧';
+                
+                const top = Math.random() * (gameArea.clientHeight - 30);
+                obstacle.style.left = gameArea.clientWidth + 'px';
+                obstacle.style.top = top + 'px';
+                
+                gameArea.appendChild(obstacle);
+                obstacles.push(obstacle);
+            }
+        }
+
+        function createReward() {
+            const reward = document.createElement('div');
+            reward.className = 'reward';
+            reward.textContent = '⭐';
+            
+            const top = Math.random() * (gameArea.clientHeight - 25);
+            reward.style.left = gameArea.clientWidth + 'px';
+            reward.style.top = top + 'px';
+            
+            gameArea.appendChild(reward);
+            rewards.push(reward);
+        }
+
+        function startObstacleSpawn() {
+            if (obstacleSpawnTimer) {
+                clearInterval(obstacleSpawnTimer);
+            }
+            obstacleSpawnTimer = setInterval(() => {
+                if (!gameRunning) return;
+                createObstacle();
+                const diff = document.getElementById('difficultySelect').value;
+                const rewardProbability = diff === 'nightmare' ? 0.05 : 0.2;
+                if (Math.random() < rewardProbability) {
+                    createReward();
+                }
+            }, obstacleSpawnRate);
+        }
+
+        function moveObstacles() {
+            if (!gameRunning) return;
+            
+            obstacles.forEach((obstacle, index) => {
+                const currentLeft = parseFloat(obstacle.style.left);
+                obstacle.style.left = (currentLeft - obstacleSpeed) + 'px';
+                
+                if (currentLeft < -30) {
+                    gameArea.removeChild(obstacle);
+                    obstacles.splice(index, 1);
+                    const diff = document.getElementById('difficultySelect').value;
+                    const scorePoints = diff === 'nightmare' ? 2 : 1;
+                    addScore(scorePoints);
+                }
+                
+                if (checkCollision(spaceship, obstacle)) {
+                    endGame(langConfig[currentLang].whiteWin);
+                }
+            });
+            
+            rewards.forEach((reward, index) => {
+                const currentLeft = parseFloat(reward.style.left);
+                reward.style.left = (currentLeft - obstacleSpeed) + 'px';
+                
+                if (currentLeft < -25) {
+                    gameArea.removeChild(reward);
+                    rewards.splice(index, 1);
+                }
+                
+                if (checkCollision(spaceship, reward)) {
+                    gameArea.removeChild(reward);
+                    rewards.splice(index, 1);
+                    const diff = document.getElementById('difficultySelect').value;
+                    const rewardPoints = diff === 'nightmare' ? 10 : 5;
+                    addScore(rewardPoints);
+                }
+            });
+            
+            requestAnimationFrame(moveObstacles);
+        }
+
+        function checkCollision(el1, el2) {
+            const rect1 = el1.getBoundingClientRect();
+            const rect2 = el2.getBoundingClientRect();
+            
+            return !(
+                rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom
+            );
+        }
+
+        function addScore(points) {
+            score += points;
+            document.getElementById('score').textContent = score;
+        }
+
+        function autoFly() {
+            if (!aiMode || !spaceship || !gameRunning) return;
+            
+            const aiConfig = aiDifficultyConfig[difficulty] || aiDifficultyConfig.easy;
+            const gameAreaRect = gameArea.getBoundingClientRect();
+            const spaceshipRect = spaceship.getBoundingClientRect();
+            
+            let targetX = spaceshipRect.left - gameAreaRect.left;
+            let targetY = spaceshipRect.top - gameAreaRect.top;
+            
+            obstacles.forEach(obstacle => {
+                const obsRect = obstacle.getBoundingClientRect();
+                const obsX = obsRect.left - gameAreaRect.left;
+                const obsY = obsRect.top - gameAreaRect.top;
+                
+                if (obsX > targetX && Math.abs(obsY - targetY) < aiConfig.avoidRange) {
+                    if (Math.random() > aiConfig.randomness) {
+                        targetY += (Math.random() > 0.5 ? 1 : -1) * aiConfig.moveRange;
+                    }
+                }
+            });
+            
+            targetX -= 5;
+            targetY = Math.max(20, Math.min(gameArea.clientHeight - 40, targetY));
+            
+            spaceship.style.left = targetX + 'px';
+            spaceship.style.top = targetY + 'px';
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            
+            gameRunning = true;
+            score = 0;
+            timeLeft = parseInt(document.getElementById('customTimeInput').value);
+            aiMode = document.getElementById('aiModeSwitch').checked;
+            difficulty = document.getElementById('difficultySelect').value;
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('gameOver').style.display = 'none';
+            
+            obstacles.forEach(obs => gameArea.removeChild(obs));
+            rewards.forEach(rwd => gameArea.removeChild(rwd));
+            obstacles = [];
+            rewards = [];
+            
+            setObstacleSpeed();
+            setObstacleSpawnRate();
+            createSpaceship();
+            
+            clearInterval(gameTimer);
+            gameTimer = setInterval(updateTimer, 1000);
+            
+            startObstacleSpawn();
+            moveObstacles();
+            
+            if (aiMode) {
+                autoFlyInterval = setInterval(autoFly, 50);
+            }
+            
+            updateChessTip();
+        }
+
+        function resetGame() {
+            clearInterval(gameTimer);
+            clearInterval(obstacleSpawnTimer);
+            clearInterval(autoFlyInterval);
+            gameRunning = false;
+            score = 0;
+            timeLeft = parseInt(document.getElementById('customTimeInput').value);
+            difficulty = document.getElementById('difficultySelect').value;
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('gameOver').style.display = 'none';
+            
+            obstacles.forEach(obs => gameArea.removeChild(obs));
+            rewards.forEach(rwd => gameArea.removeChild(rwd));
+            obstacles = [];
+            rewards = [];
+            
+            if (spaceship) {
+                gameArea.removeChild(spaceship);
+                spaceship = null;
+            }
+        }
+
+        function endGame(message) {
+            clearInterval(gameTimer);
+            clearInterval(obstacleSpawnTimer);
+            clearInterval(autoFlyInterval);
+            gameRunning = false;
+            
+            document.getElementById('gameOver').textContent = message;
+            document.getElementById('gameOver').style.display = 'block';
+            
+            saveGameData();
+            showRankingModal();
+        }
+
+        function saveGameData() {
+            var gamesPlayed = getUserGameData('fxqGamesPlayed', 0) + 1;
+            var highScore = getUserGameData('fxqHighScore', 0);
+            if (score > highScore) {
+                highScore = score;
+            }
+            
+            setUserGameData('fxqGamesPlayed', gamesPlayed);
+            setUserGameData('fxqHighScore', highScore);
+            
+            checkAchievements();
+        }
+
+        function checkAchievements() {
+            fxqAchievementDefs.forEach(function(achievement) {
+                if (!fxqAchievements.includes(achievement.id) && achievement.condition()) {
+                    fxqAchievements.push(achievement.id);
+                    setUserGameData('fxqAchievements', fxqAchievements);
+                    alert('🏆 成就解锁: ' + achievement.name + '\n' + achievement.desc);
+                }
+            });
+        }
+
+        function showRankingModal() {
+            var modal = document.getElementById('rankingModal');
+            document.getElementById('finalScore').textContent = score;
+            modal.classList.add('active');
+        }
+
+        function showAchievements() {
+            var modal = document.getElementById('achievementModal');
+            var achievementList = document.getElementById('achievementList');
+            achievementList.innerHTML = '';
+            
+            document.getElementById('achievementTotal').textContent = fxqAchievementDefs.length;
+            document.getElementById('achievementUnlocked').textContent = fxqAchievements.length;
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('active');
+            }, 10);
+            
+            fxqAchievementDefs.forEach(function(achievement) {
+                var isUnlocked = fxqAchievements.includes(achievement.id) || DeveloperConfig.getAchievementsUnlocked();
+                var isCompleted = achievement.condition();
+                
+                var achievementItem = document.createElement('div');
+                var className = 'achievement-item' + (isUnlocked ? ' unlocked' : ' locked');
+                achievementItem.className = className;
+                
+                var progressPercent = isUnlocked ? 100 : (isCompleted ? 100 : 0);
+                var progressText = isUnlocked ? '已完成' : (isCompleted ? '已完成' : '未完成');
+                
+                achievementItem.innerHTML = '<div class="achievement-icon"><i class="fas ' + achievement.icon + '"></i></div>' +
+                                      '<div class="achievement-info">' +
+                                      '<div class="achievement-name">' + achievement.name + '</div>' +
+                                      '<div class="achievement-desc">' + achievement.desc + '</div>' +
+                                      '<div class="achievement-progress">' +
+                                      '<div class="progress-bar">' +
+                                      '<div class="progress-fill" style="width: ' + progressPercent + '%"></div>' +
+                                      '</div>' +
+                                      '<span class="progress-text">' + progressText + '</span>' +
+                                      '</div>' +
+                                      '</div>';
+                
+                achievementList.appendChild(achievementItem);
+            });
+            
+            modal.classList.add('active');
+        }
+
+        function loadRankings() {
+            var rankings = getUserGameData('fxqRankings', []);
+            var rankingList = document.getElementById('rankingList');
+            rankingList.innerHTML = '';
+            
+            rankings.sort(function(a, b) {
+                return b.score - a.score;
+            });
+            
+            rankings.slice(0, 10).forEach(function(ranking, index) {
+                var item = document.createElement('li');
+                item.className = 'ranking-item';
+                item.innerHTML = '<span>' + (index + 1) + '. ' + ranking.name + '</span>' +
+                              '<span>' + ranking.score + ' 分</span>';
+                rankingList.appendChild(item);
+            });
+        }
+
+        function addRanking() {
+            var name = document.getElementById('playerName').value.trim();
+            if (!name) {
+                alert('请输入名字');
+                return;
+            }
+            
+            var rankings = getUserGameData('fxqRankings', []);
+            rankings.push({
+                name: name,
+                score: score,
+                date: new Date().toISOString()
+            });
+            
+            setUserGameData('fxqRankings', rankings);
+            
+            var modal = document.getElementById('rankingModal');
+            modal.classList.remove('active');
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+            
+            loadRankings();
+        }
+
+        function resetRankings() {
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.add('active');
+        }
+
+        function confirmReset() {
+            setUserGameData('fxqRankings', []);
+            loadRankings();
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.remove('active');
+        }
+
+        function cancelReset() {
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.remove('active');
+        }
+
+        // 翻页功能
+        const updateModal = document.getElementById('updateModal');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const pageInfo = document.getElementById('pageInfo');
+        const updatePages = document.querySelectorAll('.update-page');
+        const versionSwitchBtn = document.getElementById('versionSwitchBtn');
+        let currentPage = 1;
+        let currentVersion = 'release';
+        let filteredPages = [];
+
+        function filterVersionPages(version) {
+            filteredPages = Array.from(updatePages).filter(page => page.dataset.version === version);
+            currentPage = 1;
+            pageInfo.textContent = langConfig[currentLang].pageInfo
+                .replace('{current}', currentPage)
+                .replace('{total}', filteredPages.length);
+            switchPage(1);
+            versionSwitchBtn.textContent = version === 'release' ? 'Beta' : 'RC';
+        }
+
+        function switchPage(targetPage) {
+            updatePages.forEach(page => {
+                page.classList.remove('active');
+            });
+            if (filteredPages[targetPage - 1]) {
+                filteredPages[targetPage - 1].classList.add('active');
+            }
+            currentPage = targetPage;
+            pageInfo.textContent = langConfig[currentLang].pageInfo
+                .replace('{current}', currentPage)
+                .replace('{total}', filteredPages.length);
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === filteredPages.length;
+        }
+
+        prevPageBtn.addEventListener('click', function() {
+            if (currentPage > 1) {
+                switchPage(currentPage - 1);
+            }
+        });
+
+        nextPageBtn.addEventListener('click', function() {
+            if (currentPage < filteredPages.length) {
+                switchPage(currentPage + 1);
+            }
+        });
+
+        versionSwitchBtn.addEventListener('click', function() {
+            currentVersion = currentVersion === 'release' ? 'beta' : 'release';
+            filterVersionPages(currentVersion);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('page-transition-in');
+            setTimeout(function() {
+                document.body.classList.remove('page-transition-in');
+            }, 500);
+
+            loadCurrentUser();
+            loadRankings();
+            updateLanguage();
+            initializeMenu();
+            initializeModals();
+            initializeDifficulty();
+            initializeAiMode();
+            
+            if (typeof updateVersionDisplay === 'function') {
+                updateVersionDisplay('fxqgame');
+            }
+            
+            filterVersionPages(currentVersion);
+        });
+
+        function loadCurrentUser() {
+            var userName = document.getElementById('userName');
+            var userId = document.getElementById('userId');
+
+            if (currentUser.username) {
+                userName.textContent = currentUser.username;
+                if (currentUser.userId) {
+                    userId.textContent = 'ID: ' + currentUser.userId;
+                } else {
+                    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userId) {
+                        userId.textContent = 'ID: ' + user.userId;
+                    }
+                }
+            } else {
+                userName.textContent = '未登录';
+                userId.textContent = 'ID: ---';
+            }
+        }
+
+        function initializeMenu() {
+            document.getElementById('sidebarStartGameBtn').addEventListener('click', startGame);
+            document.getElementById('sidebarResetGameBtn').addEventListener('click', resetGame);
+            document.getElementById('sidebarAchievementBtn').addEventListener('click', showAchievements);
+            document.getElementById('sidebarUpdateBtn').addEventListener('click', showUpdateModal);
+            document.getElementById('sidebarLangSwitchBtn').addEventListener('click', changeLanguage);
+            document.getElementById('sidebarBackHomeBtn').addEventListener('click', function() {
+                window.location.href = 'homepage4.0.html';
+            });
+
+            document.getElementById('userCenter').addEventListener('click', function() {
+                if (!currentUser.username) {
+                    alert('请先登录');
+                    return;
+                }
+                window.open('account-settings.html', '_blank');
+            });
+        }
+
+        function initializeModals() {
+            document.getElementById('confirmBtn').addEventListener('click', addRanking);
+            
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                var modal = document.getElementById('rankingModal');
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('closeUpdateModal').addEventListener('click', function() {
+                var modal = document.getElementById('updateModal');
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('closeAchievementModal').addEventListener('click', function() {
+                var modal = document.getElementById('achievementModal');
+                modal.classList.remove('active');
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                }, 300);
+            });
+
+            document.getElementById('resetRankingBtn').addEventListener('click', function() {
+                resetRankings();
+            });
+
+            document.getElementById('confirmResetBtn').addEventListener('click', function() {
+                confirmReset();
+            });
+
+            document.getElementById('cancelResetBtn').addEventListener('click', function() {
+                cancelReset();
+            });
+            
+            document.querySelectorAll('.modal').forEach(function(modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                        setTimeout(function() {
+                            modal.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        }
+
+        function initializeDifficulty() {
+            document.getElementById('difficultySelect').addEventListener('change', function() {
+                difficulty = this.value;
+                setObstacleSpeed();
+                setObstacleSpawnRate();
+            });
+        }
+
+        function initializeAiMode() {
+            document.getElementById('aiModeSwitch').addEventListener('change', function() {
+                aiMode = this.checked;
+                if (gameRunning) {
+                    if (aiMode) {
+                        autoFlyInterval = setInterval(autoFly, 50);
+                    } else {
+                        clearInterval(autoFlyInterval);
+                    }
+                }
+                updateChessTip();
+            });
+        }
+
+        function showUpdateModal() {
+            var modal = document.getElementById('updateModal');
+            modal.classList.add('active');
+            currentVersion = 'release';
+            filterVersionPages(currentVersion);
+        }
+
+        // 游戏区域鼠标控制
+        var gameArea = document.getElementById('gameArea');
+        gameArea.addEventListener('mousemove', function(e) {
+            if (!gameRunning || aiMode || !spaceship) return;
+            
+            const rect = gameArea.getBoundingClientRect();
+            const x = e.clientX - rect.left - 20;
+            const y = e.clientY - rect.top - 20;
+            
+            spaceship.style.left = Math.max(0, Math.min(gameArea.clientWidth - 40, x)) + 'px';
+            spaceship.style.top = Math.max(0, Math.min(gameArea.clientHeight - 40, y)) + 'px';
+        });
+    </script>
 </body>
 </html>

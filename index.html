@@ -22,6 +22,7 @@
     <script src="./js/privacypolicy.js" defer></script>
     <script src="./js/lang.js" defer></script>
     <script src="./js/announcement.js" defer></script>
+    
     <script>
         // 加载用户头像
         function loadUserAvatar() {
@@ -916,7 +917,7 @@
                 <h3>确认操作</h3>
             </div>
             <div class="confirm-body">
-                <p>是否要退出登录吗？</p>
+                <p>确认要退出登录吗？</p>
             </div>
             <div class="confirm-footer">
                 <button class="confirm-btn" id="logoutCancel">取消</button>
@@ -1092,6 +1093,39 @@
                             </button>
                             <button class="sub-button" data-type="homepage">
                                 <span class="button-text">主页面记录</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="terms-nav-item" id="miniGameUpdateNav">
+                        <div class="nav-item-content">
+                            <i class="fas fa-gamepad"></i>
+                            <span>小游戏更新记录<ul>Mini Game Updates</ul></span>
+                        </div>
+                        <div class="sub-buttons" id="miniGameSubButtons" style="display: none;">
+                            <button class="sub-button" data-type="snake">
+                                <span class="button-text">贪吃蛇</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="colormatch">
+                                <span class="button-text">颜色匹配</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="memory">
+                                <span class="button-text">记忆卡牌</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="wzq">
+                                <span class="button-text">五子棋</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="fxq">
+                                <span class="button-text">飞行器</span>
+                                <span class="viewing-tag" style="display: none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="fkgame">
+                                <span class="button-text">点击方块</span>
                                 <span class="viewing-tag" style="display: none;">查看中</span>
                             </button>
                         </div>

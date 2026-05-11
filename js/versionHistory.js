@@ -27,6 +27,19 @@
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.1.4 (b4)",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2614.png"],
+            features: [
+                "新增功能",
+                "- 小游戏更新记录：登录页版本更新记录窗口的LIST栏添加\"小游戏更新记录\"按钮，点击后显示所有小游戏的子选项",
+                "优化改进",
+                "- 子按钮交互优化：修复点击其他按钮后小游戏按钮不会自动收回的问题",
+            ]
+        },
+        {
             version: "RC 2.6.1.3 (b4)",
             date: "2026-05-08",
             tag: "important",
@@ -682,6 +695,20 @@ const versionHistoryData = {
     ],
     homepageUpdateContent: [
         {
+            version: "RC 1.0.3.3 (a2)",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/h1033_2.png"],
+            features: [
+                "优化改进",
+                "- 飞行器游戏样式重构：将飞行器小游戏页面样式重构为与点击方块小游戏相同的设计风格，包括左侧边栏导航和右侧主内容区布局",
+                "- 版本号统一管理：在 versionManager.js 中添加记忆卡牌和颜色匹配小游戏的版本号，实现所有小游戏版本号统一管理",
+                "- 版本号调用优化：修复贪吃蛇和飞行器小游戏版本号未正确调用版本管理文件的问题",
+                "- 页面布局优化：修复飞行器游戏页面顶部导航栏和右侧显示区域样式不正确的问题"
+            ]
+        },
+        {
             version: "RC 1.0.3.2 (a2)",
             date: "2026-04-27",
             tag: "normal",
@@ -1043,6 +1070,381 @@ const versionHistoryData = {
                 "新增 各项界面视觉体验"
             ]
         }
+    ],
+    miniGameSnakeContent: [
+        {
+            version: "RC 1.0.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-04-02",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 贪吃蛇游戏",
+                "新增 WASD键和鼠标控制",
+                "新增 成就系统",
+                "优化 界面风格统一"
+            ]
+        }
+    ],
+    miniGameColormatchContent: [
+        {
+            version: "RC 1.0.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-04-16",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 颜色匹配游戏",
+                "新增 游戏成就系统",
+                "新增 游戏排行榜功能"
+            ]
+        }
+    ],
+    miniGameMemoryContent: [
+        {
+            version: "RC 1.1.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-04-18",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增功能",
+                "- 新增成就：记忆卡牌专家（累计完成20局游戏）",
+                "- 新增成就：记忆大师（单局得分达到300分）",
+                "优化改进",
+                "- 修复成就数据互通问题"
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-04-07",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "上线 记忆卡牌小游戏（BETA）",
+                "新增 卡牌翻转匹配玩法"
+            ]
+        }
+    ],
+    miniGameWzqContent: [
+        {
+            version: "RC 1.2.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.2.0",
+            date: "2026-03-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 界面风格统一",
+                "新增 个人中心页面快捷跳转",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-03-24",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 成就系统",
+            ]
+        },
+        {
+            version: "RC 1.0.2",
+            date: "2026-02-28",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "删除 更多游戏按钮",
+            ]
+        },
+        {
+            version: "RC 1.0.1",
+            date: "2026-02-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 查看版本公告时固定窗口大小使其不会来回变动",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 人机对战功能",
+			        "新增 时间无限制功能",
+			        "优化 顶部状态栏样式统一",
+                    "修复 游戏结束后卡死问题",
+                    "增强 AI对战强度"
+            ]
+        },
+        {
+            version: "Beta v0.2.0",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 棋盘比例调整",
+            ]
+        },
+        {
+            version: "Beta v0.1.0",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "通告 游戏上线",
+            ]
+        }
+    ],
+    miniGameFxqContent: [
+        
+        {
+            version: "RC 1.2.2",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化改进",
+                "- 飞行器游戏样式重构：将飞行器小游戏页面样式重构为与点击方块小游戏相同的设计风格，包括左侧边栏导航和右侧主内容区布局",
+            ]
+        },
+        {
+            version: "RC 1.2.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.2.0",
+            date: "2026-03-24",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 成就系统",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-02-27",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 梦魇难度",
+			        "优化 顶部状态栏样式统一",
+			        "修复 上个版本并未正确修复的游戏结束后卡死问题",
+			        "增强 障碍物生成逻辑",
+					"增强 AI难度逻辑",
+					"删除 更多游戏按钮"
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-02-27",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "通告 飞行器小游戏上线",
+                    "新增 自动飞行功能",
+                    "新增 时间无限制功能",
+                    "优化 顶部状态栏样式统一",
+                    "修复 游戏结束后卡死问题",
+                    "增强 障碍物生成逻辑"
+            ]
+        }
+    ],
+    miniGameFkgameContent: [
+        {
+            version: "RC 1.3.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.3.0",
+            date: "2026-03-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 界面风格统一",
+                "新增 重置排行榜功能",
+                "新增 个人中心页面快捷跳转"
+            ]
+        },
+        {
+            version: "RC 1.2.0",
+            date: "2026-03-24",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 游戏成就系统",
+            ]
+        },
+        {
+            version: "RC 1.1.2",
+            date: "2026-02-28",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "删除 更多游戏按钮",
+            ]
+        },
+        {
+            version: "RC 1.1.1",
+            date: "2026-02-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 查看版本公告时固定窗口大小使其不会来回变动",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-02-26",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 英文语言",
+                "新增 中英文语言切换按钮",
+                "新增 版本更新公告重要更新提示",
+                "新增 游戏排行榜功能",
+                "通告：目前正在进行多语种适配，预计将在不久之后的版本实装更多语言（例如日语和韩语），请持续关注GBG工作室。",
+            ]
+        },
+        {
+            version: "RC 1.0.1.2",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 版本更新公告切换正式版(RC)/测试版(Beta)按钮",
+            ]
+        },
+        {
+            version: "RC 1.0.1.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 点击版本更新公告时，窗口的淡入，淡出效果",
+            ]
+        },
+        {
+            version: "RC 1.0.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "修复 返回首页按钮未正确生效的问题",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "通告 游戏正式上线，版本自动更替已从Beta转至RC",
+            ]
+        },
+        {
+            version: "Beta v0.1.4",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "修复 由版本更新公告导致全局卡死，无法正常进行游戏的问题",
+                "修复 更改难度时背景颜色并未正确生效的问题"
+            ]
+        },
+        {
+            version: "Beta v0.1.3.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 公告排版及其显示逻辑",
+            ]
+        },
+        {
+            version: "Beta v0.1.3",
+            date: "2026-02-26",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 版本更新公告功能",
+                "新增 游戏排行榜功能",
+                "新增 游戏成就系统（部分）"
+            ]
+        },
+        {
+            version: "Beta v0.1.2",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 游戏界面布局",
+                "优化 游戏难度设置"
+            ]
+        },
+        {
+            version: "Beta v0.1.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "修复 游戏计时器问题",
+                "优化 游戏响应速度"
+            ]
+        },
+        {
+            version: "Beta v0.1.0",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "游戏首次发布Beta版本",
+                "基础游戏功能实现"
+            ]
+        }
     ]
 };
 
@@ -1141,10 +1543,14 @@ function loadVersionHistory() {
                 }
             }
             
-            // 隐藏过时版本记录的子按钮
+            // 隐藏过时版本记录和小游戏的子按钮
             var outdatedSubButtons = document.getElementById('outdatedSubButtons');
             if (outdatedSubButtons) {
                 outdatedSubButtons.style.display = 'none';
+            }
+            var miniGameSubButtons = document.getElementById('miniGameSubButtons');
+            if (miniGameSubButtons) {
+                miniGameSubButtons.style.display = 'none';
             }
             
             // 显示提示文本
@@ -1191,10 +1597,14 @@ function loadVersionHistory() {
                 }
             }
             
-            // 隐藏选择功能更新的子按钮
+            // 隐藏选择功能更新和小游戏的子按钮
             var featureSubButtons = document.getElementById('featureSubButtons');
             if (featureSubButtons) {
                 featureSubButtons.style.display = 'none';
+            }
+            var miniGameSubButtons = document.getElementById('miniGameSubButtons');
+            if (miniGameSubButtons) {
+                miniGameSubButtons.style.display = 'none';
             }
             
             // 显示提示文本
@@ -1219,18 +1629,79 @@ function loadVersionHistory() {
         });
     }
     
+    // 为小游戏更新记录按钮添加点击事件
+    var miniGameUpdateNav = document.getElementById('miniGameUpdateNav');
+    if (miniGameUpdateNav) {
+        miniGameUpdateNav.addEventListener('click', function(e) {
+            // 阻止事件冒泡，避免触发导航初始化中的点击事件
+            e.stopPropagation();
+            
+            // 显示子按钮
+            var subButtons = document.getElementById('miniGameSubButtons');
+            if (subButtons) {
+                var isHidden = subButtons.style.display === 'none';
+                subButtons.style.display = isHidden ? 'block' : 'none';
+                
+                // 如果是收起子按钮，隐藏所有"查看中"tag
+                if (!isHidden) {
+                    var allViewingTags = document.querySelectorAll('.viewing-tag');
+                    allViewingTags.forEach(function(tag) {
+                        tag.style.display = 'none';
+                    });
+                }
+            }
+            
+            // 隐藏其他子按钮
+            var featureSubButtons = document.getElementById('featureSubButtons');
+            if (featureSubButtons) {
+                featureSubButtons.style.display = 'none';
+            }
+            
+            var outdatedSubButtons = document.getElementById('outdatedSubButtons');
+            if (outdatedSubButtons) {
+                outdatedSubButtons.style.display = 'none';
+            }
+            
+            // 显示提示文本
+            var contentArea = document.querySelector('.terms-content');
+            if (contentArea) {
+                contentArea.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的小游戏更新记录</p>
+                    </div>
+                `;
+            }
+            
+            // 确保其他导航项不处于active状态
+            var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
+            navItems.forEach(function(navItem) {
+                navItem.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    }
+    
     // 按主版本号和次版本号分组版本数据
     function groupVersionsByMajorVersion(versions) {
         var grouped = {};
         
         versions.forEach(function(versionItem) {
-            // 提取主版本号和次版本号（如从 "RC 2.6.0.1 (b3)" 中提取 "2.6"）
+            // 提取主版本号和次版本号
             var versionMatch = versionItem.version.match(/RC\s+(\d+)\.(\d+)\.\d+\.\d+/);
             var majorVersion;
             var isRC = versionItem.version.includes('RC');
+            var isMiniGame = versionItem.version.startsWith('V ');
             
             if (versionMatch) {
+                // RC 格式: "RC 2.6.0.1 (b3)" -> "2.6"
                 majorVersion = versionMatch[1] + '.' + versionMatch[2];
+            } else if (isMiniGame) {
+                // 小游戏格式: "V 1.1.0" -> "1.1"
+                versionMatch = versionItem.version.match(/V\s+(\d+)\.(\d+)/);
+                majorVersion = versionMatch ? versionMatch[1] + '.' + versionMatch[2] : '其他版本';
             } else {
                 // 处理其他格式的版本号
                 versionMatch = versionItem.version.match(/(\d+)\.(\d+)/);
@@ -1238,7 +1709,7 @@ function loadVersionHistory() {
             }
             
             if (!grouped[majorVersion]) {
-                grouped[majorVersion] = { versions: [], isRC: isRC };
+                grouped[majorVersion] = { versions: [], isRC: isRC, isMiniGame: isMiniGame };
             }
             grouped[majorVersion].versions.push(versionItem);
         });
@@ -1267,7 +1738,8 @@ function loadVersionHistory() {
             var group = { 
                 majorVersion: key, 
                 versions: grouped[key].versions, 
-                isRC: grouped[key].isRC 
+                isRC: grouped[key].isRC,
+                isMiniGame: grouped[key].isMiniGame
             };
             
             // 计算最早和最晚日期
@@ -1326,6 +1798,17 @@ function loadVersionHistory() {
                 } else if (parentId === 'outdatedSubButtons') {
                     // 过时版本记录按钮
                     data = type === 'launcher' ? versionHistoryData.outdatedLauncherContent : versionHistoryData.outdatedHomepageContent;
+                } else if (parentId === 'miniGameSubButtons') {
+                    // 小游戏更新记录按钮
+                    var miniGameDataMap = {
+                        'snake': versionHistoryData.miniGameSnakeContent,
+                        'colormatch': versionHistoryData.miniGameColormatchContent,
+                        'memory': versionHistoryData.miniGameMemoryContent,
+                        'wzq': versionHistoryData.miniGameWzqContent,
+                        'fxq': versionHistoryData.miniGameFxqContent,
+                        'fkgame': versionHistoryData.miniGameFkgameContent
+                    };
+                    data = miniGameDataMap[type] || [];
                 }
                 
                 // 按主版本号分组
@@ -1398,7 +1881,7 @@ function loadVersionHistory() {
                         // 设置按钮内容
                         groupButton.innerHTML = `
                             <div class="version-header">
-                                <span class="version-number" style="font-size: 18px; font-weight: bold; color: #d45d79;">${group.isRC ? 'RC' : '版本'} ${group.majorVersion}</span>
+                                <span class="version-number" style="font-size: 18px; font-weight: bold; color: #d45d79;">${group.isRC ? 'RC' : (group.isMiniGame ? 'V' : '版本')} ${group.majorVersion}</span>
                                 <div class="version-header-content">
                                     <button style="padding: 4px 12px; border: none; border-radius: 12px; font-size: 12px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0;">查看详细内容 <span style="margin-left: 4px;">▶</span></button>
                                 </div>
@@ -1527,6 +2010,14 @@ function loadVersionHistory() {
                                     var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
                                     var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
                                     
+                                    // 如果RC格式不匹配，尝试小游戏格式 "V 1.1.0"
+                                    if (!aMatch) {
+                                        aMatch = a.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                    }
+                                    if (!bMatch) {
+                                        bMatch = b.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                    }
+                                    
                                     if (aMatch && bMatch) {
                                         var aVersion = aMatch.slice(1).map(Number);
                                         var bVersion = bMatch.slice(1).map(Number);
@@ -1628,6 +2119,14 @@ function loadVersionHistory() {
                                 // 提取版本号进行比较
                                 var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
                                 var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                
+                                // 如果RC格式不匹配，尝试小游戏格式 "V 1.1.0"
+                                if (!aMatch) {
+                                    aMatch = a.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                }
+                                if (!bMatch) {
+                                    bMatch = b.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                }
                                 
                                 if (aMatch && bMatch) {
                                     var aVersion = aMatch.slice(1).map(Number);

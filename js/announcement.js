@@ -41,6 +41,31 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260511",
+            title: "RC 2.6.1.4 开发日志",
+            date: "2026-05-11",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.1.4 版本更新，主要带来了小游戏相关功能的优化和修复！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 小游戏更新记录：登录页版本更新记录窗口的LIST栏添加\"小游戏更新记录\"按钮，点击后显示所有小游戏的子选项，方便用户查看各小游戏的版本更新信息",
+                "• 版本号统一管理：在 versionManager.js 中添加了记忆卡牌和颜色匹配小游戏的版本号，实现所有小游戏版本号的统一管理，便于后续维护",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 飞行器游戏样式重构：将飞行器小游戏页面样式彻底重构，采用与点击方块小游戏相同的设计风格，包括左侧边栏导航和右侧主内容区布局，提升整体视觉一致性",
+                "• 子按钮交互优化：修复点击其他按钮后小游戏按钮不会自动收回的问题，确保按钮状态正确切换",
+                "• 版本号调用优化：修复贪吃蛇和飞行器小游戏版本号未正确调用版本管理文件的问题，确保版本号正确显示",
+                "• 页面布局优化：修复飞行器游戏页面顶部导航栏和右侧显示区域样式不正确的问题，确保布局正确显示",
+                "[color:#ff6b6b]【技术细节】[/color]",
+                "• 重构了 fxqgame.html 页面结构，采用与 fkgame.html 相同的布局模式",
+                "• 创建了 fxqgame.css 文件，包含完整的游戏样式定义",
+                "• 更新了 versionManager.js，添加 memorygame 和 colormatchgame 的版本号配置",
+                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260508",
             title: "RC 2.6.1.3 开发日志",
             date: "2026-05-08",

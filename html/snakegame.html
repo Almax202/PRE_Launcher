@@ -26,7 +26,7 @@
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-username">贪吃蛇游戏</div>
-                    <div class="sidebar-uid">RC 1.0.0</div>
+                    <div class="sidebar-uid" id="versionNumber">RC 1.0.0</div>
                 </div>
             </div>
             
@@ -201,6 +201,11 @@ function updateUserCenter() {
 
 // 初始化用户中心
 updateUserCenter();
+
+// 初始化版本号显示
+document.addEventListener('DOMContentLoaded', function() {
+    updateVersionDisplay('snakegame');
+});
 
 // 用户中心点击事件
 (document.getElementById('userCenter') || { addEventListener: function() {} }).addEventListener('click', function() {

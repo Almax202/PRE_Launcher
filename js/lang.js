@@ -82,7 +82,7 @@ const LangManager = (function() {
             accountNotFoundMessage: '未查找到账号，请先注册！',
             goToRegister: '去注册',
             goToLogin: '去登录',
-            logoutConfirm: '是否要退出登录吗？',
+            logoutConfirm: '确认要退出登录吗？',
             notLoggedInMessage: '未登录任何账号，请先进行登录或注册',
             registerConfirm: '确认注册信息',
             confirmSubmit: '确定注册',
