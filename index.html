@@ -810,9 +810,10 @@
                 <div class="login-wrapper">
                     <div class="login-container">
                         <form id="loginForm">
-                            <div class="input-group">
+                            <div class="input-group username-group">
                                 <i class="fas fa-user"></i>
                                 <input type="text" id="username" placeholder="账号">
+                                <span class="quick-login-tag" id="quickLoginTag" style="display: none;">快速登录模式</span>
                             </div>
                             
                             <div class="captcha-group">
@@ -841,7 +842,7 @@
                                     <div class="left-options">
                                         <div class="remember">
                                             <input type="checkbox" id="remember">
-                                            <label for="remember">记住我</label>
+                                            <label for="remember">快速登录</label>
                                         </div>
                                         <div class="auto-login">
                                             <input type="checkbox" id="autoLogin" disabled>
@@ -882,6 +883,75 @@
             </div>
             <div class="confirm-footer">
                 <button class="confirm-btn confirm-ok" id="alertConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginPinModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <div class="header-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>验证PIN码</h3>
+                <p class="header-desc">为了您的账户安全，请完成两步验证</p>
+            </div>
+            <div class="confirm-body">
+                <div class="pin-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>PIN码是您在启用两步验证时设置的6位数字密码</span>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPinInput" placeholder="请输入6位PIN码" maxlength="6">
+                </div>
+                <p id="loginPinError" style="color: #ff4444; display: none; margin-top: 10px;">PIN码错误，请重试</p>
+                <div class="pin-tips">
+                    <p><i class="fas fa-key"></i> 忘记PIN码？请在账户设置中重置</p>
+                </div>
+                <div class="no-verify-today">
+                    <input type="checkbox" id="pinNoVerifyToday">
+                    <label for="pinNoVerifyToday">今日不再验证</label>
+                    <span class="no-verify-hint">退出登录后需重新验证</span>
+                </div>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn" id="loginPinCancel">取消登录</button>
+                <button class="confirm-btn confirm-ok" id="loginPinConfirm">验证登录</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="securityVerifyModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <div class="header-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3>安全验证</h3>
+                <p class="header-desc">请输入账户密码以进行安全验证</p>
+            </div>
+            <div class="confirm-body">
+                <div class="input-group">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="securityVerifyPassword" placeholder="请输入账户密码">
+                </div>
+                <p id="securityVerifyError" style="color: #ff4444; display: none; margin-top: 10px;">密码错误，请重试</p>
+                <div class="verify-switch">
+                    <button class="pin-switch-btn" id="usePinForVerification">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>使用PIN码进行安全验证</span>
+                    </button>
+                </div>
+                <div class="no-verify-today">
+                    <input type="checkbox" id="noVerifyToday">
+                    <label for="noVerifyToday">今日不再验证</label>
+                    <span class="no-verify-hint">退出登录后需重新验证</span>
+                </div>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn" id="securityVerifyCancel">取消</button>
+                <button class="confirm-btn confirm-ok" id="securityVerifyConfirm">验证</button>
             </div>
         </div>
     </div>
@@ -1234,122 +1304,146 @@
     </div>
 
     <div id="registerModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 450px;">
-            <!-- 无网络状态 -->
-            <div id="registerNoNetwork" style="display: none; text-align: center;">
-                <div class="alert-icon" style="color: #e74c3c;">
-                    <i class="fas fa-times-circle"></i>
-                </div>
-                <h3 style="color: #e74c3c;">无网络连接</h3>
-                <div style="margin-top: 20px;">
-                    <button class="alert-confirm" id="registerNoNetworkBack" style="background-color: #95a5a6;">返回</button>
-                </div>
-            </div>
-            
-            <!-- 正常注册内容 -->
-            <div id="registerContent">
+        <div class="alert-content register-modal-content">
+            <div class="register-header">
                 <div class="alert-icon">
                     <i class="fas fa-user-plus"></i>
                 </div>
                 <h3>注册新账号</h3>
+            </div>
+            
+            <!-- 步骤指示器 -->
+            <div class="register-steps">
+                <div class="step-item active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">设置账号</div>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step-item" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">绑定信息</div>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step-item" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">完成注册</div>
+                </div>
+            </div>
+            
+            <!-- 主要内容区域 -->
+            <div class="register-main">
+                <!-- 无网络状态 -->
+                <div id="registerNoNetwork" class="register-inner-container">
+                    <div class="alert-icon" style="color: #e74c3c;">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h3 style="color: #e74c3c;">无网络连接</h3>
+                    <div style="margin-top: 20px;">
+                        <button class="alert-confirm" id="registerNoNetworkBack" style="background-color: #95a5a6;">返回</button>
+                    </div>
+                </div>
                 
-                <!-- 步骤1：输入用户名和密码 -->
-                <div id="registerStep1" class="register-step">
-                <div class="input-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="regUsername" placeholder="请输入用户名" style="width: 100%;">
-                    <div class="username-status" id="usernameStatus">
-                        <i class="fas"></i>
-                    </div>
-                </div>
-                <div class="input-hint">
-                    请输入字符数量大于等于三，小于等于十以内的用户名
-                </div>
-                <div class="input-hint">
-                    点击下列按钮可随机生成用户名
-                </div>
-                <div style="text-align: left; margin-bottom: 15px;">
-                    <button type="button" class="random-username-btn" id="randomUsernameBtn">随机名称</button>
-                    <button type="button" class="random-username-btn" id="mysteryUsernameBtn" style="margin-left: 10px;">神秘名称</button>
-                    <button type="button" class="random-username-btn" id="lastNightUsernameBtn" style="margin-left: 10px;">昨夜圆车</button>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="regPassword" placeholder="请输入新密码" style="width: 100%;">
-                    <button type="button" class="toggle-password" data-target="regPassword">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-                
-                <div class="password-strength">
-                    <div class="strength-bar">
-                        <div class="strength-indicator" id="strengthIndicator1"></div>
-                        <div class="strength-indicator" id="strengthIndicator2"></div>
-                        <div class="strength-indicator" id="strengthIndicator3"></div>
-                    </div>
-                    <div class="strength-text" id="strengthText">密码强度：弱</div>
-                </div>
-                <div class="input-hint">
-                    请输入字符数量大于等于六，小于等于五十以内的密码
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="regConfirmPassword" placeholder="再次确认密码" style="width: 100%;">
-                    <button type="button" class="toggle-password" data-target="regConfirmPassword">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-                <div class="register-buttons">
-                    <button class="alert-confirm" id="registerNext1" style="background-color: #4CAF50;">继续</button>
-                </div>
-            </div>
-            
-            <!-- 步骤2：输入手机号和邮箱 -->
-            <div id="registerStep2" class="register-step" style="display: none;">
-                <div class="input-group">
-                    <i class="fas fa-mobile-alt"></i>
-                    <input type="tel" id="regPhone" placeholder="请输入手机号" style="width: 100%;">
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="regEmail" placeholder="请输入邮箱" style="width: 100%;">
-                </div>
-                <div class="register-buttons">
-                    <button class="alert-confirm" id="registerBack1" style="background-color: #95a5a6;">返回</button>
-                    <button class="alert-confirm" id="registerNext2" style="background-color: #4CAF50;">继续</button>
-                </div>
-            </div>
-            
-            <!-- 步骤3：输入验证码 -->
-            <div id="registerStep3" class="register-step" style="display: none;">
-                <div class="captcha-group">
-                    <div class="captcha-row">
-                        <div class="input-group captcha-input">
-                            <i class="fas fa-shield-alt"></i>
-                            <input type="text" id="regCaptcha" placeholder="验证码" style="width: 100%;">
+                <!-- 正常注册内容 -->
+                <div id="registerContent" class="register-inner-container">
+                    <!-- 步骤1：输入用户名和密码 -->
+                    <div id="registerStep1" class="register-step">
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="regUsername" placeholder="请输入用户名">
+                            <div class="username-status" id="usernameStatus">
+                                <i class="fas"></i>
+                            </div>
                         </div>
-                        <div class="captcha-img" id="regCaptchaImage">
-                            <span class="captcha-text">加载中...</span>
+                        <div class="input-hint">
+                            请输入字符数量大于等于三，小于等于十以内的用户名
+                        </div>
+                        <div class="input-hint">
+                            点击下列按钮可随机生成用户名
+                        </div>
+                        <div class="random-username-buttons">
+                            <button type="button" class="random-username-btn" id="randomUsernameBtn">随机名称</button>
+                            <button type="button" class="random-username-btn" id="mysteryUsernameBtn">神秘名称</button>
+                            <button type="button" class="random-username-btn" id="lastNightUsernameBtn">昨夜圆车</button>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="regPassword" placeholder="请输入新密码">
+                            <button type="button" class="toggle-password" data-target="regPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-indicator" id="strengthIndicator1"></div>
+                                <div class="strength-indicator" id="strengthIndicator2"></div>
+                                <div class="strength-indicator" id="strengthIndicator3"></div>
+                            </div>
+                            <div class="strength-text" id="strengthText">密码强度：弱</div>
+                        </div>
+                        <div class="input-hint">
+                            请输入字符数量大于等于六，小于等于五十以内的密码
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="regConfirmPassword" placeholder="再次确认密码">
+                            <button type="button" class="toggle-password" data-target="regConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="register-buttons">
+                            <button class="alert-confirm" id="registerNext1" style="background-color: #4CAF50;">继续</button>
                         </div>
                     </div>
-                    <div class="captcha-hint">点击刷新验证码</div>
-                </div>
-                <div class="agreement-section">
-                    <input type="checkbox" id="registerAgreement">
-                    <label for="registerAgreement">
-                        我已阅读并同意《<a href="#" class="agreement-link" data-type="terms">用户协议</a>》及其《<a href="#" class="agreement-link" data-type="privacy">隐私政策</a>》
-                    </label>
-                </div>
-                <div class="register-buttons">
-                    <button class="alert-confirm" id="registerBack2" style="background-color: #95a5a6;">返回</button>
-                    <button class="alert-confirm" id="registerConfirm" style="background-color: #4CAF50;">继续</button>
+                    
+                    <!-- 步骤2：输入手机号和邮箱 -->
+                    <div id="registerStep2" class="register-step" style="display: none;">
+                        <div class="input-group">
+                            <i class="fas fa-mobile-alt"></i>
+                            <input type="tel" id="regPhone" placeholder="请输入手机号">
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="regEmail" placeholder="请输入邮箱">
+                        </div>
+                        <div class="register-buttons">
+                            <button class="alert-confirm" id="registerBack1" style="background-color: #95a5a6;">返回</button>
+                            <button class="alert-confirm" id="registerNext2" style="background-color: #4CAF50;">继续</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤3：输入验证码 -->
+                    <div id="registerStep3" class="register-step" style="display: none;">
+                        <div class="captcha-group">
+                            <div class="captcha-row">
+                                <div class="input-group captcha-input">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <input type="text" id="regCaptcha" placeholder="验证码">
+                                </div>
+                                <div class="captcha-img" id="regCaptchaImage">
+                                    <span class="captcha-text">加载中...</span>
+                                </div>
+                            </div>
+                            <div class="captcha-hint">点击刷新验证码</div>
+                        </div>
+                        <div class="agreement-section">
+                            <input type="checkbox" id="registerAgreement">
+                            <label for="registerAgreement">
+                                我已阅读并同意《<a href="#" class="agreement-link" data-type="terms">用户协议</a>》及其《<a href="#" class="agreement-link" data-type="privacy">隐私政策</a>》
+                            </label>
+                        </div>
+                        <div class="register-buttons">
+                            <button class="alert-confirm" id="registerBack2" style="background-color: #95a5a6;">返回</button>
+                            <button class="alert-confirm" id="registerConfirm" style="background-color: #4CAF50;">确定注册</button>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
             
-            <div class="login-link">
-                    <span>已有账号？</span>
-                    <a href="#" id="backToLogin">返回登录</a>
-                </div>
+            <!-- 返回登录按钮 - 固定在底部 -->
+            <div class="register-footer">
+                <button class="alert-confirm" id="backToLogin">返回登录</button>
             </div>
         </div>
     </div>
@@ -1634,14 +1728,71 @@
             });
         });
         
-        document.getElementById('remember').addEventListener('change', function() {
+        document.getElementById('remember').addEventListener('change', function(e) {
             const autoLoginCheckbox = document.getElementById('autoLogin');
             if (this.checked) {
-                autoLoginCheckbox.disabled = false;
+                e.preventDefault();
+                showQuickLoginConfirmModal(this);
             } else {
                 autoLoginCheckbox.disabled = true;
                 autoLoginCheckbox.checked = false;
                 localStorage.removeItem('autoLogin');
+            }
+        });
+        
+        function showQuickLoginConfirmModal(checkbox) {
+            const modal = document.createElement('div');
+            modal.id = 'quickLoginConfirmModal';
+            modal.className = 'custom-alert';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="alert-content" style="max-width: 450px;">
+                    <div class="alert-icon" style="color: #f39c12;">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h3>快速登录功能说明</h3>
+                    <p style="margin: 15px 0; color: #666; line-height: 1.6;">
+                        启用"快速登录"后，您的账号密码将保存在本地浏览器中。下次访问登录页面时，
+                        将自动进入快速登录模式，只需点击登录按钮即可直接进入游戏大厅，无需再次输入验证码和密码。
+                    </p>
+                    <p style="margin: 15px 0; color: #e74c3c; font-weight: bold;">
+                        请注意：此功能仅建议在个人设备上使用，公共设备请谨慎开启！
+                    </p>
+                    <div class="modal-buttons">
+                        <button class="alert-confirm" id="quickLoginCancel">取消</button>
+                        <button class="alert-confirm" id="quickLoginConfirm">确定启用</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+            
+            document.getElementById('quickLoginCancel').addEventListener('click', function() {
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    document.body.removeChild(modal);
+                }, 300);
+            });
+            
+            document.getElementById('quickLoginConfirm').addEventListener('click', function() {
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    document.body.removeChild(modal);
+                    checkbox.checked = true;
+                    document.getElementById('autoLogin').disabled = false;
+                }, 300);
+            });
+        }
+        
+        const savedUsernameValue = localStorage.getItem('savedUsername');
+        document.getElementById('username').addEventListener('input', function() {
+            const rememberMe = localStorage.getItem('rememberMe') === 'true';
+            if (rememberMe && savedUsernameValue && this.value !== savedUsernameValue) {
+                disableQuickLoginMode();
+                fetchCaptcha();
             }
         });
         
@@ -1650,7 +1801,14 @@
             const savedUsername = localStorage.getItem('savedUsername');
             const savedPassword = localStorage.getItem('savedPassword');
             
-            if (rememberMe && savedUsername) {
+            if (rememberMe && savedUsername && savedPassword) {
+                document.getElementById('remember').checked = true;
+                document.getElementById('username').value = savedUsername;
+                document.getElementById('password').value = savedPassword;
+                document.getElementById('autoLogin').disabled = false;
+                
+                enableQuickLoginMode();
+            } else if (rememberMe && savedUsername) {
                 document.getElementById('remember').checked = true;
                 document.getElementById('username').value = savedUsername;
                 document.getElementById('autoLogin').disabled = false;
@@ -1664,6 +1822,28 @@
             if (autoLogin && rememberMe) {
                 document.getElementById('autoLogin').checked = true;
             }
+        }
+        
+        function enableQuickLoginMode() {
+            document.querySelector('.captcha-group').style.display = 'none';
+            document.getElementById('passwordSection').style.display = 'none';
+            document.querySelector('.agreement-section').style.display = 'none';
+            document.getElementById('loginButton').innerHTML = '<i class="fas fa-sign-in-alt"></i> 快速登录';
+            document.getElementById('loginButton').classList.add('quick-login');
+            document.getElementById('quickLoginTag').style.display = 'inline';
+        }
+        
+        function disableQuickLoginMode() {
+            document.querySelector('.captcha-group').style.display = 'block';
+            document.getElementById('passwordSection').style.display = 'block';
+            document.querySelector('.agreement-section').style.display = 'block';
+            document.getElementById('loginButton').innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
+            document.getElementById('loginButton').classList.remove('quick-login');
+            document.getElementById('quickLoginTag').style.display = 'none';
+            
+            localStorage.removeItem('rememberMe');
+            localStorage.removeItem('savedPassword');
+            document.getElementById('remember').checked = false;
         }
         
         function checkAutoLogin() {
@@ -1884,6 +2064,384 @@
                 document.getElementById('alertConfirm').click();
             }
         });
+        
+        document.getElementById('loginPinCancel').addEventListener('click', function() {
+            var pinModal = document.getElementById('loginPinModal');
+            pinModal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                pinModal.style.display = 'none';
+            }, 300);
+            window.loginData = null;
+        });
+        
+        document.getElementById('loginPinModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                document.getElementById('loginPinCancel').click();
+            }
+        });
+        
+        document.getElementById('loginPinInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginPinConfirm').click();
+            }
+        });
+        
+        // 安全验证弹窗事件处理
+        document.getElementById('securityVerifyCancel').addEventListener('click', function() {
+            var modal = document.getElementById('securityVerifyModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+        });
+        
+        document.getElementById('securityVerifyConfirm').addEventListener('click', function() {
+            var passwordInput = document.getElementById('securityVerifyPassword');
+            var password = passwordInput.value;
+            
+            if (!password) {
+                document.getElementById('securityVerifyError').textContent = '请输入账户密码';
+                document.getElementById('securityVerifyError').style.display = 'block';
+                passwordInput.focus();
+                return;
+            }
+            
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (!user || password !== user.password) {
+                document.getElementById('securityVerifyError').textContent = '密码错误，请重试';
+                document.getElementById('securityVerifyError').style.display = 'block';
+                passwordInput.value = '';
+                passwordInput.focus();
+                return;
+            }
+            
+            // 检查是否勾选"今日不再验证"
+            var noVerifyToday = document.getElementById('noVerifyToday').checked;
+            if (noVerifyToday) {
+                // 设置今日不再验证标记，过期时间为当天结束
+                var tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                var expireTime = tomorrow.getTime();
+                localStorage.setItem('skipSecurityVerify', 'true');
+                localStorage.setItem('skipSecurityVerifyExpire', expireTime.toString());
+            }
+            
+            // 验证通过，关闭弹窗并跳转
+            var modal = document.getElementById('securityVerifyModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                document.getElementById('noVerifyToday').checked = false;
+                navigateToAccountSettings();
+            }, 300);
+        });
+        
+        document.getElementById('usePinForVerification').addEventListener('click', function() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            // 检查PIN启用状态
+            if (!user || !user.twoFactorAuth || !user.twoFactorAuth.enabled) {
+                showAlert('当前账户未开启两步验证功能');
+                return;
+            }
+            
+            // 关闭安全验证弹窗，显示PIN验证弹窗
+            var securityModal = document.getElementById('securityVerifyModal');
+            securityModal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                securityModal.style.display = 'none';
+                
+                // 显示PIN验证弹窗
+                document.getElementById('loginPinModal').style.display = 'flex';
+                document.getElementById('loginPinModal').style.animation = 'fadeIn 0.3s ease';
+                document.getElementById('loginPinInput').value = '';
+                document.getElementById('loginPinError').style.display = 'none';
+                document.getElementById('loginPinInput').focus();
+                
+                // 临时保存当前操作类型
+                window.securityVerifyType = 'accountSettings';
+            }, 300);
+        });
+        
+        document.getElementById('securityVerifyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                document.getElementById('securityVerifyCancel').click();
+            }
+        });
+        
+        document.getElementById('securityVerifyPassword').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('securityVerifyConfirm').click();
+            }
+        });
+        
+        // 修改登录PIN验证弹窗的确认按钮处理，支持账户设置跳转
+        document.getElementById('loginPinConfirm').addEventListener('click', function() {
+            var pinInput = document.getElementById('loginPinInput');
+            var pin = pinInput.value;
+            
+            if (!pin) {
+                document.getElementById('loginPinError').textContent = '请输入PIN码';
+                document.getElementById('loginPinError').style.display = 'block';
+                pinInput.focus();
+                return;
+            }
+            
+            var validUser = null;
+            
+            if (window.loginData && window.loginData.validUser) {
+                validUser = window.loginData.validUser;
+            } else {
+                // 从当前用户信息获取
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                validUser = users.find(function(u) {
+                    return u.username === currentUser.username;
+                });
+            }
+            
+            if (!validUser || !validUser.twoFactorAuth) {
+                document.getElementById('loginPinError').textContent = '用户数据无效';
+                document.getElementById('loginPinError').style.display = 'block';
+                return;
+            }
+            
+            if (pin !== validUser.twoFactorAuth.pin) {
+                document.getElementById('loginPinError').textContent = 'PIN码错误，请重试';
+                document.getElementById('loginPinError').style.display = 'block';
+                pinInput.value = '';
+                pinInput.focus();
+                return;
+            }
+            
+            // 检查是否勾选"今日不再验证"
+            var noVerifyToday = document.getElementById('pinNoVerifyToday').checked;
+            if (noVerifyToday) {
+                // 设置今日不再验证标记，过期时间为当天结束
+                var tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                var expireTime = tomorrow.getTime();
+                localStorage.setItem('skipSecurityVerify', 'true');
+                localStorage.setItem('skipSecurityVerifyExpire', expireTime.toString());
+            }
+            
+            var pinModal = document.getElementById('loginPinModal');
+            pinModal.style.animation = 'fadeOut 0.3s ease';
+            
+            setTimeout(function() {
+                pinModal.style.display = 'none';
+                document.getElementById('pinNoVerifyToday').checked = false;
+                
+                // 根据验证类型进行不同操作
+                // 优先检查登录流程，避免被securityVerifyType覆盖
+                if (window.loginData) {
+                    var loginData = window.loginData;
+                    window.loginData = null;
+                    window.securityVerifyType = null; // 清除安全验证类型标记
+                    completeLogin(loginData.username, loginData.password, loginData.validUser, loginData.rememberMe, loginData.autoLogin);
+                } else if (window.securityVerifyType === 'accountSettings') {
+                    window.securityVerifyType = null;
+                    navigateToAccountSettings();
+                }
+            }, 300);
+        });
+        
+        function completeLogin(username, password, validUser, rememberMe, autoLogin) {
+            // 检查用户是否处于注销等待期内
+            if (validUser.isDeleting && validUser.deleteRequestTime) {
+                var currentTime = new Date().getTime();
+                var deleteRequestTime = validUser.deleteRequestTime;
+                var sevenDays = 7 * 24 * 60 * 60 * 1000;
+                
+                if (currentTime - deleteRequestTime < sevenDays) {
+                    showCancelDeleteModal(validUser, username, password);
+                    return;
+                } else {
+                    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    var userIndex = users.findIndex(function(user) {
+                        return user.username === username;
+                    });
+                    if (userIndex !== -1) {
+                        users.splice(userIndex, 1);
+                        localStorage.setItem('registeredUsers', JSON.stringify(users));
+                    }
+                    showAlert('账户已彻底注销');
+                    return;
+                }
+            }
+            
+            if (rememberMe) {
+                localStorage.setItem('rememberMe', 'true');
+                localStorage.setItem('savedUsername', username);
+                localStorage.setItem('savedPassword', password);
+                if (autoLogin) {
+                    localStorage.setItem('autoLogin', 'true');
+                } else {
+                    localStorage.removeItem('autoLogin');
+                }
+            } else {
+                localStorage.removeItem('rememberMe');
+                localStorage.removeItem('savedUsername');
+                localStorage.removeItem('savedPassword');
+                localStorage.removeItem('autoLogin');
+            }
+            
+            var loginBtn = document.getElementById('loginButton');
+            var originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+            loginBtn.disabled = true;
+            
+            setTimeout(function() {
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+                
+                var deviceInfo = {
+                    name: '',
+                    browser: '',
+                    os: '',
+                    platform: navigator.platform,
+                    userAgent: navigator.userAgent
+                };
+                
+                var userAgent = navigator.userAgent.toLowerCase();
+                if (userAgent.includes('windows')) {
+                    deviceInfo.os = 'Windows';
+                    deviceInfo.name = 'Windows PC';
+                } else if (userAgent.includes('macintosh')) {
+                    deviceInfo.os = 'macOS';
+                    deviceInfo.name = 'Mac';
+                } else if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
+                    deviceInfo.os = 'iOS';
+                    deviceInfo.name = userAgent.includes('iphone') ? 'iPhone' : 'iPad';
+                } else if (userAgent.includes('android')) {
+                    deviceInfo.os = 'Android';
+                    deviceInfo.name = 'Android Device';
+                } else {
+                    deviceInfo.os = 'Unknown';
+                    deviceInfo.name = 'Unknown Device';
+                }
+                
+                if (userAgent.includes('chrome') && !userAgent.includes('edg')) {
+                    deviceInfo.browser = 'Chrome';
+                } else if (userAgent.includes('firefox')) {
+                    deviceInfo.browser = 'Firefox';
+                } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+                    deviceInfo.browser = 'Safari';
+                } else if (userAgent.includes('edg')) {
+                    deviceInfo.browser = 'Edge';
+                } else if (userAgent.includes('opera') || userAgent.includes('opr')) {
+                    deviceInfo.browser = 'Opera';
+                } else {
+                    deviceInfo.browser = 'Unknown';
+                }
+                
+                var loginHistory = validUser.loginHistory || [];
+                var now = new Date();
+                var loginRecord = {
+                    timestamp: now.toISOString(),
+                    device: deviceInfo.name + ' - ' + deviceInfo.browser,
+                    platform: deviceInfo.platform,
+                    userAgent: deviceInfo.userAgent,
+                    location: '未知位置',
+                    status: '已登录'
+                };
+                
+                loginHistory.unshift(loginRecord);
+                
+                var thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                loginHistory = loginHistory.filter(function(record) {
+                    return new Date(record.timestamp) >= thirtyDaysAgo;
+                });
+                
+                if (loginHistory.length > 20) {
+                    loginHistory = loginHistory.slice(0, 20);
+                }
+                
+                validUser.loginHistory = loginHistory;
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var userIndex = users.findIndex(function(user) {
+                    return user.username === username;
+                });
+                if (userIndex !== -1) {
+                    users[userIndex] = validUser;
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                }
+                
+                var currentUserObj = {
+                    username: username,
+                    userId: validUser ? validUser.userId : null,
+                    loginTime: now.toISOString()
+                };
+                
+                if (validUser && validUser.twoFactorAuth) {
+                    currentUserObj.twoFactorAuth = validUser.twoFactorAuth;
+                }
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
+                
+                if (validUser && validUser.userProfile) {
+                    var avatarInfo = {
+                        avatar: validUser.userProfile.avatar || 'user',
+                        customAvatar: validUser.userProfile.customAvatar || null
+                    };
+                    localStorage.setItem('currentUserAvatar', JSON.stringify(avatarInfo));
+                    
+                    if (validUser.userProfile.background) {
+                        localStorage.setItem('customBackground', JSON.stringify(validUser.userProfile.background));
+                    } else {
+                        localStorage.removeItem('customBackground');
+                    }
+                    
+                    var userAvatar = document.querySelector('.user-avatar');
+                    if (userAvatar) {
+                        if (avatarInfo.avatar === 'custom' && avatarInfo.customAvatar) {
+                            userAvatar.innerHTML = '';
+                            userAvatar.style.backgroundImage = 'url(' + avatarInfo.customAvatar + ')';
+                            userAvatar.style.backgroundSize = 'cover';
+                            userAvatar.style.backgroundPosition = 'center';
+                        } else {
+                            userAvatar.style.backgroundImage = '';
+                            userAvatar.innerHTML = '<i class="fas fa-' + avatarInfo.avatar + '"></i>';
+                        }
+                    }
+                    
+                    if (validUser.userProfile.theme === 'dark') {
+                        document.body.classList.add('dark-mode');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                    }
+                    
+                    if (typeof SettingsManager !== 'undefined') {
+                        SettingsManager.set('darkMode', validUser.userProfile.theme === 'dark');
+                    }
+                    
+                    if (validUser.userProfile.theme === 'glass' && validUser.userProfile.glassTheme) {
+                        applyGlassThemeToPage(validUser.userProfile.glassTheme);
+                    }
+                }
+                
+                loadCustomBackground();
+                updateUserCenter(username, validUser.userId);
+                
+                showAlert(getLanguageText('loginSuccess'));
+                
+                setTimeout(function() {
+                    window.location.href = 'html/homepage4.0.html';
+                }, 1500);
+            }, 1000);
+        }
         
         function showTermsModal() {
             var termsModal = document.getElementById('termsModal');
@@ -2139,6 +2697,8 @@
             localStorage.removeItem('savedPassword');
             localStorage.removeItem('autoLogin');
             localStorage.removeItem('currentUserAvatar'); // 登出后清除头像信息
+            localStorage.removeItem('skipSecurityVerify'); // 退出登录时清除"今日不再验证"标记
+            localStorage.removeItem('skipSecurityVerifyExpire');
             
             updateUserCenter('未登录');
             
@@ -2257,7 +2817,8 @@
         updateCardBtnStatus();
         
         // 为"点击进入账户设置"添加事件监听器
-        document.getElementById('accountSettingsLink').addEventListener('click', function() {
+        document.getElementById('accountSettingsLink').addEventListener('click', function(e) {
+            e.stopPropagation(); // 阻止事件冒泡，避免触发userCenter的点击事件
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             if (!currentUser.username) {
                 // 显示未登录提示模态窗口
@@ -2266,10 +2827,47 @@
                     document.getElementById('notLoggedInModal').classList.add('show');
                 }, 100);
             } else {
-                // 已登录，跳转到账户设置页面
-                window.location.href = 'html/account-settings.html';
+                // 已登录，显示安全验证弹窗，验证通过后在当前窗口打开账户设置
+                window.securityVerifyTarget = 'currentWindow';
+                showSecurityVerifyModal();
             }
         });
+        
+        function showSecurityVerifyModal() {
+            // 检查是否有"今日不再验证"标记且未过期
+            var skipVerify = localStorage.getItem('skipSecurityVerify');
+            var expireTime = localStorage.getItem('skipSecurityVerifyExpire');
+            
+            if (skipVerify === 'true' && expireTime) {
+                var currentTime = new Date().getTime();
+                if (currentTime < parseInt(expireTime)) {
+                    // 今日不再验证，直接跳转
+                    navigateToAccountSettings();
+                    return;
+                } else {
+                    // 标记已过期，清除标记
+                    localStorage.removeItem('skipSecurityVerify');
+                    localStorage.removeItem('skipSecurityVerifyExpire');
+                }
+            }
+            
+            document.getElementById('securityVerifyModal').style.display = 'flex';
+            document.getElementById('securityVerifyModal').style.animation = 'fadeIn 0.3s ease';
+            document.getElementById('securityVerifyPassword').value = '';
+            document.getElementById('securityVerifyError').style.display = 'none';
+            document.getElementById('securityVerifyPassword').focus();
+        }
+        
+        function navigateToAccountSettings() {
+            var target = window.securityVerifyTarget || 'currentWindow';
+            window.securityVerifyTarget = null;
+            
+            if (target === 'newWindow') {
+                window.open('html/account-settings.html', '_blank');
+            } else {
+                window.location.href = 'html/account-settings.html';
+            }
+        }
 
         function handleRegister() {
             var registerAgreement = document.getElementById('registerAgreement');
@@ -2647,14 +3245,16 @@
                 return;
             }
             
+            var captchaGroup = document.querySelector('.captcha-group');
+            var passwordSection = document.getElementById('passwordSection');
+            var isQuickLogin = captchaGroup.style.display === 'none' && passwordSection.style.display === 'none';
+            
             var loginAgreement = document.getElementById('loginAgreement');
             var agreementSection = document.querySelector('.agreement-section');
             
-            // 移除之前的错误状态
             agreementSection.classList.remove('error');
             
-            if (!loginAgreement.checked) {
-                // 应用错误状态样式
+            if (!isQuickLogin && !loginAgreement.checked) {
                 agreementSection.classList.add('error');
                 
                 // 2秒后移除错误状态
@@ -2674,16 +3274,18 @@
                 return;
             }
             
-            if (!captcha) {
-                return;
-            }
-            
-            if (captcha.toUpperCase() !== window.currentCaptchaCode) {
-                showAlert(getLanguageText('captchaError'));
-                fetchCaptcha();
-                document.getElementById('captcha').value = '';
-                document.getElementById('captcha').focus();
-                return;
+            if (!isQuickLogin) {
+                if (!captcha) {
+                    return;
+                }
+                
+                if (captcha.toUpperCase() !== window.currentCaptchaCode) {
+                    showAlert(getLanguageText('captchaError'));
+                    fetchCaptcha();
+                    document.getElementById('captcha').value = '';
+                    document.getElementById('captcha').focus();
+                    return;
+                }
             }
             
             var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
@@ -2699,16 +3301,18 @@
                 return;
             }
             
-            var passwordSection = document.getElementById('passwordSection');
-            if (passwordSection.style.display === 'none') {
-                passwordSection.style.display = 'block';
-                document.getElementById('password').focus();
-                return;
-            }
-            
-            if (!password) {
-                showAlert(getLanguageText('enterPassword'));
-                return;
+            if (!isQuickLogin) {
+                var passwordSection = document.getElementById('passwordSection');
+                if (passwordSection.style.display === 'none') {
+                    passwordSection.style.display = 'block';
+                    document.getElementById('password').focus();
+                    return;
+                }
+                
+                if (!password) {
+                    showAlert(getLanguageText('enterPassword'));
+                    return;
+                }
             }
             
             var validUser = users.find(function(user) {
@@ -2721,6 +3325,28 @@
                 document.getElementById('captcha').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('password').focus();
+                return;
+            }
+            
+            // 检查是否启用了登录PIN验证功能
+            var needPinVerification = validUser.twoFactorAuth && validUser.twoFactorAuth.enabled && validUser.twoFactorAuth.loginPinEnabled;
+            
+            if (needPinVerification) {
+                // 保存登录信息，用于PIN验证通过后继续登录
+                window.loginData = {
+                    username: username,
+                    password: password,
+                    validUser: validUser,
+                    rememberMe: document.getElementById('remember').checked,
+                    autoLogin: document.getElementById('autoLogin').checked
+                };
+                
+                // 显示PIN验证弹窗
+                document.getElementById('loginPinModal').style.display = 'flex';
+                document.getElementById('loginPinModal').style.animation = 'fadeIn 0.3s ease';
+                document.getElementById('loginPinInput').value = '';
+                document.getElementById('loginPinError').style.display = 'none';
+                document.getElementById('loginPinInput').focus();
                 return;
             }
             
@@ -3145,7 +3771,9 @@
                     document.getElementById('notLoggedInModal').classList.add('show');
                 }, 100);
             } else {
-                window.open('html/account-settings.html', '_blank');
+                // 已登录，显示安全验证弹窗，验证通过后在新窗口打开账户设置
+                window.securityVerifyTarget = 'newWindow';
+                showSecurityVerifyModal();
             }
         });
 
@@ -3974,6 +4602,18 @@
             usernameInput.dispatchEvent(inputEvent);
         });
         
+        // 更新注册步骤指示器
+        function updateRegisterStepIndicator(step) {
+            var stepItems = document.querySelectorAll('.register-steps .step-item');
+            stepItems.forEach(function(item, index) {
+                if (index + 1 === step) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
         // 步骤1：用户名和密码验证
         document.getElementById('registerNext1').addEventListener('click', function() {
             var username = document.getElementById('regUsername').value.trim();
@@ -4026,6 +4666,8 @@
                 return;
             }
             
+            // 更新步骤指示器
+            updateRegisterStepIndicator(2);
             // 显示步骤2
             document.getElementById('registerStep1').style.display = 'none';
             document.getElementById('registerStep2').style.display = 'block';
@@ -4033,6 +4675,8 @@
         
         // 步骤2：返回按钮
         document.getElementById('registerBack1').addEventListener('click', function() {
+            // 更新步骤指示器
+            updateRegisterStepIndicator(1);
             document.getElementById('registerStep2').style.display = 'none';
             document.getElementById('registerStep1').style.display = 'block';
         });
@@ -4062,6 +4706,8 @@
                 return;
             }
             
+            // 更新步骤指示器
+            updateRegisterStepIndicator(3);
             // 显示步骤3
             document.getElementById('registerStep2').style.display = 'none';
             document.getElementById('registerStep3').style.display = 'block';
@@ -4071,6 +4717,8 @@
         
         // 步骤3：返回按钮
         document.getElementById('registerBack2').addEventListener('click', function() {
+            // 更新步骤指示器
+            updateRegisterStepIndicator(2);
             document.getElementById('registerStep3').style.display = 'none';
             document.getElementById('registerStep2').style.display = 'block';
         });

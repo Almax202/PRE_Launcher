@@ -286,6 +286,31 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('twoFactorActions').style.display = 'block';
         }
         
+        // 初始化登录PIN验证功能状态
+        var loginPinAuthEnabled = currentUser.twoFactorAuth && currentUser.twoFactorAuth.loginPinEnabled;
+        document.getElementById('loginPinAuth').checked = loginPinAuthEnabled;
+        
+        document.getElementById('loginPinAuth').addEventListener('change', function() {
+            var enabled = this.checked;
+            if (enabled && !twoFactorEnabled) {
+                this.checked = false;
+                showAlert('请先启用两步验证');
+                return;
+            }
+            // 保存设置到twoFactorAuth对象中
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(user) {
+                return user.username === currentUser.username;
+            });
+            if (userIndex !== -1) {
+                if (!users[userIndex].twoFactorAuth) {
+                    users[userIndex].twoFactorAuth = {};
+                }
+                users[userIndex].twoFactorAuth.loginPinEnabled = enabled;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+            }
+        });
+        
         document.getElementById('twoFactorAuth').addEventListener('change', function() {
             var enabled = this.checked;
             if (enabled) {
