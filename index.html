@@ -442,6 +442,10 @@
                 const savedScale = localStorage.getItem('uiScale') || '100';
                 document.documentElement.style.zoom = `${parseInt(savedScale) / 100}`;
                 scaleValue.textContent = `${savedScale}%`;
+                const scaleSlider = document.getElementById('scaleSlider');
+                if (scaleSlider) {
+                    scaleSlider.value = savedScale;
+                }
             }
 
             // 保存比例设置
@@ -461,6 +465,11 @@
                 document.documentElement.style.zoom = `${newScale / 100}`;
                 scaleValue.textContent = `${newScale}%`;
                 saveScaleSetting(newScale);
+                
+                const scaleSlider = document.getElementById('scaleSlider');
+                if (scaleSlider) {
+                    scaleSlider.value = newScale;
+                }
             }
 
             // 重置比例
@@ -468,22 +477,23 @@
                 document.documentElement.style.zoom = '1';
                 scaleValue.textContent = '100%';
                 saveScaleSetting('100');
+                
+                const scaleSlider = document.getElementById('scaleSlider');
+                if (scaleSlider) {
+                    scaleSlider.value = '100';
+                }
             }
 
-            // 切换比例调整浮窗显示
+            // 切换比例调整弹窗显示
             if (uiScaleBtn && uiScaleModal) {
                 uiScaleBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    uiScaleModal.style.display = uiScaleModal.style.display === 'block' ? 'none' : 'block';
+                    uiScaleModal.style.display = 'flex';
                 });
 
-                // 点击其他地方关闭浮窗
-                document.addEventListener('click', function(e) {
-                    if (uiScaleModal.style.display === 'block' && 
-                        !uiScaleModal.contains(e.target) && 
-                        !uiScaleBtn.contains(e.target)) {
-                        uiScaleModal.style.display = 'none';
-                    }
+                // 关闭弹窗
+                document.getElementById('uiScaleClose').addEventListener('click', function() {
+                    uiScaleModal.style.display = 'none';
                 });
 
                 // 缩放按钮点击事件
@@ -503,24 +513,26 @@
                     scaleResetBtn.addEventListener('click', resetScale);
                 }
 
+                // 滑动条事件
+                const scaleSlider = document.getElementById('scaleSlider');
+                if (scaleSlider) {
+                    scaleSlider.addEventListener('input', function() {
+                        const scale = parseInt(this.value);
+                        document.documentElement.style.zoom = `${scale / 100}`;
+                        scaleValue.textContent = `${scale}%`;
+                        saveScaleSetting(scale);
+                    });
+                }
+
                 // 初始加载比例设置
                 loadScaleSetting();
             }
         }
             
-            // 切换按钮点击事件
-            if (toggleButtonsBtn && headerButtonsContainer) {
+            // 切换按钮点击事件 - 改为弹出窗口
+            if (toggleButtonsBtn) {
                 toggleButtonsBtn.addEventListener('click', function() {
-                    headerButtonsContainer.classList.toggle('expanded');
-                    toggleButtonsBtn.classList.toggle('rotated');
-                    
-                    // 更新提示文字
-                    const tooltip = toggleButtonsBtn.nextElementSibling;
-                    if (headerButtonsContainer.classList.contains('expanded')) {
-                        tooltip.querySelector('span').textContent = '点击收起更多功能';
-                    } else {
-                        tooltip.querySelector('span').textContent = '点击展开更多功能';
-                    }
+                    document.getElementById('moreFeaturesModal').style.display = 'flex';
                 });
             }
             
@@ -700,12 +712,12 @@
                     </div>
                 </div>
                 <div class="user-buttons-container">
-                    <div class="logout-btn-container">
-                        <button class="logout-btn small-logout-btn" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i>
+                    <div class="more-actions-btn-container">
+                        <button class="more-actions-btn" id="moreActionsBtn">
+                            <i class="fas fa-ellipsis-h"></i>
                         </button>
-                        <div class="logout-tooltip">
-                            <span>退出登录</span>
+                        <div class="more-actions-tooltip">
+                            <span>更多操作</span>
                         </div>
                     </div>
                 </div>
@@ -727,12 +739,6 @@
                             <div class="tooltip-item">
                                 <span class="tooltip-label">注册时间：</span>
                                 <span class="tooltip-value" id="tooltipRegTime">--</span>
-                            </div>
-                            <div class="tooltip-footer">
-                                <div class="tooltip-link" id="accountSettingsLink">
-                                    <i class="fas fa-cog"></i>
-                                    <span>点击进入账户设置</span>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -970,13 +976,31 @@
         </div>
     </div>
 
-    <div id="uiScaleModal" class="ui-scale-modal" style="display: none;">
-        <div class="ui-scale-content">
-            <div class="ui-scale-controls">
-                <span class="scale-value" id="scaleValue">100%</span>
-                <button class="scale-btn" id="scaleDownBtn">-</button>
-                <button class="scale-btn" id="scaleUpBtn">+</button>
-                <button class="scale-btn reset-btn" id="scaleResetBtn">重置</button>
+    <div id="uiScaleModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content ui-scale-content">
+            <div class="confirm-header">
+                <h3>调整UI比例</h3>
+            </div>
+            <div class="confirm-body">
+                <div class="ui-scale-wrapper">
+                    <div class="scale-display">
+                        <span class="scale-value" id="scaleValue">100%</span>
+                    </div>
+                    <input type="range" id="scaleSlider" min="50" max="200" value="100" step="5">
+                    <div class="scale-labels">
+                        <span>50%</span>
+                        <span>100%</span>
+                        <span>200%</span>
+                    </div>
+                    <div class="scale-buttons">
+                        <button class="scale-btn" id="scaleDownBtn">-</button>
+                        <button class="scale-btn reset-btn" id="scaleResetBtn">重置</button>
+                        <button class="scale-btn" id="scaleUpBtn">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn confirm-ok" id="uiScaleClose">确定</button>
             </div>
         </div>
     </div>
@@ -1068,6 +1092,60 @@
             <div class="confirm-footer">
                 <button class="confirm-btn" id="goToLogin">去登录</button>
                 <button class="confirm-btn confirm-ok" id="goToRegister">去注册</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="moreActionsModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content more-actions-content">
+            <div class="confirm-header">
+                <h3>更多操作</h3>
+            </div>
+            <div class="confirm-body">
+                <div class="more-actions-buttons">
+                    <button class="more-action-btn settings-action" id="goToAccountSettingsBtn">
+                        <i class="fas fa-user-cog"></i>
+                        <span>进入账户设置</span>
+                    </button>
+                    <button class="more-action-btn logout-action" id="logoutFromActionsBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>退出登录</span>
+                    </button>
+                </div>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn confirm-ok" id="moreActionsClose">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="moreFeaturesModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content more-features-content">
+            <div class="confirm-header">
+                <h3>更多功能</h3>
+            </div>
+            <div class="confirm-body">
+                <div class="more-features-buttons">
+                    <button class="more-feature-btn" id="modalAboutLauncherBtn">
+                        <i class="fas fa-info-circle"></i>
+                        <span>关于启动器</span>
+                    </button>
+                    <button class="more-feature-btn" id="modalCardBtn">
+                        <i class="fas fa-id-card"></i>
+                        <span>名片</span>
+                    </button>
+                    <button class="more-feature-btn" id="modalHideInterfaceBtn">
+                        <i class="fas fa-eye-slash"></i>
+                        <span>隐藏UI</span>
+                    </button>
+                    <button class="more-feature-btn" id="modalUiScaleBtn">
+                        <i class="fas fa-search"></i>
+                        <span>调整UI比例</span>
+                    </button>
+                </div>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn confirm-ok" id="moreFeaturesClose">关闭</button>
             </div>
         </div>
     </div>
@@ -2776,10 +2854,52 @@
 
         loadCurrentUser();
         
-        // 为登出按钮添加点击事件处理
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-            e.stopPropagation(); // 阻止事件冒泡，避免触发个人卡片的点击事件
+        // 为更多操作按钮添加点击事件处理
+        document.getElementById('moreActionsBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('moreActionsModal').style.display = 'flex';
+        });
+        
+        // 关闭更多操作弹窗
+        document.getElementById('moreActionsClose').addEventListener('click', function() {
+            document.getElementById('moreActionsModal').style.display = 'none';
+        });
+        
+        // 进入账户设置
+        document.getElementById('goToAccountSettingsBtn').addEventListener('click', function() {
+            document.getElementById('moreActionsModal').style.display = 'none';
+            showSecurityVerifyModal();
+        });
+        
+        // 退出登录
+        document.getElementById('logoutFromActionsBtn').addEventListener('click', function() {
+            document.getElementById('moreActionsModal').style.display = 'none';
             handleLogout();
+        });
+        
+        // 更多功能弹窗事件
+        document.getElementById('moreFeaturesClose').addEventListener('click', function() {
+            document.getElementById('moreFeaturesModal').style.display = 'none';
+        });
+        
+        document.getElementById('modalAboutLauncherBtn').addEventListener('click', function() {
+            document.getElementById('moreFeaturesModal').style.display = 'none';
+            document.getElementById('aboutLauncherBtn').click();
+        });
+        
+        document.getElementById('modalCardBtn').addEventListener('click', function() {
+            document.getElementById('moreFeaturesModal').style.display = 'none';
+            document.getElementById('cardBtn').click();
+        });
+        
+        document.getElementById('modalHideInterfaceBtn').addEventListener('click', function() {
+            document.getElementById('moreFeaturesModal').style.display = 'none';
+            document.getElementById('hideInterfaceBtn').click();
+        });
+        
+        document.getElementById('modalUiScaleBtn').addEventListener('click', function() {
+            document.getElementById('moreFeaturesModal').style.display = 'none';
+            document.getElementById('uiScaleBtn').click();
         });
         
         // 更新名片按钮状态
@@ -2815,23 +2935,6 @@
         
         // 页面加载时更新名片按钮状态
         updateCardBtnStatus();
-        
-        // 为"点击进入账户设置"添加事件监听器
-        document.getElementById('accountSettingsLink').addEventListener('click', function(e) {
-            e.stopPropagation(); // 阻止事件冒泡，避免触发userCenter的点击事件
-            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            if (!currentUser.username) {
-                // 显示未登录提示模态窗口
-                document.getElementById('notLoggedInModal').style.display = 'flex';
-                setTimeout(function() {
-                    document.getElementById('notLoggedInModal').classList.add('show');
-                }, 100);
-            } else {
-                // 已登录，显示安全验证弹窗，验证通过后在当前窗口打开账户设置
-                window.securityVerifyTarget = 'currentWindow';
-                showSecurityVerifyModal();
-            }
-        });
         
         function showSecurityVerifyModal() {
             // 检查是否有"今日不再验证"标记且未过期
@@ -3762,21 +3865,6 @@
             }, 10);
         });
         
-        document.getElementById('userCenter').addEventListener('click', function() {
-            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            if (!currentUser.username) {
-                // 显示未登录提示模态窗口
-                document.getElementById('notLoggedInModal').style.display = 'flex';
-                setTimeout(function() {
-                    document.getElementById('notLoggedInModal').classList.add('show');
-                }, 100);
-            } else {
-                // 已登录，显示安全验证弹窗，验证通过后在新窗口打开账户设置
-                window.securityVerifyTarget = 'newWindow';
-                showSecurityVerifyModal();
-            }
-        });
-
         document.getElementById('versionHistoryCancel').addEventListener('click', function() {
             var versionHistoryModal = document.getElementById('versionHistoryModal');
             versionHistoryModal.classList.remove('show');

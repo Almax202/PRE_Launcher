@@ -27,6 +27,27 @@
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.2.1 (b4)",
+            date: "2026-05-15",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2621.png", "./images/2621_2.png","./images/2621_3.png","./images/2621_4.png"],
+            features: [
+                "新增功能",
+                "- 更多操作弹窗：个人卡片中的退出登录按钮改为\"更多操作\"按钮，点击后弹出包含账户设置和退出登录的窗口",
+                "- 更多功能弹窗：点击展开更多功能按钮改为弹出窗口形式，包含关于启动器、名片、隐藏UI、调整UI比例四个功能",
+                "- UI比例调整弹窗：重新设计UI比例调整功能，使用滑动条进行调整",
+                "- 全部展开按钮：在版本更新记录中新增\"全部展开\"按钮，点击后可展开所有更新记录",
+                "优化改进",
+                "- 弹窗按钮布局：统一弹窗按钮样式为2x2或3xN网格布局，图标在上文字在下",
+                "- 个人卡片优化：个人卡片及其悬浮卡改为不可点击，仅显示用户信息",
+                "- 悬浮气泡位置：调整更多操作按钮和展开更多功能按钮的悬浮气泡从左侧显示",
+                "- 按钮样式统一：更多操作弹窗和更多功能弹窗使用相同的按钮样式",
+                "修复问题",
+                "- 修复调整UI比例按钮点击后没有反应的问题",
+            ]
+        },
+        {
             version: "RC 2.6.2.0 (b4)",
             date: "2026-05-13",
             tag: "major",
@@ -2130,9 +2151,74 @@ function loadVersionHistory() {
                             // 排序按钮点击事件
                             sortButton.addEventListener('click', sortVersions);
                             
+                            // 全部展开/收起按钮
+                            var expandAllButton = document.createElement('button');
+                            expandAllButton.className = 'expand-all-button';
+                            expandAllButton.style.cssText = `
+                                padding: 8px 16px;
+                                background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                display: flex;
+                                align-items: center;
+                                gap: 5px;
+                            `;
+                            
+                            // 添加鼠标悬浮效果
+                            expandAllButton.addEventListener('mouseenter', function() {
+                                this.style.transform = 'translateY(-3px)';
+                                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                            });
+                            
+                            expandAllButton.addEventListener('mouseleave', function() {
+                                this.style.transform = 'translateY(0)';
+                                this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                            });
+                            
+                            // 展开状态
+                            var isAllExpanded = false;
+                            expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
+                            
+                            // 全部展开/收起函数
+                            function toggleAllVersions() {
+                                isAllExpanded = !isAllExpanded;
+                                
+                                if (isAllExpanded) {
+                                    expandAllButton.innerHTML = '<i class="fas fa-chevron-up"></i> 全部收起';
+                                    // 展开所有版本详情
+                                    var allDetails = contentArea.querySelectorAll('.version-details');
+                                    var allButtons = contentArea.querySelectorAll('.view-log-btn');
+                                    allDetails.forEach(function(details) {
+                                        details.style.display = 'block';
+                                    });
+                                    allButtons.forEach(function(btn) {
+                                        btn.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
+                                    });
+                                } else {
+                                    expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
+                                    // 收起所有版本详情
+                                    var allDetails = contentArea.querySelectorAll('.version-details');
+                                    var allButtons = contentArea.querySelectorAll('.view-log-btn');
+                                    allDetails.forEach(function(details) {
+                                        details.style.display = 'none';
+                                    });
+                                    allButtons.forEach(function(btn) {
+                                        btn.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
+                                    });
+                                }
+                            }
+                            
+                            expandAllButton.addEventListener('click', toggleAllVersions);
+                            
                             // 添加按钮到按钮容器
                             buttonContainer.appendChild(backButton);
                             buttonContainer.appendChild(sortButton);
+                            buttonContainer.appendChild(expandAllButton);
                             
                             // 添加按钮容器到控件容器
                             controlsContainer.appendChild(buttonContainer);
