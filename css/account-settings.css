@@ -3974,6 +3974,26 @@ body.dark-mode .terms-warning strong {
     color: #ff9800;
 }
 
+body.dark-mode .confirm-content {
+    background: rgba(30, 30, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .confirm-message {
+    color: #b0b0b0;
+}
+
+body.dark-mode .confirm-btn.cancel {
+    background: rgba(50, 50, 70, 0.8);
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .confirm-btn.cancel:hover {
+    background: rgba(70, 70, 90, 0.8);
+}
+
 .terms-agreement {
     padding: 20px;
     border-top: 1px solid #e0e0e0;

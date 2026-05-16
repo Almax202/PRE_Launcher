@@ -545,12 +545,14 @@
                     mobileButtonsGroup.classList.toggle('expanded');
                     mobileToggleButtonsBtn.classList.toggle('rotated');
                     
-                    // 更新提示文字
+                    // 更新提示文字 - 使用翻译
                     const toggleText = mobileToggleButtonsBtn.nextElementSibling;
-                    if (mobileButtonsGroup.classList.contains('expanded')) {
-                        toggleText.textContent = '收起更多功能';
-                    } else {
-                        toggleText.textContent = '展开更多功能';
+                    if (typeof LangManager !== 'undefined') {
+                        if (mobileButtonsGroup.classList.contains('expanded')) {
+                            toggleText.textContent = LangManager.getLanguageText('mobileCollapseMore');
+                        } else {
+                            toggleText.textContent = LangManager.getLanguageText('mobileExpandMore');
+                        }
                     }
                 });
             }
@@ -1107,6 +1109,10 @@
                         <i class="fas fa-user-cog"></i>
                         <span>进入账户设置</span>
                     </button>
+                    <button class="more-action-btn card-action" id="goToCardBtn">
+                        <i class="fas fa-id-card"></i>
+                        <span>名片</span>
+                    </button>
                     <button class="more-action-btn logout-action" id="logoutFromActionsBtn">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>退出登录</span>
@@ -1129,10 +1135,6 @@
                     <button class="more-feature-btn" id="modalAboutLauncherBtn">
                         <i class="fas fa-info-circle"></i>
                         <span>关于启动器</span>
-                    </button>
-                    <button class="more-feature-btn" id="modalCardBtn">
-                        <i class="fas fa-id-card"></i>
-                        <span>名片</span>
                     </button>
                     <button class="more-feature-btn" id="modalHideInterfaceBtn">
                         <i class="fas fa-eye-slash"></i>
@@ -1727,17 +1729,28 @@
         
         function showThemeUpdateModal() {
             var modal = document.getElementById('themeUpdateModal');
-            var countdownEl = document.getElementById('themeCountdown');
+            var countdownBtn = document.getElementById('themeCountdownBtn');
             var countdown = 3;
             
             modal.style.display = 'flex';
             modal.style.animation = 'fadeIn 0.3s ease';
             
-            countdownEl.textContent = countdown;
+            // 使用翻译更新倒计时按钮
+            function updateCountdownText() {
+                if (typeof LangManager !== 'undefined') {
+                    var remainingSeconds = LangManager.getLanguageText('remainingSeconds');
+                    var seconds = LangManager.getLanguageText('seconds');
+                    countdownBtn.innerHTML = remainingSeconds + ' <span id="themeCountdown">' + countdown + '</span> ' + seconds;
+                } else {
+                    countdownBtn.innerHTML = '还剩 <span id="themeCountdown">' + countdown + '</span> 秒';
+                }
+            }
+            
+            updateCountdownText();
             
             var timer = setInterval(function() {
                 countdown--;
-                countdownEl.textContent = countdown;
+                updateCountdownText();
                 
                 if (countdown <= 0) {
                     clearInterval(timer);
@@ -2854,9 +2867,33 @@
 
         loadCurrentUser();
         
+        function updateMoreActionsBtnStatus() {
+            var settingsBtn = document.getElementById('goToAccountSettingsBtn');
+            var cardBtn = document.getElementById('goToCardBtn');
+            var logoutBtn = document.getElementById('logoutFromActionsBtn');
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            if (!currentUser.username) {
+                settingsBtn.disabled = true;
+                settingsBtn.classList.add('disabled');
+                cardBtn.disabled = true;
+                cardBtn.classList.add('disabled');
+                logoutBtn.disabled = true;
+                logoutBtn.classList.add('disabled');
+            } else {
+                settingsBtn.disabled = false;
+                settingsBtn.classList.remove('disabled');
+                cardBtn.disabled = false;
+                cardBtn.classList.remove('disabled');
+                logoutBtn.disabled = false;
+                logoutBtn.classList.remove('disabled');
+            }
+        }
+
         // 为更多操作按钮添加点击事件处理
         document.getElementById('moreActionsBtn').addEventListener('click', function(e) {
             e.stopPropagation();
+            updateMoreActionsBtnStatus();
             document.getElementById('moreActionsModal').style.display = 'flex';
         });
         
@@ -2869,6 +2906,15 @@
         document.getElementById('goToAccountSettingsBtn').addEventListener('click', function() {
             document.getElementById('moreActionsModal').style.display = 'none';
             showSecurityVerifyModal();
+        });
+        
+        // 打开名片
+        document.getElementById('goToCardBtn').addEventListener('click', function() {
+            document.getElementById('moreActionsModal').style.display = 'none';
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (currentUser.username) {
+                showUserCardModal();
+            }
         });
         
         // 退出登录
@@ -2885,11 +2931,6 @@
         document.getElementById('modalAboutLauncherBtn').addEventListener('click', function() {
             document.getElementById('moreFeaturesModal').style.display = 'none';
             document.getElementById('aboutLauncherBtn').click();
-        });
-        
-        document.getElementById('modalCardBtn').addEventListener('click', function() {
-            document.getElementById('moreFeaturesModal').style.display = 'none';
-            document.getElementById('cardBtn').click();
         });
         
         document.getElementById('modalHideInterfaceBtn').addEventListener('click', function() {
@@ -2936,6 +2977,9 @@
         // 页面加载时更新名片按钮状态
         updateCardBtnStatus();
         
+        // 页面加载时更新更多操作按钮状态
+        updateMoreActionsBtnStatus();
+        
         function showSecurityVerifyModal() {
             // 检查是否有"今日不再验证"标记且未过期
             var skipVerify = localStorage.getItem('skipSecurityVerify');
@@ -2964,6 +3008,8 @@
         function navigateToAccountSettings() {
             var target = window.securityVerifyTarget || 'currentWindow';
             window.securityVerifyTarget = null;
+            
+            localStorage.setItem('previousPage', window.location.href);
             
             if (target === 'newWindow') {
                 window.open('html/account-settings.html', '_blank');
@@ -4991,7 +5037,9 @@
                                     <p style="margin: 10px 0;">本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
                                     <p style="margin: 10px 0;">所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
                                     <p style="margin: 10px 0;">各独立资源版权、著作权归原作者及版权方所有。</p>
+                                    <p style="margin: 10px 0;">如需了解各资源的详细开源许可协议，请点击下方按钮查看：</p>
                                     <button class="alert-confirm" onclick="showMitLicenseModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">MIT License</button>
+                                    <button class="alert-confirm" onclick="showDummyImageModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">dummyimage</button>
                                     <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">OPPO Sans</button>
                                     <button class="alert-confirm" onclick="showMuiCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px;">MUI</button>
                                 </div>
@@ -5044,6 +5092,116 @@
             }, 300);
         }
         
+        // 外部链接确认弹窗
+        function showLeaveConfirmModal(url) {
+            var existingModal = document.getElementById('leaveConfirmModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            var modal = document.createElement('div');
+            modal.id = 'leaveConfirmModal';
+            modal.className = 'custom-alert';
+            
+            modal.innerHTML = `
+                <div class="alert-content" style="max-width: 500px;">
+                    <div class="alert-header">
+                        <h2>即将离开PRE Launcher</h2>
+                    </div>
+                    <div class="about-content" style="text-align: left;">
+                        <p style="margin: 15px 0;">您即将离开PRE Launcher，请注意您的账号和财产安全。</p>
+                        <p style="margin: 15px 0;"><strong>跳转地址：</strong><span style="color: #666; word-break: break-all;">${url}</span></p>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="alert-confirm" onclick="closeLeaveConfirmModal()">取消</button>
+                        <button class="alert-confirm" onclick="confirmLeave('${url}')" style="background-color: #d45d79;">确认跳转</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+        }
+        
+        function closeLeaveConfirmModal() {
+            var modal = document.getElementById('leaveConfirmModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    modal.remove();
+                }, 300);
+            }
+        }
+        
+        function confirmLeave(url) {
+            closeLeaveConfirmModal();
+            window.open(url, '_blank');
+        }
+        
+        // 拦截外部链接点击
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('click', function(e) {
+                var target = e.target;
+                while (target && target !== document) {
+                    if (target.tagName === 'A' && target.getAttribute('target') === '_blank') {
+                        e.preventDefault();
+                        var href = target.getAttribute('href');
+                        if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+                            showLeaveConfirmModal(href);
+                            return;
+                        }
+                    }
+                    target = target.parentNode;
+                }
+            }, true);
+        });
+        
+        // 显示dummyimage版权信息模态框
+        function showDummyImageModal() {
+            var modal = document.createElement('div');
+            modal.id = 'dummyImageModal';
+            modal.className = 'custom-alert';
+            
+            modal.innerHTML = `
+                <div class="alert-content" style="max-width: 600px;">
+                    <div class="alert-header">
+                        <h2>dummyimage 版权声明</h2>
+                    </div>
+                    <div class="about-content" style="text-align: left;">
+                        <p style="margin: 15px 0;"><strong>dummyimage.com 项目著作权与知识产权专属归属：Russell Heimlich。</strong></p>
+                        <p style="margin: 15px 0;">本项目合法使用 dummyimage.com 开源服务，其完整版权归原作者 Russell Heimlich 所有，已严格遵守官方 MIT 使用协议，仅作正常验证码图片生成与内容应用，未进行源码修改、售卖及二次分发等违规操作。</p>
+                        <p style="margin: 15px 0;"><strong>项目地址：</strong><a href="https://github.com/kingkool68/dummyimage" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/kingkool68/dummyimage</a></p>
+                    </div>
+                    
+                    <div class="modal-buttons">
+                        <button class="alert-confirm" onclick="closeDummyImageModal()">关闭</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+        }
+        
+        // 关闭dummyimage版权信息模态框
+        function closeDummyImageModal() {
+            var dummyImageModal = document.getElementById('dummyImageModal');
+            if (dummyImageModal) {
+                dummyImageModal.classList.remove('show');
+                setTimeout(function() {
+                    dummyImageModal.remove();
+                }, 300);
+            }
+        }
+        
         // 显示字体版权信息模态框
         function showFontCopyrightModal() {
             // 创建模态框元素
@@ -5058,8 +5216,9 @@
                         <h2>OPPO Sans 字体版权声明</h2>
                     </div>
                     <div class="about-content" style="text-align: left;">
-                        <p style="margin: 15px 0;">${launcherInfo.fontUsage.split('。')[0]}。</p>
-                        <p style="margin: 15px 0;">${launcherInfo.fontUsage.split('。')[1]}。</p>
+                        <p style="margin: 15px 0;"><strong>OPPO Sans 字体著作权与知识产权专属归属：OPPO 广东移动通信有限公司。</strong></p>
+                        <p style="margin: 15px 0;">本项目合法使用 OPPO Sans 开源免费字体，字体完整版权归 OPPO 广东移动通信有限公司所有，已严格遵守官方字体使用协议，仅作正常展示与内容应用，未进行字体修改、售卖及二次分发等违规操作。</p>
+                        <p style="margin: 15px 0;"><strong>OPPO 开放平台：</strong><a href="https://open.oppomobile.com/documentation/page/info?id=13223" target="_blank" style="color: #d45d79; text-decoration: underline;">https://open.oppomobile.com/documentation/page/info?id=13223</a></p>
                     </div>
                     <div class="modal-buttons">
                         <button class="alert-confirm" onclick="closeFontCopyrightModal()">关闭</button>
@@ -5106,6 +5265,7 @@
                             <p style="margin: 10px 0;">特此免费授予任何获得本软件及相关文档文件（以下简称 "软件"）副本的人，不受限制地处理本软件，包括但不限于使用、复制、修改、合并、发布、分发、再许可和 / 或出售本软件副本的权利，并允许向其提供本软件的人这样做，但须符合以下条件：</p>
                             <p style="margin: 10px 0;">上述版权声明和本许可声明应包含在本软件的所有副本或重要部分中。</p>
                             <p style="margin: 10px 0;">本软件按 "现状" 提供，不提供任何明示或暗示的保证，包括但不限于对适销性、特定用途适用性和非侵权性的保证。在任何情况下，作者或版权持有人均不对任何索赔、损害或其他责任承担任何责任，无论是在合同、侵权或其他法律行为中，因使用或与本软件有关或由此产生的、使用本软件而产生的任何索赔、损害或其他责任。</p>
+                            <p style="margin: 15px 0;"><strong>本项目地址：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
                         </div>
                         <div id="mitLicenseEnglish" style="display: none;">
                             <h3 style="margin-bottom: 15px; color: #d45d79;">English Ver</h3>
@@ -5114,6 +5274,7 @@
                             <p style="margin: 10px 0;">Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
                             <p style="margin: 10px 0;">The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
                             <p style="margin: 10px 0;">THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+                            <p style="margin: 15px 0;"><strong>Website：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
                         </div>
                     </div>
                     <div class="modal-buttons">
@@ -5177,6 +5338,7 @@
                     <div class="about-content" style="text-align: left;">
                         <p style="margin: 15px 0;">本项目界面搭建与基础能力开发引用并使用 MUI 开源框架。</p>
                         <p style="margin: 15px 0;">MUI 为开源前端框架，其著作权、知识产权归属原开发团队与贡献者，本项目严格遵守其官方开源许可证条款，仅用于项目内部集成与业务展示，未对框架核心源码进行恶意篡改、破解、二次分发等违规操作。</p>
+                        <p style="margin: 15px 0;"><strong>项目地址：</strong><a href="https://github.com/dcloudio/mui" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/dcloudio/mui</a></p>
                     </div>
                     <div class="modal-buttons">
                         <button class="alert-confirm" onclick="closeMuiCopyrightModal()">关闭</button>

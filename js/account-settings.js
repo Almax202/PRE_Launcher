@@ -103,9 +103,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (devModeIcon) devModeIcon.className = 'fas fa-power-off';
             if (devModeBtnText) devModeBtnText.textContent = '退出开发者模式';
             
-            var testPageButton = document.getElementById('testPageButton');
-            if (testPageButton) {
-                testPageButton.style.display = 'flex';
+            var devModeGroup = document.getElementById('devModeGroup');
+            if (devModeGroup) {
+                devModeGroup.style.display = 'block';
             }
         } else {
             var toggleBtn = document.getElementById('toggleAllAchievementsBtn');
@@ -123,14 +123,22 @@ document.addEventListener('DOMContentLoaded', function() {
             if (devModeIcon) devModeIcon.className = 'fas fa-code';
             if (devModeBtnText) devModeBtnText.textContent = '进入开发者模式';
             
-            var testPageButton = document.getElementById('testPageButton');
-            if (testPageButton) {
-                testPageButton.style.display = 'none';
+            var devModeGroup = document.getElementById('devModeGroup');
+            if (devModeGroup) {
+                devModeGroup.style.display = 'none';
             }
         }
     }
     
     function initializeEventListeners() {
+        // 返回按钮点击事件
+        const backButton = document.getElementById('backButton');
+        if (backButton) {
+            backButton.addEventListener('click', function() {
+                goBack();
+            });
+        }
+        
         // 移动端菜单按钮点击事件
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const settingsSidebar = document.querySelector('.settings-sidebar');
@@ -844,19 +852,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
 
             
+            var texts = AccountLangManager.getLanguageMap();
             var titles = {
-                'account': { title: '账户信息', desc: '管理您的账户基本信息' },
-                'security': { title: '安全设置', desc: '保护您的账户安全' },
-                'privacy': { title: '隐私设置', desc: '控制您的隐私和可见性' },
-                'game-stats': { title: '统计数据', desc: '查看您的游戏数据' },
-                'achievements': { title: '成就系统', desc: '查看您的游戏成就' },
-                'notifications': { title: '通知设置', desc: '管理您接收的通知' },
-                'devices': { title: '设备管理', desc: '管理已登录的设备' },
-                'advanced': { title: '主题设置', desc: '自定义界面外观' },
-                'account-management': { title: '账户管理', desc: '管理您的账户状态' },
-                'terms': { title: '用户协议', desc: '请仔细阅读并同意以下条款' },
-                'privacy-policy': { title: '隐私政策', desc: '我们如何保护您的个人信息' },
-                'test': { title: '测试页面', desc: '用于测试主题适配性、按钮风格统一度以及各种测试案例' }
+                'account': { title: texts.accountInfo, desc: texts.accountInfoDesc },
+                'security': { title: texts.password, desc: texts.passwordDesc },
+                'privacy': { title: texts.visibility, desc: texts.visibilityDesc },
+                'game-stats': { title: texts.gameStats, desc: texts.gameStatsDesc },
+                'achievements': { title: texts.achievements, desc: texts.achievementsDesc },
+                'notifications': { title: texts.notifications, desc: texts.notificationsDesc },
+                'devices': { title: texts.devices, desc: texts.devicesDesc },
+                'advanced': { title: texts.theme, desc: texts.themeDesc },
+                'account-management': { title: texts.data, desc: texts.dataDesc },
+                'terms': { title: texts.terms, desc: texts.termsDesc },
+                'privacy-policy': { title: texts.privacyPolicy, desc: texts.privacyPolicyDesc },
+                'test': { title: texts.testPage || '测试页面', desc: texts.testPageDesc || '用于测试主题适配性、按钮风格统一度以及各种测试案例' }
             };
             
             if (titles[sectionId]) {
@@ -1037,9 +1046,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showUnbindConfirmModal(type) {
         var modal = document.getElementById('unbindConfirmModal');
-        var verificationCode = generateVerificationCode();
         
-        document.getElementById('unbindVerificationCode').textContent = verificationCode;
+        fetchUnbindCaptcha();
         document.getElementById('unbindCaptchaInput').value = '';
         modal.dataset.unbindType = type;
         
@@ -1049,13 +1057,111 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 10);
     }
     
-    function generateVerificationCode() {
+    var isUnbindCaptchaLoading = false;
+    var unbindCaptchaRetryCount = 0;
+    var unbindCaptchaCode = '';
+    
+    function fetchUnbindCaptcha(event) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+        if (isUnbindCaptchaLoading) return;
+        
+        var isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+        
+        if (isOfflineMode) {
+            generateLocalUnbindCaptcha();
+        } else {
+            fetchRemoteUnbindCaptcha();
+        }
+    }
+    
+    function generateLocalUnbindCaptcha() {
+        var captchaEl = document.getElementById('unbindCaptchaImage');
+        isUnbindCaptchaLoading = true;
+        captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">加载中...</span>';
+        
+        var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         var code = '';
-        var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        for (var i = 0; i < 6; i++) {
+        for (var i = 0; i < 4; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        return code;
+        
+        var colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#fd79a8', '#a29bfe'];
+        
+        var fontSize = 20 + Math.floor(Math.random() * 8);
+        var rotateDeg = (Math.random() - 0.5) * 10;
+        
+        var captchaHtml = '';
+        for (var i = 0; i < code.length; i++) {
+            var charRotate = (Math.random() - 0.5) * 15;
+            var charColor = colors[Math.floor(Math.random() * colors.length)];
+            captchaHtml += '<span style="display: inline-block; transform: rotate(' + charRotate + 'deg); color: ' + charColor + '; font-size: ' + fontSize + 'px; font-weight: bold; margin: 0 2px; font-family: Arial, sans-serif;">' + code[i] + '</span>';
+        }
+        
+        setTimeout(function() {
+            captchaEl.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; letter-spacing: 5px; transform: rotate(' + rotateDeg + 'deg);">' + captchaHtml + '</div>';
+            captchaEl.addEventListener('click', function(e) {
+                fetchUnbindCaptcha(e);
+            });
+            unbindCaptchaCode = code;
+            isUnbindCaptchaLoading = false;
+        }, 100);
+    }
+    
+    function fetchRemoteUnbindCaptcha() {
+        if (!navigator.onLine) {
+            var captchaEl = document.getElementById('unbindCaptchaImage');
+            captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none; color: #ff6b6b;">无网络连接</span>';
+            captchaEl.addEventListener('click', function(e) {
+                fetchUnbindCaptcha(e);
+            });
+            unbindCaptchaCode = '';
+            return;
+        }
+        
+        if (unbindCaptchaRetryCount >= 3) {
+            console.error('验证码获取失败次数过多，已停止重试');
+            var captchaEl = document.getElementById('unbindCaptchaImage');
+            captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">获取失败<br>点击刷新</span>';
+            captchaEl.addEventListener('click', function(e) {
+                fetchUnbindCaptcha(e);
+            });
+            return;
+        }
+        
+        var captchaEl = document.getElementById('unbindCaptchaImage');
+        isUnbindCaptchaLoading = true;
+        unbindCaptchaRetryCount++;
+        captchaEl.innerHTML = '<span class="captcha-text" style="pointer-events: none;">加载中...</span>';
+        
+        var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        var code = '';
+        for (var i = 0; i < 4; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        var timestamp = Date.now();
+        var colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#fd79a8', '#a29bfe'];
+        var randomColor = colors[Math.floor(Math.random() * colors.length)];
+        var imageUrl = 'https://dummyimage.com/120x45/' + randomColor.substring(1) + '/ffffff&text=' + code + '&t=' + timestamp;
+        
+        var img = new Image();
+        img.onload = function() {
+            captchaEl.innerHTML = '<img src="' + imageUrl + '" alt="验证码" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">';
+            captchaEl.addEventListener('click', function(e) {
+                fetchUnbindCaptcha(e);
+            });
+            unbindCaptchaCode = code;
+            isUnbindCaptchaLoading = false;
+            unbindCaptchaRetryCount = 0;
+        };
+        img.onerror = function() {
+            console.error('验证码图片加载失败，切换到本地生成');
+            generateLocalUnbindCaptcha();
+        };
+        img.src = imageUrl;
     }
     
     function hideUnbindConfirmModal() {
@@ -1106,10 +1212,15 @@ document.addEventListener('DOMContentLoaded', function() {
         var modal = document.getElementById('unbindConfirmModal');
         var type = modal.dataset.unbindType;
         var inputCode = document.getElementById('unbindCaptchaInput').value.toUpperCase();
-        var displayCode = document.getElementById('unbindVerificationCode').textContent;
         
-        if (inputCode !== displayCode) {
+        if (!inputCode) {
+            showAlert('请输入验证码');
+            return;
+        }
+        
+        if (inputCode !== unbindCaptchaCode) {
             showAlert('验证码错误，请重新输入');
+            fetchUnbindCaptcha();
             return;
         }
         
@@ -6998,5 +7109,88 @@ document.addEventListener('DOMContentLoaded', function() {
         
         showAlert('当前为离线模式，部分功能已禁用');
     }
+    
+    function goBack() {
+        var referrer = document.referrer;
+        var previousPage = localStorage.getItem('previousPage');
+        
+        var homePage = '../html/homepage4.0.html';
+        var loginPage = '../denglu.html';
+        
+        if (referrer && (referrer.includes('homepage') || referrer.includes('denglu'))) {
+            window.location.href = referrer;
+        } else if (previousPage) {
+            window.location.href = previousPage;
+            localStorage.removeItem('previousPage');
+        } else {
+            window.location.href = homePage;
+        }
+    }
+    
+    // 外部链接确认弹窗
+    function showLeaveConfirmModal(url) {
+        var existingModal = document.getElementById('leaveConfirmModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        var modal = document.createElement('div');
+        modal.id = 'leaveConfirmModal';
+        modal.className = 'custom-alert';
+        
+        modal.innerHTML = `
+            <div class="alert-content" style="max-width: 500px;">
+                <div class="alert-header">
+                    <h2>即将离开PRE Launcher</h2>
+                </div>
+                <div class="about-content" style="text-align: left;">
+                    <p style="margin: 15px 0;">您即将离开PRE Launcher，请注意您的账号和财产安全。</p>
+                    <p style="margin: 15px 0;"><strong>跳转地址：</strong><span style="color: #666; word-break: break-all;">${url}</span></p>
+                </div>
+                <div class="modal-buttons">
+                    <button class="alert-confirm" onclick="closeLeaveConfirmModal()">取消</button>
+                    <button class="alert-confirm" onclick="confirmLeave('${url}')" style="background-color: #d45d79;">确认跳转</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.style.display = 'flex';
+        setTimeout(function() {
+            modal.classList.add('show');
+        }, 10);
+    }
+    
+    function closeLeaveConfirmModal() {
+        var modal = document.getElementById('leaveConfirmModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(function() {
+                modal.remove();
+            }, 300);
+        }
+    }
+    
+    function confirmLeave(url) {
+        closeLeaveConfirmModal();
+        window.open(url, '_blank');
+    }
+    
+    // 拦截外部链接点击
+    document.addEventListener('click', function(e) {
+        var target = e.target;
+        while (target && target !== document) {
+            if (target.tagName === 'A' && target.getAttribute('target') === '_blank') {
+                e.preventDefault();
+                var href = target.getAttribute('href');
+                if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+                    showLeaveConfirmModal(href);
+                    return;
+                }
+            }
+            target = target.parentNode;
+        }
+    }, true);
     
 });

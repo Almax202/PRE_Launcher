@@ -6322,6 +6322,38 @@ body.dark-mode .logout-tooltip::after {
     border-top-color: rgba(30, 30, 50, 0.95);
 }
 
+body.dark-mode .confirm-content {
+    background: rgba(30, 30, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .confirm-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .confirm-header h3 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .confirm-body p {
+    color: #b0b0b0;
+}
+
+body.dark-mode .confirm-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .confirm-btn {
+    background: rgba(50, 50, 70, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+body.dark-mode .confirm-btn:hover {
+    background: rgba(70, 70, 90, 0.8);
+}
+
 /* 更多操作按钮样式 */
 .more-actions-btn-container {
     position: relative;
@@ -6438,6 +6470,10 @@ body.dark-mode .more-actions-tooltip::after {
     color: #667eea;
 }
 
+.more-action-btn.card-action i {
+    color: #4ecdc4;
+}
+
 .more-action-btn.logout-action i {
     color: #ff6b6b;
 }
@@ -6530,6 +6566,22 @@ body.dark-mode .more-action-btn:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
+/* 更多操作按钮禁用状态样式 */
+.more-action-btn:disabled,
+.more-action-btn.disabled {
+    background: linear-gradient(145deg, #e8e8e8 0%, #d0d0d0 100%) !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.more-action-btn:disabled i,
+.more-action-btn.disabled i {
+    color: #999 !important;
+    transform: none !important;
+}
+
 /* 暗色模式下的更多功能按钮样式 */
 body.dark-mode .more-feature-btn {
     background: linear-gradient(145deg, #2d2d44 0%, #252538 100%);
@@ -6539,6 +6591,46 @@ body.dark-mode .more-feature-btn {
 
 body.dark-mode .more-feature-btn:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* 暗色模式下更多操作按钮禁用状态样式 */
+body.dark-mode .more-action-btn:disabled,
+body.dark-mode .more-action-btn.disabled {
+    background: linear-gradient(145deg, #3a3a4a 0%, #2d2d3d 100%) !important;
+    color: #555 !important;
+}
+
+body.dark-mode .more-action-btn:disabled i,
+body.dark-mode .more-action-btn.disabled i {
+    color: #555 !important;
+}
+
+/* 更多功能按钮禁用状态样式 */
+.more-feature-btn:disabled,
+.more-feature-btn.disabled {
+    background: linear-gradient(145deg, #e8e8e8 0%, #d0d0d0 100%) !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.more-feature-btn:disabled i,
+.more-feature-btn.disabled i {
+    color: #999 !important;
+    transform: none !important;
+}
+
+/* 暗色模式下更多功能按钮禁用状态样式 */
+body.dark-mode .more-feature-btn:disabled,
+body.dark-mode .more-feature-btn.disabled {
+    background: linear-gradient(145deg, #3a3a4a 0%, #2d2d3d 100%) !important;
+    color: #555 !important;
+}
+
+body.dark-mode .more-feature-btn:disabled i,
+body.dark-mode .more-feature-btn.disabled i {
+    color: #555 !important;
 }
 
 /* 响应式设计 */

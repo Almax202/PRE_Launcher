@@ -22,6 +22,15 @@ const AccountLangManager = (function() {
                 test: '测试页面'
             },
             
+            // 菜单组标题
+            menuGroups: {
+                accountSystem: '账户系统',
+                statistics: '统计数据',
+                advancedManagement: '高级管理',
+                coreTerms: '核心条款',
+                devTesting: '开发测试'
+            },
+            
             // 基本信息
             basicInfo: '基本信息',
             basicInfoDesc: '更新您的基本账户信息',
@@ -243,6 +252,10 @@ const AccountLangManager = (function() {
             error: '错误',
             success: '成功',
             
+            // 测试页面
+            testPage: '测试页面',
+            testPageDesc: '用于测试主题适配性、按钮风格统一度以及各种测试案例',
+            
             // 版权信息
             copyright: '© 2014-2026 GPY Games Studio'
         },
@@ -266,6 +279,15 @@ const AccountLangManager = (function() {
                 terms: 'User Agreement',
                 privacyPolicy: 'Privacy Policy',
                 test: 'Test Page'
+            },
+            
+            // 菜单组标题
+            menuGroups: {
+                accountSystem: 'Account System',
+                statistics: 'Statistics',
+                advancedManagement: 'Advanced Management',
+                coreTerms: 'Core Terms',
+                devTesting: 'Dev Testing'
             },
             
             // 基本信息
@@ -489,6 +511,10 @@ const AccountLangManager = (function() {
             error: 'Error',
             success: 'Success',
             
+            // 测试页面
+            testPage: 'Test Page',
+            testPageDesc: 'Used to test theme compatibility, button style consistency, and various test cases',
+            
             // 版权信息
             copyright: '© 2014-2026 GPY Games Studio'
         },
@@ -512,6 +538,15 @@ const AccountLangManager = (function() {
                 terms: '利用規約',
                 privacyPolicy: 'プライバシーポリシー',
                 test: 'テストページ'
+            },
+            
+            // 菜单组标题
+            menuGroups: {
+                accountSystem: 'アカウントシステム',
+                statistics: '統計データ',
+                advancedManagement: '高度な管理',
+                coreTerms: 'コア規約',
+                devTesting: '開発テスト'
             },
             
             // 基本信息
@@ -735,6 +770,10 @@ const AccountLangManager = (function() {
             error: 'エラー',
             success: '成功',
             
+            // 测试页面
+            testPage: 'テストページ',
+            testPageDesc: 'テーマの互換性、ボタンスタイルの一貫性、およびさまざまなテストケースをテストするために使用されます',
+            
             // 版权信息
             copyright: '© 2014-2026 GPY Games Studio'
         },
@@ -758,6 +797,15 @@ const AccountLangManager = (function() {
                 terms: '이용 약관',
                 privacyPolicy: '개인정보 정책',
                 test: '테스트 페이지'
+            },
+            
+            // 菜单组标题
+            menuGroups: {
+                accountSystem: '계정 시스템',
+                statistics: '통계 데이터',
+                advancedManagement: '고급 관리',
+                coreTerms: '핵심 약관',
+                devTesting: '개발 테스트'
             },
             
             // 基本信息
@@ -981,6 +1029,10 @@ const AccountLangManager = (function() {
             error: '오류',
             success: '성공',
             
+            // 测试页面
+            testPage: '테스트 페이지',
+            testPageDesc: '테마 적합성, 버튼 스타일 일관성 및 다양한 테스트 사례를 테스트하는 데 사용됩니다',
+            
             // 版权信息
             copyright: '© 2014-2026 GPY Games Studio'
         }
@@ -1006,7 +1058,7 @@ const AccountLangManager = (function() {
         document.title = texts.pageTitle + ' - ' + (launcherText[lang] || launcherText['zh']);
         
         // 更新侧边栏菜单
-        updateSidebarMenu(texts.sidebar);
+        updateSidebarMenu(texts);
         
         // 更新页面标题和描述
         updatePageTitles(texts);
@@ -1027,7 +1079,10 @@ const AccountLangManager = (function() {
         updateAlerts(texts);
     }
     
-    function updateSidebarMenu(sidebarTexts) {
+    function updateSidebarMenu(texts) {
+        var sidebarTexts = texts.sidebar;
+        var menuGroupTexts = texts.menuGroups;
+        
         var menuItems = {
             'account': '账户信息',
             'security': '安全设置',
@@ -1059,6 +1114,33 @@ const AccountLangManager = (function() {
                     var mappedKey = keyMap[key] || key;
                     span.textContent = sidebarTexts[mappedKey] || menuItems[key];
                 }
+            }
+        });
+        
+        // 更新菜单组标题
+        var menuGroupTitles = {
+            '账户系统': menuGroupTexts.accountSystem,
+            '统计数据': menuGroupTexts.statistics,
+            '高级管理': menuGroupTexts.advancedManagement,
+            '核心条款': menuGroupTexts.coreTerms,
+            '开发测试': menuGroupTexts.devTesting
+        };
+        
+        Object.keys(menuGroupTitles).forEach(function(oldText) {
+            var groupTitle = document.querySelector('.menu-group-title');
+            if (groupTitle && groupTitle.textContent === oldText) {
+                groupTitle.textContent = menuGroupTitles[oldText];
+            }
+        });
+        
+        // 更全面的菜单组标题更新
+        var menuGroupTitlesElements = document.querySelectorAll('.menu-group-title');
+        var originalTitles = ['账户系统', '统计数据', '高级管理', '核心条款', '开发测试'];
+        var translatedTitles = [menuGroupTexts.accountSystem, menuGroupTexts.statistics, menuGroupTexts.advancedManagement, menuGroupTexts.coreTerms, menuGroupTexts.devTesting];
+        
+        menuGroupTitlesElements.forEach(function(element, index) {
+            if (originalTitles[index] && element.textContent === originalTitles[index]) {
+                element.textContent = translatedTitles[index];
             }
         });
     }
@@ -1450,9 +1532,15 @@ const AccountLangManager = (function() {
         return value;
     }
     
+    function getLanguageMap() {
+        var currentLang = SettingsManager.get('language') || 'zh';
+        return langMap[currentLang] || langMap['zh'];
+    }
+    
     return {
         init: init,
         updateLanguage: updateLanguage,
-        getLanguageText: getLanguageText
+        getLanguageText: getLanguageText,
+        getLanguageMap: getLanguageMap
     };
 })();

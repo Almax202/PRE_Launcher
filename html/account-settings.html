@@ -97,13 +97,21 @@
                         <span>隐私政策</span>
                     </div>
                 </div>
+                
+                <div class="menu-group dev-mode-group" id="devModeGroup" style="display: none;">
+                    <div class="menu-group-title">开发测试</div>
+                    <div class="menu-item" data-section="test" id="testPageButton">
+                        <i class="fas fa-flask"></i>
+                        <span>测试页面</span>
+                    </div>
+                </div>
             </div>
             
             <div class="sidebar-footer">
-                <div class="menu-item" data-section="test" id="testPageButton" style="display: none;">
-                    <i class="fas fa-flask"></i>
-                    <span>测试页面</span>
-                </div>
+                <button class="back-btn" id="backButton">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>返回</span>
+                </button>
             </div>
         </div>
         
@@ -2371,7 +2379,9 @@
             <h3>解绑确认</h3>
             <p style="color: #666; margin: 15px 0;">请输入以下验证码以确认解绑操作：</p>
             <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center;">
-                <span id="unbindVerificationCode" style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #e74c3c;"></span>
+                <div id="unbindCaptchaImage" style="width: 120px; height: 45px; margin: 0 auto; background: #fff; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <span class="captcha-text">加载中...</span>
+                </div>
             </div>
             <div class="input-group" style="margin-bottom: 15px;">
                 <i class="fas fa-shield-alt"></i>

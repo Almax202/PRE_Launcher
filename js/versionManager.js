@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.2.1 (b4)",
+    login: "RC 2.6.2.2 (b4)",
 
     // 游戏大厅版本号
     homepage: "RC 1.0.3.3 (a2)",
@@ -25,19 +25,19 @@ const versionInfo = {
     colormatchgame: "RC 1.2.0",
 
     // 内部版本号
-    launcher: "20260515.2621.b4.70"
+    launcher: "20260516.2622.b4.71"
 };
 // 启动器信息
 const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-05-15",
-    patchDate: "2026-05-15",
+    buildDate: "2026-05-16",
+    patchDate: "2026-05-16",
     copyright: "© 2014-2026 GPY Games Studio",
     developer: "GPY Games Studio",
     purpose: "测试",
-    fontUsage: "OPPO Sans 字体著作权与知识产权专属归属：OPPO 广东移动通信有限公司。本项目合法使用 OPPO Sans 开源免费字体，字体完整版权归 OPPO 广东移动通信有限公司所有，已严格遵守官方字体使用协议，仅作正常展示与内容应用，未进行字体修改、售卖及二次分发等违规操作。"
+    fontUsage: ""
 };
 
 // 获取版本号的函数
