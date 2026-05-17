@@ -50,6 +50,7 @@ body.page-transition-in {
     .settings-container {
         flex-direction: column;
         height: 100vh;
+        overflow: hidden;
     }
     
     .settings-sidebar {
@@ -58,12 +59,14 @@ body.page-transition-in {
         position: fixed;
         left: -100%;
         top: 0;
-        height: 100%;
+        bottom: 0;
+        height: 100vh;
         transition: left 0.3s ease;
         z-index: 1000;
         box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        will-change: transform;
     }
     
     .settings-sidebar.show {
@@ -4787,7 +4790,7 @@ body.dark-mode .verification-status {
     color: #81c784;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1024px) and (min-width: 769px) {
     .settings-container {
         flex-direction: column;
     }

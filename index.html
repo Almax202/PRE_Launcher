@@ -363,6 +363,11 @@
             // 加载毛玻璃主题设置
             loadThemeSettings();
             
+            // 生成移动端功能选择弹窗
+            if (typeof generateMobileFunctionsModal === 'function') {
+                generateMobileFunctionsModal();
+            }
+            
             // 用户协议勾选框处理
             const loginAgreement = document.getElementById('loginAgreement');
             const loginButton = document.getElementById('loginButton');
@@ -387,6 +392,16 @@
             const hideInterfaceBtn = document.getElementById('hideInterfaceBtn');
             const toggleButtonsBtn = document.getElementById('toggleButtonsBtn');
             const headerButtonsContainer = document.getElementById('headerButtonsContainer');
+            const collapseSidebarBtn = document.getElementById('collapseSidebarBtn');
+            
+            // 恢复侧边栏收起状态
+            const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+            if (savedSidebarState === 'true' && settingsSidebar) {
+                settingsSidebar.classList.add('collapsed');
+                if (collapseSidebarBtn) {
+                    collapseSidebarBtn.title = '展开侧边栏';
+                }
+            }
             
             if (mobileMenuBtn && settingsSidebar) {
                 // 点击菜单按钮切换侧边栏显示/隐藏
@@ -405,6 +420,23 @@
                 document.addEventListener('click', function(e) {
                     if (!settingsSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target) && settingsSidebar.classList.contains('active')) {
                         settingsSidebar.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 收起侧边栏按钮点击事件
+            if (collapseSidebarBtn && settingsSidebar) {
+                collapseSidebarBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    settingsSidebar.classList.toggle('collapsed');
+                    
+                    // 更新按钮提示文字
+                    if (settingsSidebar.classList.contains('collapsed')) {
+                        collapseSidebarBtn.title = '展开侧边栏';
+                        localStorage.setItem('sidebarCollapsed', 'true');
+                    } else {
+                        collapseSidebarBtn.title = '收起侧边栏';
+                        localStorage.setItem('sidebarCollapsed', 'false');
                     }
                 });
             }
@@ -536,48 +568,95 @@
                 });
             }
             
-            // 移动端切换按钮点击事件
-            const mobileToggleButtonsBtn = document.getElementById('mobileToggleButtonsBtn');
-            const mobileButtonsGroup = document.getElementById('mobileButtonsGroup');
+            // 移动端更多功能按钮点击事件
+            const mobileButtonsContainer = document.getElementById('mobileButtonsContainer');
+            const mobileButtonsBtn = document.getElementById('mobileButtonsBtn');
             
-            if (mobileToggleButtonsBtn && mobileButtonsGroup) {
-                mobileToggleButtonsBtn.addEventListener('click', function() {
-                    mobileButtonsGroup.classList.toggle('expanded');
-                    mobileToggleButtonsBtn.classList.toggle('rotated');
-                    
-                    // 更新提示文字 - 使用翻译
-                    const toggleText = mobileToggleButtonsBtn.nextElementSibling;
-                    if (typeof LangManager !== 'undefined') {
-                        if (mobileButtonsGroup.classList.contains('expanded')) {
-                            toggleText.textContent = LangManager.getLanguageText('mobileCollapseMore');
-                        } else {
-                            toggleText.textContent = LangManager.getLanguageText('mobileExpandMore');
-                        }
-                    }
+            if (mobileButtonsContainer) {
+                mobileButtonsContainer.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showMobileFunctionsModal();
                 });
             }
             
-            // 为移动端按钮添加与桌面端相同的功能
-            const mobileAboutLauncherBtn = document.getElementById('mobileAboutLauncherBtn');
-            const mobileCardBtn = document.getElementById('mobileCardBtn');
-            const mobileHideInterfaceBtn = document.getElementById('mobileHideInterfaceBtn');
+            if (mobileButtonsBtn) {
+                mobileButtonsBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showMobileFunctionsModal();
+                });
+            }
             
-            if (mobileAboutLauncherBtn) {
-                mobileAboutLauncherBtn.addEventListener('click', function() {
+            // 生成移动端功能选择弹窗
+            function generateMobileFunctionsModal() {
+                const modal = document.createElement('div');
+                modal.id = 'mobileFunctionsModal';
+                modal.className = 'custom-confirm-modal';
+                modal.style.display = 'none';
+                
+                modal.innerHTML = `
+                    <div class="confirm-content more-features-content">
+                        <div class="confirm-header">
+                            <h3>更多功能</h3>
+                        </div>
+                        <div class="confirm-body">
+                            <div class="more-features-buttons">
+                                <button class="more-feature-btn" id="mobileModalAboutLauncherBtn">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>关于启动器</span>
+                                </button>
+                                <button class="more-feature-btn" id="mobileModalHideInterfaceBtn">
+                                    <i class="fas fa-eye-slash"></i>
+                                    <span>隐藏UI</span>
+                                </button>
+                                <button class="more-feature-btn" id="mobileModalUiScaleBtn">
+                                    <i class="fas fa-search"></i>
+                                    <span>调整UI比例</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="confirm-footer">
+                            <button class="confirm-btn confirm-ok" id="mobileMoreFeaturesClose">关闭</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // 添加点击事件
+                document.getElementById('mobileMoreFeaturesClose').addEventListener('click', function() {
+                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                });
+                
+                document.getElementById('mobileModalAboutLauncherBtn').addEventListener('click', function() {
+                    document.getElementById('mobileFunctionsModal').style.display = 'none';
                     document.getElementById('aboutLauncherBtn').click();
                 });
-            }
-            
-            if (mobileCardBtn) {
-                mobileCardBtn.addEventListener('click', function() {
-                    document.getElementById('cardBtn').click();
-                });
-            }
-            
-            if (mobileHideInterfaceBtn) {
-                mobileHideInterfaceBtn.addEventListener('click', function() {
+                
+                document.getElementById('mobileModalHideInterfaceBtn').addEventListener('click', function() {
+                    document.getElementById('mobileFunctionsModal').style.display = 'none';
                     document.getElementById('hideInterfaceBtn').click();
                 });
+                
+                document.getElementById('mobileModalUiScaleBtn').addEventListener('click', function() {
+                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    document.getElementById('uiScaleBtn').click();
+                });
+            }
+            
+            // 显示移动端功能选择弹窗
+            function showMobileFunctionsModal() {
+                const modal = document.getElementById('mobileFunctionsModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                }
+            }
+            
+            // 关闭移动端功能选择弹窗
+            function closeMobileFunctionsModal() {
+                const modal = document.getElementById('mobileFunctionsModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
             }
             
             // 移动端检测和提示弹窗
@@ -633,72 +712,63 @@
                         <span>离线模式</span>
                     </div>
                 </div>
+                <button class="collapse-sidebar-btn" id="collapseSidebarBtn" title="收起侧边栏">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
             </div>
             
             <div class="sidebar-menu">
                 <div class="menu-item active">
                     <i class="fas fa-sign-in-alt"></i>
                     <span>登录账号</span>
+                    <div class="menu-tooltip">登录账号</div>
                 </div>
                 <div class="menu-item" id="sidebarRegister">
                     <i class="fas fa-user-plus"></i>
                     <span>注册账号</span>
+                    <div class="menu-tooltip">注册账号</div>
                 </div>
                 <div class="menu-item" id="sidebarSettings">
                     <i class="fas fa-cog"></i>
                     <span>全局设置</span>
+                    <div class="menu-tooltip">全局设置</div>
                 </div>
                 <div class="menu-item" id="sidebarFeedback">
                     <i class="fas fa-comment-dots"></i>
                     <span>反馈建议</span>
+                    <div class="menu-tooltip">反馈建议</div>
                 </div>
                 <div class="menu-item" id="sidebarVersion">
                     <i class="fas fa-history"></i>
                     <span>版本更新</span>
+                    <div class="menu-tooltip">版本更新</div>
                 </div>
                 <div class="menu-item" id="sidebarAnnouncement">
                         <i class="fas fa-newspaper"></i>
                         <span>开发者公告</span>
+                        <div class="menu-tooltip">开发者公告</div>
                     </div>
                     <div class="menu-item" id="sidebarOfflineMode" style="display: none;">
                         <i class="fas" id="offlineModeIcon"></i>
                         <span id="offlineModeText">离线模式</span>
+                        <div class="menu-tooltip">离线模式</div>
                     </div>
                 </div>
             
-            <!-- 移动端按钮容器 -->
+            <!-- 移动端更多功能按钮卡片 -->
             <div class="mobile-buttons-container" id="mobileButtonsContainer">
-                <div class="mobile-toggle-buttons-container">
-                    <button class="mobile-toggle-buttons-btn" id="mobileToggleButtonsBtn">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                    <span class="mobile-toggle-text">展开更多功能</span>
+                <div class="mobile-buttons-info">
+                    <div class="mobile-buttons-icon">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <div class="mobile-buttons-text">
+                        <div class="mobile-buttons-title">更多功能</div>
+                    </div>
                 </div>
-                <div class="mobile-buttons-group" id="mobileButtonsGroup">
-                    <div class="about-launcher-btn-container btn-container">
-                        <button class="about-launcher-btn small-about-launcher-btn" id="mobileAboutLauncherBtn">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
-                        <div class="btn-tooltip">
-                            <span>关于启动器</span>
-                        </div>
-                    </div>
-                    <div class="card-btn-container btn-container">
-                        <button class="card-btn small-card-btn" id="mobileCardBtn">
-                            <i class="fas fa-id-card"></i>
-                        </button>
-                        <div class="btn-tooltip">
-                            <span>名片</span>
-                        </div>
-                    </div>
-                    <div class="hide-interface-btn-container btn-container">
-                        <button class="hide-interface-btn" id="mobileHideInterfaceBtn">
-                            <i class="fas fa-eye-slash"></i>
-                        </button>
-                        <div class="btn-tooltip">
-                            <span>隐藏UI</span>
-                        </div>
-                    </div>
+                <div class="mobile-buttons-action">
+                    <button class="mobile-buttons-btn" id="mobileButtonsBtn">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
                 </div>
             </div>
             
@@ -4999,57 +5069,105 @@
             });
         }
         
-        // 生成关于启动器模态框
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
         function generateAboutLauncherModal() {
-            // 创建模态框元素
             var modal = document.createElement('div');
             modal.id = 'aboutLauncherModal';
             modal.className = 'custom-alert';
             
-            // 模态框内容
-            modal.innerHTML = `
-                <div class="alert-content" style="max-width: 900px; width: 90%; min-width: 800px; height: 600px;">
-                    <div class="alert-header">
-                        <h2>关于启动器</h2>
-                    </div>
-                    <div class="user-card-content" style="display: flex; height: calc(100% - 60px);">
-                        <div class="user-card-left" style="flex: 1; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                            <div class="about-logo" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%); display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
-                                <i class="fas fa-gamepad" style="font-size: 60px; color: white;"></i>
-                            </div>
-                            <div class="user-card-basic-info" style="text-align: center;">
-                                <h3 style="font-size: 24px; margin-bottom: 15px;">${launcherInfo.name}</h3>
-                                <p class="version" id="aboutVersionNumber" style="font-size: 16px; color: #666; margin-bottom: 40px;">版本：${launcherInfo.version}</p>
-                                <div class="modal-buttons">
-                                    <button class="alert-confirm" onclick="closeAboutLauncherModal()">关闭</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="user-card-right" style="flex: 2; padding: 40px 20px; border-left: 1px solid #eee; overflow-y: auto;">
-                            <div class="about-info" style="text-align: left;">
-                                <p style="margin: 15px 0;"><strong>启动器名称：</strong>${launcherInfo.name}</p>
-                                <p style="margin: 15px 0;"><strong>版本号：</strong>${launcherInfo.version}</p>
-                                <p style="margin: 15px 0;"><strong>版权所有：</strong>${launcherInfo.copyright}</p>
-                                <p style="margin: 15px 0;"><strong>开发者：</strong>${launcherInfo.developer}</p>
-                                <p style="margin: 15px 0;"><strong>用途：</strong>${launcherInfo.purpose}</p>
-                                <p style="margin: 15px 0;"><strong>版权声明：</strong></p>
-                                <div style="text-align: left; margin-left: 20px; margin-top: 10px;">
-                                    <p style="margin: 10px 0;">本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
-                                    <p style="margin: 10px 0;">所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
-                                    <p style="margin: 10px 0;">各独立资源版权、著作权归原作者及版权方所有。</p>
-                                    <p style="margin: 10px 0;">如需了解各资源的详细开源许可协议，请点击下方按钮查看：</p>
-                                    <button class="alert-confirm" onclick="showMitLicenseModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">MIT License</button>
-                                    <button class="alert-confirm" onclick="showDummyImageModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">dummyimage</button>
-                                    <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">OPPO Sans</button>
-                                    <button class="alert-confirm" onclick="showMuiCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px;">MUI</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            var isMobile = isMobileDevice();
             
-            // 添加到页面
+            if (isMobile) {
+                modal.innerHTML = `
+                    <div class="alert-content about-mobile-fullscreen">
+                        <div class="about-mobile-header">
+                            <div class="about-logo-mobile">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <div class="about-mobile-title">
+                                <h2>关于启动器</h2>
+                                <p id="aboutVersionNumber" class="version">版本：${launcherInfo.version}</p>
+                            </div>
+                            <button class="about-mobile-close" onclick="closeAboutLauncherModal()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="about-mobile-content">
+                            <div class="about-mobile-info">
+                                <p><strong>启动器名称：</strong>${launcherInfo.name}</p>
+                                <p><strong>版本号：</strong>${launcherInfo.version}</p>
+                                <p><strong>版权所有：</strong>${launcherInfo.copyright}</p>
+                                <p><strong>开发者：</strong>${launcherInfo.developer}</p>
+                                <p><strong>用途：</strong>${launcherInfo.purpose}</p>
+                            </div>
+                            <div class="about-mobile-copyright">
+                                <p><strong>版权声明：</strong></p>
+                                <div class="copyright-text">
+                                    <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
+                                    <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
+                                    <p>各独立资源版权、著作权归原作者及版权方所有。</p>
+                                    <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看：</p>
+                                </div>
+                                <div class="copyright-buttons">
+                                    <button class="copyright-btn" onclick="showMitLicenseModal()">MIT License</button>
+                                    <button class="copyright-btn" onclick="showDummyImageModal()">dummyimage</button>
+                                    <button class="copyright-btn" onclick="showFontCopyrightModal()">OPPO Sans</button>
+                                    <button class="copyright-btn" onclick="showMuiCopyrightModal()">MUI</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="about-mobile-footer">
+                            <button class="alert-confirm" onclick="closeAboutLauncherModal()">关闭</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                modal.innerHTML = `
+                    <div class="alert-content" style="max-width: 900px; width: 90%; min-width: 800px; height: 600px;">
+                        <div class="alert-header">
+                            <h2>关于启动器</h2>
+                        </div>
+                        <div class="user-card-content" style="display: flex; height: calc(100% - 60px);">
+                            <div class="user-card-left" style="flex: 1; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <div class="about-logo" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%); display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
+                                    <i class="fas fa-gamepad" style="font-size: 60px; color: white;"></i>
+                                </div>
+                                <div class="user-card-basic-info" style="text-align: center;">
+                                    <h3 style="font-size: 24px; margin-bottom: 15px;">${launcherInfo.name}</h3>
+                                    <p class="version" id="aboutVersionNumber" style="font-size: 16px; color: #666; margin-bottom: 40px;">版本：${launcherInfo.version}</p>
+                                    <div class="modal-buttons">
+                                        <button class="alert-confirm" onclick="closeAboutLauncherModal()">关闭</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="user-card-right" style="flex: 2; padding: 40px 20px; border-left: 1px solid #eee; overflow-y: auto;">
+                                <div class="about-info" style="text-align: left;">
+                                    <p style="margin: 15px 0;"><strong>启动器名称：</strong>${launcherInfo.name}</p>
+                                    <p style="margin: 15px 0;"><strong>版本号：</strong>${launcherInfo.version}</p>
+                                    <p style="margin: 15px 0;"><strong>版权所有：</strong>${launcherInfo.copyright}</p>
+                                    <p style="margin: 15px 0;"><strong>开发者：</strong>${launcherInfo.developer}</p>
+                                    <p style="margin: 15px 0;"><strong>用途：</strong>${launcherInfo.purpose}</p>
+                                    <p style="margin: 15px 0;"><strong>版权声明：</strong></p>
+                                    <div style="text-align: left; margin-left: 20px; margin-top: 10px;">
+                                        <p style="margin: 10px 0;">本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
+                                        <p style="margin: 10px 0;">所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
+                                        <p style="margin: 10px 0;">各独立资源版权、著作权归原作者及版权方所有。</p>
+                                        <p style="margin: 10px 0;">如需了解各资源的详细开源许可协议，请点击下方按钮查看：</p>
+                                        <button class="alert-confirm" onclick="showMitLicenseModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">MIT License</button>
+                                        <button class="alert-confirm" onclick="showDummyImageModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">dummyimage</button>
+                                        <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">OPPO Sans</button>
+                                        <button class="alert-confirm" onclick="showMuiCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px;">MUI</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
             document.body.appendChild(modal);
         }
         

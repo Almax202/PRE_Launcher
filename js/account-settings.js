@@ -163,6 +163,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     settingsSidebar.classList.remove('show');
                 }
             });
+            
+            // 阻止touchmove事件冒泡，防止mui.js阻止滚动
+            settingsSidebar.addEventListener('touchmove', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
+            
+            // 确保侧边栏显示时可以正常滚动
+            settingsSidebar.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
         }
         
         document.querySelectorAll('.menu-item').forEach(function(item) {
