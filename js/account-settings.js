@@ -7023,6 +7023,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 关闭窗口
         closePresetBackgroundModal();
+        closePreviewPanel();
         
         showAlert('背景图片已更新为 "' + name + '"');
     }
@@ -7030,6 +7031,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 取消选择
     function cancelPresetBackground() {
         closePresetBackgroundModal();
+        closePreviewPanel();
     }
     
     function checkOfflineModeAndDisableFeatures() {

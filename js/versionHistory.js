@@ -27,6 +27,19 @@
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.2.4 (b4)",
+            date: "2026-05-24",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2624.png"],
+            features: [
+                "优化改进",
+                "- 版本选择按钮样式优化：版本更新记录窗口中版本号选择改为块状按钮样式，一行四个按钮，支持自动换行",
+                "- 按钮样式优化：加长按钮宽度，背景改为白色，日期和版本数量文本放大加深，提升可读性",
+                "- 版本分类功能：添加版本维护状态分类条目，分为\"正在维护中的版本\"和\"已结束维护的版本\"两组显示"
+            ]
+        },
+        {
             version: "RC 2.6.2.3 (b4)",
             date: "2026-05-17",
             tag: "important",
@@ -1929,178 +1942,423 @@ function loadVersionHistory() {
                     hintText.textContent = ' 请选择要查看的版本更新 ';
                     contentArea.appendChild(hintText);
                     
-                    // 生成主版本号分组按钮
+                    // 按维护状态分组版本
+                    var maintainingVersions = [];
+                    var endedVersions = [];
+                    var outdatedVersions = [];
+                    
+                    var isOutdatedPage = parentId === 'outdatedSubButtons';
+                    var latestVersion = groupedVersions[0]?.majorVersion;
+                    
                     groupedVersions.forEach(function(group) {
-                        var groupButton = document.createElement('div');
-                        groupButton.className = 'version-item';
-                        groupButton.style.cssText = `
-                            margin: 15px 0;
-                            padding: 15px;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                        `;
-                        
-                        // 添加鼠标悬浮效果
-                        groupButton.addEventListener('mouseenter', function() {
-                            this.style.transform = 'translateY(-2px)';
-                            this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-                        });
-                        
-                        groupButton.addEventListener('mouseleave', function() {
-                            this.style.transform = 'translateY(0)';
-                            this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
-                        });
-                        
-                        // 确定版本状态
-                        var versionStatus = '';
-                        var statusColor = '';
-                        
-                        // 检查是否是过时版本记录
-                        var isOutdated = parentId === 'outdatedSubButtons';
-                        
-                        if (isOutdated) {
-                            versionStatus = '已过时版本';
-                            statusColor = '#999';
+                        if (isOutdatedPage) {
+                            outdatedVersions.push(group);
                         } else {
-                            // 对于当前版本，判断维护状态
-                            // 假设最新的主版本是维护中的
-                            var latestVersion = groupedVersions[0].majorVersion;
                             if (group.majorVersion === latestVersion) {
-                                versionStatus = '版本维护中';
-                                statusColor = '#4CAF50';
+                                maintainingVersions.push(group);
                             } else {
-                                versionStatus = '更新已结束';
-                                statusColor = '#f44336';
+                                endedVersions.push(group);
                             }
                         }
+                    });
+                    
+                    // 创建版本按钮网格容器
+                    var versionsContainer = document.createElement('div');
+                    versionsContainer.style.cssText = `
+                        padding: 0 20px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 24px;
+                    `;
+                    contentArea.appendChild(versionsContainer);
+                    
+                    // 创建分组函数
+                    function createVersionGroup(title, icon, color, versions) {
+                        if (versions.length === 0) return;
                         
-                        // 设置按钮内容
-                        groupButton.innerHTML = `
-                            <div class="version-header">
-                                <span class="version-number" style="font-size: 18px; font-weight: bold; color: #d45d79;">${group.isRC ? 'RC' : (group.isMiniGame ? 'V' : '版本')} ${group.majorVersion}</span>
-                                <div class="version-header-content">
-                                    <button style="padding: 4px 12px; border: none; border-radius: 12px; font-size: 12px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0;">查看详细内容 <span style="margin-left: 4px;">▶</span></button>
-                                </div>
-                                <span class="version-date-range" style="font-size: 14px; margin-left: auto; margin-right: 10px;">从 ${group.startDate} 至 ${group.endDate} 的更新</span>
-                                <span class="version-count" style="font-size: 14px; margin-left: 0; margin-right: 10px;">共 ${group.versions.length} 个版本</span>
-                                <span style="padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${statusColor}; color: white;">${versionStatus}</span>
-                            </div>
+                        // 创建分组标题
+                        var groupHeader = document.createElement('div');
+                        groupHeader.style.cssText = `
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            margin-bottom: 16px;
+                            padding: 12px 20px;
+                            background: linear-gradient(135deg, ${color}15 0%, ${color}08 100%);
+                            border-radius: 10px;
+                            border-left: 4px solid ${color};
                         `;
                         
-                        // 添加点击事件，显示该主版本号下的所有版本
-                        groupButton.addEventListener('click', function() {
-                            // 清空内容
-                            contentArea.innerHTML = '';
-                            
-                            // 添加返回按钮和排序控制
-                            var controlsContainer = document.createElement('div');
-                            controlsContainer.style.cssText = `
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: flex-start;
-                                margin-bottom: 0;
-                                position: sticky;
-                                top: 0;
-                                z-index: 100;
-                                background-color: none;
-                                padding: 0;
-                                border-radius: 10px 10px 0 0;
-                            `;
-                            
-                            // 按钮容器
-                            var buttonContainer = document.createElement('div');
-                            buttonContainer.style.cssText = `
-                                display: flex;
-                                align-items: center;
-                                gap: 10px;
-                                margin-bottom: 5px;
-                                margin-top: 2px;
-                            `;
-                            
-                            // 返回按钮
-                            var backButton = document.createElement('button');
-                            backButton.className = 'back-button';
-                            backButton.style.cssText = `
-                                padding: 8px 16px;
-                                background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
-                                color: white;
+                        groupHeader.innerHTML = `
+                            <span style="font-size: 20px;">${icon}</span>
+                            <span style="font-size: 16px; font-weight: bold; color: ${color}; margin: 0;">${title}</span>
+                            <span style="font-size: 14px; color: #888; margin-left: auto;">共 ${versions.length} 个版本</span>
+                        `;
+                        
+                        // 创建网格容器
+                        var gridContainer = document.createElement('div');
+                        gridContainer.style.cssText = `
+                            display: grid;
+                            grid-template-columns: repeat(4, 1fr);
+                            gap: 16px;
+                            margin-bottom: 8px;
+                        `;
+                        
+                        // 创建版本按钮
+                        versions.forEach(function(group) {
+                            var groupButton = document.createElement('button');
+                            groupButton.className = 'version-group-button';
+                            groupButton.style.cssText = `
+                                padding: 20px 16px;
                                 border: none;
-                                border-radius: 6px;
+                                border-radius: 12px;
                                 cursor: pointer;
-                                font-size: 14px;
                                 transition: all 0.3s ease;
-                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                background: white;
+                                border: 2px solid rgba(212, 93, 121, 0.3);
+                                text-align: left;
                                 display: flex;
-                                align-items: center;
-                                gap: 5px;
+                                flex-direction: column;
+                                gap: 8px;
+                                min-height: 90px;
+                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
                             `;
                             
                             // 添加鼠标悬浮效果
-                            backButton.addEventListener('mouseenter', function() {
+                            groupButton.addEventListener('mouseenter', function() {
                                 this.style.transform = 'translateY(-3px)';
-                                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                                this.style.boxShadow = '0 8px 20px rgba(212, 93, 121, 0.2)';
+                                this.style.borderColor = '#d45d79';
                             });
                             
-                            backButton.addEventListener('mouseleave', function() {
+                            groupButton.addEventListener('mouseleave', function() {
                                 this.style.transform = 'translateY(0)';
-                                this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                                this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.06)';
+                                this.style.borderColor = 'rgba(212, 93, 121, 0.3)';
                             });
-                            backButton.innerHTML = '<i class="fas fa-arrow-left"></i> 返回';
                             
-                            // 返回按钮点击事件
-                            backButton.addEventListener('click', showVersionSelection);
+                            // 添加点击效果
+                            groupButton.addEventListener('mousedown', function() {
+                                this.style.transform = 'translateY(-1px) scale(0.99)';
+                            });
                             
-                            // 排序按钮
-                            var sortButton = document.createElement('button');
-                            sortButton.className = 'sort-button';
-                            sortButton.style.cssText = `
-                                padding: 8px 16px;
-                                background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
-                                color: white;
-                                border: none;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                font-size: 14px;
-                                transition: all 0.3s ease;
-                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-                                display: flex;
-                                align-items: center;
-                                gap: 5px;
+                            groupButton.addEventListener('mouseup', function() {
+                                this.style.transform = 'translateY(-3px)';
+                            });
+                            
+                            // 确定版本状态
+                            var versionStatus = '';
+                            var statusColor = '';
+                            
+                            if (isOutdatedPage) {
+                                versionStatus = '已过时';
+                                statusColor = '#999';
+                            } else if (group.majorVersion === latestVersion) {
+                                versionStatus = '维护中';
+                                statusColor = '#4CAF50';
+                            } else {
+                                versionStatus = '已结束';
+                                statusColor = '#f44336';
+                            }
+                            
+                            // 设置按钮内容
+                            groupButton.innerHTML = `
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <span style="font-size: 18px; font-weight: bold; color: #d45d79;">${group.isRC ? 'RC' : (group.isMiniGame ? 'V' : '版本')} ${group.majorVersion}</span>
+                                    <span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${statusColor}; color: white;">${versionStatus}</span>
+                                </div>
+                                <div style="font-size: 14px; color: #444;">共 ${group.versions.length} 个版本</div>
+                                <div style="font-size: 13px; color: #666;">${group.startDate} ~ ${group.endDate}</div>
                             `;
                             
-                            // 添加鼠标悬浮效果
-                            sortButton.addEventListener('mouseenter', function() {
-                                this.style.transform = 'translateY(-3px)';
-                                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-                            });
-                            
-                            sortButton.addEventListener('mouseleave', function() {
-                                this.style.transform = 'translateY(0)';
-                                this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                            });
-                            
-                            // 排序状态
-                            var isAscending = false;
-                            sortButton.innerHTML = '<i class="fas fa-sort-down"></i> 倒序';
-                            
-                            // 排序函数
-                            function sortVersions() {
-                                // 切换排序状态
-                                isAscending = !isAscending;
+                            // 添加点击事件，显示该主版本号下的所有版本
+                            groupButton.addEventListener('click', function() {
+                                // 清空内容
+                                contentArea.innerHTML = '';
                                 
-                                // 更新排序按钮文本
-                                if (isAscending) {
-                                    sortButton.innerHTML = '<i class="fas fa-sort-up"></i> 正序';
-                                } else {
-                                    sortButton.innerHTML = '<i class="fas fa-sort-down"></i> 倒序';
+                                // 添加返回按钮和排序控制
+                                var controlsContainer = document.createElement('div');
+                                controlsContainer.style.cssText = `
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: flex-start;
+                                    margin-bottom: 0;
+                                    position: sticky;
+                                    top: 0;
+                                    z-index: 100;
+                                    background-color: none;
+                                    padding: 0;
+                                    border-radius: 10px 10px 0 0;
+                                `;
+                                
+                                // 按钮容器
+                                var buttonContainer = document.createElement('div');
+                                buttonContainer.style.cssText = `
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                    margin-bottom: 5px;
+                                    margin-top: 2px;
+                                `;
+                                
+                                // 返回按钮
+                                var backButton = document.createElement('button');
+                                backButton.className = 'back-button';
+                                backButton.style.cssText = `
+                                    padding: 8px 16px;
+                                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                `;
+                                
+                                // 添加鼠标悬浮效果
+                                backButton.addEventListener('mouseenter', function() {
+                                    this.style.transform = 'translateY(-3px)';
+                                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                                });
+                                
+                                backButton.addEventListener('mouseleave', function() {
+                                    this.style.transform = 'translateY(0)';
+                                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                                });
+                                backButton.innerHTML = '<i class="fas fa-arrow-left"></i> 返回';
+                                
+                                // 返回按钮点击事件
+                                backButton.addEventListener('click', showVersionSelection);
+                                
+                                // 排序按钮
+                                var sortButton = document.createElement('button');
+                                sortButton.className = 'sort-button';
+                                sortButton.style.cssText = `
+                                    padding: 8px 16px;
+                                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                `;
+                                
+                                // 添加鼠标悬浮效果
+                                sortButton.addEventListener('mouseenter', function() {
+                                    this.style.transform = 'translateY(-3px)';
+                                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                                });
+                                
+                                sortButton.addEventListener('mouseleave', function() {
+                                    this.style.transform = 'translateY(0)';
+                                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                                });
+                                
+                                // 排序状态
+                                var isAscending = false;
+                                sortButton.innerHTML = '<i class="fas fa-sort-down"></i> 倒序';
+                                
+                                // 排序函数
+                                function sortVersions() {
+                                    // 切换排序状态
+                                    isAscending = !isAscending;
+                                    
+                                    // 更新排序按钮文本
+                                    if (isAscending) {
+                                        sortButton.innerHTML = '<i class="fas fa-sort-up"></i> 正序';
+                                    } else {
+                                        sortButton.innerHTML = '<i class="fas fa-sort-down"></i> 倒序';
+                                    }
+                                    
+                                    // 清空内容，重新添加控件
+                                    contentArea.innerHTML = '';
+                                    contentArea.appendChild(controlsContainer);
+                                    
+                                    // 排序版本
+                                    var sortedVersions = [...group.versions];
+                                    sortedVersions.sort(function(a, b) {
+                                        // 提取版本号进行比较
+                                        var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        
+                                        // 如果RC格式不匹配，尝试小游戏格式 "V 1.1.0"
+                                        if (!aMatch) {
+                                            aMatch = a.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        }
+                                        if (!bMatch) {
+                                            bMatch = b.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        }
+                                        
+                                        if (aMatch && bMatch) {
+                                            var aVersion = aMatch.slice(1).map(Number);
+                                            var bVersion = bMatch.slice(1).map(Number);
+                                            
+                                            // 确保版本号数组长度一致
+                                            while (aVersion.length < 4) aVersion.push(0);
+                                            while (bVersion.length < 4) bVersion.push(0);
+                                            
+                                            for (var i = 0; i < 4; i++) {
+                                                if (aVersion[i] !== bVersion[i]) {
+                                                    return isAscending ? aVersion[i] - bVersion[i] : bVersion[i] - aVersion[i];
+                                                }
+                                            }
+                                        }
+                                        
+                                        // 如果版本号格式不匹配，按日期排序
+                                        return isAscending ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+                                    });
+                                    
+                                    // 生成排序后的版本历史内容
+                                    sortedVersions.forEach(function(versionItem) {
+                                        var versionElement = document.createElement('div');
+                                        versionElement.className = 'version-item';
+                                        
+                                        // 构建版本项HTML
+                                        var versionHTML = `
+                                            <div class="version-header">
+                                                <span class="version-number">${versionItem.version}</span>
+                                                <div class="version-header-content">
+                                                    ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
+                                                    <button class="view-log-btn" onclick="toggleVersionDetails(this)">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                                                </div>
+                                                <span class="version-date">${versionItem.date}</span>
+                                            </div>
+                                            <div class="version-details" style="display: none;">
+                                        `;
+                                        
+                                        // 添加版本图片（如果有）
+                                        if (versionItem.images && versionItem.images.length > 0) {
+                                            var isSingleImage = versionItem.images.length === 1;
+                                            versionHTML += `
+                                                <div class="version-images ${isSingleImage ? 'single-image' : ''}">
+                                            `;
+                                            versionItem.images.forEach(function(image) {
+                                                versionHTML += `
+                                                    <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
+                                                        <img src="${image}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                                                        <div class="image-tooltip">查看图片</div>
+                                                    </div>
+                                                `;
+                                            });
+                                            versionHTML += `
+                                                </div>
+                                            `;
+                                        }
+                                        
+                                        // 添加版本特性
+                                        versionHTML += `
+                                                <ul class="version-features">
+                                        `;
+                                        
+                                        versionItem.features.forEach(function(feature) {
+                                            // 解析颜色格式 [color:red]文本[/color]
+                                            let formattedFeature = feature;
+                                            const colorRegex = /\[color:(\w+)\]([^\[]+)\[\/color\]/g;
+                                            formattedFeature = formattedFeature.replace(colorRegex, '<span style="color: $1;">$2</span>');
+                                            
+                                            versionHTML += `
+                                                    <li>${formattedFeature}</li>
+                                            `;
+                                        });
+                                        
+                                        versionHTML += `
+                                                </ul>
+                                            </div>
+                                        `;
+                                        
+                                        versionElement.innerHTML = versionHTML;
+                                        contentArea.appendChild(versionElement);
+                                    });
                                 }
                                 
-                                // 清空内容，重新添加控件
-                                contentArea.innerHTML = '';
+                                // 排序按钮点击事件
+                                sortButton.addEventListener('click', sortVersions);
+                                
+                                // 全部展开/收起按钮
+                                var expandAllButton = document.createElement('button');
+                                expandAllButton.className = 'expand-all-button';
+                                expandAllButton.style.cssText = `
+                                    padding: 8px 16px;
+                                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                `;
+                                
+                                // 添加鼠标悬浮效果
+                                expandAllButton.addEventListener('mouseenter', function() {
+                                    this.style.transform = 'translateY(-3px)';
+                                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                                });
+                                
+                                expandAllButton.addEventListener('mouseleave', function() {
+                                    this.style.transform = 'translateY(0)';
+                                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                                });
+                                
+                                // 展开状态
+                                var isAllExpanded = false;
+                                expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
+                                
+                                // 全部展开/收起函数
+                                function toggleAllVersions() {
+                                    isAllExpanded = !isAllExpanded;
+                                    
+                                    if (isAllExpanded) {
+                                        expandAllButton.innerHTML = '<i class="fas fa-chevron-up"></i> 全部收起';
+                                        // 展开所有版本详情
+                                        var allDetails = contentArea.querySelectorAll('.version-details');
+                                        var allButtons = contentArea.querySelectorAll('.view-log-btn');
+                                        allDetails.forEach(function(details) {
+                                            details.style.display = 'block';
+                                        });
+                                        allButtons.forEach(function(btn) {
+                                            btn.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
+                                        });
+                                    } else {
+                                        expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
+                                        // 收起所有版本详情
+                                        var allDetails = contentArea.querySelectorAll('.version-details');
+                                        var allButtons = contentArea.querySelectorAll('.view-log-btn');
+                                        allDetails.forEach(function(details) {
+                                            details.style.display = 'none';
+                                        });
+                                        allButtons.forEach(function(btn) {
+                                            btn.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
+                                        });
+                                    }
+                                }
+                                
+                                expandAllButton.addEventListener('click', toggleAllVersions);
+                                
+                                // 添加按钮到按钮容器
+                                buttonContainer.appendChild(backButton);
+                                buttonContainer.appendChild(sortButton);
+                                buttonContainer.appendChild(expandAllButton);
+                                
+                                // 添加按钮容器到控件容器
+                                controlsContainer.appendChild(buttonContainer);
+                                
+                                // 添加控件容器到内容区域
                                 contentArea.appendChild(controlsContainer);
                                 
-                                // 排序版本
+                                // 初始生成版本历史内容（默认倒序）
                                 var sortedVersions = [...group.versions];
                                 sortedVersions.sort(function(a, b) {
                                     // 提取版本号进行比较
@@ -2125,16 +2383,15 @@ function loadVersionHistory() {
                                         
                                         for (var i = 0; i < 4; i++) {
                                             if (aVersion[i] !== bVersion[i]) {
-                                                return isAscending ? aVersion[i] - bVersion[i] : bVersion[i] - aVersion[i];
+                                                return bVersion[i] - aVersion[i]; // 倒序
                                             }
                                         }
                                     }
                                     
-                                    // 如果版本号格式不匹配，按日期排序
-                                    return isAscending ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+                                    // 如果版本号格式不匹配，按日期倒序排序
+                                    return new Date(b.date) - new Date(a.date);
                                 });
                                 
-                                // 生成排序后的版本历史内容
                                 sortedVersions.forEach(function(versionItem) {
                                     var versionElement = document.createElement('div');
                                     versionElement.className = 'version-item';
@@ -2195,184 +2452,23 @@ function loadVersionHistory() {
                                     versionElement.innerHTML = versionHTML;
                                     contentArea.appendChild(versionElement);
                                 });
-                            }
-                            
-                            // 排序按钮点击事件
-                            sortButton.addEventListener('click', sortVersions);
-                            
-                            // 全部展开/收起按钮
-                            var expandAllButton = document.createElement('button');
-                            expandAllButton.className = 'expand-all-button';
-                            expandAllButton.style.cssText = `
-                                padding: 8px 16px;
-                                background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
-                                color: white;
-                                border: none;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                font-size: 14px;
-                                transition: all 0.3s ease;
-                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-                                display: flex;
-                                align-items: center;
-                                gap: 5px;
-                            `;
-                            
-                            // 添加鼠标悬浮效果
-                            expandAllButton.addEventListener('mouseenter', function() {
-                                this.style.transform = 'translateY(-3px)';
-                                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
                             });
                             
-                            expandAllButton.addEventListener('mouseleave', function() {
-                                this.style.transform = 'translateY(0)';
-                                this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                            });
-                            
-                            // 展开状态
-                            var isAllExpanded = false;
-                            expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
-                            
-                            // 全部展开/收起函数
-                            function toggleAllVersions() {
-                                isAllExpanded = !isAllExpanded;
-                                
-                                if (isAllExpanded) {
-                                    expandAllButton.innerHTML = '<i class="fas fa-chevron-up"></i> 全部收起';
-                                    // 展开所有版本详情
-                                    var allDetails = contentArea.querySelectorAll('.version-details');
-                                    var allButtons = contentArea.querySelectorAll('.view-log-btn');
-                                    allDetails.forEach(function(details) {
-                                        details.style.display = 'block';
-                                    });
-                                    allButtons.forEach(function(btn) {
-                                        btn.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
-                                    });
-                                } else {
-                                    expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
-                                    // 收起所有版本详情
-                                    var allDetails = contentArea.querySelectorAll('.version-details');
-                                    var allButtons = contentArea.querySelectorAll('.view-log-btn');
-                                    allDetails.forEach(function(details) {
-                                        details.style.display = 'none';
-                                    });
-                                    allButtons.forEach(function(btn) {
-                                        btn.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
-                                    });
-                                }
-                            }
-                            
-                            expandAllButton.addEventListener('click', toggleAllVersions);
-                            
-                            // 添加按钮到按钮容器
-                            buttonContainer.appendChild(backButton);
-                            buttonContainer.appendChild(sortButton);
-                            buttonContainer.appendChild(expandAllButton);
-                            
-                            // 添加按钮容器到控件容器
-                            controlsContainer.appendChild(buttonContainer);
-                            
-                            // 添加控件容器到内容区域
-                            contentArea.appendChild(controlsContainer);
-                            
-                            // 初始生成版本历史内容（默认倒序）
-                            var sortedVersions = [...group.versions];
-                            sortedVersions.sort(function(a, b) {
-                                // 提取版本号进行比较
-                                var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
-                                var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
-                                
-                                // 如果RC格式不匹配，尝试小游戏格式 "V 1.1.0"
-                                if (!aMatch) {
-                                    aMatch = a.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
-                                }
-                                if (!bMatch) {
-                                    bMatch = b.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
-                                }
-                                
-                                if (aMatch && bMatch) {
-                                    var aVersion = aMatch.slice(1).map(Number);
-                                    var bVersion = bMatch.slice(1).map(Number);
-                                    
-                                    // 确保版本号数组长度一致
-                                    while (aVersion.length < 4) aVersion.push(0);
-                                    while (bVersion.length < 4) bVersion.push(0);
-                                    
-                                    for (var i = 0; i < 4; i++) {
-                                        if (aVersion[i] !== bVersion[i]) {
-                                            return bVersion[i] - aVersion[i]; // 倒序
-                                        }
-                                    }
-                                }
-                                
-                                // 如果版本号格式不匹配，按日期倒序排序
-                                return new Date(b.date) - new Date(a.date);
-                            });
-                            
-                            sortedVersions.forEach(function(versionItem) {
-                                var versionElement = document.createElement('div');
-                                versionElement.className = 'version-item';
-                                
-                                // 构建版本项HTML
-                                var versionHTML = `
-                                    <div class="version-header">
-                                        <span class="version-number">${versionItem.version}</span>
-                                        <div class="version-header-content">
-                                            ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
-                                            <button class="view-log-btn" onclick="toggleVersionDetails(this)">查看日志 <span style="margin-left: 4px;">▶</span></button>
-                                        </div>
-                                        <span class="version-date">${versionItem.date}</span>
-                                    </div>
-                                    <div class="version-details" style="display: none;">
-                                `;
-                                
-                                // 添加版本图片（如果有）
-                                if (versionItem.images && versionItem.images.length > 0) {
-                                    var isSingleImage = versionItem.images.length === 1;
-                                    versionHTML += `
-                                        <div class="version-images ${isSingleImage ? 'single-image' : ''}">
-                                    `;
-                                    versionItem.images.forEach(function(image) {
-                                        versionHTML += `
-                                            <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
-                                                <img src="${image}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
-                                                <div class="image-tooltip">查看图片</div>
-                                            </div>
-                                        `;
-                                    });
-                                    versionHTML += `
-                                        </div>
-                                    `;
-                                }
-                                
-                                // 添加版本特性
-                                versionHTML += `
-                                        <ul class="version-features">
-                                `;
-                                
-                                versionItem.features.forEach(function(feature) {
-                                    // 解析颜色格式 [color:red]文本[/color]
-                                    let formattedFeature = feature;
-                                    const colorRegex = /\[color:(\w+)\]([^\[]+)\[\/color\]/g;
-                                    formattedFeature = formattedFeature.replace(colorRegex, '<span style="color: $1;">$2</span>');
-                                    
-                                    versionHTML += `
-                                            <li>${formattedFeature}</li>
-                                    `;
-                                });
-                                
-                                versionHTML += `
-                                        </ul>
-                                    </div>
-                                `;
-                                
-                                versionElement.innerHTML = versionHTML;
-                                contentArea.appendChild(versionElement);
-                            });
+                            gridContainer.appendChild(groupButton);
                         });
                         
-                        contentArea.appendChild(groupButton);
-                    });
+                        // 添加分组到容器
+                        versionsContainer.appendChild(groupHeader);
+                        versionsContainer.appendChild(gridContainer);
+                    }
+                    
+                    // 创建各个分组
+                    if (!isOutdatedPage) {
+                        createVersionGroup('正在维护中的版本', '🔧', '#4CAF50', maintainingVersions);
+                        createVersionGroup('已结束维护的版本', '📦', '#f44336', endedVersions);
+                    } else {
+                        createVersionGroup('已过时的版本记录', '📋', '#999', outdatedVersions);
+                    }
                 }
                 
                 // 初始显示版本选择界面

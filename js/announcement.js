@@ -41,6 +41,23 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260524",
+            title: "RC 2.6.2.4 开发日志",
+            date: "2026-05-24",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.2.4 版本更新，主要带来了版本更新记录窗口的界面优化！",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 版本选择按钮样式优化：版本更新记录窗口中版本号选择改为块状按钮样式，一行四个按钮，支持自动换行显示，布局更加清晰美观",
+                "• 按钮样式优化：加长按钮宽度，背景改为白色，日期和版本数量文本放大加深，提升可读性和视觉体验",
+                "• 版本分类功能：添加版本维护状态分类条目，分为\"正在维护中的版本\"和\"已结束维护的版本\"两组显示，方便用户快速区分版本状态",
+                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260517",
             title: "RC 2.6.2.3 开发日志",
             date: "2026-05-17",
