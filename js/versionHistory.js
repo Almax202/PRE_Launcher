@@ -1,3 +1,99 @@
+// 版本更新本地存储键名
+const VERSION_STORAGE_KEYS = {
+    LAST_VIEWED_VERSION_DATE: 'last_viewed_version_date',
+    VIEWED_VERSION_IDS: 'viewed_version_ids'
+};
+
+// 获取所有版本更新的最新日期
+function getLatestVersionDate() {
+    let latestDate = null;
+    
+    Object.keys(versionHistoryData).forEach(function(sectionId) {
+        versionHistoryData[sectionId].forEach(function(version) {
+            if (!latestDate || new Date(version.date) > new Date(latestDate)) {
+                latestDate = version.date;
+            }
+        });
+    });
+    
+    return latestDate;
+}
+
+// 检查是否有新版本更新
+function hasNewVersionUpdates() {
+    const lastViewedDate = localStorage.getItem(VERSION_STORAGE_KEYS.LAST_VIEWED_VERSION_DATE);
+    const latestDate = getLatestVersionDate();
+    
+    if (!lastViewedDate || !latestDate) {
+        return false;
+    }
+    
+    return new Date(latestDate) > new Date(lastViewedDate);
+}
+
+// 更新最后查看版本日期
+function updateLastViewedVersionDate() {
+    const latestDate = getLatestVersionDate();
+    if (latestDate) {
+        localStorage.setItem(VERSION_STORAGE_KEYS.LAST_VIEWED_VERSION_DATE, latestDate);
+    }
+}
+
+// 获取已查看的版本ID列表
+function getViewedVersionIds() {
+    const stored = localStorage.getItem(VERSION_STORAGE_KEYS.VIEWED_VERSION_IDS);
+    return stored ? JSON.parse(stored) : [];
+}
+
+// 标记版本为已查看
+function markVersionAsViewed(versionId) {
+    const viewedIds = getViewedVersionIds();
+    if (!viewedIds.includes(versionId)) {
+        viewedIds.push(versionId);
+        localStorage.setItem(VERSION_STORAGE_KEYS.VIEWED_VERSION_IDS, JSON.stringify(viewedIds));
+    }
+}
+
+// 检查版本是否已查看
+function isVersionViewed(versionId) {
+    return getViewedVersionIds().includes(versionId);
+}
+
+// 获取未查看版本数量
+function getUnviewedVersionCount() {
+    let count = 0;
+    console.log('[DEBUG] getUnviewedVersionCount called');
+    console.log('[DEBUG] versionHistoryData exists:', typeof versionHistoryData !== 'undefined');
+    if (typeof versionHistoryData !== 'undefined' && versionHistoryData.launcherUpdateContent && versionHistoryData.launcherUpdateContent.length > 0) {
+        console.log('[DEBUG] Total versions:', versionHistoryData.launcherUpdateContent.length);
+        versionHistoryData.launcherUpdateContent.forEach(function(version) {
+            var versionId = version.version.replace(/\s/g, '');
+            var viewed = isVersionViewed(versionId);
+            console.log('[DEBUG] Version:', version.version, 'Viewed:', viewed);
+            if (!viewed) {
+                count++;
+            }
+        });
+    } else {
+        console.log('[DEBUG] versionHistoryData not available or empty');
+    }
+    console.log('[DEBUG] Unviewed version count:', count);
+    return count;
+}
+
+// 更新版本更新红点显示
+function updateVersionNotificationDot() {
+    const dot = document.getElementById('versionNotificationDot');
+    if (dot) {
+        const count = getUnviewedVersionCount();
+        if (count > 0) {
+            dot.style.display = 'block';
+        } else {
+            dot.style.display = 'none';
+        }
+    }
+}
+
 // 语法使用：
         // {
         //     version: "版本号",
@@ -26,6 +122,28 @@
 // 版本更新公告数据
 const versionHistoryData = {
     launcherUpdateContent: [
+        {
+            version: "RC 2.6.2.5 (b4)",
+            date: "2026-05-26",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2625.png", "./images/2625_2.png", "./images/2625_3.png", "./images/2625_4.png", "./images/2625_5.png"],
+            features: [
+                "新增功能",
+                "- 开发者公告选择界面：公告窗口右侧首先显示块状按钮列表，点击按钮后显示公告详情",
+                "- 消息红点通知：侧边栏版本更新和开发者公告按钮添加红点提醒，有未查看内容时显示",
+                "- 悬浮气泡提示：鼠标悬浮在红点上时显示\"存在未查看的更新\"提示",
+                "- 返回按钮固定：公告详情页返回按钮使用粘性定位，滚动时保持固定",
+                "优化改进",
+                "- 红点显示优化：版本和公告按钮内红点显示未查看数量，提高辨识效率",
+                "- 红点位置调整：按钮内红点移至右下角，悬浮气泡从下往上滑出",
+                "- 新更新标签：版本条目内添加\"新更新\"标签，查看后自动消失",
+                "修复问题",
+                "- 修复红点数量计算错误：版本按钮红点显示该版本下未查看子版本数量",
+                "- 修复红点显示文本错误：侧边栏红点仅显示圆点，不显示数字",
+                "- 修复按钮内红点不显示数量问题"
+            ]
+        },
         {
             version: "RC 2.6.2.4 (b4)",
             date: "2026-05-24",
@@ -1572,13 +1690,18 @@ function loadVersionHistory() {
                 var versionElement = document.createElement('div');
                 versionElement.className = 'version-item';
                 
+                // 检查版本是否已查看
+                var versionId = versionItem.version.replace(/\s/g, '');
+                var isVersionViewedFlag = isVersionViewed(versionId);
+                
                 // 构建版本项HTML
                 var versionHTML = `
                     <div class="version-header">
                         <span class="version-number">${versionItem.version}</span>
                         <div class="version-header-content">
                             ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
-                            <button class="view-log-btn" onclick="toggleVersionDetails(this)">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                            ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                            <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
                         </div>
                         <span class="version-date">${versionItem.date}</span>
                     </div>
@@ -2009,6 +2132,7 @@ function loadVersionHistory() {
                             var groupButton = document.createElement('button');
                             groupButton.className = 'version-group-button';
                             groupButton.style.cssText = `
+                                position: relative;
                                 padding: 20px 16px;
                                 border: none;
                                 border-radius: 12px;
@@ -2061,6 +2185,12 @@ function loadVersionHistory() {
                                 statusColor = '#f44336';
                             }
                             
+                            // 计算该主版本下未查看的子版本数量
+                            var unviewedCount = group.versions.filter(function(subVersion) {
+                                var subVersionId = subVersion.version.replace(/\s/g, '');
+                                return !isVersionViewed(subVersionId);
+                            }).length;
+                            
                             // 设置按钮内容
                             groupButton.innerHTML = `
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -2069,7 +2199,19 @@ function loadVersionHistory() {
                                 </div>
                                 <div style="font-size: 14px; color: #444;">共 ${group.versions.length} 个版本</div>
                                 <div style="font-size: 13px; color: #666;">${group.startDate} ~ ${group.endDate}</div>
+                                ${unviewedCount > 0 ? `<span class="notification-dot">${unviewedCount}<span class="notification-tooltip">存在未查看的更新，数量${unviewedCount}个</span></span>` : ''}
                             `;
+                            
+                            // 添加点击事件，标记版本为已查看
+                            groupButton.addEventListener('click', function() {
+                                var versionId = group.majorVersion.replace(/\s/g, '');
+                                markVersionAsViewed(versionId);
+                                // 同时标记所有子版本为已查看
+                                group.versions.forEach(function(subVersion) {
+                                    var subVersionId = subVersion.version.replace(/\s/g, '');
+                                    markVersionAsViewed(subVersionId);
+                                });
+                            }, true);
                             
                             // 添加点击事件，显示该主版本号下的所有版本
                             groupButton.addEventListener('click', function() {
@@ -2222,13 +2364,18 @@ function loadVersionHistory() {
                                         var versionElement = document.createElement('div');
                                         versionElement.className = 'version-item';
                                         
+                                        // 检查版本是否已查看
+                                        var versionId = versionItem.version.replace(/\s/g, '');
+                                        var isVersionViewedFlag = isVersionViewed(versionId);
+                                        
                                         // 构建版本项HTML
                                         var versionHTML = `
                                             <div class="version-header">
                                                 <span class="version-number">${versionItem.version}</span>
                                                 <div class="version-header-content">
                                                     ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
-                                                    <button class="view-log-btn" onclick="toggleVersionDetails(this)">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                                                    ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                                                    <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
                                                 </div>
                                                 <span class="version-date">${versionItem.date}</span>
                                             </div>
@@ -2396,13 +2543,18 @@ function loadVersionHistory() {
                                     var versionElement = document.createElement('div');
                                     versionElement.className = 'version-item';
                                     
+                                    // 检查版本是否已查看
+                                    var versionId = versionItem.version.replace(/\s/g, '');
+                                    var isVersionViewedFlag = isVersionViewed(versionId);
+                                    
                                     // 构建版本项HTML
                                     var versionHTML = `
                                         <div class="version-header">
                                             <span class="version-number">${versionItem.version}</span>
                                             <div class="version-header-content">
                                                 ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
-                                                <button class="view-log-btn" onclick="toggleVersionDetails(this)">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                                                ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                                                <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
                                             </div>
                                             <span class="version-date">${versionItem.date}</span>
                                         </div>
@@ -2479,13 +2631,23 @@ function loadVersionHistory() {
 }
 
 // 切换版本详情展开/收起
-function toggleVersionDetails(button) {
+function toggleVersionDetails(button, versionId) {
     const versionItem = button.closest('.version-item');
     const details = versionItem.querySelector('.version-details');
     
     if (details.style.display === 'none') {
         details.style.display = 'block';
         button.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
+        
+        // 标记版本为已查看
+        if (versionId) {
+            markVersionAsViewed(versionId);
+            // 移除新更新标签
+            const newUpdateTag = versionItem.querySelector('.new-update-tag');
+            if (newUpdateTag) {
+                newUpdateTag.remove();
+            }
+        }
     } else {
         details.style.display = 'none';
         button.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
@@ -2684,8 +2846,10 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         loadVersionHistory();
         initImageViewer();
+        updateVersionNotificationDot();
     });
 } else {
     loadVersionHistory();
     initImageViewer();
+    updateVersionNotificationDot();
 }

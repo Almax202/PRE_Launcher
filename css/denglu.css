@@ -3286,6 +3286,90 @@ body.dark-mode .announcement-id {
     color: #666;
 }
 
+/* 公告选择按钮样式 */
+.announcement-buttons-container {
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.announcement-select-button {
+    padding: 20px 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    border: 2px solid rgba(212, 93, 121, 0.3);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 100px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.announcement-select-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(212, 93, 121, 0.2);
+    border-color: #d45d79;
+}
+
+.announcement-select-button:active {
+    transform: translateY(-1px) scale(0.99);
+}
+
+body.dark-mode .announcement-select-button {
+    background: rgba(50, 50, 70, 0.9);
+    border-color: rgba(212, 93, 121, 0.4);
+}
+
+body.dark-mode .announcement-select-button:hover {
+    background: rgba(60, 60, 80, 0.95);
+    border-color: #d45d79;
+}
+
+/* 公告选择提示文字 */
+.announcement-selection-hint {
+    font-style: normal;
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #333;
+}
+
+body.dark-mode .announcement-selection-hint {
+    color: #e0e0e0;
+}
+
+/* 返回按钮样式 */
+.announcement-back-button {
+    position: sticky;
+    top: 15px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    z-index: 10;
+    background-color: #d45d79;
+}
+
+.announcement-back-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 /* 公告内容样式 */
 .announcement-content {
     line-height: 1.8;
@@ -4069,6 +4153,7 @@ body.dark-mode .toggle-password:hover {
 }
 
 .menu-item {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -4091,6 +4176,106 @@ body.dark-mode .toggle-password:hover {
 
 .menu-item span {
     font-size: 14px;
+}
+
+/* 通知红点样式 */
+.notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 12px;
+    height: 12px;
+    background-color: #ff4757;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255, 71, 87, 0.6);
+    cursor: pointer;
+}
+
+.notification-dot:hover .notification-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* 红点悬浮气泡 */
+.notification-tooltip {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    font-size: 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+    z-index: 100;
+}
+
+.notification-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 6px;
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.85);
+}
+
+/* 公告按钮内的红点 */
+.announcement-select-button .notification-dot {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-indent: 0;
+    white-space: normal;
+    overflow: visible;
+}
+
+/* 版本按钮内的红点 */
+.version-select-button .notification-dot,
+.version-group-button .notification-dot {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-indent: 0;
+    white-space: normal;
+    overflow: visible;
+}
+
+/* 新更新标签样式 */
+.new-update-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #ff4757;
+    color: white;
+    margin-left: 8px;
+}
+
+body.dark-mode .new-update-tag {
+    background-color: #e63946;
 }
 
 .menu-tooltip {

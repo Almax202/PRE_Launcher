@@ -1,3 +1,122 @@
+// 本地存储键名
+const STORAGE_KEYS = {
+    LAST_VIEWED_ANNOUNCEMENT_DATE: 'last_viewed_announcement_date',
+    VIEWED_ANNOUNCEMENT_IDS: 'viewed_announcement_ids'
+};
+
+// 获取所有公告的最新日期
+function getLatestAnnouncementDate() {
+    let latestDate = null;
+    
+    // 检查重要公告
+    if (announcementData.importantAnnouncements.length > 0) {
+        announcementData.importantAnnouncements.forEach(ann => {
+            if (!latestDate || new Date(ann.date) > new Date(latestDate)) {
+                latestDate = ann.date;
+            }
+        });
+    }
+    
+    // 检查普通公告
+    if (announcementData.normalAnnouncements.length > 0) {
+        announcementData.normalAnnouncements.forEach(ann => {
+            if (!latestDate || new Date(ann.date) > new Date(latestDate)) {
+                latestDate = ann.date;
+            }
+        });
+    }
+    
+    // 检查开发日志
+    if (announcementData.devLogs.length > 0) {
+        announcementData.devLogs.forEach(ann => {
+            if (!latestDate || new Date(ann.date) > new Date(latestDate)) {
+                latestDate = ann.date;
+            }
+        });
+    }
+    
+    return latestDate;
+}
+
+// 检查是否有新公告
+function hasNewAnnouncements() {
+    const lastViewedDate = localStorage.getItem(STORAGE_KEYS.LAST_VIEWED_ANNOUNCEMENT_DATE);
+    const latestDate = getLatestAnnouncementDate();
+    
+    if (!lastViewedDate || !latestDate) {
+        return false;
+    }
+    
+    return new Date(latestDate) > new Date(lastViewedDate);
+}
+
+// 更新最后查看日期
+function updateLastViewedAnnouncementDate() {
+    const latestDate = getLatestAnnouncementDate();
+    if (latestDate) {
+        localStorage.setItem(STORAGE_KEYS.LAST_VIEWED_ANNOUNCEMENT_DATE, latestDate);
+    }
+}
+
+// 获取已查看的公告ID列表
+function getViewedAnnouncementIds() {
+    const stored = localStorage.getItem(STORAGE_KEYS.VIEWED_ANNOUNCEMENT_IDS);
+    return stored ? JSON.parse(stored) : [];
+}
+
+// 标记公告为已查看
+function markAnnouncementAsViewed(announcementId) {
+    const viewedIds = getViewedAnnouncementIds();
+    if (!viewedIds.includes(announcementId)) {
+        viewedIds.push(announcementId);
+        localStorage.setItem(STORAGE_KEYS.VIEWED_ANNOUNCEMENT_IDS, JSON.stringify(viewedIds));
+    }
+}
+
+// 检查公告是否已查看
+function isAnnouncementViewed(announcementId) {
+    return getViewedAnnouncementIds().includes(announcementId);
+}
+
+// 获取未查看公告数量
+function getUnviewedAnnouncementCount() {
+    let count = 0;
+    console.log('[DEBUG] getUnviewedAnnouncementCount called');
+    console.log('[DEBUG] announcementData exists:', typeof announcementData !== 'undefined');
+    if (typeof announcementData !== 'undefined') {
+        // 检查所有公告分类
+        ['importantAnnouncements', 'normalAnnouncements', 'devLogs'].forEach(function(category) {
+            if (announcementData[category] && announcementData[category].length > 0) {
+                console.log('[DEBUG] Category:', category, 'Count:', announcementData[category].length);
+                announcementData[category].forEach(function(announcement) {
+                    var viewed = isAnnouncementViewed(announcement.id);
+                    console.log('[DEBUG] Announcement:', announcement.id, 'Viewed:', viewed);
+                    if (!viewed) {
+                        count++;
+                    }
+                });
+            }
+        });
+    } else {
+        console.log('[DEBUG] announcementData not available');
+    }
+    console.log('[DEBUG] Unviewed announcement count:', count);
+    return count;
+}
+
+// 更新公告红点显示
+function updateAnnouncementNotificationDot() {
+    const dot = document.getElementById('announcementNotificationDot');
+    if (dot) {
+        const count = getUnviewedAnnouncementCount();
+        if (count > 0) {
+            dot.style.display = 'block';
+        } else {
+            dot.style.display = 'none';
+        }
+    }
+}
+
 // 开发者公告数据
 // 语法使用：
 // {
@@ -40,6 +159,32 @@ const announcementData = {
     ],
     // 开发日志
     devLogs: [
+        {
+            id: "devlog-20260526",
+            title: "RC 2.6.2.5 开发日志",
+            date: "2026-05-26",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.2.5 版本更新，主要带来了开发者公告和版本更新的消息通知功能！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 开发者公告选择界面：公告窗口右侧首先显示块状按钮列表，点击按钮后显示公告详情",
+                "• 消息红点通知：侧边栏版本更新和开发者公告按钮添加红点提醒，有未查看内容时显示",
+                "• 悬浮气泡提示：鼠标悬浮在红点上时显示\"存在未查看的更新\"提示",
+                "• 返回按钮固定：公告详情页返回按钮使用粘性定位，滚动时保持固定",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 红点显示优化：版本和公告按钮内红点显示未查看数量，提高辨识效率",
+                "• 红点位置调整：按钮内红点移至右下角，悬浮气泡从下往上滑出",
+                "• 新更新标签：版本条目内添加\"新更新\"标签，查看后自动消失",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复红点数量计算错误：版本按钮红点显示该版本下未查看子版本数量",
+                "• 修复红点显示文本错误：侧边栏红点仅显示圆点，不显示数字",
+                "• 修复按钮内红点不显示数量问题",
+                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+            ]
+        },
         {
             id: "devlog-20260524",
             title: "RC 2.6.2.4 开发日志",
@@ -347,7 +492,7 @@ function loadAnnouncementByType(type) {
     loadAnnouncementList(data);
 }
 
-// 加载公告列表
+// 加载公告列表（显示选择按钮）
 function loadAnnouncementList(announcements) {
     var contentArea = document.querySelector('#announcementModal .terms-content');
     if (!contentArea) return;
@@ -366,61 +511,225 @@ function loadAnnouncementList(announcements) {
         return;
     }
     
-    announcements.forEach(function(announcement) {
-        var announcementElement = document.createElement('div');
-        announcementElement.className = 'announcement-item';
-        
-        var announcementHTML = `
-            <div class="announcement-header">
-                <h3 class="announcement-title">${announcement.title}</h3>
-                <div class="announcement-meta">
-                    ${announcement.tag ? `<span class="announcement-tag ${announcement.tag}">${announcement.tagText}</span>` : ''}
-                    <span class="announcement-date"><i class="fas fa-calendar"></i> ${announcement.date}</span>
-                    <span class="announcement-author"><i class="fas fa-user"></i> ${announcement.author}</span>
-                    <span class="announcement-id">ID: ${announcement.id}</span>
-                </div>
-            </div>
-            <div class="announcement-content">
+    // 显示公告选择按钮界面
+    showAnnouncementSelection(announcements);
+}
+
+// 显示公告选择按钮界面
+function showAnnouncementSelection(announcements) {
+    var contentArea = document.querySelector('#announcementModal .terms-content');
+    if (!contentArea) return;
+    
+    contentArea.innerHTML = '';
+    
+    // 添加提示文本
+    var hintText = document.createElement('p');
+    hintText.className = 'announcement-selection-hint';
+    hintText.style.cssText = `
+        font-style: normal;
+        text-align: center;
+        padding: 20px 0;
+        margin-bottom: 20px;
+        font-size: 16px;
+        color: #333;
+    `;
+    hintText.textContent = '请选择要查看的公告';
+    contentArea.appendChild(hintText);
+    
+    // 创建公告按钮网格容器
+    var buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'announcement-buttons-container';
+    buttonsContainer.style.cssText = `
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    `;
+    contentArea.appendChild(buttonsContainer);
+    
+    // 按日期倒序排序公告
+    var sortedAnnouncements = [...announcements].sort(function(a, b) {
+        return new Date(b.date) - new Date(a.date);
+    });
+    
+    // 创建公告按钮
+    sortedAnnouncements.forEach(function(announcement) {
+        var button = document.createElement('button');
+        button.className = 'announcement-select-button';
+        button.style.cssText = `
+            position: relative;
+            padding: 20px 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            border: 2px solid rgba(212, 93, 121, 0.3);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 100px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         `;
         
-        // 添加公告图片
-        if (announcement.images && announcement.images.length > 0) {
-            var isSingleImage = announcement.images.length === 1;
-            announcementHTML += `
-                <div class="announcement-images ${isSingleImage ? 'single-image' : ''}">
-            `;
-            announcement.images.forEach(function(image) {
-                announcementHTML += `
-                    <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
-                        <img src="${image}" alt="公告图片" class="announcement-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
-                        <div class="image-tooltip">点击查看大图</div>
-                    </div>
-                `;
-            });
-            announcementHTML += `
-                </div>
-            `;
-        }
-        
-        // 添加公告内容
-        announcement.content.forEach(function(paragraph) {
-            // 解析颜色格式 [color:颜色]文本[/color]
-            let formattedParagraph = paragraph;
-            const colorRegex = /\[color:([^\]]+)\]([^\[]+)\[\/color\]/g;
-            formattedParagraph = formattedParagraph.replace(colorRegex, '<span style="color: $1;">$2</span>');
-            
-            announcementHTML += `
-                <p>${formattedParagraph}</p>
-            `;
+        // 添加鼠标悬浮效果
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 8px 20px rgba(212, 93, 121, 0.2)';
+            this.style.borderColor = '#d45d79';
         });
         
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.06)';
+            this.style.borderColor = 'rgba(212, 93, 121, 0.3)';
+        });
+        
+        // 添加点击效果
+        button.addEventListener('mousedown', function() {
+            this.style.transform = 'translateY(-1px) scale(0.99)';
+        });
+        
+        button.addEventListener('mouseup', function() {
+            this.style.transform = 'translateY(-3px)';
+        });
+        
+        // 确定标签颜色
+        var tagColor = '#999';
+        if (announcement.tag === 'important') {
+            tagColor = '#f44336';
+        } else if (announcement.tag === 'update') {
+            tagColor = '#4CAF50';
+        } else if (announcement.tag === 'notice') {
+            tagColor = '#2196F3';
+        }
+        
+        // 检查公告是否已查看
+        var isViewed = isAnnouncementViewed(announcement.id);
+        
+        // 设置按钮内容
+        button.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <span style="font-size: 16px; font-weight: bold; color: #d45d79; line-height: 1.3;">${announcement.title}</span>
+                ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white;">${announcement.tagText}</span>` : ''}
+            </div>
+            <div style="font-size: 14px; color: #666;"><i class="fas fa-calendar"></i> ${announcement.date}</div>
+            <div style="font-size: 13px; color: #888;"><i class="fas fa-user"></i> ${announcement.author}</div>
+            ${!isViewed ? `<span class="notification-dot">1<span class="notification-tooltip">存在未查看的更新</span></span>` : ''}
+        `;
+        
+        // 添加点击事件，显示公告详情
+        button.addEventListener('click', function() {
+            // 标记公告为已查看
+            markAnnouncementAsViewed(announcement.id);
+            showAnnouncementDetail(announcement, sortedAnnouncements);
+        });
+        
+        buttonsContainer.appendChild(button);
+    });
+}
+
+// 显示公告详情
+function showAnnouncementDetail(announcement, allAnnouncements) {
+    var contentArea = document.querySelector('#announcementModal .terms-content');
+    if (!contentArea) return;
+    
+    contentArea.innerHTML = '';
+    
+    // 添加返回按钮
+    var backButton = document.createElement('button');
+    backButton.className = 'announcement-back-button';
+    backButton.style.cssText = `
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+    `;
+    
+    // 添加鼠标悬浮效果
+    backButton.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-3px)';
+        this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+    });
+    
+    backButton.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+    });
+    
+    backButton.innerHTML = '<i class="fas fa-arrow-left"></i> 返回公告列表';
+    
+    // 返回按钮点击事件
+    backButton.addEventListener('click', function() {
+        showAnnouncementSelection(allAnnouncements);
+    });
+    
+    contentArea.appendChild(backButton);
+    
+    // 创建公告详情元素
+    var announcementElement = document.createElement('div');
+    announcementElement.className = 'announcement-item';
+    
+    var announcementHTML = `
+        <div class="announcement-header">
+            <h3 class="announcement-title">${announcement.title}</h3>
+            <div class="announcement-meta">
+                ${announcement.tag ? `<span class="announcement-tag ${announcement.tag}">${announcement.tagText}</span>` : ''}
+                <span class="announcement-date"><i class="fas fa-calendar"></i> ${announcement.date}</span>
+                <span class="announcement-author"><i class="fas fa-user"></i> ${announcement.author}</span>
+                <span class="announcement-id">ID: ${announcement.id}</span>
+            </div>
+        </div>
+        <div class="announcement-content">
+    `;
+    
+    // 添加公告图片
+    if (announcement.images && announcement.images.length > 0) {
+        var isSingleImage = announcement.images.length === 1;
+        announcementHTML += `
+            <div class="announcement-images ${isSingleImage ? 'single-image' : ''}">
+        `;
+        announcement.images.forEach(function(image) {
+            announcementHTML += `
+                <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
+                    <img src="${image}" alt="公告图片" class="announcement-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                    <div class="image-tooltip">点击查看大图</div>
+                </div>
+            `;
+        });
         announcementHTML += `
             </div>
         `;
+    }
+    
+    // 添加公告内容
+    announcement.content.forEach(function(paragraph) {
+        // 解析颜色格式 [color:颜色]文本[/color]
+        let formattedParagraph = paragraph;
+        const colorRegex = /\[color:([^\]]+)\]([^\[]+)\[\/color\]/g;
+        formattedParagraph = formattedParagraph.replace(colorRegex, '<span style="color: $1;">$2</span>');
         
-        announcementElement.innerHTML = announcementHTML;
-        contentArea.appendChild(announcementElement);
+        announcementHTML += `
+            <p>${formattedParagraph}</p>
+        `;
     });
+    
+    announcementHTML += `
+        </div>
+    `;
+    
+    announcementElement.innerHTML = announcementHTML;
+    contentArea.appendChild(announcementElement);
     
     // 为图片添加点击事件
     initAnnouncementImageClick();
@@ -741,6 +1050,12 @@ function showAnnouncementModal() {
         modal.classList.add('show');
     }, 10);
     
+    // 更新最后查看日期
+    updateLastViewedAnnouncementDate();
+    
+    // 隐藏红点
+    updateAnnouncementNotificationDot();
+    
     // 默认加载重要公告
     var importantNav = document.getElementById('importantNav');
     if (importantNav) {
@@ -761,6 +1076,9 @@ function closeAnnouncementModal() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    // 更新公告红点显示
+    updateAnnouncementNotificationDot();
+    
     // 为开发者公告按钮添加点击事件
     var announcementBtn = document.getElementById('sidebarAnnouncement');
     if (announcementBtn) {

@@ -742,11 +742,17 @@
                     <i class="fas fa-history"></i>
                     <span>版本更新</span>
                     <div class="menu-tooltip">版本更新</div>
+                    <span class="notification-dot" id="versionNotificationDot" style="display: none;">
+                        <span class="notification-tooltip">存在未查看的新公告</span>
+                    </span>
                 </div>
                 <div class="menu-item" id="sidebarAnnouncement">
                         <i class="fas fa-newspaper"></i>
                         <span>开发者公告</span>
                         <div class="menu-tooltip">开发者公告</div>
+                        <span class="notification-dot" id="announcementNotificationDot" style="display: none;">
+                            <span class="notification-tooltip">存在未查看的新公告</span>
+                        </span>
                     </div>
                     <div class="menu-item" id="sidebarOfflineMode" style="display: none;">
                         <i class="fas" id="offlineModeIcon"></i>
@@ -3804,6 +3810,12 @@
                 showAlert('无网络连接，请检查网络设置');
                 return;
             }
+            
+            // 更新最后查看日期
+            updateLastViewedVersionDate();
+            
+            // 隐藏红点
+            updateVersionNotificationDot();
             
             var versionHistoryModal = document.getElementById('versionHistoryModal');
             versionHistoryModal.style.display = 'flex';
