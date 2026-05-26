@@ -123,6 +123,17 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.2.5 (b5)",
+            date: "2026-05-26",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 修复消息红点显示错误问题"
+            ]
+        },
+        {
             version: "RC 2.6.2.5 (b4)",
             date: "2026-05-26",
             tag: "important",

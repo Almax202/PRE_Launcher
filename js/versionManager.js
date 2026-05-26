@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.2.5 (b4)",
+    login: "RC 2.6.2.5 (b5)",
 
     // 游戏大厅版本号
     homepage: "RC 1.0.3.3 (a2)",
@@ -25,7 +25,7 @@ const versionInfo = {
     colormatchgame: "RC 1.2.0",
 
     // 内部版本号
-    launcher: "20260526.2625.b4.74"
+    launcher: "20260526.2625.b5.74"
 };
 // 启动器信息
 const launcherInfo = {
