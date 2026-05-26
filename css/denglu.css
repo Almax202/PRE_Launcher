@@ -4191,6 +4191,15 @@ body.dark-mode .toggle-password:hover {
     cursor: pointer;
 }
 
+/* 侧边栏菜单内的红点 - 隐藏文本 */
+.menu-item .notification-dot {
+    font-size: 0 !important;
+    line-height: 0 !important;
+    overflow: hidden;
+    text-indent: -9999px;
+    white-space: nowrap;
+}
+
 .notification-dot:hover .notification-tooltip {
     opacity: 1;
     visibility: visible;
@@ -4206,7 +4215,8 @@ body.dark-mode .toggle-password:hover {
     padding: 8px 12px;
     background-color: rgba(0, 0, 0, 0.85);
     color: white;
-    font-size: 12px;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
     border-radius: 6px;
     white-space: nowrap;
     opacity: 0;
@@ -4214,6 +4224,8 @@ body.dark-mode .toggle-password:hover {
     transform: translateY(10px);
     transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
     z-index: 100;
+    text-indent: 0;
+    pointer-events: none;
 }
 
 .notification-tooltip::after {
@@ -4232,7 +4244,8 @@ body.dark-mode .toggle-password:hover {
     right: 10px;
     width: 20px;
     height: 20px;
-    font-size: 12px;
+    font-size: 12px !important;
+    line-height: 1 !important;
     font-weight: bold;
     color: white;
     display: flex;
@@ -4251,7 +4264,8 @@ body.dark-mode .toggle-password:hover {
     right: 10px;
     width: 20px;
     height: 20px;
-    font-size: 12px;
+    font-size: 12px !important;
+    line-height: 1 !important;
     font-weight: bold;
     color: white;
     display: flex;
