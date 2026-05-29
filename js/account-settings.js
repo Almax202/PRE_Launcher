@@ -545,21 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelPresetBackground();
         });
         
-        document.getElementById('previewPresetBtn').addEventListener('click', function() {
-            previewPresetBackground();
-        });
-        
-        document.getElementById('closePreviewPanel').addEventListener('click', function() {
-            closePreviewPanel();
-        });
-        
-        document.getElementById('cancelPreviewBtn').addEventListener('click', function() {
-            cancelPreviewBackground();
-        });
-        
-        document.getElementById('confirmPreviewBtn').addEventListener('click', function() {
-            confirmPreviewBackground();
-        });
+        initPresetBackgroundTouchSupport();
         
         document.getElementById('exportDataBtn').addEventListener('click', function() {
             // 清空密码输入框
@@ -6797,6 +6783,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // 移动端触摸滑动支持
+    function initPresetBackgroundTouchSupport() {
+        var modal = document.getElementById('presetBackgroundModal');
+        var container = document.querySelector('.preset-background-container');
+        if (!modal || !container) return;
+        
+        var startY = 0;
+        var currentY = 0;
+        var deltaY = 0;
+        var isDragging = false;
+        var startTop = 0;
+        
+        container.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                startTop = parseInt(window.getComputedStyle(container).transform.split(',')[5] || '0');
+            }
+        }, { passive: true });
+        
+        container.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            
+            currentY = e.touches[0].clientY;
+            deltaY = currentY - startY;
+            
+            if (deltaY > 0) {
+                var translateY = Math.min(deltaY * 0.5, window.innerHeight * 0.5);
+                container.style.transform = 'translateY(' + translateY + 'px)';
+            }
+        }, { passive: true });
+        
+        container.addEventListener('touchend', function() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            var threshold = window.innerHeight * 0.2;
+            
+            if (deltaY > threshold) {
+                closePresetBackgroundModal();
+            } else {
+                container.style.transform = '';
+            }
+            
+            deltaY = 0;
+        });
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closePresetBackgroundModal();
+            }
+        });
+    }
+    
     // 刷新预设背景
     function refreshPresetBackgrounds() {
         var refreshBtn = document.getElementById('refreshPresetBtn');
@@ -6874,100 +6914,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 更新确认按钮状态
     function updateConfirmButtonState() {
         var confirmBtn = document.getElementById('confirmPresetBtn');
-        var previewBtn = document.getElementById('previewPresetBtn');
         if (confirmBtn) {
             confirmBtn.disabled = !selectedPresetBackground;
         }
-        if (previewBtn) {
-            previewBtn.disabled = !selectedPresetBackground;
-        }
-    }
-    
-    // 预览背景
-    function previewPresetBackground() {
-        if (!selectedPresetBackground) return;
-        
-        closePresetBackgroundModal();
-        
-        var panel = document.getElementById('previewBackgroundPanel');
-        var container = document.getElementById('previewImageContainer');
-        var nameSpan = document.getElementById('previewImageName');
-        
-        if (panel && container && nameSpan) {
-            container.innerHTML = '<img src="' + selectedPresetBackground.url + '" alt="' + selectedPresetBackground.name + '">';
-            nameSpan.textContent = selectedPresetBackground.name;
-            panel.classList.add('show');
-        }
-    }
-    
-    // 关闭预览面板
-    function closePreviewPanel() {
-        var panel = document.getElementById('previewBackgroundPanel');
-        if (panel) {
-            panel.classList.remove('show');
-            selectedPresetBackground = null;
-        }
-    }
-    
-    // 确认预览应用
-    function confirmPreviewBackground() {
-        if (!selectedPresetBackground) return;
-        
-        var url = selectedPresetBackground.url;
-        var name = selectedPresetBackground.name;
-        
-        // 更新预览
-        var preview = document.getElementById('backgroundPreview');
-        if (preview) {
-            preview.style.backgroundImage = 'url(' + url + ')';
-            preview.style.backgroundSize = 'cover';
-            preview.style.backgroundPosition = 'center';
-            var placeholder = preview.querySelector('.preview-placeholder');
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
-        }
-        
-        // 保存背景设置
-        var fit = document.getElementById('backgroundFit').value;
-        var opacity = parseFloat(document.getElementById('backgroundOpacity').value);
-        var blur = parseInt(document.getElementById('backgroundBlur').value);
-        
-        var backgroundSettings = {
-            image: url,
-            fit: fit,
-            opacity: opacity,
-            blur: blur,
-            useIndexedDB: false
-        };
-        
-        // 保存到用户配置
-        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-        var userIndex = users.findIndex(function(user) {
-            return user.username === currentUser.username;
-        });
-        
-        if (userIndex !== -1) {
-            if (!users[userIndex].userProfile) {
-                users[userIndex].userProfile = {};
-            }
-            users[userIndex].userProfile.background = backgroundSettings;
-            localStorage.setItem('registeredUsers', JSON.stringify(users));
-        }
-        
-        localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
-        
-        // 应用到当前页面
-        applyBackgroundToPage(backgroundSettings);
-        
-        closePreviewPanel();
-        
-        showAlert('背景图片已更新为 "' + name + '"');
-    }
-    
-    // 取消预览
-    function cancelPreviewBackground() {
-        closePreviewPanel();
     }
     
     // 确认应用选中的预设背景
@@ -7023,7 +6972,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 关闭窗口
         closePresetBackgroundModal();
-        closePreviewPanel();
         
         showAlert('背景图片已更新为 "' + name + '"');
     }
@@ -7031,7 +6979,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 取消选择
     function cancelPresetBackground() {
         closePresetBackgroundModal();
-        closePreviewPanel();
     }
     
     function checkOfflineModeAndDisableFeatures() {

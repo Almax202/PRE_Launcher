@@ -1744,31 +1744,113 @@
     </div>
 
     <div id="feedbackModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 500px;">
-            <div class="alert-icon" style="color: #3498db;">
-                <i class="fas fa-comment-dots"></i>
+        <div class="alert-content terms-modal-content feedback-modal-content">
+            <div class="header-container">
+                <div class="alert-icon" style="color: #3498db;">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+                <h3>反馈建议</h3>
             </div>
-            <h3>反馈建议</h3>
-            <div class="feedback-section">
-                <div class="feedback-item">
-                    <label for="feedbackType">反馈类型</label>
-                    <select id="feedbackType" class="feedback-select">
-                        <option value="suggestion">功能建议</option>
-                        <option value="bug">Bug反馈</option>
-                        <option value="other">其他问题</option>
-                    </select>
+            <div class="terms-layout feedback-layout">
+                <div class="terms-sidebar" id="feedbackSidebar">
+                    <div class="terms-nav-header">
+                        <div class="terms-nav-title">反馈类型</div>
+                    </div>
+                    <div class="terms-nav-item active feedback-nav-item" data-type="suggestion">
+                        <div class="nav-item-content">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>功能建议<ul>Suggestion</ul></span>
+                        </div>
+                    </div>
+                    <div class="terms-nav-item feedback-nav-item" data-type="bug">
+                        <div class="nav-item-content">
+                            <i class="fas fa-bug"></i>
+                            <span>Bug反馈<ul>Bug Report</ul></span>
+                        </div>
+                    </div>
+                    <div class="terms-nav-item feedback-nav-item" data-type="other">
+                        <div class="nav-item-content">
+                            <i class="fas fa-question-circle"></i>
+                            <span>其他问题<ul>Other</ul></span>
+                        </div>
+                    </div>
                 </div>
-                <div class="feedback-item">
-                    <label for="feedbackContent">反馈内容</label>
-                    <textarea id="feedbackContent" placeholder="请详细描述您的反馈内容..." rows="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
-                </div>
-                <div class="feedback-item">
-                    <input type="checkbox" id="includeSystemInfo">
-                    <label for="includeSystemInfo">发送系统信息</label>
-                    <small style="color: #666; display: block; margin-top: 5px;">帮助我们更好地了解您的环境</small>
+                <div class="terms-main">
+                    <div class="terms-content" id="feedbackContentArea">
+                        <div class="feedback-form-container">
+                            <div class="feedback-row">
+                                <div class="feedback-item feedback-item-half">
+                                    <label for="feedbackPriority">优先级</label>
+                                    <select id="feedbackPriority" class="feedback-select">
+                                        <option value="low">低</option>
+                                        <option value="medium" selected>中</option>
+                                        <option value="high">高</option>
+                                        <option value="urgent">紧急</option>
+                                    </select>
+                                </div>
+                                <div class="feedback-item feedback-item-half">
+                                    <label for="feedbackPlatform">平台</label>
+                                    <select id="feedbackPlatform" class="feedback-select">
+                                        <option value="windows">Windows</option>
+                                        <option value="macos">macOS</option>
+                                        <option value="linux">Linux</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="feedback-item">
+                                <label for="feedbackTitle">反馈标题</label>
+                                <input type="text" id="feedbackTitle" class="feedback-input" placeholder="简要描述您的反馈">
+                            </div>
+                            <div class="feedback-item">
+                                <label for="feedbackContent">详细描述</label>
+                                <textarea id="feedbackContent" class="feedback-textarea" placeholder="请详细描述您的反馈内容..."></textarea>
+                            </div>
+                            <div class="feedback-item" id="bugStepsSection">
+                                <label for="reproduceSteps">复现步骤</label>
+                                <textarea id="reproduceSteps" class="feedback-textarea" placeholder="请描述如何复现这个问题（仅Bug反馈需要）..."></textarea>
+                            </div>
+                            <div class="feedback-item">
+                                <label for="expectedResult">预期结果</label>
+                                <textarea id="expectedResult" class="feedback-textarea feedback-textarea-short" placeholder="您期望的结果是什么？"></textarea>
+                            </div>
+                            <div class="feedback-row">
+                                <div class="feedback-item feedback-item-half">
+                                    <label for="contactEmail">联系邮箱（选填）</label>
+                                    <input type="email" id="contactEmail" class="feedback-input" placeholder="您的邮箱地址">
+                                </div>
+                                <div class="feedback-item feedback-item-half">
+                                    <label for="contactName">昵称（选填）</label>
+                                    <input type="text" id="contactName" class="feedback-input" placeholder="您的昵称">
+                                </div>
+                            </div>
+                            <div class="feedback-item feedback-attach-section">
+                                <label>附件（选填）</label>
+                                <div class="attachment-upload">
+                                    <div class="upload-area" id="uploadArea">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>点击或拖拽文件到此处</span>
+                                        <small>支持图片、日志文件，最大5MB</small>
+                                    </div>
+                                    <div class="uploaded-files" id="uploadedFiles"></div>
+                                </div>
+                            </div>
+                            <div class="feedback-item feedback-checkbox-group">
+                                <input type="checkbox" id="includeSystemInfo">
+                                <label for="includeSystemInfo">发送系统信息</label>
+                                <small>帮助我们更好地了解您的环境</small>
+                            </div>
+                            <div class="feedback-item feedback-tips">
+                                <div class="tip-box">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>感谢您的反馈！我们会认真对待每一条建议。</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-buttons">
+            <div class="terms-modal-buttons">
                 <button class="alert-confirm" id="feedbackCancel">取消</button>
                 <button class="alert-confirm" id="feedbackSubmit" style="background-color: #4CAF50;">提交反馈</button>
             </div>
@@ -3827,8 +3909,8 @@
                 if (contentArea) {
                     contentArea.innerHTML = `
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                            <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
-                                <i class="fas fa-spinner fa-spin"></i>
+                            <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                                <i class="fas fa-inbox"></i>
                             </div>
                             <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的功能更新</p>
                         </div>
@@ -4258,32 +4340,165 @@
             }, 300);
         });
         
+        // 初始化反馈侧边栏导航
+        var feedbackNavItems = document.querySelectorAll('.feedback-nav-item');
+        var bugStepsSection = document.getElementById('bugStepsSection');
+        feedbackNavItems.forEach(function(item) {
+            item.addEventListener('click', function() {
+                // 移除所有active状态
+                feedbackNavItems.forEach(function(nav) {
+                    nav.classList.remove('active');
+                });
+                // 添加当前active状态
+                this.classList.add('active');
+                
+                // 根据反馈类型显示/隐藏复现步骤字段
+                var feedbackType = this.getAttribute('data-type');
+                if (feedbackType === 'bug') {
+                    bugStepsSection.classList.add('show');
+                } else {
+                    bugStepsSection.classList.remove('show');
+                }
+            });
+        });
+        
+        // 文件上传功能
+        var uploadedFiles = [];
+        var uploadArea = document.getElementById('uploadArea');
+        var uploadedFilesContainer = document.getElementById('uploadedFiles');
+        var fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.multiple = true;
+        fileInput.accept = 'image/*,.log,.txt';
+        fileInput.style.display = 'none';
+        
+        uploadArea.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#d45d79';
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '';
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '';
+            var files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+        
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(this.files);
+        });
+        
+        function handleFiles(files) {
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('文件大小不能超过5MB');
+                    continue;
+                }
+                
+                uploadedFiles.push(file);
+                addUploadedFileItem(file);
+            }
+        }
+        
+        function addUploadedFileItem(file) {
+            var item = document.createElement('div');
+            item.className = 'uploaded-file-item';
+            item.innerHTML = `
+                <i class="fas fa-file"></i>
+                <span>${file.name}</span>
+                <button onclick="removeUploadedFile(this, '${file.name}')"><i class="fas fa-times"></i></button>
+            `;
+            uploadedFilesContainer.appendChild(item);
+        }
+        
+        window.removeUploadedFile = function(button, fileName) {
+            var item = button.parentElement;
+            item.remove();
+            uploadedFiles = uploadedFiles.filter(function(f) {
+                return f.name !== fileName;
+            });
+        };
+        
         document.getElementById('feedbackCancel').addEventListener('click', function() {
             var modal = document.getElementById('feedbackModal');
             modal.classList.remove('show');
             setTimeout(function() {
                 modal.style.display = 'none';
-                document.getElementById('feedbackType').value = 'suggestion';
+                // 重置所有表单字段
+                document.getElementById('feedbackTitle').value = '';
                 document.getElementById('feedbackContent').value = '';
+                document.getElementById('reproduceSteps').value = '';
+                document.getElementById('expectedResult').value = '';
+                document.getElementById('contactEmail').value = '';
+                document.getElementById('contactName').value = '';
+                document.getElementById('feedbackPriority').value = 'medium';
+                document.getElementById('feedbackPlatform').value = 'windows';
                 document.getElementById('includeSystemInfo').checked = false;
+                // 清空已上传文件
+                uploadedFiles = [];
+                uploadedFilesContainer.innerHTML = '';
+                // 重置选中的反馈类型为第一个
+                feedbackNavItems.forEach(function(nav) {
+                    nav.classList.remove('active');
+                });
+                feedbackNavItems[0].classList.add('active');
+                // 隐藏复现步骤字段
+                bugStepsSection.classList.remove('show');
             }, 300);
         });
         
         document.getElementById('feedbackSubmit').addEventListener('click', function() {
-            var feedbackType = document.getElementById('feedbackType').value;
+            // 获取当前选中的反馈类型
+            var activeNavItem = document.querySelector('.feedback-nav-item.active');
+            var feedbackType = activeNavItem ? activeNavItem.getAttribute('data-type') : 'suggestion';
+            var feedbackTitle = document.getElementById('feedbackTitle').value;
             var feedbackContent = document.getElementById('feedbackContent').value;
+            var reproduceSteps = document.getElementById('reproduceSteps').value;
+            var expectedResult = document.getElementById('expectedResult').value;
+            var contactEmail = document.getElementById('contactEmail').value;
+            var contactName = document.getElementById('contactName').value;
+            var feedbackPriority = document.getElementById('feedbackPriority').value;
+            var feedbackPlatform = document.getElementById('feedbackPlatform').value;
             var includeSystemInfo = document.getElementById('includeSystemInfo').checked;
+            
+            if (!feedbackTitle) {
+                showAlert('请输入反馈标题');
+                return;
+            }
             
             if (!feedbackContent) {
                 showAlert('请输入反馈内容');
                 return;
             }
             
+            if (feedbackType === 'bug' && !reproduceSteps) {
+                showAlert('请描述问题复现步骤');
+                return;
+            }
+            
             // 构建反馈数据
             var feedbackData = {
                 type: feedbackType,
+                title: feedbackTitle,
                 content: feedbackContent,
+                reproduceSteps: feedbackType === 'bug' ? reproduceSteps : '',
+                expectedResult: expectedResult,
+                priority: feedbackPriority,
+                platform: feedbackPlatform,
+                contactEmail: contactEmail,
+                contactName: contactName,
                 includeSystemInfo: includeSystemInfo,
+                files: uploadedFiles.map(function(f) { return f.name; }),
                 timestamp: new Date().toISOString()
             };
             

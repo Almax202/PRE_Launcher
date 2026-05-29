@@ -132,6 +132,7 @@ function updateAnnouncementNotificationDot() {
 const announcementData = {
     // 重要公告
     importantAnnouncements: [
+        
         {
             id: "importantA-20260430",
             title: "启动器重大更新通知",
@@ -159,6 +160,42 @@ const announcementData = {
     ],
     // 开发日志
     devLogs: [
+        {
+            id: "devlog-20260529",
+            title: "RC 2.6.3.0 开发日志",
+            date: "2026-05-29",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.3.0 版本更新，主要带来了图片查看器的全面升级和多项功能优化！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 反馈建议弹窗全屏显示：采用侧边栏导航布局，包含功能建议、Bug反馈、其他问题三个分类",
+                "• 反馈表单增强：添加优先级选择、平台选择、反馈标题、复现步骤、预期结果等字段",
+                "• 文件附件上传：支持图片、日志文件上传，最大5MB",
+                "• 开发者公告月份分类：重要公告和普通公告按月份分组显示，例如2026年5月、2026年4月分别显示，方便按时间查找",
+                "• 预设背景底部抽屉：移动端预设背景弹窗改为底部抽拉样式，带有拖拽指示条，支持触摸滑动关闭",
+                "• 图片查看器全面升级：新增旋转（左/右旋转）、翻转（水平/垂直翻转）功能，控制按钮移至右侧，支持展开/收起控制栏",
+                "• 图片查看器悬浮气泡：控制按钮添加从右往左滑出的悬浮气泡提示，清晰展示各按钮功能",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 版本更新红点逻辑优化：使用版本号+日期作为唯一标识，相同版本号不同日期更新也能正确触发红点",
+                "• 反馈弹窗布局优化：充分利用右侧显示区域，所有内容一页显示",
+                "• 账户设置移动端布局优化：账户信息卡片内容不再溢出卡片边界，按钮、输入框和文本排版更加整齐",
+                "• 预设背景图片放大：移动端预设背景弹窗中图片放大显示，改为全屏高度展示，带有弹性动画效果",
+                "• 暗色模式按钮样式统一：版本更新记录和开发者公告中的版本块状按钮支持暗色模式，文本颜色调亮提升可读性",
+                "• 预设背景功能精简：移除预设背景弹窗中的预览背景功能，界面更加简洁高效",
+                "• 图片查看器布局优化：采用三栏布局（头部+主体+底部），控制按钮垂直排列在右侧，底部显示当前缩放百分比",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复反馈弹窗双重滚动条问题",
+                "• 修复Bug反馈时复现步骤字段未正确显示问题",
+                "• 修复开发者公告中块状按钮未生效暗色模式的问题",
+                "• 修复版本更新记录中块状按钮文本在暗色模式下不明显的问题",
+                "• 修复图片查看器悬浮气泡被侧边栏裁剪的问题，现在可以正常向外显示",
+                "• 修复图片查看器控制栏展开/收起状态重置问题",
+                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+            ]
+        },
         {
             id: "devlog-20260526",
             title: "RC 2.6.2.5 开发日志",
@@ -515,6 +552,33 @@ function loadAnnouncementList(announcements) {
     showAnnouncementSelection(announcements);
 }
 
+// 按月份分组公告
+function groupAnnouncementsByMonth(announcements) {
+    var grouped = {};
+    
+    announcements.forEach(function(announcement) {
+        var date = new Date(announcement.date);
+        var monthKey = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+        var monthName = date.getFullYear() + '年' + (date.getMonth() + 1) + '月';
+        
+        if (!grouped[monthKey]) {
+            grouped[monthKey] = {
+                monthName: monthName,
+                announcements: []
+            };
+        }
+        grouped[monthKey].announcements.push(announcement);
+    });
+    
+    var sortedGroups = Object.keys(grouped).sort(function(a, b) {
+        return b.localeCompare(a);
+    });
+    
+    return sortedGroups.map(function(key) {
+        return grouped[key];
+    });
+}
+
 // 显示公告选择按钮界面
 function showAnnouncementSelection(announcements) {
     var contentArea = document.querySelector('#announcementModal .terms-content');
@@ -536,26 +600,72 @@ function showAnnouncementSelection(announcements) {
     hintText.textContent = '请选择要查看的公告';
     contentArea.appendChild(hintText);
     
-    // 创建公告按钮网格容器
-    var buttonsContainer = document.createElement('div');
-    buttonsContainer.className = 'announcement-buttons-container';
-    buttonsContainer.style.cssText = `
-        padding: 0 20px;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-    `;
-    contentArea.appendChild(buttonsContainer);
-    
     // 按日期倒序排序公告
     var sortedAnnouncements = [...announcements].sort(function(a, b) {
         return new Date(b.date) - new Date(a.date);
     });
     
-    // 创建公告按钮
-    sortedAnnouncements.forEach(function(announcement) {
+    // 按月份分组
+    var groupedAnnouncements = groupAnnouncementsByMonth(sortedAnnouncements);
+    
+    // 创建月份分组
+    groupedAnnouncements.forEach(function(group) {
+        // 创建月份标题
+        var monthHeader = document.createElement('div');
+        monthHeader.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            margin-bottom: 12px;
+        `;
+        
+        var monthLine = document.createElement('div');
+        monthLine.style.cssText = `
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(212, 93, 121, 0.3), transparent);
+        `;
+        
+        var monthTitle = document.createElement('span');
+        monthTitle.style.cssText = `
+            font-size: 14px;
+            font-weight: bold;
+            color: #d45d79;
+            white-space: nowrap;
+        `;
+        monthTitle.textContent = group.monthName + '（共' + group.announcements.length + '条）';
+        
+        monthHeader.appendChild(monthLine);
+        monthHeader.appendChild(monthTitle);
+        monthHeader.appendChild(monthLine.cloneNode(true));
+        contentArea.appendChild(monthHeader);
+        
+        // 创建该月份的公告按钮网格容器
+        var buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'announcement-buttons-container';
+        buttonsContainer.style.cssText = `
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        `;
+        contentArea.appendChild(buttonsContainer);
+        
+        // 创建该月份的公告按钮
+        group.announcements.forEach(function(announcement) {
         var button = document.createElement('button');
         button.className = 'announcement-select-button';
+        
+        var isDarkMode = document.body.classList.contains('dark-mode');
+        var bgColor = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
+        var borderColor = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
+        var shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.06)';
+        var titleColor = isDarkMode ? '#e67e8a' : '#d45d79';
+        var textColor1 = isDarkMode ? '#e0e0e0' : '#666';
+        var textColor2 = isDarkMode ? '#ccc' : '#888';
+        
         button.style.cssText = `
             position: relative;
             padding: 20px 16px;
@@ -563,14 +673,14 @@ function showAnnouncementSelection(announcements) {
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: white;
-            border: 2px solid rgba(212, 93, 121, 0.3);
+            background: ${bgColor};
+            border: 2px solid ${borderColor};
             text-align: left;
             display: flex;
             flex-direction: column;
             gap: 8px;
             min-height: 100px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 2px 10px ${shadowColor};
         `;
         
         // 添加鼠标悬浮效果
@@ -611,11 +721,11 @@ function showAnnouncementSelection(announcements) {
         // 设置按钮内容
         button.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <span style="font-size: 16px; font-weight: bold; color: #d45d79; line-height: 1.3;">${announcement.title}</span>
+                <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3;">${announcement.title}</span>
                 ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white;">${announcement.tagText}</span>` : ''}
             </div>
-            <div style="font-size: 14px; color: #666;"><i class="fas fa-calendar"></i> ${announcement.date}</div>
-            <div style="font-size: 13px; color: #888;"><i class="fas fa-user"></i> ${announcement.author}</div>
+            <div style="font-size: 14px; color: ${textColor1};"><i class="fas fa-calendar"></i> ${announcement.date}</div>
+            <div style="font-size: 13px; color: ${textColor2};"><i class="fas fa-user"></i> ${announcement.author}</div>
             ${!isViewed ? `<span class="notification-dot">1<span class="notification-tooltip">存在未查看的更新</span></span>` : ''}
         `;
         
@@ -627,6 +737,7 @@ function showAnnouncementSelection(announcements) {
         });
         
         buttonsContainer.appendChild(button);
+        });
     });
 }
 

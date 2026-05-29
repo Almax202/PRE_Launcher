@@ -47,6 +47,9 @@ const LangManager = (function() {
             feedbackContent: '反馈内容',
             includeSystemInfo: '发送系统信息',
             submitFeedback: '提交反馈',
+            suggestionType: '功能建议',
+            bugType: 'Bug反馈',
+            otherType: '其他问题',
             forgotPasswordTitle: '忘记密码',
             resetPasswordTitle: '重置密码',
             newPassword: '新密码',
@@ -212,6 +215,9 @@ const LangManager = (function() {
             feedbackContent: 'Feedback Content',
             includeSystemInfo: 'Send System Info',
             submitFeedback: 'Submit Feedback',
+            suggestionType: 'Feature Suggestion',
+            bugType: 'Bug Report',
+            otherType: 'Other Issues',
             forgotPasswordTitle: 'Forgot Password',
             resetPasswordTitle: 'Reset Password',
             newPassword: 'New Password',
@@ -377,6 +383,9 @@ const LangManager = (function() {
             feedbackContent: 'フィードバック内容',
             includeSystemInfo: 'システム情報を送信',
             submitFeedback: 'フィードバックを送信',
+            suggestionType: '機能提案',
+            bugType: 'バグ報告',
+            otherType: 'その他の問題',
             forgotPasswordTitle: 'パスワードを忘れた',
             resetPasswordTitle: 'パスワードをリセット',
             newPassword: '新しいパスワード',
@@ -542,6 +551,9 @@ const LangManager = (function() {
             feedbackContent: '피드백 내용',
             includeSystemInfo: '시스템 정보 보내기',
             submitFeedback: '피드백 제출',
+            suggestionType: '기능 제안',
+            bugType: '버그 보고',
+            otherType: '기타 문제',
             forgotPasswordTitle: '비밀번호 잊음',
             resetPasswordTitle: '비밀번호 재설정',
             newPassword: '새 비밀번호',
@@ -855,14 +867,27 @@ const LangManager = (function() {
         if (feedbackModal) {
             var feedbackTitle = feedbackModal.querySelector('h3');
             if (feedbackTitle) feedbackTitle.textContent = texts.feedbackTitle;
-            var feedbackTypeLabel = feedbackModal.querySelector('label[for="feedbackType"]');
-            if (feedbackTypeLabel) feedbackTypeLabel.textContent = texts.feedbackType;
             var feedbackContentLabel = feedbackModal.querySelector('label[for="feedbackContent"]');
             if (feedbackContentLabel) feedbackContentLabel.textContent = texts.feedbackContent;
             var includeSystemInfoLabel = feedbackModal.querySelector('label[for="includeSystemInfo"]');
             if (includeSystemInfoLabel) includeSystemInfoLabel.textContent = texts.includeSystemInfo;
             document.getElementById('feedbackSubmit').textContent = texts.submitFeedback;
             document.getElementById('feedbackCancel').textContent = texts.cancel;
+            
+            // 更新侧边栏导航文本
+            var feedbackNavItems = feedbackModal.querySelectorAll('.feedback-nav-item');
+            if (feedbackNavItems.length >= 3) {
+                var suggestionText = feedbackNavItems[0].querySelector('span');
+                if (suggestionText) suggestionText.innerHTML = texts.suggestionType + '<ul>Suggestion</ul>';
+                var bugText = feedbackNavItems[1].querySelector('span');
+                if (bugText) bugText.innerHTML = texts.bugType + '<ul>Bug Report</ul>';
+                var otherText = feedbackNavItems[2].querySelector('span');
+                if (otherText) otherText.innerHTML = texts.otherType + '<ul>Other</ul>';
+            }
+            
+            // 更新侧边栏标题
+            var feedbackNavTitle = feedbackModal.querySelector('.terms-nav-title');
+            if (feedbackNavTitle) feedbackNavTitle.textContent = texts.feedbackType;
         }
         
         // 更新账号不存在模态框

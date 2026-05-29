@@ -59,6 +59,11 @@ function isVersionViewed(versionId) {
     return getViewedVersionIds().includes(versionId);
 }
 
+// 生成版本唯一标识符（版本号+日期，确保相同版本号不同日期的更新能被正确识别）
+function generateVersionId(version) {
+    return version.version.replace(/\s/g, '') + '-' + version.date;
+}
+
 // 获取未查看版本数量
 function getUnviewedVersionCount() {
     let count = 0;
@@ -67,9 +72,9 @@ function getUnviewedVersionCount() {
     if (typeof versionHistoryData !== 'undefined' && versionHistoryData.launcherUpdateContent && versionHistoryData.launcherUpdateContent.length > 0) {
         console.log('[DEBUG] Total versions:', versionHistoryData.launcherUpdateContent.length);
         versionHistoryData.launcherUpdateContent.forEach(function(version) {
-            var versionId = version.version.replace(/\s/g, '');
+            var versionId = generateVersionId(version);
             var viewed = isVersionViewed(versionId);
-            console.log('[DEBUG] Version:', version.version, 'Viewed:', viewed);
+            console.log('[DEBUG] Version:', version.version, 'Date:', version.date, 'Viewed:', viewed);
             if (!viewed) {
                 count++;
             }
@@ -123,8 +128,41 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.3.0 (b5)",
+            date: "2026-05-29",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2630.png", "./images/2630_2.png", "./images/2630_3.png", "./images/2630_4.png"],
+            features: [
+                "新增功能",
+                "- 反馈建议弹窗全屏显示：采用侧边栏导航布局，包含功能建议、Bug反馈、其他问题三个分类",
+                "- 反馈表单增强：添加优先级选择、平台选择、反馈标题、复现步骤、预期结果等字段",
+                "- 文件附件上传：支持图片、日志文件上传，最大5MB",
+                "- 开发者公告月份分类：重要公告和普通公告按月份分组显示，例如2026年5月、2026年4月分别显示",
+                "- 预设背景底部抽屉：移动端预设背景弹窗改为底部抽拉样式，支持触摸滑动关闭",
+                "- 图片查看器全面升级：新增旋转、翻转功能，控制按钮移至右侧，支持展开/收起",
+                "- 图片查看器悬浮气泡：控制按钮添加从右往左滑出的悬浮气泡提示",
+                "优化改进",
+                "- 版本更新红点逻辑优化：使用版本号+日期作为唯一标识，相同版本号不同日期更新也能正确触发消息通知",
+                "- 反馈弹窗布局优化：充分利用右侧显示区域，所有内容一页显示",
+                "- 账户设置移动端布局优化：账户信息卡片内容不再溢出卡片边界，按钮、输入框和文本排版更加整齐",
+                "- 预设背景图片放大：移动端预设背景弹窗中图片放大显示，改为全屏高度展示",
+                "- 暗色模式按钮样式统一：版本更新记录和开发者公告中的版本块状按钮支持暗色模式，文本颜色调亮",
+                "- 预设背景功能精简：移除预设背景弹窗中的预览背景功能，界面更加简洁",
+                "- 图片查看器布局优化：采用三栏布局，控制按钮垂直排列在右侧，底部显示缩放百分比",
+                "- 图片查看器优化拖拽功能：优化拖拽图片时的响应速度，拖拽更流畅",
+                "修复问题",
+                "- 修复反馈弹窗双重滚动条问题",
+                "- 修复Bug反馈时复现步骤字段未正确显示问题",
+                "- 修复开发者公告中块状按钮未生效暗色模式的问题",
+                "- 修复版本更新记录中块状按钮文本在暗色模式下不明显的问题",
+                "- 修复图片查看器悬浮气泡被侧边栏裁剪的问题，现在可以正常向外显示",
+                "- 修复图片查看器控制栏展开/收起状态重置问题"
+            ]
+        },
+        {
             version: "RC 2.6.2.5 (b5)",
-            date: "2026-05-26",
+            date: "2026-05-27",
             tag: "normal",
             tagText: "常规更新",
             images: [],
@@ -1702,7 +1740,7 @@ function loadVersionHistory() {
                 versionElement.className = 'version-item';
                 
                 // 检查版本是否已查看
-                var versionId = versionItem.version.replace(/\s/g, '');
+                var versionId = generateVersionId(versionItem);
                 var isVersionViewedFlag = isVersionViewed(versionId);
                 
                 // 构建版本项HTML
@@ -1802,8 +1840,8 @@ function loadVersionHistory() {
             if (contentArea) {
                 contentArea.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                        <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                            <i class="fas fa-inbox"></i>
                         </div>
                         <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的功能更新</p>
                     </div>
@@ -1856,8 +1894,8 @@ function loadVersionHistory() {
             if (contentArea) {
                 contentArea.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                        <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                            <i class="fas fa-inbox"></i>
                         </div>
                         <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的过时版本记录</p>
                     </div>
@@ -1911,8 +1949,8 @@ function loadVersionHistory() {
             if (contentArea) {
                 contentArea.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                        <div style="font-size: 48px; margin-bottom: 20px; color: #667eea;">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                            <i class="fas fa-inbox"></i>
                         </div>
                         <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的小游戏更新记录</p>
                     </div>
@@ -2142,6 +2180,14 @@ function loadVersionHistory() {
                         versions.forEach(function(group) {
                             var groupButton = document.createElement('button');
                             groupButton.className = 'version-group-button';
+                            
+                            var isDarkMode = document.body.classList.contains('dark-mode');
+                            var bgColor = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
+                            var borderColor = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
+                            var shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.06)';
+                            var textColor1 = isDarkMode ? '#e0e0e0' : '#444';
+                            var textColor2 = isDarkMode ? '#ccc' : '#666';
+                            
                             groupButton.style.cssText = `
                                 position: relative;
                                 padding: 20px 16px;
@@ -2149,14 +2195,14 @@ function loadVersionHistory() {
                                 border-radius: 12px;
                                 cursor: pointer;
                                 transition: all 0.3s ease;
-                                background: white;
-                                border: 2px solid rgba(212, 93, 121, 0.3);
+                                background: ${bgColor};
+                                border: 2px solid ${borderColor};
                                 text-align: left;
                                 display: flex;
                                 flex-direction: column;
                                 gap: 8px;
                                 min-height: 90px;
-                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+                                box-shadow: 0 2px 10px ${shadowColor};
                             `;
                             
                             // 添加鼠标悬浮效果
@@ -2198,28 +2244,26 @@ function loadVersionHistory() {
                             
                             // 计算该主版本下未查看的子版本数量
                             var unviewedCount = group.versions.filter(function(subVersion) {
-                                var subVersionId = subVersion.version.replace(/\s/g, '');
+                                var subVersionId = generateVersionId(subVersion);
                                 return !isVersionViewed(subVersionId);
                             }).length;
                             
                             // 设置按钮内容
                             groupButton.innerHTML = `
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                    <span style="font-size: 18px; font-weight: bold; color: #d45d79;">${group.isRC ? 'RC' : (group.isMiniGame ? 'V' : '版本')} ${group.majorVersion}</span>
+                                    <span style="font-size: 18px; font-weight: bold; color: #e67e8a;">${group.isRC ? 'RC' : (group.isMiniGame ? 'V' : '版本')} ${group.majorVersion}</span>
                                     <span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${statusColor}; color: white;">${versionStatus}</span>
                                 </div>
-                                <div style="font-size: 14px; color: #444;">共 ${group.versions.length} 个版本</div>
-                                <div style="font-size: 13px; color: #666;">${group.startDate} ~ ${group.endDate}</div>
+                                <div style="font-size: 14px; color: ${textColor1};">共 ${group.versions.length} 个版本</div>
+                                <div style="font-size: 13px; color: ${textColor2};">${group.startDate} ~ ${group.endDate}</div>
                                 ${unviewedCount > 0 ? `<span class="notification-dot">${unviewedCount}<span class="notification-tooltip">存在未查看的更新，数量${unviewedCount}个</span></span>` : ''}
                             `;
                             
                             // 添加点击事件，标记版本为已查看
                             groupButton.addEventListener('click', function() {
-                                var versionId = group.majorVersion.replace(/\s/g, '');
-                                markVersionAsViewed(versionId);
-                                // 同时标记所有子版本为已查看
+                                // 标记所有子版本为已查看
                                 group.versions.forEach(function(subVersion) {
-                                    var subVersionId = subVersion.version.replace(/\s/g, '');
+                                    var subVersionId = generateVersionId(subVersion);
                                     markVersionAsViewed(subVersionId);
                                 });
                             }, true);
@@ -2376,7 +2420,7 @@ function loadVersionHistory() {
                                         versionElement.className = 'version-item';
                                         
                                         // 检查版本是否已查看
-                                        var versionId = versionItem.version.replace(/\s/g, '');
+                                        var versionId = generateVersionId(versionItem);
                                         var isVersionViewedFlag = isVersionViewed(versionId);
                                         
                                         // 构建版本项HTML
@@ -2555,7 +2599,7 @@ function loadVersionHistory() {
                                     versionElement.className = 'version-item';
                                     
                                     // 检查版本是否已查看
-                                    var versionId = versionItem.version.replace(/\s/g, '');
+                                    var versionId = generateVersionId(versionItem);
                                     var isVersionViewedFlag = isVersionViewed(versionId);
                                     
                                     // 构建版本项HTML
@@ -2674,18 +2718,57 @@ function initImageViewer() {
     imageViewerModal.style.display = 'none';
     imageViewerModal.innerHTML = `
         <div class="alert-content image-viewer-content">
-            <div class="alert-icon">
-                <i class="fas fa-image"></i>
+            <div class="image-viewer-header">
+                <div class="alert-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <h3>图片查看器</h3>
+                <button class="alert-confirm image-viewer-close" id="closeImageViewer">关闭</button>
             </div>
-            <h3>图片查看器</h3>
-            <div class="image-viewer-container" id="imageViewerContainer">
-                <img id="viewerImage" src="" alt="查看图片" draggable="false">
+            <div class="image-viewer-main">
+                <div class="image-viewer-container" id="imageViewerContainer">
+                    <img id="viewerImage" src="" alt="查看图片" draggable="false">
+                </div>
+                <div class="image-viewer-controls">
+                    <button class="viewer-control-btn" id="zoomInBtn">
+                        <i class="fas fa-search-plus"></i>
+                        <span class="viewer-btn-tooltip">放大</span>
+                    </button>
+                    <button class="viewer-control-btn" id="zoomOutBtn">
+                        <i class="fas fa-search-minus"></i>
+                        <span class="viewer-btn-tooltip">缩小</span>
+                    </button>
+                    <button class="viewer-control-btn" id="resetZoomBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span class="viewer-btn-tooltip">重置</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn" id="rotateLeftBtn">
+                        <i class="fas fa-rotate-left"></i>
+                        <span class="viewer-btn-tooltip">向左旋转</span>
+                    </button>
+                    <button class="viewer-control-btn" id="rotateRightBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span class="viewer-btn-tooltip">向右旋转</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn" id="flipHorizontalBtn">
+                        <i class="fas fa-arrows-h"></i>
+                        <span class="viewer-btn-tooltip">水平翻转</span>
+                    </button>
+                    <button class="viewer-control-btn" id="flipVerticalBtn">
+                        <i class="fas fa-arrows-v"></i>
+                        <span class="viewer-btn-tooltip">垂直翻转</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn viewer-expand-btn" id="expandBtn">
+                        <i class="fas fa-expand"></i>
+                        <span class="viewer-btn-tooltip">展开</span>
+                    </button>
+                </div>
             </div>
-            <div class="terms-modal-buttons">
-                <button class="viewer-btn" id="zoomInBtn"><i class="fas fa-search-plus"></i> 放大</button>
-                <button class="viewer-btn" id="zoomOutBtn"><i class="fas fa-search-minus"></i> 缩小</button>
-                <button class="viewer-btn" id="resetZoomBtn"><i class="fas fa-sync-alt"></i> 重置</button>
-                <button class="alert-confirm" id="closeImageViewer">关闭</button>
+            <div class="image-viewer-footer">
+                <span id="viewerZoomInfo">100%</span>
             </div>
         </div>
     `;
@@ -2695,15 +2778,21 @@ function initImageViewer() {
     var currentZoom = 1;
     var currentX = 0;
     var currentY = 0;
+    var currentRotation = 0;
+    var flipHorizontal = false;
+    var flipVertical = false;
     var isDragging = false;
+    var isExpanded = false;
     var startX = 0;
     var startY = 0;
     var viewerImage = document.getElementById('viewerImage');
     var imageContainer = document.getElementById('imageViewerContainer');
+    var controlsPanel = document.querySelector('.image-viewer-controls');
     
     // 设置图片样式
     viewerImage.style.position = 'relative';
     viewerImage.style.transformOrigin = 'center center';
+    viewerImage.style.cursor = 'grab';
     
     // 关闭图片查看器
     document.getElementById('closeImageViewer').addEventListener('click', function() {
@@ -2729,6 +2818,40 @@ function initImageViewer() {
         resetViewer();
     });
     
+    // 向左旋转
+    document.getElementById('rotateLeftBtn').addEventListener('click', function() {
+        currentRotation -= 90;
+        updateImagePosition();
+    });
+    
+    // 向右旋转
+    document.getElementById('rotateRightBtn').addEventListener('click', function() {
+        currentRotation += 90;
+        updateImagePosition();
+    });
+    
+    // 水平翻转
+    document.getElementById('flipHorizontalBtn').addEventListener('click', function() {
+        flipHorizontal = !flipHorizontal;
+        updateImagePosition();
+    });
+    
+    // 垂直翻转
+    document.getElementById('flipVerticalBtn').addEventListener('click', function() {
+        flipVertical = !flipVertical;
+        updateImagePosition();
+    });
+    
+    // 展开/收起控制栏
+    document.getElementById('expandBtn').addEventListener('click', function() {
+        isExpanded = !isExpanded;
+        controlsPanel.classList.toggle('expanded', isExpanded);
+        var icon = this.querySelector('i');
+        icon.className = isExpanded ? 'fas fa-compress' : 'fas fa-expand';
+        var tooltip = this.querySelector('.viewer-btn-tooltip');
+        tooltip.textContent = isExpanded ? '收起' : '展开';
+    });
+    
     // 鼠标滚轮放大缩小
     imageContainer.addEventListener('wheel', function(e) {
         e.preventDefault();
@@ -2736,35 +2859,109 @@ function initImageViewer() {
         zoomImage(delta);
     });
     
+    var dragStartX = 0;
+    var dragStartY = 0;
+    var dragImageStartX = 0;
+    var dragImageStartY = 0;
+    var lastX = 0;
+    var lastY = 0;
+    var velocityX = 0;
+    var velocityY = 0;
+    var lastTime = 0;
+    
     // 鼠标拖拽开始
     viewerImage.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         isDragging = true;
-        startX = e.clientX - currentX;
-        startY = e.clientY - currentY;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragImageStartX = currentX;
+        dragImageStartY = currentY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        lastTime = Date.now();
+        velocityX = 0;
+        velocityY = 0;
+        
         viewerImage.style.cursor = 'grabbing';
+        viewerImage.style.transition = 'none';
     });
     
     // 鼠标拖拽移动
     document.addEventListener('mousemove', function(e) {
         if (!isDragging) return;
-        e.preventDefault();
-        currentX = e.clientX - startX;
-        currentY = e.clientY - startY;
-        updateImagePosition();
+        
+        var now = Date.now();
+        var deltaTime = now - lastTime;
+        
+        if (deltaTime > 0) {
+            velocityX = (e.clientX - lastX) / deltaTime;
+            velocityY = (e.clientY - lastY) / deltaTime;
+        }
+        
+        lastX = e.clientX;
+        lastY = e.clientY;
+        lastTime = now;
+        
+        currentX = dragImageStartX + (e.clientX - dragStartX);
+        currentY = dragImageStartY + (e.clientY - dragStartY);
+        
+        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * (flipHorizontal ? -1 : 1)}, ${currentZoom * (flipVertical ? -1 : 1)}) rotate(${currentRotation}deg)`;
     });
     
     // 鼠标拖拽结束
-    function endDrag() {
+    function endDrag(e) {
+        if (!isDragging) return;
+        
         isDragging = false;
         viewerImage.style.cursor = 'grab';
+        
+        var now = Date.now();
+        var deltaTime = now - lastTime;
+        var shouldInertia = deltaTime < 100 && (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1);
+        
+        if (shouldInertia) {
+            var inertiaDuration = 300;
+            var startTime = now;
+            var startX = currentX;
+            var startY = currentY;
+            
+            function applyInertia() {
+                var elapsed = Date.now() - startTime;
+                var progress = Math.min(elapsed / inertiaDuration, 1);
+                var easeOut = 1 - Math.pow(1 - progress, 3);
+                
+                var inertiaMultiplier = 100 * (1 - easeOut);
+                currentX = startX + velocityX * inertiaMultiplier;
+                currentY = startY + velocityY * inertiaMultiplier;
+                
+                viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * (flipHorizontal ? -1 : 1)}, ${currentZoom * (flipVertical ? -1 : 1)}) rotate(${currentRotation}deg)`;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(applyInertia);
+                } else {
+                    viewerImage.style.transition = 'transform 0.2s ease-out';
+                    updateImagePosition();
+                }
+            }
+            
+            requestAnimationFrame(applyInertia);
+        } else {
+            viewerImage.style.transition = 'transform 0.2s ease-out';
+            updateImagePosition();
+        }
     }
     
     // 添加多个事件监听器确保拖拽正确结束
     document.addEventListener('mouseup', endDrag);
-    document.addEventListener('mouseleave', endDrag);
-    window.addEventListener('mouseout', endDrag);
+    document.addEventListener('mouseleave', function(e) {
+        if (e.target === document || e.target === document.documentElement) {
+            endDrag(e);
+        }
+    });
     window.addEventListener('blur', endDrag);
-    imageContainer.addEventListener('mouseleave', endDrag);
     
     // 缩放图片
     function zoomImage(delta) {
@@ -2777,8 +2974,13 @@ function initImageViewer() {
     
     // 更新图片位置
     function updateImagePosition() {
-        // 应用变换
-        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom})`;
+        // 应用变换：先旋转，再翻转，再缩放和平移
+        var scaleX = flipHorizontal ? -1 : 1;
+        var scaleY = flipVertical ? -1 : 1;
+        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * scaleX}, ${currentZoom * scaleY}) rotate(${currentRotation}deg)`;
+        
+        // 更新缩放信息
+        document.getElementById('viewerZoomInfo').textContent = Math.round(currentZoom * 100) + '%';
         
         // 确保图片保持在窗口内
         keepImageInBounds();
@@ -2789,18 +2991,20 @@ function initImageViewer() {
         var containerRect = imageContainer.getBoundingClientRect();
         var imageRect = viewerImage.getBoundingClientRect();
         
-        // 计算边界
-        var minX = containerRect.left + 20 - imageRect.left;
-        var maxX = containerRect.right - 20 - (imageRect.left + imageRect.width);
-        var minY = containerRect.top + 20 - imageRect.top;
-        var maxY = containerRect.bottom - 20 - (imageRect.top + imageRect.height);
+        // 计算边界（考虑旋转后的情况，放宽限制）
+        var minX = containerRect.left + 10 - imageRect.left;
+        var maxX = containerRect.right - 10 - (imageRect.left + imageRect.width);
+        var minY = containerRect.top + 10 - imageRect.top;
+        var maxY = containerRect.bottom - 60 - (imageRect.top + imageRect.height); // 预留空间给底部
         
         // 调整位置
         currentX = Math.max(minX, Math.min(maxX, currentX));
         currentY = Math.max(minY, Math.min(maxY, currentY));
         
         // 重新应用变换
-        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom})`;
+        var scaleX = flipHorizontal ? -1 : 1;
+        var scaleY = flipVertical ? -1 : 1;
+        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * scaleX}, ${currentZoom * scaleY}) rotate(${currentRotation}deg)`;
     }
     
     // 重置查看器
@@ -2808,8 +3012,15 @@ function initImageViewer() {
         currentZoom = 1;
         currentX = 0;
         currentY = 0;
-        viewerImage.style.transform = 'translate(0, 0) scale(1)';
+        currentRotation = 0;
+        flipHorizontal = false;
+        flipVertical = false;
+        isExpanded = false;
+        controlsPanel.classList.remove('expanded');
+        document.getElementById('expandBtn').querySelector('i').className = 'fas fa-expand';
+        viewerImage.style.transform = 'translate(0, 0) scale(1) rotate(0deg)';
         viewerImage.style.cursor = 'grab';
+        document.getElementById('viewerZoomInfo').textContent = '100%';
     }
     
     // 为所有版本图片添加点击事件
