@@ -161,12 +161,37 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260530",
+            title: "RC 1.1.0.0 (a2) 开发日志",
+            date: "2026-05-30",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "game_hall",
+            images: [],
+            content: [
+                "今天我们发布了 RC 1.1.0.0 (a2) 版本，带来了侧边栏交互优化和弹窗样式统一！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 游戏大厅侧边栏收起功能：在游戏大厅页面侧边栏添加与登录页一致的收起/展开按钮",
+                "• 侧边栏状态记忆：侧边栏收起/展开状态通过 localStorage 持久化保存，下次打开自动恢复",
+                "• 侧边栏收起小卡片：侧边栏收起时底部显示个人卡片，包含用户头像和退出登录按钮",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 侧边栏收起后图标放大：收起侧边栏时菜单项图标放大显示，提升视觉效果",
+                "• 弹窗样式统一：游戏大厅弹窗样式与登录页保持一致，包括深色遮罩（透明度80%）、顶部粉色渐变条和粉色渐变按钮",
+                "• 弹窗动画优化：弹窗出现动画从位移改为缩放，与登录页保持一致",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复侧边栏收起时个人卡片图标和按钮显示在方框外的问题",
+                "• 修复收起状态下侧边栏布局与登录页不一致的问题"
+            ]
+        },
+        {
             id: "devlog-20260529",
             title: "RC 2.6.3.0 开发日志",
             date: "2026-05-29",
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.3.0 版本更新，主要带来了图片查看器的全面升级和多项功能优化！",
@@ -203,6 +228,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.2.5 版本更新，主要带来了开发者公告和版本更新的消息通知功能！",
@@ -229,6 +255,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.2.4 版本更新，主要带来了版本更新记录窗口的界面优化！",
@@ -246,6 +273,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.2.3 版本更新，主要带来了侧边栏收起功能的全面升级和移动端体验优化！",
@@ -288,6 +316,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.2.2 版本更新，主要带来了暗色模式体验优化、未登录状态处理改进和多语言翻译完善！",
@@ -317,6 +346,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.2.1 版本更新，主要带来了弹窗界面的优化和功能按钮的改进！",
@@ -342,6 +372,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.2.0 版本更新，主要带来了账户安全验证功能的全面升级和快速登录功能的优化！",
@@ -378,6 +409,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.1.4 版本更新，主要带来了小游戏相关功能的优化和修复！",
@@ -403,6 +435,7 @@ const announcementData = {
             tag: "update",
             tagText: "更新公告",
             author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
             images: [],
             content: [
                 "今天我们发布了 RC 2.6.1.3 版本更新，主要带来了离线模式功能的全面升级！",
@@ -447,11 +480,32 @@ function initializeAnnouncementNavigation() {
                 sub.style.display = 'none';
             });
             
+            // 隐藏所有"查看中"tag
+            var allViewingTags = document.querySelectorAll('#announcementModal .viewing-tag');
+            allViewingTags.forEach(function(tag) {
+                tag.style.display = 'none';
+            });
+            
             // 显示当前项的子按钮（如果有）
             var subButtons = this.querySelector('.sub-buttons');
             if (subButtons) {
-                subButtons.style.display = subButtons.style.display === 'none' ? 'block' : 'none';
+                subButtons.style.display = 'block';
+                // 旋转箭头图标
+                var arrow = this.querySelector('.nav-arrow');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(90deg)';
+                }
             }
+            
+            // 重置其他导航项的箭头
+            navItems.forEach(function(nav) {
+                if (nav !== item) {
+                    var otherArrow = nav.querySelector('.nav-arrow');
+                    if (otherArrow) {
+                        otherArrow.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
             
             // 根据点击的导航项加载对应内容
             var navId = this.id;
@@ -496,7 +550,15 @@ function loadAnnouncementContent(navId) {
             loadAnnouncementList(announcementData.normalAnnouncements);
             break;
         case 'devLogNav':
-            loadAnnouncementList(announcementData.devLogs);
+            contentArea.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                    <div style="font-size: 48px; margin-bottom: 20px; color: #d45d79;">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <p style="font-style: normal; text-align: center; padding: 0; margin: 0;">请选择要查看的开发日志分类</p>
+                    <p style="font-style: normal; text-align: center; padding: 0; margin: 10px 0 0; color: #999; font-size: 14px;">选择左侧"启动器更新"或"主页面更新"查看详细内容</p>
+                </div>
+            `;
             break;
         default:
             contentArea.innerHTML = `
@@ -522,6 +584,16 @@ function loadAnnouncementByType(type) {
             break;
         case 'dev':
             data = announcementData.devLogs;
+            break;
+        case 'dev_launcher':
+            data = announcementData.devLogs.filter(function(log) {
+                return log.category === 'launcher';
+            });
+            break;
+        case 'dev_game_hall':
+            data = announcementData.devLogs.filter(function(log) {
+                return log.category === 'game_hall';
+            });
             break;
         default:
             data = [];
@@ -1081,6 +1153,19 @@ function generateAnnouncementModal() {
                         <div class="nav-item-content">
                             <i class="fas fa-code"></i>
                             <span>开发日志<ul>Dev Logs</ul></span>
+                            <i class="fas fa-chevron-right nav-arrow"></i>
+                        </div>
+                        <div class="sub-buttons" id="devLogSubButtons">
+                            <button class="sub-button" data-type="dev_launcher">
+                                <i class="fas fa-rocket"></i>
+                                <span>启动器更新</span>
+                                <span class="viewing-tag" style="display:none;">查看中</span>
+                            </button>
+                            <button class="sub-button" data-type="dev_game_hall">
+                                <i class="fas fa-gamepad"></i>
+                                <span>主页面更新</span>
+                                <span class="viewing-tag" style="display:none;">查看中</span>
+                            </button>
                         </div>
                     </div>
                 </div>

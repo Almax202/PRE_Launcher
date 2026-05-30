@@ -4,7 +4,7 @@ const versionInfo = {
     login: "RC 2.6.3.0 (b5)",
 
     // 游戏大厅版本号
-    homepage: "RC 1.0.3.3 (a2)",
+    homepage: "RC 1.1.0.0 (a2)",
 
     // 点击方块游戏版本号
     fkgame: "RC 1.3.1",
@@ -25,15 +25,15 @@ const versionInfo = {
     colormatchgame: "RC 1.2.0",
 
     // 内部版本号
-    launcher: "20260529.2630.b5.75"
+    launcher: "20260530.2630.b5.78"
 };
 // 启动器信息
 const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-05-29",
-    patchDate: "2026-05-29",
+    buildDate: "2026-05-30",
+    patchDate: "2026-05-30",
     copyright: "© 2014-2026 GPY Games Studio",
     developer: "GPY Games Studio",
     purpose: "",

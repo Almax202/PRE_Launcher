@@ -329,6 +329,16 @@
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const settingsSidebar = document.querySelector('.settings-sidebar');
             const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+            const collapseSidebarBtn = document.getElementById('collapseSidebarBtn');
+            
+            // 恢复侧边栏收起状态
+            const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+            if (savedSidebarState === 'true' && settingsSidebar) {
+                settingsSidebar.classList.add('collapsed');
+                if (collapseSidebarBtn) {
+                    collapseSidebarBtn.title = '展开侧边栏';
+                }
+            }
             
             if (mobileMenuBtn && settingsSidebar) {
                 // 点击菜单按钮切换侧边栏显示/隐藏
@@ -359,6 +369,23 @@
                     });
                 }
             }
+            
+            // 收起侧边栏按钮点击事件
+            if (collapseSidebarBtn && settingsSidebar) {
+                collapseSidebarBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    settingsSidebar.classList.toggle('collapsed');
+                    
+                    // 更新按钮提示文字
+                    if (settingsSidebar.classList.contains('collapsed')) {
+                        collapseSidebarBtn.title = '展开侧边栏';
+                        localStorage.setItem('sidebarCollapsed', 'true');
+                    } else {
+                        collapseSidebarBtn.title = '收起侧边栏';
+                        localStorage.setItem('sidebarCollapsed', 'false');
+                    }
+                });
+            }
         });
     </script>
 </head>
@@ -380,6 +407,9 @@
                 <div class="sidebar-refresh-btn" title="强制刷新所有页面">
                     <i class="fas fa-sync-alt"></i>
                 </div>
+                <button class="collapse-sidebar-btn" id="collapseSidebarBtn" title="收起侧边栏">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
             </div>
             
             <div class="sidebar-menu">
