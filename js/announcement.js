@@ -134,6 +134,65 @@ const announcementData = {
     importantAnnouncements: [
         
         {
+            id: "importantA-20260603",
+            title: "RC 3.0 版本开发预告与计划调整",
+            date: "2026-06-03",
+            tag: "important",
+            tagText: "重要公告",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "尊敬的用户，感谢您一直以来对 PRE Launcher 的支持与关注！",
+                "",
+                "[color:#667eea]【RC 3.0.0 版本预告 - 预计 Q2 第二季度初发布】[/color]",
+                "我们很高兴地宣布，PRE Launcher RC 3.0.0 版本的开发工作已经正式启动！",
+                "作为启动器的重大版本更新，RC 3.0.0 将带来全新的界面设计、更流畅的交互体验，以及丰富的新功能。",
+                "",
+                "[color:#4ecdc4]【近期开发重点】[/color]",
+                "[color:#4ecdc4]• 移动端适配全面优化[/color]",
+                "随着移动端设备的普及，我们正在集中精力完善移动端的用户体验。包括：",
+                "  - 响应式布局优化，适配各种屏幕尺寸",
+                "  - 触摸交互优化，提升操作流畅度",
+                "  - 移动端专属功能，提供更便捷的使用体验",
+                "  - 性能优化，确保在移动设备上运行流畅",
+                "",
+                "[color:#4ecdc4]• 老旧代码重构[/color]",
+                "为了提升代码质量和可维护性，我们正在对启动器早期遗留的部分代码进行重构：",
+                "  - 统一代码风格，提升代码可读性",
+                "  - 提取公共模块，减少代码冗余",
+                "  - 优化性能瓶颈，提升运行效率",
+                "  - 修复潜在的兼容性问题",
+                "",
+                "[color:#4ecdc4]• 新功能与小游戏[/color]",
+                "在 RC 3.0.0 版本中，我们计划加入更多有趣的新功能和小游戏：",
+                "  - 更多个性化设置选项",
+                "  - 新的百宝箱小游戏",
+                "  - 更丰富的互动功能",
+                "  - 以及更多内容...",
+                "",
+                "[color:#ff6b6b]【开发计划调整说明】[/color]",
+                "经过慎重考虑，我们决定将后端服务器搭建的工作暂时延后。",
+                "作为一个个人项目，开发能力和资源有限。为了确保前端体验的质量和功能的完善，",
+                "我们决定先集中精力打磨前端功能，待时机成熟后再逐步推进后端的搭建工作。",
+                "这意味着：",
+                "  - 近期版本仍将以本地存储为主",
+                "  - 将继续优化本地数据的备份与恢复功能",
+                "",
+                "[color:#ffd93d]【关于开发进度】[/color]",
+                "PRE Launcher 目前仅有一人进行开发，开发进度可能会受到各种因素影响（或跳票）。",
+                "我们承诺会尽最大努力完成开发工作，但具体发布日期仍需根据实际开发情况调整。",
+                "请持续关注我们的开发者公告，我们会第一时间向大家通报最新进展！",
+                "",
+                "[color:#667eea]【感谢您的理解与支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！",
+                "您的每一条建议、每一份反馈，都是我们前进的动力。",
+                "如果您有任何想法或建议，欢迎通过Github仓库提交Issue与我们进行沟通。",
+                "",
+                "让我们一起期待 PRE Launcher RC 3.0.0 版本的到来！",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "importantA-20260430",
             title: "启动器重大更新通知",
             date: "2026-04-30",
@@ -150,7 +209,7 @@ const announcementData = {
                 "我们也在努力优化启动器的性能和稳定性，以及修复一些莫名其妙的bug，确保用户在使用过程中不会遇到任何问题。",
                 "感谢您的理解和支持！",
                 "我们会在更新完成后，及时通知您。",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
     ],
@@ -160,6 +219,27 @@ const announcementData = {
     ],
     // 开发日志
     devLogs: [
+        {
+            id: "devlog-20260603",
+            title: "RC 2.6.3.1 (b5) 开发日志",
+            date: "2026-06-03",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.3.1 (b5) 版本更新，主要修复注册相关问题并新增弹窗键盘快捷键功能！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 弹窗键盘快捷键支持：所有弹窗新增键盘按键绑定，按下Enter键触发确定按钮，按下Esc键触发取消/返回按钮",
+                "• 智能弹窗检测：自动识别当前显示的弹窗类型，支持 custom-alert 和 custom-confirm-modal 两种类型",
+                "• 按钮智能识别：通过按钮类名和文本内容智能识别确定和取消按钮，确保兼容性",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复注册成功弹窗文本不显示问题：修复语言键名拼写错误，注册成功后弹窗正确显示\"注册成功！请使用新账号登录\"提示",
+                "• 修复注册自动登录问题：注册成功后不再自动设置 currentUser，不会覆盖原有登录表单和个人卡片，用户需手动登录新账号",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
         {
             id: "devlog-20260530",
             title: "RC 1.1.0.0 (a2) 开发日志",
@@ -181,7 +261,8 @@ const announcementData = {
                 "• 弹窗动画优化：弹窗出现动画从位移改为缩放，与登录页保持一致",
                 "[color:#ff6b6b]【修复问题】[/color]",
                 "• 修复侧边栏收起时个人卡片图标和按钮显示在方框外的问题",
-                "• 修复收起状态下侧边栏布局与登录页不一致的问题"
+                "• 修复收起状态下侧边栏布局与登录页不一致的问题",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -218,7 +299,7 @@ const announcementData = {
                 "• 修复版本更新记录中块状按钮文本在暗色模式下不明显的问题",
                 "• 修复图片查看器悬浮气泡被侧边栏裁剪的问题，现在可以正常向外显示",
                 "• 修复图片查看器控制栏展开/收起状态重置问题",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -245,7 +326,7 @@ const announcementData = {
                 "• 修复红点数量计算错误：版本按钮红点显示该版本下未查看子版本数量",
                 "• 修复红点显示文本错误：侧边栏红点仅显示圆点，不显示数字",
                 "• 修复按钮内红点不显示数量问题",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -263,7 +344,7 @@ const announcementData = {
                 "• 版本选择按钮样式优化：版本更新记录窗口中版本号选择改为块状按钮样式，一行四个按钮，支持自动换行显示，布局更加清晰美观",
                 "• 按钮样式优化：加长按钮宽度，背景改为白色，日期和版本数量文本放大加深，提升可读性和视觉体验",
                 "• 版本分类功能：添加版本维护状态分类条目，分为\"正在维护中的版本\"和\"已结束维护的版本\"两组显示，方便用户快速区分版本状态",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -306,7 +387,7 @@ const announcementData = {
                 "• 为每个菜单条目添加menu-tooltip元素实现悬浮气泡效果",
                 "• 设置sidebar-menu的overflow: visible确保悬浮内容可以正常显示",
                 "• 移动端收起侧边栏时仅显示更多功能按钮图标，隐藏文字内容",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -336,7 +417,7 @@ const announcementData = {
                 "• 版本历史翻译：版本更新记录侧边栏和小游戏名称等文本也已支持多语言",
                 "[color:#667eea]【代码优化】[/color]",
                 "• 将OPPO Sans字体版权说明从versionManager.js移动到index.html中，优化代码结构",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -362,7 +443,7 @@ const announcementData = {
                 "• 按钮样式统一：更多操作弹窗和更多功能弹窗使用相同的按钮样式，视觉风格一致",
                 "[color:#ff6b6b]【修复问题】[/color]",
                 "• 修复调整UI比例按钮点击后没有反应的问题",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -399,7 +480,7 @@ const announcementData = {
                 "• 使用localStorage存储\"今日不再验证\"标记，过期时间设置为当天24:00",
                 "• 安全验证支持密码和PIN码两种验证方式，可根据账户设置灵活切换",
                 "• 退出登录时自动清除\"今日不再验证\"标记，确保安全验证有效性",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -425,7 +506,7 @@ const announcementData = {
                 "• 重构了 fxqgame.html 页面结构，采用与 fkgame.html 相同的布局模式",
                 "• 创建了 fxqgame.css 文件，包含完整的游戏样式定义",
                 "• 更新了 versionManager.js，添加 memorygame 和 colormatchgame 的版本号配置",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         },
         {
@@ -451,7 +532,7 @@ const announcementData = {
                 "• 实现了基于 localStorage 的离线模式状态管理",
                 "• 添加了 navigator.onLine 事件监听，实现网络状态实时检测",
                 "• 优化了验证码生成逻辑，支持在线/离线双模式",
-                "[color:black]© 2014-2026 GPY Games Studio. All rights reserved.[/color]"
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
             ]
         }
     ]

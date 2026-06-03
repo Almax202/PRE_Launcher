@@ -128,6 +128,20 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.3.1 (b5)",
+            date: "2026-06-03",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 弹窗键盘快捷键支持：所有弹窗新增键盘按键绑定，按下Enter触发确定按钮，按下Esc触发取消/返回按钮",
+                "修复问题",
+                "- 修复注册成功弹窗文本不显示问题：注册成功后弹窗正确显示\"注册成功！请使用新账号登录\"提示",
+                "- 修复注册自动登录问题：注册成功后不再自动登录，不会覆盖原有登录表单和个人卡片"
+            ]
+        },
+        {
             version: "RC 2.6.3.0 (b5)",
             date: "2026-05-29",
             tag: "major",

@@ -3121,10 +3121,30 @@ body.dark-mode #mitLicenseModal .about-content::-webkit-scrollbar-thumb {
 .register-main {
     flex: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
+    max-height: calc(100vh - 200px);
+}
+
+.register-main::-webkit-scrollbar {
+    width: 6px;
+}
+
+.register-main::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.register-main::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+.register-main::-webkit-scrollbar-thumb:hover {
+    background: #e67e8a;
 }
 
 /* 注册内部容器 */
@@ -3132,6 +3152,7 @@ body.dark-mode #mitLicenseModal .about-content::-webkit-scrollbar-thumb {
     width: 100%;
     max-width: 450px;
     padding: 20px;
+    min-width: 0;
 }
 
 /* 注册页脚 */
@@ -3398,6 +3419,7 @@ body.dark-mode .register-footer {
     
     .register-inner-container {
         padding: 15px;
+        min-width: 0;
     }
     
     .register-inner-container .input-group input {
@@ -3413,6 +3435,190 @@ body.dark-mode .register-footer {
     .captcha-img {
         width: 100%;
         max-width: none;
+    }
+    
+    .register-main {
+        padding: 15px;
+        max-height: calc(100vh - 180px);
+    }
+}
+
+/* 小屏幕手机适配（360px以下） */
+@media (max-width: 360px) {
+    .register-modal-content {
+        padding: 10px !important;
+    }
+    
+    .register-header h3 {
+        font-size: 18px;
+    }
+    
+    .register-steps {
+        gap: 8px;
+        padding: 8px;
+    }
+    
+    .register-steps .step-item .step-number {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+    
+    .register-steps .step-item .step-title {
+        font-size: 10px;
+    }
+    
+    .register-steps .step-divider {
+        width: 20px;
+    }
+    
+    .register-inner-container {
+        padding: 10px;
+    }
+    
+    .register-inner-container .input-group input {
+        padding: 10px 10px 10px 30px;
+        font-size: 13px;
+    }
+    
+    .register-buttons {
+        gap: 8px;
+    }
+    
+    .register-buttons .alert-confirm {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* 横屏模式适配 */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    .register-modal-content {
+        padding: 15px !important;
+    }
+    
+    .register-header {
+        margin-bottom: 10px;
+        padding-top: 5px;
+    }
+    
+    .register-header h3 {
+        font-size: 18px;
+    }
+    
+    .register-steps {
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .register-steps .step-item .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .register-steps .step-item .step-title {
+        font-size: 11px;
+    }
+    
+    .register-main {
+        max-height: calc(100vh - 160px);
+        padding: 10px;
+    }
+    
+    .register-inner-container {
+        padding: 15px;
+    }
+    
+    .register-inner-container .input-group {
+        margin-bottom: 12px;
+    }
+    
+    .register-inner-container .input-group input {
+        padding: 10px 12px 10px 35px;
+        font-size: 14px;
+    }
+    
+    .register-buttons {
+        margin-top: 15px;
+    }
+}
+
+/* 极低高度设备适配（如折叠屏手机） */
+@media (max-height: 400px) {
+    .register-modal-content {
+        padding: 10px !important;
+        padding-bottom: 70px !important;
+    }
+    
+    .register-header {
+        margin-bottom: 8px;
+        padding-top: 0;
+    }
+    
+    .register-header h3 {
+        font-size: 16px;
+    }
+    
+    .register-steps {
+        padding: 8px;
+        margin-bottom: 10px;
+        gap: 8px;
+    }
+    
+    .register-steps .step-item .step-number {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+    
+    .register-steps .step-item .step-title {
+        font-size: 10px;
+    }
+    
+    .register-steps .step-divider {
+        width: 20px;
+    }
+    
+    .register-main {
+        max-height: calc(100vh - 140px);
+        padding: 8px;
+    }
+    
+    .register-inner-container {
+        padding: 10px;
+    }
+    
+    .register-inner-container .input-group {
+        margin-bottom: 10px;
+    }
+    
+    .register-inner-container .input-group input {
+        padding: 8px 10px 8px 30px;
+        font-size: 13px;
+    }
+    
+    .register-buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px 15px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+        margin: 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+    }
+    
+    body.dark-mode .register-buttons {
+        background: #1a1a2e;
+        border-top-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .register-buttons .alert-confirm {
+        padding: 10px;
+        font-size: 14px;
     }
 }
 

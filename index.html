@@ -830,7 +830,7 @@
                 </div>
 
                 <div class="sidebar-copyright">
-                    <p>© 2014-2026 GPY Games Studio</p>
+                    <p>© 2014-2026 PREAlmax, All rights reserved.</p>
                 </div>
             </div>
         </div>
@@ -1974,6 +1974,103 @@
             
             window.addEventListener('offline', function() {
                 updateOfflineModeButton();
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key !== 'Enter' && e.key !== 'Escape') {
+                    return;
+                }
+                
+                if (e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                var modalSelectors = [
+                    '.custom-alert',
+                    '.custom-confirm-modal'
+                ];
+                
+                var activeModal = null;
+                for (var i = 0; i < modalSelectors.length; i++) {
+                    var modals = document.querySelectorAll(modalSelectors[i]);
+                    for (var j = 0; j < modals.length; j++) {
+                        var modal = modals[j];
+                        if (modal.style.display === 'flex' || modal.classList.contains('show')) {
+                            activeModal = modal;
+                            break;
+                        }
+                    }
+                    if (activeModal) break;
+                }
+                
+                if (!activeModal) {
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                var confirmBtn = null;
+                var cancelBtn = null;
+                
+                var confirmOkBtn = activeModal.querySelector('.confirm-ok');
+                if (confirmOkBtn && !confirmOkBtn.disabled) {
+                    confirmBtn = confirmOkBtn;
+                }
+                
+                var allButtons = activeModal.querySelectorAll('.confirm-btn, .alert-confirm, button');
+                if (!confirmBtn) {
+                    for (var k = 0; k < allButtons.length; k++) {
+                        var btn = allButtons[k];
+                        if (btn.disabled) continue;
+                        var btnText = btn.textContent.toLowerCase();
+                        if (btnText.indexOf('确定') !== -1 || 
+                            btnText.indexOf('确认') !== -1 || 
+                            btnText.indexOf('提交') !== -1 || 
+                            btnText.indexOf('验证') !== -1 ||
+                            btnText.indexOf('继续') !== -1 ||
+                            btnText.indexOf('下一步') !== -1 ||
+                            btnText.indexOf('注册') !== -1 ||
+                            btnText.indexOf('登录') !== -1 ||
+                            btnText.indexOf('ok') !== -1 ||
+                            btnText.indexOf('confirm') !== -1 ||
+                            btnText.indexOf('submit') !== -1) {
+                            confirmBtn = btn;
+                            break;
+                        }
+                    }
+                }
+                
+                for (var m = 0; m < allButtons.length; m++) {
+                    var btn2 = allButtons[m];
+                    if (btn2.disabled) continue;
+                    var btnText2 = btn2.textContent.toLowerCase();
+                    if (btnText2.indexOf('取消') !== -1 || 
+                        btnText2.indexOf('返回') !== -1 || 
+                        btnText2.indexOf('关闭') !== -1 ||
+                        btnText2.indexOf('cancel') !== -1 ||
+                        btnText2.indexOf('close') !== -1) {
+                        cancelBtn = btn2;
+                        break;
+                    }
+                }
+                
+                if (!cancelBtn && confirmBtn) {
+                    for (var n = 0; n < allButtons.length; n++) {
+                        if (allButtons[n] !== confirmBtn && !allButtons[n].disabled) {
+                            cancelBtn = allButtons[n];
+                            break;
+                        }
+                    }
+                }
+                
+                if (e.key === 'Enter' && confirmBtn) {
+                    confirmBtn.click();
+                } else if (e.key === 'Escape' && cancelBtn) {
+                    cancelBtn.click();
+                } else if (e.key === 'Escape' && !cancelBtn && confirmBtn) {
+                    confirmBtn.click();
+                }
             });
         });
         
@@ -3313,19 +3410,8 @@
             
             localStorage.setItem('registeredUsers', JSON.stringify(users));
             
-            localStorage.setItem('currentUser', JSON.stringify({
-                username: username,
-                userId: nextUserId,
-                phone: phone,
-                email: email,
-                loginTime: new Date().toISOString()
-            }));
+            showAlert(getLanguageText('successReg'));
             
-            updateUserCenter(username, nextUserId, phone, email);
-            
-            showAlert(getLanguageText('regSuccess'));
-            
-            // 清空表单
             document.getElementById('regUsername').value = '';
             document.getElementById('regPassword').value = '';
             document.getElementById('regConfirmPassword').value = '';
@@ -3334,23 +3420,15 @@
             document.getElementById('regCaptcha').value = '';
             document.getElementById('registerAgreement').checked = false;
             
-            // 关闭确认模态框
             var confirmModal = document.getElementById('registerConfirmModal');
             confirmModal.classList.remove('show');
             setTimeout(function() {
                 confirmModal.style.display = 'none';
                 
-                // 关闭注册模态框
                 var registerModal = document.getElementById('registerModal');
                 registerModal.classList.remove('show');
                 setTimeout(function() {
                     registerModal.style.display = 'none';
-                    
-                    // 更新登录表单
-                    document.getElementById('username').value = username;
-                    document.getElementById('password').value = '';
-                    document.getElementById('captcha').value = '';
-                    fetchCaptcha();
                 }, 300);
             }, 300);
         });
@@ -5606,7 +5684,7 @@
                     <div class="about-content" style="text-align: left; max-height: 50vh; overflow-y: auto;">
                         <div id="mitLicenseChinese">
                             <h3 style="margin-bottom: 15px; color: #d45d79;">中文版</h3>
-                            <p style="margin: 10px 0;">版权所有 © 2026 PreAlmax</p>
+                            <p style="margin: 10px 0;">版权所有 © 2026 PREAlmax, All rights reserved.</p>
                             <p style="margin: 10px 0;">特此免费授予任何获得本软件及相关文档文件（以下简称 "软件"）副本的人，不受限制地处理本软件，包括但不限于使用、复制、修改、合并、发布、分发、再许可和 / 或出售本软件副本的权利，并允许向其提供本软件的人这样做，但须符合以下条件：</p>
                             <p style="margin: 10px 0;">上述版权声明和本许可声明应包含在本软件的所有副本或重要部分中。</p>
                             <p style="margin: 10px 0;">本软件按 "现状" 提供，不提供任何明示或暗示的保证，包括但不限于对适销性、特定用途适用性和非侵权性的保证。在任何情况下，作者或版权持有人均不对任何索赔、损害或其他责任承担任何责任，无论是在合同、侵权或其他法律行为中，因使用或与本软件有关或由此产生的、使用本软件而产生的任何索赔、损害或其他责任。</p>
@@ -5614,8 +5692,7 @@
                         </div>
                         <div id="mitLicenseEnglish" style="display: none;">
                             <h3 style="margin-bottom: 15px; color: #d45d79;">English Ver</h3>
-                            <p style="margin: 10px 0;"><strong>MIT License</strong></p>
-                            <p style="margin: 10px 0;">Copyright (c) 2026 PreAlmax</p>
+                            <p style="margin: 10px 0;">Copyright (c) 2026 PREAlmax, All rights reserved.</p>
                             <p style="margin: 10px 0;">Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
                             <p style="margin: 10px 0;">The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
                             <p style="margin: 10px 0;">THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
