@@ -770,6 +770,30 @@ body.page-transition-in {
     overflow: hidden;
 }
 
+.silent-update-content {
+    max-width: 550px;
+}
+
+.version-info {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.version-info .version-number {
+    font-weight: bold;
+    color: #d45d79;
+}
+
+body.dark-mode .version-info {
+    color: #aaa;
+}
+
+body.dark-mode .version-info .version-number {
+    color: #e67e8a;
+}
+
 #imageViewerModal .alert-content {
     overflow: visible;
     padding: 0;
@@ -3033,6 +3057,20 @@ body.dark-mode #mitLicenseModal .about-content::-webkit-scrollbar-thumb {
     overflow: hidden;
 }
 
+/* 全局设置全屏样式 */
+.settings-modal-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0 !important;
+    padding: 20px !important;
+    padding-bottom: 80px !important;
+    position: relative;
+    overflow: hidden;
+}
+
 .register-header {
     display: flex;
     align-items: center;
@@ -3267,6 +3305,15 @@ body.dark-mode .register-modal-content {
 }
 
 body.dark-mode .register-modal-content h3 {
+    color: #e0e0e0;
+}
+
+/* 暗色模式下的全局设置页面样式 */
+body.dark-mode .settings-modal-content {
+    background: #1a1a2e;
+}
+
+body.dark-mode .settings-modal-content h3 {
     color: #e0e0e0;
 }
 

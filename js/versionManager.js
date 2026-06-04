@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.3.1 (b5)",
+    login: "RC 2.6.3.2 (b5)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.0 (a2)",
@@ -39,9 +39,24 @@ const launcherInfo = {
     fontUsage: ""
 };
 
-// 获取版本号的函数
+const LAST_KNOWN_LOGIN_VERSION_KEY = 'lastKnownLoginVersion';
+
 function getVersion(page) {
     return versionInfo[page] || "获取失败，重定向错误";
+}
+
+function getLastKnownLoginVersion() {
+    return localStorage.getItem(LAST_KNOWN_LOGIN_VERSION_KEY);
+}
+
+function updateLastKnownLoginVersion() {
+    localStorage.setItem(LAST_KNOWN_LOGIN_VERSION_KEY, getVersion('login'));
+}
+
+function hasLoginVersionChanged() {
+    const currentVersion = getVersion('login');
+    const lastKnownVersion = getLastKnownLoginVersion();
+    return lastKnownVersion !== currentVersion;
 }
 
 // 更新页面版本号显示的函数

@@ -1229,48 +1229,56 @@
     </div>
 
     <div id="debugModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 500px;">
-            <div class="alert-icon">
-                <i class="fas fa-cog"></i>
-            </div>
-            <h3>全局设置</h3>
-            
-            <div class="setting-section">
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <i class="fas fa-language"></i>
-                        <span>语言</span>
-                    </div>
-                    <select id="languageSelect" class="language-select">
-                        <option value="zh">中文</option>
-                        <option value="en">English</option>
-                        <option value="ja">日本語</option>
-                        <option value="ko">한국어</option>
-                    </select>
+        <div class="alert-content settings-modal-content">
+            <div class="register-header">
+                <div class="alert-icon">
+                    <i class="fas fa-cog"></i>
                 </div>
-                
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <i class="fas fa-server"></i>
-                        <span>游戏服务器</span>
-                    </div>
-                    <select id="serverSelect" class="server-select">
-                        <option value="official">默认服务器</option>
-                        <option value="custom">自定义服务器</option>
-                    </select>
-                </div>
-                
-                <div class="setting-item" id="customServerInput" style="display: none;">
-                    <div class="input-group">
-                        <i class="fas fa-link"></i>
-                        <input type="text" id="apiUrlInput" placeholder="请输入调试地址" style="width: 100%;">
-                    </div>
-                </div>
+                <h3>全局设置</h3>
             </div>
             
-            <div class="debug-buttons">
-                <button class="alert-confirm" id="debugCancel">取消</button>
-                <button class="alert-confirm" id="debugConfirm" style="background-color: #4CAF50;">确定</button>
+            <div class="register-main">
+                <div class="register-inner-container">
+                    <div class="setting-section">
+                        <div class="setting-item">
+                            <div class="setting-label">
+                                <i class="fas fa-language"></i>
+                                <span>语言</span>
+                            </div>
+                            <select id="languageSelect" class="language-select">
+                                <option value="zh">中文</option>
+                                <option value="en">English</option>
+                                <option value="ja">日本語</option>
+                                <option value="ko">한국어</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-label">
+                                <i class="fas fa-server"></i>
+                                <span>游戏服务器</span>
+                            </div>
+                            <select id="serverSelect" class="server-select">
+                                <option value="official">默认服务器</option>
+                                <option value="custom">自定义服务器</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item" id="customServerInput" style="display: none;">
+                            <div class="input-group">
+                                <i class="fas fa-link"></i>
+                                <input type="text" id="apiUrlInput" placeholder="请输入调试地址" style="width: 100%;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="register-footer">
+                <div class="debug-buttons">
+                    <button class="alert-confirm" id="debugCancel">取消</button>
+                    <button class="alert-confirm" id="debugConfirm" style="background-color: #4CAF50;">确定</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1455,6 +1463,24 @@
                     <i class="fas fa-arrow-up"></i>
                 </button>
                 <div class="back-to-top-tooltip">返回顶部</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="silentUpdateModal" class="custom-alert">
+        <div class="alert-content silent-update-content">
+            <div class="alert-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <h3>检测到最新版本</h3>
+            <p class="alert-message">已自动完成静默更新，您可以前往版本更新记录内查看详细的更新公告</p>
+            <div class="version-info">
+                <span>当前版本：</span>
+                <span id="silentUpdateVersion" class="version-number"></span>
+            </div>
+            <div class="modal-buttons">
+                <button class="alert-confirm" id="silentUpdateGoToVersion">跳转到版本更新</button>
+                <button class="alert-confirm" id="silentUpdateConfirm">确定</button>
             </div>
         </div>
     </div>
@@ -1930,6 +1956,48 @@
             }, 1000);
         }
         
+        function checkLoginVersionUpdate() {
+            if (typeof hasLoginVersionChanged !== 'function') {
+                return;
+            }
+            
+            const hasChanged = hasLoginVersionChanged();
+            const lastKnownVersion = getLastKnownLoginVersion();
+            
+            if (hasChanged) {
+                if (lastKnownVersion) {
+                    showSilentUpdateModal();
+                }
+                updateLastKnownLoginVersion();
+            }
+        }
+        
+        function showSilentUpdateModal() {
+            const modal = document.getElementById('silentUpdateModal');
+            const versionElement = document.getElementById('silentUpdateVersion');
+            
+            if (versionElement && typeof getVersion === 'function') {
+                versionElement.textContent = getVersion('login');
+            }
+            
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(function() {
+                    modal.classList.add('show');
+                }, 10);
+            }
+        }
+        
+        function closeSilentUpdateModal() {
+            const modal = document.getElementById('silentUpdateModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.add('page-transition-in');
             setTimeout(function() {
@@ -1955,6 +2023,8 @@
             checkAutoLogin();
             loadSettings();
             startThemeCheck();
+            
+            checkLoginVersionUpdate();
             
             document.getElementById('captchaImage').addEventListener('click', function(e) {
                 fetchCaptcha(e);
@@ -2408,6 +2478,86 @@
         document.getElementById('customAlert').addEventListener('click', function(e) {
             if (e.target === this) {
                 document.getElementById('alertConfirm').click();
+            }
+        });
+        
+        document.getElementById('silentUpdateConfirm').addEventListener('click', function() {
+            closeSilentUpdateModal();
+        });
+        
+        document.getElementById('silentUpdateGoToVersion').addEventListener('click', function() {
+            closeSilentUpdateModal();
+            setTimeout(function() {
+                var versionHistoryModal = document.getElementById('versionHistoryModal');
+                if (versionHistoryModal) {
+                    versionHistoryModal.style.display = 'flex';
+                    
+                    updateLastViewedVersionDate();
+                    updateVersionNotificationDot();
+                    
+                    setTimeout(function() {
+                        versionHistoryModal.classList.add('show');
+                        
+                        var featureUpdateNav = document.getElementById('featureUpdateNav');
+                        if (featureUpdateNav) {
+                            featureUpdateNav.classList.add('active');
+                        }
+                        
+                        var launcherSubButton = document.querySelector('#featureSubButtons .sub-button[data-type="launcher"]');
+                        if (launcherSubButton) {
+                            launcherSubButton.click();
+                        }
+                        
+                        setTimeout(function() {
+                            scrollToCurrentVersion();
+                        }, 300);
+                    }, 10);
+                }
+            }, 350);
+        });
+        
+        function scrollToCurrentVersion() {
+            if (typeof getVersion !== 'function') {
+                return;
+            }
+            
+            var currentVersion = getVersion('login');
+            var targetVersionId = currentVersion.replace(/\s/g, '');
+            
+            var versionItems = document.querySelectorAll('.version-item');
+            var targetItem = null;
+            
+            versionItems.forEach(function(item) {
+                var versionNumber = item.querySelector('.version-number');
+                if (versionNumber) {
+                    var itemVersionId = versionNumber.textContent.replace(/\s/g, '');
+                    if (itemVersionId === targetVersionId) {
+                        targetItem = item;
+                    }
+                }
+            });
+            
+            if (targetItem) {
+                var viewLogBtn = targetItem.querySelector('.view-log-btn');
+                if (viewLogBtn) {
+                    viewLogBtn.click();
+                }
+                
+                targetItem.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                
+                targetItem.style.border = '2px solid #d45d79';
+                setTimeout(function() {
+                    targetItem.style.border = '';
+                }, 2000);
+            }
+        }
+        
+        document.getElementById('silentUpdateModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSilentUpdateModal();
             }
         });
         
