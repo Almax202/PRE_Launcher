@@ -142,25 +142,51 @@ document.addEventListener('DOMContentLoaded', function() {
         // 移动端菜单按钮点击事件
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const settingsSidebar = document.querySelector('.settings-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
         const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+        
+        function toggleSidebar(show) {
+            if (show) {
+                settingsSidebar.classList.add('show');
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.classList.add('show');
+                }
+                document.body.style.overflow = 'hidden';
+            } else {
+                settingsSidebar.classList.remove('show');
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.classList.remove('show');
+                }
+                document.body.style.overflow = '';
+            }
+        }
         
         if (mobileMenuBtn && settingsSidebar) {
             // 点击菜单按钮切换侧边栏显示/隐藏
-            mobileMenuBtn.addEventListener('click', function() {
-                settingsSidebar.classList.toggle('show');
+            mobileMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isShowing = settingsSidebar.classList.contains('show');
+                toggleSidebar(!isShowing);
             });
             
             // 点击菜单项后关闭侧边栏
             menuItems.forEach(function(item) {
                 item.addEventListener('click', function() {
-                    settingsSidebar.classList.remove('show');
+                    toggleSidebar(false);
                 });
             });
+            
+            // 点击遮罩层关闭侧边栏
+            if (sidebarBackdrop) {
+                sidebarBackdrop.addEventListener('click', function() {
+                    toggleSidebar(false);
+                });
+            }
             
             // 点击侧边栏外部关闭侧边栏
             document.addEventListener('click', function(e) {
                 if (!settingsSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target) && settingsSidebar.classList.contains('show')) {
-                    settingsSidebar.classList.remove('show');
+                    toggleSidebar(false);
                 }
             });
             
@@ -375,10 +401,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.querySelectorAll('.theme-option').forEach(function(option) {
             option.addEventListener('click', function() {
+                if (this.id === 'moreThemesBtn') {
+                    openMoreThemesModal();
+                    return;
+                }
                 var theme = this.getAttribute('data-theme');
                 setTheme(theme);
             });
         });
+
+        // 更多主题弹窗事件绑定
+        bindMoreThemesModal();
         
         document.getElementById('languageSelect').addEventListener('change', function() {
             var language = this.value;
@@ -533,8 +566,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        document.getElementById('refreshPresetBtn').addEventListener('click', function() {
-            refreshPresetBackgrounds();
+        document.getElementById('presetSourceToggle').addEventListener('change', function(e) {
+            switchPresetSource(e.target.checked);
         });
         
         document.getElementById('confirmPresetBtn').addEventListener('click', function() {
@@ -3025,17 +3058,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.classList.add('active');
             }
         });
-        
+
         var customThemePanel = document.getElementById('customThemePanel');
         if (customThemePanel) {
             customThemePanel.style.display = theme === 'custom' ? 'block' : 'none';
         }
-        
+
         var glassThemePanel = document.getElementById('glassThemePanel');
         if (glassThemePanel) {
+            // 毛玻璃主题面板：仅在使用毛玻璃主题时显示
             glassThemePanel.style.display = theme === 'glass' ? 'block' : 'none';
         }
-        
+
         var darkMode = false;
         if (theme === 'dark') {
             darkMode = true;
@@ -3044,14 +3078,14 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (theme === 'auto') {
             darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
-        
+
         SettingsManager.set('darkMode', darkMode);
-        
+
         var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
         var userIndex = users.findIndex(function(user) {
             return user.username === currentUser.username;
         });
-        
+
         if (userIndex !== -1) {
             if (!users[userIndex].userProfile) {
                 users[userIndex].userProfile = {};
@@ -3059,13 +3093,13 @@ document.addEventListener('DOMContentLoaded', function() {
             users[userIndex].userProfile.theme = theme;
             localStorage.setItem('registeredUsers', JSON.stringify(users));
         }
-        
+
         if (theme === 'custom') {
             applyCustomThemeSettings();
-        } else if (theme === 'glass') {
+        } else if (theme === 'glass' || theme === 'transparent') {
             applyGlassThemeSettings();
         }
-        
+
         updateThemeDisplay();
     }
     
@@ -3269,24 +3303,32 @@ document.addEventListener('DOMContentLoaded', function() {
         var userIndex = users.findIndex(function(user) {
             return user.username === currentUser.username;
         });
-        
+
         // 移除所有主题类
-        document.body.classList.remove('dark-mode', 'glass-mode');
-        
+        document.body.classList.remove('dark-mode', 'glass-mode', 'transparent-mode');
+
         if (userIndex !== -1 && users[userIndex].userProfile) {
             var theme = users[userIndex].userProfile.theme;
-            
+
             if (theme === 'dark') {
                 document.body.classList.add('dark-mode');
             } else if (theme === 'glass') {
                 document.body.classList.add('glass-mode');
-                
+
                 if (users[userIndex].userProfile.glassTheme) {
                     var glassTheme = users[userIndex].userProfile.glassTheme;
                     applyGlassThemeToPage(glassTheme);
                 }
+            } else if (theme === 'transparent') {
+                document.body.classList.add('transparent-mode');
+
+                // 透明主题复用毛玻璃的变量（用户可在面板中微调透明度/模糊）
+                if (users[userIndex].userProfile.glassTheme) {
+                    var glassThemeForTransparent = users[userIndex].userProfile.glassTheme;
+                    applyGlassThemeToPage(glassThemeForTransparent);
+                }
             }
-            
+
             if (users[userIndex].userProfile.customTheme) {
                 var customTheme = users[userIndex].userProfile.customTheme;
                 applyCustomThemeToPage(customTheme);
@@ -3948,20 +3990,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // 更新预览
             if (backgroundSettings.image) {
                 var preview = document.getElementById('backgroundPreview');
+                preview.innerHTML = '';
                 preview.style.backgroundImage = 'url(' + backgroundSettings.image + ')';
                 preview.style.backgroundSize = backgroundSettings.fit || 'cover';
                 preview.style.backgroundPosition = 'center';
-                var placeholder = preview.querySelector('.preview-placeholder');
-                if (placeholder) {
-                    placeholder.style.display = 'none';
-                }
             }
             
-            // 应用到当前页面
-            applyBackgroundToPage(backgroundSettings);
-            
-            // 保存到localStorage供其他页面使用
-            localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
+            // 如非 IndexedDB 背景图片，这里不做处理（由 loadBackgroundSettings 处理）
+            if (!backgroundSettings.useIndexedDB) {
+                applyBackgroundToPage(backgroundSettings);
+                localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
+            }
         }
     }
     
@@ -4484,12 +4523,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 var base64 = e.target.result;
                 
                 // 清除之前可能设置的背景图片样式
-                preview.style.backgroundImage = '';
-                preview.style.backgroundSize = '';
-                preview.style.backgroundPosition = '';
+                preview.innerHTML = '';
                 
                 // 显示预览
-                preview.innerHTML = '<img src="' + base64 + '" alt="背景预览">';
+                preview.style.backgroundImage = 'url(' + base64 + ')';
+                preview.style.backgroundSize = 'cover';
+                preview.style.backgroundPosition = 'center';
                 
                 // 保存到临时变量
                 window.tempBackground = base64;
@@ -4688,6 +4727,22 @@ document.addEventListener('DOMContentLoaded', function() {
         var opacity = backgroundSettings.opacity;
         var blur = backgroundSettings.blur;
         
+        // 根据当前页面位置调整图片路径
+        var currentPath = window.location.pathname;
+        var imageUrl = backgroundImage;
+        
+        // 如果图片路径是相对路径且不是绝对URL，也不是data URL，根据页面位置调整
+        if (backgroundImage && 
+            !backgroundImage.startsWith('http://') && 
+            !backgroundImage.startsWith('https://') && 
+            !backgroundImage.startsWith('/') && 
+            !backgroundImage.startsWith('data:')) {
+            if (currentPath.includes('/html/')) {
+                // 在 html 目录下，需要添加 ../
+                imageUrl = '../' + backgroundImage;
+            }
+        }
+        
         if (fit === 'content') {
             style.textContent = `
                 body {
@@ -4705,7 +4760,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background-image: url('${backgroundImage}');
+                    background-image: url('${imageUrl}');
                     background-size: cover;
                     background-position: center;
                     background-repeat: no-repeat;
@@ -4728,10 +4783,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background-image: url('${backgroundImage}');
+                    background-image: url('${imageUrl}');
                     background-size: ${fit};
                     background-position: center;
-                    background-repeat: ${fit === 'repeat' ? 'repeat' : 'no-repeat'};
+                    background-repeat: ${fit === 'repeat' ? 'no-repeat' : 'no-repeat'};
                     opacity: ${opacity};
                     filter: blur(${blur}px);
                     z-index: -1;
@@ -4785,7 +4840,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             // 更新预览
                             var preview = document.getElementById('backgroundPreview');
-                            preview.innerHTML = '<img src="' + imageData + '" alt="背景预览">';
+                            preview.innerHTML = '';
+                            preview.style.backgroundImage = 'url(' + imageData + ')';
+                            preview.style.backgroundSize = backgroundSettings.fit || 'cover';
+                            preview.style.backgroundPosition = 'center';
                             
                             // 保存设置信息到localStorage供其他页面使用
                             // 不保存图片数据，其他页面会通过IndexedDB读取
@@ -4815,7 +4873,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // 更新预览
                     var preview = document.getElementById('backgroundPreview');
-                    preview.innerHTML = '<img src="' + backgroundSettings.image + '" alt="背景预览">';
+                    preview.innerHTML = '';
+                    preview.style.backgroundImage = 'url(' + backgroundSettings.image + ')';
+                    preview.style.backgroundSize = backgroundSettings.fit || 'cover';
+                    preview.style.backgroundPosition = 'center';
                     
                     // 同步到localStorage供其他页面使用
                     localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
@@ -6711,8 +6772,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 预设背景图片数据
-    var presetBackgrounds = [
+    // 联网预设背景图片数据
+    var onlinePresetBackgrounds = [
         {
             id: 1,
             name: '星空之夜',
@@ -6725,7 +6786,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         {
             id: 3,
-            name: '樱花飘落',
+            name: '静水流深',
             url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop'
         },
         {
@@ -6760,6 +6821,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     ];
     
+    // 本地预设背景图片数据
+    var localPresetBackgrounds = [
+        {
+            id: 1,
+            name: '玄砂波纹',
+            url: '../bgimg/bg1.jpg'
+        },
+        {
+            id: 2,
+            name: '峻钢方隅',
+            url: '../bgimg/bg2.jpg'
+        },
+        {
+            id: 3,
+            name: '橙紫弧光',
+            url: '../bgimg/bg3.jpg'
+        },
+        {
+            id: 4,
+            name: '素灰柔峦',
+            url: '../bgimg/bg4.jpg'
+        },
+        {
+            id: 5,
+            name: '玄锋曜珠',
+            url: '../bgimg/bg5.jpg'
+        },
+        {
+            id: 6,
+            name: '晶叠幻彩',
+            url: '../bgimg/bg6.jpg'
+        },
+        {
+            id: 7,
+            name: '幽紫凝澜',
+            url: '../bgimg/bg7.jpg'
+        },
+        {
+            id: 8,
+            name: '靛蓝流韵',
+            url: '../bgimg/bg8.jpg'
+        },
+        {
+            id: 9,
+            name: '玫紫迤光',
+            url: '../bgimg/bg9.jpg'
+        }
+    ];
+    
+    // 当前使用的预设背景数据
+    var presetBackgrounds = onlinePresetBackgrounds;
+    
     // 当前选中的预设背景
     var selectedPresetBackground = null;
     
@@ -6772,6 +6885,14 @@ document.addEventListener('DOMContentLoaded', function() {
             renderPresetBackgrounds();
             updateConfirmButtonState();
         }
+    }
+    
+    // 切换预设背景数据源
+    function switchPresetSource(isOnline) {
+        presetBackgrounds = isOnline ? onlinePresetBackgrounds : localPresetBackgrounds;
+        selectedPresetBackground = null;
+        renderPresetBackgrounds();
+        updateConfirmButtonState();
     }
     
     // 关闭预设背景选择窗口
@@ -6835,22 +6956,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 closePresetBackgroundModal();
             }
         });
-    }
-    
-    // 刷新预设背景
-    function refreshPresetBackgrounds() {
-        var refreshBtn = document.getElementById('refreshPresetBtn');
-        if (refreshBtn) {
-            refreshBtn.classList.add('refreshing');
-        }
-        
-        setTimeout(function() {
-            renderPresetBackgrounds();
-            if (refreshBtn) {
-                refreshBtn.classList.remove('refreshing');
-            }
-            showAlert('预设背景已刷新');
-        }, 500);
     }
     
     // 渲染预设背景图片
@@ -6929,13 +7034,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // 更新预览
         var preview = document.getElementById('backgroundPreview');
         if (preview) {
+            // 清空innerHTML，移除之前上传的img标签等内容
+            preview.innerHTML = '';
+            // 设置背景图片样式
             preview.style.backgroundImage = 'url(' + url + ')';
             preview.style.backgroundSize = 'cover';
             preview.style.backgroundPosition = 'center';
-            var placeholder = preview.querySelector('.preview-placeholder');
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
+            preview.style.backgroundRepeat = 'no-repeat';
         }
         
         // 保存背景设置
@@ -6943,8 +7048,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var opacity = parseFloat(document.getElementById('backgroundOpacity').value);
         var blur = parseInt(document.getElementById('backgroundBlur').value);
         
+        // 将本地相对路径转换为相对于根目录的路径
+        var savedUrl = url;
+        if (url.startsWith('../bgimg/')) {
+            savedUrl = url.substring(3);
+        }
+        
         var backgroundSettings = {
-            image: url,
+            image: savedUrl,
             fit: fit,
             opacity: opacity,
             blur: blur,
@@ -7135,7 +7246,182 @@ document.addEventListener('DOMContentLoaded', function() {
         closeLeaveConfirmModal();
         window.open(url, '_blank');
     }
-    
+
+    // ================= 更多主题弹窗 =================
+    function openMoreThemesModal() {
+        var modal = document.getElementById('moreThemesModal');
+        if (!modal) return;
+        updateMoreThemesSelected();
+        modal.classList.add('show');
+    }
+
+    function closeMoreThemesModal() {
+        var modal = document.getElementById('moreThemesModal');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    function updateMoreThemesSelected() {
+        // 读取当前主题并高亮对应卡片
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var currentTheme = null;
+        var userIndex = users.findIndex(function(user) {
+            return user.username === currentUser.username;
+        });
+        if (userIndex !== -1 && users[userIndex].userProfile) {
+            currentTheme = users[userIndex].userProfile.theme;
+        }
+
+        document.querySelectorAll('.more-theme-card').forEach(function(card) {
+            if (card.getAttribute('data-theme') === currentTheme) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+    }
+
+    function bindMoreThemesModal() {
+        var modal = document.getElementById('moreThemesModal');
+        if (!modal) return;
+
+        var backdrop = document.getElementById('moreThemesBackdrop');
+        var closeBtn = document.getElementById('moreThemesClose');
+        var cancelBtn = document.getElementById('moreThemesCancel');
+
+        if (backdrop) {
+            backdrop.addEventListener('click', closeMoreThemesModal);
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeMoreThemesModal);
+        }
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeMoreThemesModal);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
+                closeMoreThemesModal();
+            }
+        });
+
+        document.querySelectorAll('.more-theme-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var theme = this.getAttribute('data-theme');
+                if (!theme) return;
+
+                // 检查是否为禁用的毛玻璃主题
+                if (card.classList.contains('more-theme-card-disabled')) {
+                    showThemeNoticeModal('该主题优化中，暂不可使用，敬请谅解');
+                    return;
+                }
+
+                // 透明主题需要确认
+                if (theme === 'transparent') {
+                    showThemeConfirmModal(function() {
+                        // 用户点击确定
+                        document.querySelectorAll('.more-theme-card').forEach(function(c) {
+                            c.classList.remove('selected');
+                        });
+                        card.classList.add('selected');
+                        setTheme(theme);
+                        setTimeout(closeMoreThemesModal, 250);
+                    });
+                    return;
+                }
+
+                // 立即更新选中态
+                document.querySelectorAll('.more-theme-card').forEach(function(c) {
+                    c.classList.remove('selected');
+                });
+                this.classList.add('selected');
+
+                // 应用主题
+                setTheme(theme);
+
+                // 短暂延迟后关闭弹窗，给用户看到选中态
+                setTimeout(closeMoreThemesModal, 250);
+            });
+        });
+    }
+
+    function showThemeConfirmModal(callback) {
+        var confirmModal = document.createElement('div');
+        confirmModal.className = 'theme-confirm-modal';
+        confirmModal.innerHTML = `
+            <div class="theme-confirm-backdrop"></div>
+            <div class="theme-confirm-content">
+                <div class="theme-confirm-header">
+                    <h3>提示</h3>
+                </div>
+                <div class="theme-confirm-body">
+                    <p>当前主题为早期测试版，使用该主题可能会出现各种未知的显示错误，您确定要继续应用该主题吗？</p>
+                </div>
+                <div class="theme-confirm-footer">
+                    <button class="theme-confirm-btn theme-confirm-btn-cancel">取消</button>
+                    <button class="theme-confirm-btn theme-confirm-btn-ok">确定</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(confirmModal);
+
+        var backdrop = confirmModal.querySelector('.theme-confirm-backdrop');
+        var cancelBtn = confirmModal.querySelector('.theme-confirm-btn-cancel');
+        var okBtn = confirmModal.querySelector('.theme-confirm-btn-ok');
+
+        function closeModal() {
+            confirmModal.remove();
+        }
+
+        backdrop.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        okBtn.addEventListener('click', function() {
+            closeModal();
+            if (typeof callback === 'function') {
+                callback();
+            }
+        });
+
+        setTimeout(function() {
+            confirmModal.classList.add('show');
+        }, 10);
+    }
+
+    function showThemeNoticeModal(message) {
+        var noticeModal = document.createElement('div');
+        noticeModal.className = 'theme-notice-modal';
+        noticeModal.innerHTML = `
+            <div class="theme-notice-backdrop"></div>
+            <div class="theme-notice-content">
+                <div class="theme-notice-header">
+                    <h3>提示</h3>
+                </div>
+                <div class="theme-notice-body">
+                    <p>${message}</p>
+                </div>
+                <div class="theme-notice-footer">
+                    <button class="theme-notice-btn">确定</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(noticeModal);
+
+        var backdrop = noticeModal.querySelector('.theme-notice-backdrop');
+        var okBtn = noticeModal.querySelector('.theme-notice-btn');
+
+        function closeModal() {
+            noticeModal.remove();
+        }
+
+        backdrop.addEventListener('click', closeModal);
+        okBtn.addEventListener('click', closeModal);
+
+        setTimeout(function() {
+            noticeModal.classList.add('show');
+        }, 10);
+    }
+
     // 拦截外部链接点击
     document.addEventListener('click', function(e) {
         var target = e.target;

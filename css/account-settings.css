@@ -46,6 +46,34 @@ body.page-transition-in {
 }
 
 /* 移动端适配 */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+body.transparent-mode .sidebar-backdrop.show {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+body.transparent-mode.dark-mode .sidebar-backdrop.show {
+    background: rgba(0, 0, 0, 0.7);
+}
+
 @media (max-width: 768px) {
     .settings-container {
         flex-direction: column;
@@ -2919,6 +2947,10 @@ body.dark-mode .background-preview {
     border-color: rgba(212, 93, 121, 0.5);
 }
 
+.background-preview::before {
+    display: none !important;
+}
+
 body.dark-mode .preview-placeholder {
     color: #999;
 }
@@ -5132,7 +5164,69 @@ body.dark-mode .verification-status {
 .preset-header-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
+}
+
+.preset-source-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #d45d79 0%, #76abf7 100%);
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
+.dark-mode .toggle-label {
+    color: #aaa;
 }
 
 .close-preset-modal {
@@ -5154,44 +5248,52 @@ body.dark-mode .verification-status {
     color: #333;
 }
 
-.refresh-preset-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: #f5f5f5;
-    color: #666;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.tooltip-container {
+    position: relative;
+}
+
+.tooltip-text {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
     transition: all 0.3s ease;
+    z-index: 100;
+    pointer-events: none;
 }
 
-.refresh-preset-btn:hover {
-    background: #e0e0e0;
-    color: #333;
+.tooltip-text::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
 }
 
-.dark-mode .close-preset-modal,
-.dark-mode .refresh-preset-btn {
+.tooltip-container:hover .tooltip-text {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dark-mode .close-preset-modal {
     background: #2a2a2a;
     color: #ccc;
 }
 
-.dark-mode .close-preset-modal:hover,
-.dark-mode .refresh-preset-btn:hover {
+.dark-mode .close-preset-modal:hover {
     background: #3a3a3a;
     color: #fff;
-}
-
-.refresh-preset-btn.refreshing {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
 }
 
 .preset-background-grid {
@@ -5430,6 +5532,7 @@ body.dark-mode .verification-status {
         font-size: 18px;
         text-align: center;
         width: 100%;
+        padding-right: 45px;
     }
     
     .preset-header-actions {
@@ -5437,6 +5540,22 @@ body.dark-mode .verification-status {
         right: 15px;
         top: 50%;
         transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+    
+    .preset-header-actions .preset-source-toggle {
+        order: 2;
+        margin-top: 20px;
+    }
+    
+    .preset-header-actions .close-preset-modal {
+        order: 1;
+        position: absolute;
+        top: -5px;
+        right: 0;
     }
     
     .preset-background-footer {
@@ -5458,4 +5577,749 @@ body.dark-mode .verification-status {
         padding: 30px 15px 12px;
         font-size: 14px;
     }
+}
+
+/* ===================== 更多主题入口按钮 ===================== */
+.theme-option-more {
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.08) 0%, rgba(118, 171, 247, 0.08) 100%);
+    border-style: dashed;
+}
+
+.theme-option-more:hover {
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.15) 0%, rgba(118, 171, 247, 0.15) 100%);
+    border-color: #76abf7;
+}
+
+/* ===================== 更多主题弹窗 ===================== */
+.more-themes-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.more-themes-modal.show {
+    display: flex;
+    animation: moreThemesFadeIn 0.25s ease;
+}
+
+@keyframes moreThemesFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.more-themes-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.more-themes-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.92);
+    color: #222;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    animation: moreThemesPopIn 0.25s ease;
+}
+
+@keyframes moreThemesPopIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.more-themes-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.more-themes-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+}
+
+.more-themes-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #777;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.more-themes-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #222;
+}
+
+.more-themes-modal-body {
+    padding: 22px;
+    overflow-y: auto;
+}
+
+.more-themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.more-theme-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.more-theme-card:hover {
+    transform: translateY(-2px);
+    border-color: #d45d79;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.more-theme-card.selected {
+    border-color: #d45d79;
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.08) 0%, rgba(118, 171, 247, 0.08) 100%);
+}
+
+.more-theme-card-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(200, 200, 200, 0.5) !important;
+}
+
+.more-theme-card-disabled:hover {
+    transform: none;
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: none;
+}
+
+.more-theme-card .more-theme-selected-icon {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    color: #d45d79;
+    font-size: 16px;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.more-theme-card.selected .more-theme-selected-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.more-theme-preview {
+    position: relative;
+    height: 110px;
+    border-radius: 8px;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.more-theme-preview-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 22px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.more-theme-preview-card {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 16px;
+    height: 56px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.glass-preview-small .more-theme-preview-bar {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.glass-preview-small .more-theme-preview-card {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.transparent-preview-small .more-theme-preview-bar {
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.transparent-preview-small .more-theme-preview-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+}
+
+.more-theme-info h4 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+}
+
+.more-theme-info p {
+    margin: 0;
+    font-size: 12.5px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.more-themes-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 22px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.more-themes-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.more-themes-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* 暗色模式下的弹窗样式 */
+body.dark-mode .more-themes-modal-content {
+    background: rgba(30, 30, 45, 0.92);
+    color: #eee;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .more-themes-modal-header,
+body.dark-mode .more-themes-modal-footer {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .more-themes-modal-header h3 {
+    color: #eee;
+}
+
+body.dark-mode .more-themes-close {
+    color: #aaa;
+}
+
+body.dark-mode .more-themes-close:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+body.dark-mode .more-theme-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .more-theme-card:hover {
+    border-color: #e67e8a;
+}
+
+body.dark-mode .more-theme-card.selected {
+    background: linear-gradient(135deg, rgba(230, 126, 138, 0.12) 0%, rgba(118, 171, 247, 0.12) 100%);
+    border-color: #e67e8a;
+}
+
+body.dark-mode .more-theme-info h4 { color: #eee; }
+body.dark-mode .more-theme-info p { color: #bbb; }
+
+body.dark-mode .more-themes-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #eee;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .more-themes-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 主题确认弹窗 */
+.theme-confirm-modal,
+.theme-notice-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.theme-confirm-modal.show,
+.theme-notice-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.theme-confirm-backdrop,
+.theme-notice-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.theme-confirm-content,
+.theme-notice-content {
+    position: relative;
+    width: 90%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.theme-confirm-modal.show .theme-confirm-content,
+.theme-notice-modal.show .theme-notice-content {
+    transform: translateY(0);
+}
+
+.theme-confirm-header,
+.theme-notice-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.theme-confirm-header h3,
+.theme-notice-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.theme-confirm-body,
+.theme-notice-body {
+    padding: 24px 20px;
+}
+
+.theme-confirm-body p,
+.theme-notice-body p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.theme-confirm-footer,
+.theme-notice-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.theme-confirm-btn,
+.theme-notice-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-confirm-btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.theme-confirm-btn-cancel:hover {
+    background: #eee;
+}
+
+.theme-confirm-btn-ok {
+    background: linear-gradient(135deg, #d45d79 0%, #76abf7 100%);
+    color: #fff;
+}
+
+.theme-confirm-btn-ok:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.4);
+}
+
+.theme-notice-btn {
+    background: linear-gradient(135deg, #d45d79 0%, #76abf7 100%);
+    color: #fff;
+}
+
+.theme-notice-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.4);
+}
+
+/* 暗色模式弹窗 */
+body.dark-mode .theme-confirm-content,
+body.dark-mode .theme-notice-content {
+    background: #2d2d2d;
+}
+
+body.dark-mode .theme-confirm-header,
+body.dark-mode .theme-notice-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .theme-confirm-header h3,
+body.dark-mode .theme-notice-header h3 {
+    color: #fff;
+}
+
+body.dark-mode .theme-confirm-body p,
+body.dark-mode .theme-notice-body p {
+    color: #ddd;
+}
+
+body.dark-mode .theme-confirm-footer,
+body.dark-mode .theme-notice-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .theme-confirm-btn-cancel {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ccc;
+}
+
+body.dark-mode .theme-confirm-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===================== 透明主题 (transparent-mode) ===================== */
+body.transparent-mode .settings-sidebar {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+body.transparent-mode .settings-header {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+body.transparent-mode .settings-header h1,
+body.transparent-mode .settings-header p {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+body.transparent-mode .settings-container {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .section-card {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+body.transparent-mode .card-header h3 {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode .card-header p,
+body.transparent-mode .form-group label,
+body.transparent-mode .two-factor-info h4,
+body.transparent-mode .two-factor-info p,
+body.transparent-mode .sidebar-username,
+body.transparent-mode .sidebar-uid,
+body.transparent-mode .sidebar-version,
+body.transparent-mode .menu-item span,
+body.transparent-mode .menu-group-title {
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode .menu-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.transparent-mode .menu-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.transparent-mode .menu-item.active {
+    background: rgba(255, 255, 255, 0.14);
+    border-left: 3px solid #fff;
+}
+
+body.transparent-mode .menu-item.active i {
+    color: #fff;
+}
+
+body.transparent-mode .menu-item i {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.transparent-mode .two-factor-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* 透明主题下统一所有输入框样式 */
+body.transparent-mode input,
+body.transparent-mode textarea,
+body.transparent-mode select,
+body.transparent-mode .form-input-group input,
+body.transparent-mode .form-group input,
+body.transparent-mode .form-group select,
+body.transparent-mode .form-group textarea,
+body.transparent-mode .tool-section input[type="text"],
+body.transparent-mode .tool-section input[type="number"],
+body.transparent-mode .avatar-card-header input {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #fff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode input::placeholder,
+body.transparent-mode textarea::placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+body.transparent-mode input:focus,
+body.transparent-mode textarea:focus,
+body.transparent-mode select:focus,
+body.transparent-mode .form-input-group input:focus,
+body.transparent-mode .tool-section input[type="text"]:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode input[readonly] {
+    background: rgba(255, 255, 255, 0.04) !important;
+    cursor: not-allowed;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 透明主题下弹窗内的输入框样式（弹窗背景是白色，需要深色边框） */
+body.transparent-mode .alert-content input,
+body.transparent-mode .alert-content textarea,
+body.transparent-mode .alert-content select {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(212, 93, 121, 0.3) !important;
+    color: #333 !important;
+    text-shadow: none !important;
+}
+
+body.transparent-mode .alert-content input::placeholder,
+body.transparent-mode .alert-content textarea::placeholder {
+    color: #999 !important;
+}
+
+body.transparent-mode .alert-content input:focus,
+body.transparent-mode .alert-content textarea:focus,
+body.transparent-mode .alert-content select:focus {
+    border-color: #d45d79 !important;
+    box-shadow: 0 0 0 2px rgba(212, 93, 121, 0.2);
+}
+
+/* 透明主题下下拉菜单选项样式（option需要深色文字） */
+body.transparent-mode select option {
+    background: white;
+    color: #333;
+    text-shadow: none;
+}
+
+body.transparent-mode .char-count {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .custom-color-input label {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .adjust-item label {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .adjust-item .value {
+    color: #fff;
+}
+
+body.transparent-mode .theme-option {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+body.transparent-mode .theme-option span {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .theme-option i {
+    color: #fff;
+}
+
+body.transparent-mode .theme-option:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: #fff;
+}
+
+body.transparent-mode .theme-option.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+}
+
+/* 让内容区的文字在透明模式下整体更清晰 */
+body.transparent-mode .settings-content {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .section-card .card-content {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+/* 透明主题下的按钮与操作 */
+body.transparent-mode .action-btn,
+body.transparent-mode .two-factor-btn,
+body.transparent-mode .more-themes-btn,
+body.transparent-mode .preview-button {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .action-btn:hover,
+body.transparent-mode .two-factor-btn:hover,
+body.transparent-mode .more-themes-btn:hover,
+body.transparent-mode .preview-button:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: #fff;
+}
+
+/* 透明模式下的弹窗保持可读（不被完全透明化） */
+body.transparent-mode .more-themes-modal-content {
+    background: rgba(255, 255, 255, 0.92);
+    color: #222;
+    text-shadow: none;
+}
+
+body.transparent-mode .more-themes-modal-header h3,
+body.transparent-mode .more-theme-info h4,
+body.transparent-mode .more-theme-info p {
+    color: #222;
+    text-shadow: none;
+}
+
+body.transparent-mode .more-themes-btn {
+    background: #fff;
+    color: #222;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    text-shadow: none;
+}
+
+/* 透明主题的暗色模式叠加 */
+body.transparent-mode.dark-mode .settings-sidebar {
+    background: rgba(0, 0, 0, 0.15) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode.dark-mode .settings-header {
+    background: rgba(0, 0, 0, 0.15) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode.dark-mode .section-card {
+    background: rgba(0, 0, 0, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+body.transparent-mode.dark-mode input,
+body.transparent-mode.dark-mode textarea,
+body.transparent-mode.dark-mode select,
+body.transparent-mode.dark-mode .form-input-group input,
+body.transparent-mode.dark-mode .form-group input,
+body.transparent-mode.dark-mode .form-group textarea,
+body.transparent-mode.dark-mode .tool-section input[type="text"],
+body.transparent-mode.dark-mode .tool-section input[type="number"] {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #fff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode input::placeholder,
+body.transparent-mode.dark-mode textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.transparent-mode.dark-mode input:focus,
+body.transparent-mode.dark-mode textarea:focus,
+body.transparent-mode.dark-mode select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode.dark-mode input[readonly] {
+    background: rgba(0, 0, 0, 0.12) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
 }

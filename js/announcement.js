@@ -144,7 +144,7 @@ const announcementData = {
             content: [
                 "尊敬的用户，感谢您一直以来对 PRE Launcher 的支持与关注！",
                 "",
-                "[color:#667eea]【RC 3.0.0 版本预告 - 预计 Q3 第三季度初发布】[/color]",
+                "[color:#667eea]【RC 3.0.0 版本预告 - 预计2026下半年发布】[/color]",
                 "我们很高兴地宣布，PRE Launcher RC 3.0.0 版本的开发工作已经正式启动！",
                 "作为启动器的重大版本更新，RC 3.0.0 将带来全新的界面设计、更流畅的交互体验，以及丰富的新功能。",
                 "",
@@ -220,6 +220,41 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260605",
+            title: "RC 2.6.3.3 开发日志",
+            date: "2026-06-06",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.3.3 版本更新，主要带来了全新的透明主题 BETA 和本地预设背景功能！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 更多主题弹窗：主题设置中的毛玻璃主题按钮改为\"更多主题\"入口，点击后弹出主题选择窗口",
+                "• 透明主题 BETA：全新的透明主题，所有侧边栏、顶部导航栏和卡片全部透明化，保留边框和线条，文字添加阴影增强可读性",
+                "• 本地预设背景：预设背景选择新增联网/本地切换滑块，支持使用bgimg目录下的九张本地图片作为背景",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 透明主题移动端优化：移动端模式下侧边栏弹出时自动调暗背景，确保文字可读性",
+                "• 毛玻璃主题功能精简：毛玻璃主题按钮暂时禁用，待优化后重新开放",
+                "• 透明主题输入框统一优化：所有输入框、下拉框、文本域统一透明样式，文字颜色为白色并带阴影",
+                "• 弹窗输入框样式覆盖：透明主题下弹窗背景为白色，输入框改用深色边框和深色文字保持对比",
+                "• 下拉菜单选项优化：透明主题下下拉选项改为深色文字，确保白底黑字可读性",
+                "• 三页面同步：账户设置页、登录页、游戏大厅页透明主题输入框样式完全统一",
+                "• 预设背景弹窗精简：移除刷新预设背景按钮，简化界面",
+                "• 滑块按钮悬浮提示：本地/联网切换滑块添加悬浮气泡提示，鼠标悬浮时显示'切换本地壁纸或联网壁纸'",
+                "• 移动端预设背景弹窗优化：调整滑块按钮位置，避免遮挡标题文本",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复透明主题在登录页和游戏大厅页面不生效的问题",
+                "• 修复登录页顶部导航栏透明主题不生效的问题",
+                "• 修复本地图片路径问题：账户设置、登录页、游戏大厅页本地背景图片路径统一处理",
+                "• 修复背景预览区双重图片显示问题：预览区与页面背景分别应用，不再叠加显示",
+                "• 修复预设背景图片预览不显示问题：本地/联网预设图片选择后正确显示预览效果",
+                "• 修复自定义背景图片应用后页面空白问题：base64 data URL 不再被错误添加路径前缀",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]",
+            ]
+        },
+        {
             id: "devlog-20260604",
             title: "RC 2.6.3.2 开发日志",
             date: "2026-06-04",
@@ -266,7 +301,7 @@ const announcementData = {
         },
         {
             id: "devlog-20260530",
-            title: "RC 1.1.0.0 (a2) 开发日志",
+            title: "RC 1.1.0.0 开发日志",
             date: "2026-05-30",
             tag: "update",
             tagText: "更新公告",
@@ -1307,7 +1342,7 @@ function generateAnnouncementModal() {
     
     // 添加返回顶部按钮事件
     document.getElementById('announcementBackToTopBtn').addEventListener('click', function() {
-        var contentArea = document.querySelector('#announcementModal .terms-content');
+        var contentArea = document.querySelector('#announcementModal .terms-main');
         if (contentArea) {
             contentArea.scrollTop = 0;
         }
