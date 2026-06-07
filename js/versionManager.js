@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.3.3 (b6)",
+    login: "RC 2.6.3.4 (b6)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.0 (a2)",

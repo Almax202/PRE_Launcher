@@ -524,12 +524,179 @@
                     background: rgba(255, 255, 255, 0.22);
                     border-color: #fff;
                 }
+
+                /* 透明主题 - 登录卡片按钮 */
+                body.transparent-mode .login-btn {
+                    background: rgba(255, 255, 255, 0.14) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.35);
+                    color: #fff;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode .login-btn:hover {
+                    background: rgba(255, 255, 255, 0.22) !important;
+                    border-color: #fff;
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+                    transform: translateY(-2px);
+                }
+
+                body.transparent-mode .login-btn:active {
+                    transform: translateY(0);
+                }
+
+                body.transparent-mode .login-btn.quick-login {
+                    background: rgba(255, 255, 255, 0.14) !important;
+                }
+
+                /* 透明主题 - 左上角徽标图标 */
+                body.transparent-mode .sidebar-avatar {
+                    background: rgba(255, 255, 255, 0.14) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.35);
+                    color: #fff;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                }
                 
                 /* 透明主题 - 用户中心文字 */
                 body.transparent-mode .user-center .user-name,
                 body.transparent-mode .user-center .user-id {
                     color: rgba(255, 255, 255, 0.92);
                     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                }
+                
+                /* 透明主题 - 用户信息卡片 */
+                body.transparent-mode .user-tooltip {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+                
+                body.transparent-mode .user-tooltip .tooltip-header {
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                    color: rgba(255, 255, 255, 0.95);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                }
+                
+                body.transparent-mode .user-tooltip .tooltip-header i {
+                    color: rgba(212, 93, 121, 0.9);
+                }
+                
+                body.transparent-mode .user-tooltip .tooltip-label {
+                    color: rgba(255, 255, 255, 0.7);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                }
+                
+                body.transparent-mode .user-tooltip .tooltip-value {
+                    color: rgba(255, 255, 255, 0.95);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                }
+                
+                body.transparent-mode .user-tooltip .tooltip-footer {
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                }
+                
+                body.transparent-mode .user-tooltip .tooltip-link {
+                    color: rgba(212, 93, 121, 0.9);
+                }
+                
+                body.transparent-mode .user-tooltip .tooltip-link i {
+                    color: rgba(212, 93, 121, 0.9);
+                }
+                
+                /* 透明主题 - 更多操作按钮 */
+                body.transparent-mode .more-actions-btn {
+                    background: rgba(255, 255, 255, 0.14) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.35);
+                    color: #fff;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode .more-actions-btn:hover {
+                    background: rgba(255, 255, 255, 0.22) !important;
+                    border-color: #fff;
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+                }
+
+                /* 透明主题 - 头部功能按钮（展开更多功能相关） */
+                body.transparent-mode .header-right .toggle-buttons-btn,
+                body.transparent-mode .header-right .about-launcher-btn,
+                body.transparent-mode .header-right .card-btn,
+                body.transparent-mode .header-right .hide-interface-btn,
+                body.transparent-mode .header-right .ui-scale-btn {
+                    background: rgba(255, 255, 255, 0.14) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.35);
+                    color: #fff;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode .header-right .toggle-buttons-btn:hover,
+                body.transparent-mode .header-right .about-launcher-btn:hover,
+                body.transparent-mode .header-right .card-btn:hover,
+                body.transparent-mode .header-right .hide-interface-btn:hover,
+                body.transparent-mode .header-right .ui-scale-btn:hover {
+                    background: rgba(255, 255, 255, 0.22) !important;
+                    border-color: #fff;
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+                }
+
+                /* 透明主题 - 移动端更多功能按钮 */
+                body.transparent-mode .mobile-buttons-btn {
+                    background: rgba(255, 255, 255, 0.14) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.35);
+                    color: #fff;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode .mobile-buttons-btn:hover {
+                    background: rgba(255, 255, 255, 0.22) !important;
+                    border-color: #fff;
+                }
+
+                /* 透明主题 - 更多操作悬浮气泡 */
+                body.transparent-mode .more-actions-tooltip {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: rgba(255, 255, 255, 0.95);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+                
+                body.transparent-mode .more-actions-tooltip::after {
+                    border-right-color: rgba(255, 255, 255, 0.08);
+                }
+                
+                /* 透明主题 - 按钮悬浮气泡 */
+                body.transparent-mode .header-right .btn-tooltip {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: rgba(255, 255, 255, 0.95);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+                
+                body.transparent-mode .header-right .btn-tooltip::after {
+                    border-left-color: rgba(255, 255, 255, 0.08);
+                }
+                
+                /* 透明主题 - 侧边栏菜单悬浮气泡 */
+                body.transparent-mode .settings-sidebar.collapsed .menu-tooltip {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: rgba(255, 255, 255, 0.95);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+                
+                body.transparent-mode .settings-sidebar.collapsed .menu-tooltip::after {
+                    border-right-color: rgba(255, 255, 255, 0.08);
                 }
                 
                 /* 透明主题暗色模式叠加 */
@@ -554,6 +721,130 @@
                 
                 body.transparent-mode.dark-mode .user-center {
                     background: rgba(0, 0, 0, 0.18) !important;
+                }
+                
+                body.transparent-mode.dark-mode .user-tooltip {
+                    background: rgba(0, 0, 0, 0.25) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                }
+                
+                body.transparent-mode.dark-mode .user-tooltip .tooltip-header {
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+                }
+                
+                body.transparent-mode.dark-mode .user-tooltip .tooltip-footer {
+                    border-top: 1px solid rgba(255, 255, 255, 0.15);
+                }
+                
+                body.transparent-mode.dark-mode .more-actions-tooltip {
+                    background: rgba(0, 0, 0, 0.25) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                }
+                
+                body.transparent-mode.dark-mode .more-actions-tooltip::after {
+                    border-right-color: rgba(0, 0, 0, 0.25);
+                }
+                
+                body.transparent-mode.dark-mode .header-right .btn-tooltip {
+                    background: rgba(0, 0, 0, 0.25) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                }
+                
+                body.transparent-mode.dark-mode .header-right .btn-tooltip::after {
+                    border-left-color: rgba(0, 0, 0, 0.25);
+                }
+                
+                body.transparent-mode.dark-mode .settings-sidebar.collapsed .menu-tooltip {
+                    background: rgba(0, 0, 0, 0.25) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                }
+                
+                body.transparent-mode.dark-mode .settings-sidebar.collapsed .menu-tooltip::after {
+                    border-right-color: rgba(0, 0, 0, 0.25);
+                }
+
+                /* 透明主题暗色模式 - 更多操作按钮 */
+                body.transparent-mode.dark-mode .more-actions-btn {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.25);
+                    color: rgba(255, 255, 255, 0.92);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode.dark-mode .more-actions-btn:hover {
+                    background: rgba(255, 255, 255, 0.16) !important;
+                    border-color: rgba(255, 255, 255, 0.5);
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+                }
+
+                /* 透明主题暗色模式 - 头部功能按钮（展开更多功能相关） */
+                body.transparent-mode.dark-mode .header-right .toggle-buttons-btn,
+                body.transparent-mode.dark-mode .header-right .about-launcher-btn,
+                body.transparent-mode.dark-mode .header-right .card-btn,
+                body.transparent-mode.dark-mode .header-right .hide-interface-btn,
+                body.transparent-mode.dark-mode .header-right .ui-scale-btn {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.25);
+                    color: rgba(255, 255, 255, 0.92);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode.dark-mode .header-right .toggle-buttons-btn:hover,
+                body.transparent-mode.dark-mode .header-right .about-launcher-btn:hover,
+                body.transparent-mode.dark-mode .header-right .card-btn:hover,
+                body.transparent-mode.dark-mode .header-right .hide-interface-btn:hover,
+                body.transparent-mode.dark-mode .header-right .ui-scale-btn:hover {
+                    background: rgba(255, 255, 255, 0.16) !important;
+                    border-color: rgba(255, 255, 255, 0.5);
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+                }
+
+                /* 透明主题暗色模式 - 移动端更多功能按钮 */
+                body.transparent-mode.dark-mode .mobile-buttons-btn {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.25);
+                    color: rgba(255, 255, 255, 0.92);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode.dark-mode .mobile-buttons-btn:hover {
+                    background: rgba(255, 255, 255, 0.16) !important;
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+
+                /* 透明主题暗色模式 - 登录卡片按钮 */
+                body.transparent-mode.dark-mode .login-btn {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.25);
+                    color: rgba(255, 255, 255, 0.92);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                    box-shadow: none;
+                }
+
+                body.transparent-mode.dark-mode .login-btn:hover {
+                    background: rgba(255, 255, 255, 0.16) !important;
+                    border-color: rgba(255, 255, 255, 0.5);
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+                    transform: translateY(-2px);
+                }
+
+                body.transparent-mode.dark-mode .login-btn:active {
+                    transform: translateY(0);
+                }
+
+                body.transparent-mode.dark-mode .login-btn.quick-login {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                }
+
+                /* 透明主题暗色模式 - 左上角徽标图标 */
+                body.transparent-mode.dark-mode .sidebar-avatar {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.25);
+                    color: rgba(255, 255, 255, 0.92);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
                 }
                 
                 body.transparent-mode.dark-mode input,
@@ -688,8 +979,76 @@
             document.addEventListener('click', function(e) {
                 if (document.body.classList.contains('interface-hidden') && e.target === document.body) {
                     document.body.classList.remove('interface-hidden');
+                    // 重置提示横条的隐藏状态
+                    var hintBar = document.getElementById('hideUiHintBar');
+                    if (hintBar) {
+                        hintBar.classList.remove('hint-hidden');
+                    }
                 }
             });
+
+            // 提示横条的事件
+            var hideUiHintBar = document.getElementById('hideUiHintBar');
+            if (hideUiHintBar) {
+                var hintBarSpan = hideUiHintBar.querySelector('span');
+                var hoverTimer;
+
+                // 鼠标悬浮 - 文本切换
+                hideUiHintBar.addEventListener('mouseenter', function() {
+                    if (hintBarSpan) {
+                        // 先淡出
+                        hintBarSpan.style.opacity = '0';
+                        // 延时后切换文本并淡入
+                        hoverTimer = setTimeout(function() {
+                            var texts = LangManager.getLanguageText('hideHint') || '点击隐藏该提示';
+                            hintBarSpan.textContent = texts;
+                            hintBarSpan.style.opacity = '1';
+                        }, 300);
+                    }
+                });
+
+                // 鼠标离开 - 恢复原文本
+                hideUiHintBar.addEventListener('mouseleave', function() {
+                    if (hoverTimer) {
+                        clearTimeout(hoverTimer);
+                    }
+                    if (hintBarSpan) {
+                        hintBarSpan.style.opacity = '0';
+                        setTimeout(function() {
+                            var texts = LangManager.getLanguageText('hideUIHint') || '点击空白处显示UI';
+                            hintBarSpan.textContent = texts;
+                            hintBarSpan.style.opacity = '1';
+                        }, 300);
+                    }
+                });
+
+                // 点击提示横条 - 隐藏提示
+                hideUiHintBar.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    hideUiHintBar.classList.add('hint-hidden');
+                });
+            }
+
+            // 当界面恢复显示时重置提示横条
+            var bodyObserver = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        if (!document.body.classList.contains('interface-hidden')) {
+                            var hintBar = document.getElementById('hideUiHintBar');
+                            if (hintBar) {
+                                hintBar.classList.remove('hint-hidden');
+                                // 恢复默认文本
+                                var hintBarSpan = hintBar.querySelector('span');
+                                if (hintBarSpan) {
+                                    var texts = LangManager.getLanguageText('hideUIHint') || '点击空白处显示UI';
+                                    hintBarSpan.textContent = texts;
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+            bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
             // UI比例调整功能
             const uiScaleBtn = document.getElementById('uiScaleBtn');
@@ -917,6 +1276,9 @@
     </script>
 </head>
 <body>
+    <div class="hide-ui-hint-bar" id="hideUiHintBar">
+        <span>点击空白处显示UI</span>
+    </div>
     <div class="community-bg">
         <div class="building building-1"></div>
         <div class="building building-2"></div>
@@ -3493,6 +3855,13 @@
                 var user = users.find(function(u) {
                     return u.username === userData.username;
                 });
+                
+                if (user && user.username === 'PREAlmax' && user.userId !== 10001) {
+                    user.userId = 10001;
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                    localStorage.setItem('maxUserId', '10001');
+                }
+                
                 var userId = user ? user.userId : null;
                 updateUserCenter(userData.username, userId);
             } else {
@@ -3825,11 +4194,11 @@
                 return user.username === 'PREAlmax';
             });
             
-            if (preAlmaxUser && !preAlmaxUser.userId) {
-                preAlmaxUser.userId = 100001;
+            if (preAlmaxUser) {
+                preAlmaxUser.userId = 10001;
                 localStorage.setItem('registeredUsers', JSON.stringify(users));
-                localStorage.setItem('maxUserId', '100001');
-                return 100001;
+                localStorage.setItem('maxUserId', '10001');
+                return 10001;
             }
             
             var maxUserUserId = 0;
@@ -6288,6 +6657,12 @@
             var user = users.find(function(u) {
                 return u.username === currentUser.username;
             });
+            
+            if (user && user.username === 'PREAlmax' && user.userId !== 10001) {
+                user.userId = 10001;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+                localStorage.setItem('maxUserId', '10001');
+            }
             
             // 点击方块成就
             var fkAchievements = user && user.gameData && user.gameData.achievements ? user.gameData.achievements : [];

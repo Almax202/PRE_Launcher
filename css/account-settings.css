@@ -6073,6 +6073,19 @@ body.transparent-mode .section-card {
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
+body.transparent-mode .card-icon {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .card-icon.danger {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+}
+
 body.transparent-mode .card-header h3 {
     color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -6113,7 +6126,14 @@ body.transparent-mode .menu-item i {
 }
 
 body.transparent-mode .two-factor-item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+body.transparent-mode .two-factor-item:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* 透明主题下统一所有输入框样式 */
@@ -6162,6 +6182,29 @@ body.transparent-mode .alert-content select {
     border: 1px solid rgba(212, 93, 121, 0.3) !important;
     color: #333 !important;
     text-shadow: none !important;
+}
+
+/* 透明主题下头像悬浮卡片内的输入框样式（悬浮卡片背景是白色） */
+body.transparent-mode .avatar-hover-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+body.transparent-mode .avatar-hover-card .avatar-card-header input {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(212, 93, 121, 0.3) !important;
+    color: #333 !important;
+    text-shadow: none !important;
+}
+
+body.transparent-mode .avatar-hover-card .avatar-card-header input:focus {
+    border-color: rgba(212, 93, 121, 0.6) !important;
+    box-shadow: 0 0 0 2px rgba(212, 93, 121, 0.15);
+}
+
+body.transparent-mode .avatar-hover-card .avatar-card-info {
+    color: #666 !important;
 }
 
 body.transparent-mode .alert-content input::placeholder,
@@ -6255,6 +6298,55 @@ body.transparent-mode .preview-button:hover {
     border-color: #fff;
 }
 
+/* 透明主题 - 小游戏按钮 */
+body.transparent-mode .game-selector-btn {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .game-selector-btn:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: #fff !important;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode .game-selector-btn.active {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: #fff !important;
+}
+
+body.transparent-mode .game-selector-btn.special-btn {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .game-selector-btn.special-btn:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: #fff !important;
+}
+
+body.transparent-mode .game-selector-btn.special-btn.active {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: #fff !important;
+}
+
+/* 透明主题 - 小游戏进度条 */
+body.transparent-mode .game-progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .game-progress-fill {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+body.transparent-mode .game-progress-text {
+    color: #fff;
+}
+
 /* 透明模式下的弹窗保持可读（不被完全透明化） */
 body.transparent-mode .more-themes-modal-content {
     background: rgba(255, 255, 255, 0.92);
@@ -6276,6 +6368,56 @@ body.transparent-mode .more-themes-btn {
     text-shadow: none;
 }
 
+/* 透明主题 - 返回按钮 */
+body.transparent-mode .back-btn {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    box-shadow: none;
+}
+
+body.transparent-mode .back-btn:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: #fff;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* 透明主题 - 侧边栏滚动条 */
+body.transparent-mode .settings-sidebar {
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+}
+
+body.transparent-mode .settings-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.transparent-mode .settings-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode .settings-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* 透明主题 - 内容区域滚动条 */
+body.transparent-mode .settings-content {
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+}
+
+body.transparent-mode .settings-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.transparent-mode .settings-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode .settings-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
 /* 透明主题的暗色模式叠加 */
 body.transparent-mode.dark-mode .settings-sidebar {
     background: rgba(0, 0, 0, 0.15) !important;
@@ -6290,6 +6432,30 @@ body.transparent-mode.dark-mode .settings-header {
 body.transparent-mode.dark-mode .section-card {
     background: rgba(0, 0, 0, 0.18) !important;
     border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+body.transparent-mode.dark-mode .card-icon {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .card-icon.danger {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.92);
+}
+
+body.transparent-mode.dark-mode .two-factor-item {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode.dark-mode .two-factor-item:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 body.transparent-mode.dark-mode input,
@@ -6322,4 +6488,102 @@ body.transparent-mode.dark-mode select:focus {
 body.transparent-mode.dark-mode input[readonly] {
     background: rgba(0, 0, 0, 0.12) !important;
     color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* 透明主题暗色模式 - 返回按钮 */
+body.transparent-mode.dark-mode .back-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: none;
+}
+
+body.transparent-mode.dark-mode .back-btn:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* 透明主题暗色模式 - 侧边栏滚动条 */
+body.transparent-mode.dark-mode .settings-sidebar {
+    scrollbar-color: rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.2);
+}
+
+body.transparent-mode.dark-mode .settings-sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+body.transparent-mode.dark-mode .settings-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+body.transparent-mode.dark-mode .settings-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* 透明主题暗色模式 - 内容区域滚动条 */
+body.transparent-mode.dark-mode .settings-content {
+    scrollbar-color: rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.2);
+}
+
+body.transparent-mode.dark-mode .settings-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+body.transparent-mode.dark-mode .settings-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+body.transparent-mode.dark-mode .settings-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* 透明主题暗色模式 - 小游戏按钮 */
+body.transparent-mode.dark-mode .game-selector-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .game-selector-btn:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode.dark-mode .game-selector-btn.active {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.transparent-mode.dark-mode .game-selector-btn.special-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+body.transparent-mode.dark-mode .game-selector-btn.special-btn:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.transparent-mode.dark-mode .game-selector-btn.special-btn.active {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* 透明主题暗色模式 - 小游戏进度条 */
+body.transparent-mode.dark-mode .game-progress-bar {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.transparent-mode.dark-mode .game-progress-fill {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+body.transparent-mode.dark-mode .game-progress-text {
+    color: rgba(255, 255, 255, 0.92);
 }

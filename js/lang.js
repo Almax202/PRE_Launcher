@@ -68,6 +68,8 @@ const LangManager = (function() {
             aboutLauncher: '关于启动器',
             card: '名片',
             hideUI: '隐藏UI',
+            hideUIHint: '点击空白处显示UI',
+            hideHint: '点击隐藏该提示',
             expandMore: '点击展开更多功能',
             collapseMore: '点击收起更多功能',
             mobileExpandMore: '展开更多功能',
@@ -236,6 +238,8 @@ const LangManager = (function() {
             aboutLauncher: 'About Launcher',
             card: 'Card',
             hideUI: 'Hide UI',
+            hideUIHint: 'Click blank area to show UI',
+            hideHint: 'Click to hide this hint',
             expandMore: 'Click to expand more features',
             collapseMore: 'Click to collapse more features',
             mobileExpandMore: 'Expand more features',
@@ -404,6 +408,8 @@ const LangManager = (function() {
             aboutLauncher: 'ランチャーについて',
             card: '名刺',
             hideUI: 'UIを非表示',
+            hideUIHint: '空白部分をクリックしてUIを表示',
+            hideHint: 'クリックしてこのヒントを非表示',
             expandMore: 'さらに機能を展開するにはクリック',
             collapseMore: '機能を折りたたむにはクリック',
             mobileExpandMore: 'さらに機能を展開',
@@ -572,6 +578,8 @@ const LangManager = (function() {
             aboutLauncher: '런처 정보',
             card: '명함',
             hideUI: 'UI 숨기기',
+            hideUIHint: '빈 공간을 클릭하여 UI 표시',
+            hideHint: '클릭하여 이 힌트 숨기기',
             expandMore: '더 많은 기능을展开하려면 클릭하세요',
             collapseMore: '기능을 접으려면 클릭하세요',
             mobileExpandMore: '더 많은 기능展开',
@@ -816,6 +824,10 @@ const LangManager = (function() {
         if (accountSettingsLink) accountSettingsLink.textContent = texts.accountSettings;
         var logoutTooltip = document.querySelector('.logout-tooltip span');
         if (logoutTooltip) logoutTooltip.textContent = texts.logout;
+        
+        // 更新隐藏UI提示横条
+        var hideUiHintBar = document.querySelector('#hideUiHintBar span');
+        if (hideUiHintBar) hideUiHintBar.textContent = texts.hideUIHint;
         
         // 更新忘记密码链接
         var forgotPasswordLink = document.getElementById('forgotPassword');

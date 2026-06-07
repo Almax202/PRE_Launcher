@@ -6733,8 +6733,7 @@ body.dark-mode .sidebar-copyright p {
 }
 
 .confirm-header {
-    padding: 20px 20px 10px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 20px 0;
 }
 
 .confirm-header h3 {
@@ -6756,7 +6755,6 @@ body.dark-mode .sidebar-copyright p {
 
 .confirm-footer {
     padding: 10px 20px 20px;
-    border-top: 1px solid #f0f0f0;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
@@ -7153,6 +7151,407 @@ body.interface-hidden .community-bg {
 body.interface-hidden .settings-container {
     height: 0;
     overflow: hidden;
+}
+
+.hide-ui-hint-bar {
+    position: fixed;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 12px 32px;
+    border-radius: 24px;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease-out, transform 0.4s ease-out;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.hide-ui-hint-bar span {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    display: inline-block;
+    transition: opacity 0.3s ease-out;
+}
+
+body.interface-hidden .hide-ui-hint-bar {
+    bottom: 40px;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+body.interface-hidden .hide-ui-hint-bar:hover {
+    background: rgba(0, 0, 0, 0.85);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    transform: translateX(-50%) translateY(-2px);
+}
+
+body.interface-hidden .hide-ui-hint-bar.hint-hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(20px);
+}
+
+body.transparent-mode .hide-ui-hint-bar {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode .hide-ui-hint-bar:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+body.transparent-mode.dark-mode .hide-ui-hint-bar {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode.dark-mode .hide-ui-hint-bar:hover {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 透明主题 - 更多操作弹窗样式 */
+body.transparent-mode .more-actions-content {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode .more-action-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    box-shadow: none;
+}
+
+body.transparent-mode .more-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode .more-action-btn.settings-action i,
+body.transparent-mode .more-action-btn.card-action i,
+body.transparent-mode .more-action-btn.logout-action i {
+    color: #fff;
+}
+
+/* 透明主题 - 更多功能弹窗样式 */
+body.transparent-mode .more-features-content {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode .more-feature-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    box-shadow: none;
+}
+
+body.transparent-mode .more-feature-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode .more-feature-btn i {
+    color: #fff !important;
+}
+
+/* 透明主题暗色模式 - 更多操作弹窗样式 */
+body.transparent-mode.dark-mode .more-actions-content {
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode.dark-mode .more-action-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .more-action-btn:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+body.transparent-mode.dark-mode .more-action-btn.settings-action i,
+body.transparent-mode.dark-mode .more-action-btn.card-action i,
+body.transparent-mode.dark-mode .more-action-btn.logout-action i {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+/* 透明主题暗色模式 - 更多功能弹窗样式 */
+body.transparent-mode.dark-mode .more-features-content {
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode.dark-mode .more-feature-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .more-feature-btn:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+body.transparent-mode.dark-mode .more-feature-btn i {
+    color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* 透明主题 - 确认弹窗样式 */
+body.transparent-mode .confirm-content {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+body.transparent-mode .confirm-header {
+    padding-bottom: 0;
+}
+
+body.transparent-mode .confirm-header h3 {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .confirm-body p {
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .confirm-footer {
+    padding-top: 10px;
+}
+
+body.transparent-mode .confirm-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .confirm-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.transparent-mode .confirm-btn.confirm-ok {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+body.transparent-mode .confirm-btn.confirm-ok:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: #fff !important;
+}
+
+/* 透明主题暗色模式 - 确认弹窗样式 */
+body.transparent-mode.dark-mode .confirm-content {
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode.dark-mode .confirm-header {
+    padding-bottom: 0;
+}
+
+body.transparent-mode.dark-mode .confirm-header h3 {
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .confirm-body p {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .confirm-footer {
+    padding-top: 10px;
+}
+
+body.transparent-mode.dark-mode .confirm-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .confirm-btn:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+body.transparent-mode.dark-mode .confirm-btn.confirm-ok {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+body.transparent-mode.dark-mode .confirm-btn.confirm-ok:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* 透明主题 - 移动端更多功能区样式 */
+@media (max-width: 768px) {
+    body.transparent-mode .mobile-buttons-container {
+        background: rgba(255, 255, 255, 0.15) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    body.transparent-mode .mobile-buttons-container:hover {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border-color: #fff !important;
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+    }
+
+    body.transparent-mode .mobile-buttons-icon {
+        background: rgba(255, 255, 255, 0.14) !important;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        color: #fff;
+    }
+
+    body.transparent-mode .mobile-buttons-title {
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    }
+
+    body.transparent-mode .mobile-buttons-btn {
+        background: rgba(255, 255, 255, 0.14) !important;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        color: #fff;
+    }
+
+    body.transparent-mode .mobile-buttons-btn:hover {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border-color: #fff;
+    }
+
+    /* 透明主题暗色模式 - 移动端更多功能区样式 */
+    body.transparent-mode.dark-mode .mobile-buttons-container {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    body.transparent-mode.dark-mode .mobile-buttons-container:hover {
+        background: rgba(0, 0, 0, 0.4) !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    body.transparent-mode.dark-mode .mobile-buttons-icon {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    body.transparent-mode.dark-mode .mobile-buttons-title {
+        color: rgba(255, 255, 255, 0.92);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    body.transparent-mode.dark-mode .mobile-buttons-btn {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    body.transparent-mode.dark-mode .mobile-buttons-btn:hover {
+        background: rgba(255, 255, 255, 0.16) !important;
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+/* 透明主题 - 移动端提示弹窗样式 */
+body.transparent-mode .mobile-warning-content {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+body.transparent-mode .mobile-warning-header h3 {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .mobile-warning-body p {
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .mobile-warning-btn {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .mobile-warning-btn:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: #fff !important;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+}
+
+/* 透明主题暗色模式 - 移动端提示弹窗样式 */
+body.transparent-mode.dark-mode .mobile-warning-content {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode.dark-mode .mobile-warning-header h3 {
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .mobile-warning-body p {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .mobile-warning-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .mobile-warning-btn:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 .mobile-menu-btn {
