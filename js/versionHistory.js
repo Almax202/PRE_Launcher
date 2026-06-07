@@ -1,3 +1,135 @@
+const ZipImageCache = {
+    isReady: false,
+    cache: {},
+    pendingCallbacks: [],
+    
+    init: function() {
+        var self = this;
+        if (typeof JSZip === 'undefined') {
+            console.warn('[ZipImageCache] JSZip 未加载，将使用原始图片路径');
+            self.isReady = true;
+            self._executeCallbacks();
+            return;
+        }
+        
+        if (window.location.protocol === 'file:') {
+            console.warn('[ZipImageCache] 当前为 file:// 协议，无法使用 fetch 加载本地文件，将使用原始图片路径');
+            self.isReady = true;
+            self._executeCallbacks();
+            return;
+        }
+        
+        self._loadZipWithXHR('./images/verimg.zip')
+            .then(function(zipBlob) {
+                return JSZip.loadAsync(zipBlob);
+            })
+            .then(function(zip) {
+                var promises = [];
+                
+                zip.forEach(function(relativePath, zipEntry) {
+                    if (!zipEntry.dir && /\.(png|jpg|jpeg|gif|webp)$/i.test(relativePath)) {
+                        var fileName = self._normalizeFileName(relativePath);
+                        
+                        var promise = zipEntry.async('blob').then(function(blob) {
+                            var url = URL.createObjectURL(blob);
+                            self.cache[fileName] = url;
+                            console.log('[ZipImageCache] 已缓存图片:', fileName);
+                        });
+                        
+                        promises.push(promise);
+                    }
+                });
+                
+                return Promise.all(promises);
+            })
+            .then(function() {
+                self.isReady = true;
+                console.log('[ZipImageCache] 缓存初始化完成，共', Object.keys(self.cache).length, '张图片');
+                self._executeCallbacks();
+            })
+            .catch(function(err) {
+                console.warn('[ZipImageCache] 解压失败，将使用原始图片路径:', err);
+                self.isReady = true;
+                self._executeCallbacks();
+            });
+    },
+    
+    _loadZipWithXHR: function(url) {
+        return new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'blob';
+            
+            xhr.onload = function() {
+                if (xhr.status === 200 || xhr.status === 0) {
+                    resolve(xhr.response);
+                } else {
+                    reject(new Error('加载失败: ' + xhr.status));
+                }
+            };
+            
+            xhr.onerror = function() {
+                reject(new Error('网络错误'));
+            };
+            
+            xhr.send();
+        });
+    },
+    
+    _normalizeFileName: function(path) {
+        var parts = path.replace(/\\/g, '/').split('/');
+        var fileName = parts[parts.length - 1];
+        return fileName.toLowerCase();
+    },
+    
+    _getImageKey: function(imagePath) {
+        var parts = imagePath.replace(/\\/g, '/').split('/');
+        var fileName = parts[parts.length - 1];
+        return fileName.toLowerCase();
+    },
+    
+    getImageUrl: function(imagePath) {
+        if (!this.isReady) {
+            return imagePath;
+        }
+        
+        var key = this._getImageKey(imagePath);
+        if (this.cache[key]) {
+            return this.cache[key];
+        }
+        
+        console.warn('[ZipImageCache] 未找到缓存图片，使用原始路径:', imagePath);
+        return imagePath;
+    },
+    
+    whenReady: function(callback) {
+        if (this.isReady) {
+            callback();
+        } else {
+            this.pendingCallbacks.push(callback);
+        }
+    },
+    
+    _executeCallbacks: function() {
+        while (this.pendingCallbacks.length > 0) {
+            var cb = this.pendingCallbacks.shift();
+            try {
+                cb();
+            } catch (err) {
+                console.error('[ZipImageCache] 回调执行错误:', err);
+            }
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    ZipImageCache.init();
+});
+
+function getVersionImageUrl(imagePath) {
+    return ZipImageCache.getImageUrl(imagePath);
+}
+
 // 版本更新本地存储键名
 const VERSION_STORAGE_KEYS = {
     LAST_VIEWED_VERSION_DATE: 'last_viewed_version_date',
@@ -127,6 +259,21 @@ function updateVersionNotificationDot() {
 // 版本更新公告数据
 const versionHistoryData = {
     launcherUpdateContent: [
+        {
+            version: "RC 2.6.3.3 (b6)",
+            date: "2026-06-07",
+            tag: "important",
+            tagText: "重要更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 引入 JSZip 技术：版本公告图片支持从 verimg.zip 压缩包自动解压加载",
+                "优化改进",
+                "- 图片加载方式升级：使用本地缓存系统存储图片 URL，减少 HTTP 请求",
+                "修复问题",
+                "- 修复本地 file:// 协议下无法加载资源的问题，自动降级使用原始图片路径"
+            ]
+        },
         {
             version: "RC 2.6.3.3 (b5)",
             date: "2026-06-06",
@@ -1844,9 +1991,10 @@ function loadVersionHistory() {
                         <div class="version-images ${isSingleImage ? 'single-image' : ''}">
                     `;
                     versionItem.images.forEach(function(image) {
+                        var imageUrl = getVersionImageUrl(image);
                         versionHTML += `
                             <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
-                                <img src="${image}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                                <img src="${imageUrl}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
                                 <div class="image-tooltip">查看图片</div>
                             </div>
                         `;
@@ -2524,9 +2672,10 @@ function loadVersionHistory() {
                                                 <div class="version-images ${isSingleImage ? 'single-image' : ''}">
                                             `;
                                             versionItem.images.forEach(function(image) {
+                                                var imageUrl = getVersionImageUrl(image);
                                                 versionHTML += `
                                                     <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
-                                                        <img src="${image}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                                                        <img src="${imageUrl}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
                                                         <div class="image-tooltip">查看图片</div>
                                                     </div>
                                                 `;
@@ -2703,9 +2852,10 @@ function loadVersionHistory() {
                                             <div class="version-images ${isSingleImage ? 'single-image' : ''}">
                                         `;
                                         versionItem.images.forEach(function(image) {
+                                            var imageUrl = getVersionImageUrl(image);
                                             versionHTML += `
                                                 <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
-                                                    <img src="${image}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                                                    <img src="${imageUrl}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
                                                     <div class="image-tooltip">查看图片</div>
                                                 </div>
                                             `;
