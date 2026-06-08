@@ -88,9 +88,16 @@ const ZipImageCache = {
         return fileName.toLowerCase();
     },
     
+    _toLocalImagesPath: function(imagePath) {
+        if (imagePath && typeof imagePath === 'string') {
+            return imagePath.replace(/^\.\/images\//, './localimages/').replace(/^images\//, 'localimages/');
+        }
+        return imagePath;
+    },
+    
     getImageUrl: function(imagePath) {
         if (!this.isReady) {
-            return imagePath;
+            return this._toLocalImagesPath(imagePath);
         }
         
         var key = this._getImageKey(imagePath);
@@ -98,8 +105,8 @@ const ZipImageCache = {
             return this.cache[key];
         }
         
-        console.warn('[ZipImageCache] 未找到缓存图片，使用原始路径:', imagePath);
-        return imagePath;
+        console.warn('[ZipImageCache] 未找到缓存图片，使用 localimages 路径:', imagePath);
+        return this._toLocalImagesPath(imagePath);
     },
     
     whenReady: function(callback) {
@@ -259,6 +266,25 @@ function updateVersionNotificationDot() {
 // 版本更新公告数据
 const versionHistoryData = {
     launcherUpdateContent: [
+        {
+            version: "RC 2.6.3.5 (b6)",
+            date: "2026-06-08",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2635.png", "./images/2635_2.png", "./images/2635_3.png"],
+            features: [
+                "新增功能",
+                "- 主题信息查看按钮：账户设置页更多主题弹窗中每个主题按钮左上角新增信息按钮，点击显示主题详细版本信息",
+                "- 登录页复制功能：用户信息卡片右侧新增复制按钮，点击后显示所有条目的单独复制按钮",
+                "优化改进",
+                "- 透明主题适配：账户设置页默认弹窗、按钮和输入框改为透明毛玻璃样式",
+                "- 弹窗文本可读性：透明主题下弹窗内文字颜色提升，添加阴影增强对比度",
+                "- 复制提示样式：复制成功提示横条改为与隐藏UI横条一致的透明毛玻璃样式",
+                "- 版本更新图片路径：原始路径 fallback 方案改为使用 localimages 目录，保持 zip 解压方案不变",
+                "修复问题",
+                "- 修复透明主题下复制提示横条样式不正确的问题"
+            ]
+        },
         {
             version: "RC 2.6.3.4 (b6)",
             date: "2026-06-07",

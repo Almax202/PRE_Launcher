@@ -223,6 +223,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        document.getElementById('copyRegTimeBtn').addEventListener('click', function() {
+            var regTime = document.getElementById('accountRegTime').value;
+            if (regTime && regTime !== '---') {
+                navigator.clipboard.writeText(regTime).then(function() {
+                    showAlert('注册时间已复制到剪贴板');
+                }).catch(function() {
+                    showAlert('复制失败，请手动复制');
+                });
+            }
+        });
+        
         document.getElementById('bindEmailBtn').addEventListener('click', function() {
             var currentEmail = document.getElementById('accountEmail').value;
             if (currentEmail && currentEmail !== '未绑定') {
@@ -412,6 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 更多主题弹窗事件绑定
         bindMoreThemesModal();
+        bindThemeVersionModal();
         
         document.getElementById('languageSelect').addEventListener('change', function() {
             var language = this.value;
@@ -7307,7 +7319,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         document.querySelectorAll('.more-theme-card').forEach(function(card) {
-            card.addEventListener('click', function() {
+            card.addEventListener('click', function(e) {
+                if (e.target.closest('.more-theme-info-btn')) {
+                    return;
+                }
+                
                 var theme = this.getAttribute('data-theme');
                 if (!theme) return;
 
@@ -7343,6 +7359,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 短暂延迟后关闭弹窗，给用户看到选中态
                 setTimeout(closeMoreThemesModal, 250);
             });
+        });
+
+        document.querySelectorAll('.more-theme-info-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var theme = this.getAttribute('data-theme');
+                if (theme) {
+                    showThemeVersionModal(theme);
+                }
+            });
+        });
+    }
+
+    function showThemeVersionModal(themeName) {
+        var modal = document.getElementById('themeVersionModal');
+        if (!modal) return;
+
+        var versionInfo = null;
+        if (typeof getThemeVersionInfo === 'function') {
+            versionInfo = getThemeVersionInfo(themeName);
+        }
+
+        document.getElementById('themeVersionNumber').textContent = versionInfo?.version || '未知';
+        document.getElementById('themeReleaseDate').textContent = versionInfo?.releaseDate || '未知';
+        document.getElementById('themeUpdateDate').textContent = versionInfo?.updateDate || '未知';
+        document.getElementById('themeStatus').textContent = versionInfo?.status || '未知';
+
+        var statusContainer = document.getElementById('themeStatusContainer');
+        statusContainer.classList.remove('beta', 'optimizing', 'release');
+        if (versionInfo?.status === '公开测试版') {
+            statusContainer.classList.add('beta');
+        } else if (versionInfo?.status === '停用优化中') {
+            statusContainer.classList.add('optimizing');
+        } else if (versionInfo?.status === '公开正式版') {
+            statusContainer.classList.add('release');
+        }
+
+        modal.classList.add('show');
+    }
+
+    function closeThemeVersionModal() {
+        var modal = document.getElementById('themeVersionModal');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    function bindThemeVersionModal() {
+        var modal = document.getElementById('themeVersionModal');
+        if (!modal) return;
+
+        var backdrop = document.getElementById('themeVersionBackdrop');
+        var closeBtn = document.getElementById('themeVersionClose');
+        var closeBtn2 = document.getElementById('themeVersionCloseBtn');
+
+        if (backdrop) {
+            backdrop.addEventListener('click', closeThemeVersionModal);
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeThemeVersionModal);
+        }
+        if (closeBtn2) {
+            closeBtn2.addEventListener('click', closeThemeVersionModal);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
+                closeThemeVersionModal();
+            }
         });
     }
 

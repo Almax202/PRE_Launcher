@@ -1396,19 +1396,31 @@
                         <div class="tooltip-header">
                             <i class="fas fa-info-circle"></i>
                             <span>用户信息</span>
+                            <button class="tooltip-copy-all-btn" id="tooltipCopyAllBtn" title="复制所有信息">
+                                <i class="fas fa-copy"></i>
+                            </button>
                         </div>
                         <div class="tooltip-body">
                             <div class="tooltip-item">
                                 <span class="tooltip-label">用户名：</span>
                                 <span class="tooltip-value" id="tooltipUserName">--</span>
+                                <button class="tooltip-copy-btn" id="tooltipCopyUserNameBtn" style="display: none;">
+                                    <i class="fas fa-copy"></i>
+                                </button>
                             </div>
                             <div class="tooltip-item">
                                 <span class="tooltip-label">用户ID：</span>
                                 <span class="tooltip-value" id="tooltipUserId">--</span>
+                                <button class="tooltip-copy-btn" id="tooltipCopyUserIdBtn" style="display: none;">
+                                    <i class="fas fa-copy"></i>
+                                </button>
                             </div>
                             <div class="tooltip-item">
                                 <span class="tooltip-label">注册时间：</span>
                                 <span class="tooltip-value" id="tooltipRegTime">--</span>
+                                <button class="tooltip-copy-btn" id="tooltipCopyRegTimeBtn" style="display: none;">
+                                    <i class="fas fa-copy"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -3607,6 +3619,8 @@
                 } else {
                     document.getElementById('tooltipRegTime').textContent = '--';
                 }
+                
+                initCopyButtons();
             } else {
                 document.getElementById('userName').textContent = username;
                 document.getElementById('userId').textContent = 'UID: ---';
@@ -3616,6 +3630,81 @@
                 document.getElementById('tooltipUserId').textContent = '--';
                 document.getElementById('tooltipRegTime').textContent = '--';
             }
+        }
+
+        function initCopyButtons() {
+            var copyAllBtn = document.getElementById('tooltipCopyAllBtn');
+            var copyUserNameBtn = document.getElementById('tooltipCopyUserNameBtn');
+            var copyUserIdBtn = document.getElementById('tooltipCopyUserIdBtn');
+            var copyRegTimeBtn = document.getElementById('tooltipCopyRegTimeBtn');
+            
+            copyAllBtn.addEventListener('click', function() {
+                copyUserNameBtn.style.display = 'block';
+                copyUserIdBtn.style.display = 'block';
+                copyRegTimeBtn.style.display = 'block';
+                
+                var allInfo = '用户名: ' + document.getElementById('tooltipUserName').textContent + '\n' +
+                              '用户ID: ' + document.getElementById('tooltipUserId').textContent + '\n' +
+                              '注册时间: ' + document.getElementById('tooltipRegTime').textContent;
+                
+                navigator.clipboard.writeText(allInfo).then(function() {
+                    showCopySuccess('已复制所有信息');
+                }).catch(function() {
+                    alert('复制失败');
+                });
+            });
+            
+            copyUserNameBtn.addEventListener('click', function() {
+                var text = document.getElementById('tooltipUserName').textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    showCopySuccess('已复制用户名');
+                }).catch(function() {
+                    alert('复制失败');
+                });
+            });
+            
+            copyUserIdBtn.addEventListener('click', function() {
+                var text = document.getElementById('tooltipUserId').textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    showCopySuccess('已复制用户ID');
+                }).catch(function() {
+                    alert('复制失败');
+                });
+            });
+            
+            copyRegTimeBtn.addEventListener('click', function() {
+                var text = document.getElementById('tooltipRegTime').textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    showCopySuccess('已复制注册时间');
+                }).catch(function() {
+                    alert('复制失败');
+                });
+            });
+        }
+
+        function showCopySuccess(message) {
+            var existingToast = document.querySelector('.copy-toast');
+            if (existingToast) {
+                document.body.removeChild(existingToast);
+            }
+            
+            var toast = document.createElement('div');
+            toast.className = 'copy-toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(function() {
+                toast.classList.add('show');
+            }, 10);
+            
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 400);
+            }, 2000);
         }
 
         function generateUserId(username) {

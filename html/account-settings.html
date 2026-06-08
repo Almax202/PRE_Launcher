@@ -333,6 +333,10 @@
                                 </div>
                                 <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
                                     <input type="text" id="accountRegTime" readonly style="width: 150px;">
+                                    <button class="two-factor-btn" id="copyRegTimeBtn" style="padding: 6px 12px;">
+                                        <i class="fas fa-copy"></i>
+                                        复制
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2641,6 +2645,9 @@
             <div class="more-themes-modal-body">
                 <div class="more-themes-grid">
                     <div class="more-theme-card more-theme-card-disabled" data-theme="glass">
+                        <button class="more-theme-info-btn" data-theme="glass" title="查看版本信息">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
                         <div class="more-theme-preview glass-preview-small">
                             <div class="more-theme-preview-bar"></div>
                             <div class="more-theme-preview-card"></div>
@@ -2652,6 +2659,9 @@
                         <i class="fas fa-check more-theme-selected-icon"></i>
                     </div>
                     <div class="more-theme-card" data-theme="transparent">
+                        <button class="more-theme-info-btn" data-theme="transparent" title="查看版本信息">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
                         <div class="more-theme-preview transparent-preview-small">
                             <div class="more-theme-preview-bar"></div>
                             <div class="more-theme-preview-card"></div>
@@ -2666,6 +2676,42 @@
             </div>
             <div class="more-themes-modal-footer">
                 <button class="more-themes-btn" id="moreThemesCancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主题版本信息弹窗 -->
+    <div class="theme-version-modal" id="themeVersionModal">
+        <div class="theme-version-modal-backdrop" id="themeVersionBackdrop"></div>
+        <div class="theme-version-modal-content">
+            <div class="theme-version-modal-header">
+                <h3><i class="fas fa-info-circle"></i>主题版本信息</h3>
+                <button class="theme-version-close" id="themeVersionClose" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="theme-version-modal-body">
+                <div class="theme-version-info" id="themeVersionInfo">
+                    <div class="theme-version-item">
+                        <span class="theme-version-item-label">组件版本号</span>
+                        <span class="theme-version-item-value" id="themeVersionNumber">--</span>
+                    </div>
+                    <div class="theme-version-item">
+                        <span class="theme-version-item-label">发布日期</span>
+                        <span class="theme-version-item-value" id="themeReleaseDate">--</span>
+                    </div>
+                    <div class="theme-version-item">
+                        <span class="theme-version-item-label">最近更新日期</span>
+                        <span class="theme-version-item-value" id="themeUpdateDate">--</span>
+                    </div>
+                    <div class="theme-version-item status" id="themeStatusContainer">
+                        <span class="theme-version-item-label">组件状态</span>
+                        <span class="theme-version-item-value" id="themeStatus">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-version-modal-footer">
+                <button id="themeVersionCloseBtn">关闭</button>
             </div>
         </div>
     </div>

@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.3.4 (b6)",
+    login: "RC 2.6.3.5 (b6)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.0 (a2)",
@@ -25,15 +25,35 @@ const versionInfo = {
     colormatchgame: "RC 1.2.0",
 
     // 内部版本号
-    launcher: "20260607.2633.b6.81"
+    launcher: "20260607.2633.b6.81",
+
+    // 主题版本信息
+    // status字段可选值说明：
+    // - "停用优化中": 主题正在优化，暂时不可用，显示红色标签
+    // - "公开测试版": 主题处于公开测试阶段，显示蓝色标签
+    // - "公开正式版": 主题已正式发布，显示绿色标签
+    themes: {
+        glass: {
+            version: "RC 1.1.0",
+            releaseDate: "2026-04-06",
+            updateDate: "2026-06-06",
+            status: "停用优化中"
+        },
+        transparent: {
+            version: "Public BETA 1.1.4",
+            releaseDate: "2026-06-06",
+            updateDate: "2026-06-08",
+            status: "公开测试版"
+        }
+    }
 };
 // 启动器信息
 const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-06-07",
-    patchDate: "2026-06-07",
+    buildDate: "2026-06-08",
+    patchDate: "2026-06-08",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""
@@ -43,6 +63,10 @@ const LAST_KNOWN_LOGIN_VERSION_KEY = 'lastKnownLoginVersion';
 
 function getVersion(page) {
     return versionInfo[page] || "获取失败，重定向错误";
+}
+
+function getThemeVersionInfo(themeName) {
+    return versionInfo.themes && versionInfo.themes[themeName] || null;
 }
 
 function getLastKnownLoginVersion() {
