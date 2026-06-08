@@ -25,7 +25,7 @@ const versionInfo = {
     colormatchgame: "RC 1.2.0",
 
     // 内部版本号
-    launcher: "20260607.2633.b6.81",
+    launcher: "20260608.2635.b6.82",
 
     // 主题版本信息
     // status字段可选值说明：
