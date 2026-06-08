@@ -215,7 +215,36 @@ const announcementData = {
     ],
     // 普通公告
     normalAnnouncements: [
-        
+        {
+            id: "normalA-20260608",
+            title: "RC 2.6.3.5 版本问题说明",
+            date: "2026-06-08",
+            tag: "normal",
+            tagText: "普通公告",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "大家好，这里是 PREAlmax。",
+                "",
+                "在推送 RC 2.6.3.5 (b6) 版本更新后，我们注意到移动端程序存在以下问题：",
+                "",
+                "[color:#ff6b6b]【已知问题】[/color]",
+                "• 移动端账户设置页更换自选背景时，保存应用后设置不会同步到其他页面",
+                "• 重新加载页面时，CSS 和 JS 文件可能无法正常加载，进而导致页面进程卡死",
+                "• 使用 HDR 图片作为背景时，有一定概率导致页面进程卡死，并且页面无法正常显示",
+                "",
+                "[color:#ffd93d]【当前进展】[/color]",
+                "目前我们正在对上述问题进行逐一排查、测试和修复。由于部分问题需要进行多场景、多设备的兼容性测试，修复工作需要一定时间。",
+                "",
+                "[color:#4ecdc4]【后续安排】[/color]",
+                "待所有问题修复完毕并验证通过后，我们将推送新版本并发布更详细的更新公告，届时会同步修复详情和更新说明。",
+                "",
+                "[color:#667eea]【感谢支持】[/color]",
+                "感谢您的理解与支持！如果您遇到其他问题，欢迎通过 Github Issue 与我们联系。",
+                "",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        }
     ],
     // 开发日志
     devLogs: [
