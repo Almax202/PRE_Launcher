@@ -2228,73 +2228,120 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 存储背景图片到IndexedDB
     function storeBackgroundInIndexedDB(imageData, userId) {
         return new Promise(function(resolve, reject) {
+            var timeoutId = setTimeout(function() {
+                console.warn('IndexedDB存储超时');
+                reject('存储超时');
+            }, 30000);
+            
             initIndexedDB().then(function(db) {
-                var transaction = db.transaction(['backgrounds'], 'readwrite');
-                var store = transaction.objectStore('backgrounds');
-                
-                var backgroundItem = {
-                    id: 'background_' + userId,
-                    image: imageData,
-                    timestamp: new Date().toISOString()
-                };
-                
-                var request = store.put(backgroundItem);
-                
-                request.onsuccess = function() {
-                    resolve();
-                };
-                
-                request.onerror = function(event) {
-                    console.error('存储背景图片失败:', event.target.error);
-                    reject('存储背景图片失败');
-                };
-            }).catch(reject);
+                try {
+                    var transaction = db.transaction(['backgrounds'], 'readwrite');
+                    var store = transaction.objectStore('backgrounds');
+                    
+                    var backgroundItem = {
+                        id: 'background_' + userId,
+                        image: imageData,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    var request = store.put(backgroundItem);
+                    
+                    request.onsuccess = function() {
+                        clearTimeout(timeoutId);
+                        resolve();
+                    };
+                    
+                    request.onerror = function(event) {
+                        clearTimeout(timeoutId);
+                        console.error('存储背景图片失败:', event.target.error);
+                        reject('存储背景图片失败');
+                    };
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    console.error('IndexedDB事务异常:', e);
+                    reject(e);
+                }
+            }).catch(function(err) {
+                clearTimeout(timeoutId);
+                reject(err);
+            });
         });
     }
     
-    // 从IndexedDB读取背景图片
     function getBackgroundFromIndexedDB(userId) {
         return new Promise(function(resolve, reject) {
+            var timeoutId = setTimeout(function() {
+                console.warn('IndexedDB读取超时，跳过背景加载');
+                resolve(null);
+            }, 5000);
+            
             initIndexedDB().then(function(db) {
-                var transaction = db.transaction(['backgrounds'], 'readonly');
-                var store = transaction.objectStore('backgrounds');
-                
-                var request = store.get('background_' + userId);
-                
-                request.onsuccess = function(event) {
-                    var result = event.target.result;
-                    resolve(result ? result.image : null);
-                };
-                
-                request.onerror = function(event) {
-                    console.error('读取背景图片失败:', event.target.error);
-                    reject('读取背景图片失败');
-                };
-            }).catch(reject);
+                try {
+                    var transaction = db.transaction(['backgrounds'], 'readonly');
+                    var store = transaction.objectStore('backgrounds');
+                    
+                    var request = store.get('background_' + userId);
+                    
+                    request.onsuccess = function(event) {
+                        clearTimeout(timeoutId);
+                        var result = event.target.result;
+                        resolve(result ? result.image : null);
+                    };
+                    
+                    request.onerror = function(event) {
+                        clearTimeout(timeoutId);
+                        console.error('读取背景图片失败:', event.target.error);
+                        resolve(null);
+                    };
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    console.error('IndexedDB事务异常:', e);
+                    resolve(null);
+                }
+            }).catch(function(err) {
+                clearTimeout(timeoutId);
+                console.error('IndexedDB初始化失败:', err);
+                resolve(null);
+            });
         });
     }
     
-    // 删除IndexedDB中的背景图片
     function deleteBackgroundFromIndexedDB(userId) {
         return new Promise(function(resolve, reject) {
+            var timeoutId = setTimeout(function() {
+                console.warn('IndexedDB删除超时');
+                resolve();
+            }, 10000);
+            
             initIndexedDB().then(function(db) {
-                var transaction = db.transaction(['backgrounds'], 'readwrite');
-                var store = transaction.objectStore('backgrounds');
-                
-                var request = store.delete('background_' + userId);
-                
-                request.onsuccess = function() {
+                try {
+                    var transaction = db.transaction(['backgrounds'], 'readwrite');
+                    var store = transaction.objectStore('backgrounds');
+                    
+                    var request = store.delete('background_' + userId);
+                    
+                    request.onsuccess = function() {
+                        clearTimeout(timeoutId);
+                        resolve();
+                    };
+                    
+                    request.onerror = function(event) {
+                        clearTimeout(timeoutId);
+                        console.error('删除背景图片失败:', event.target.error);
+                        resolve();
+                    };
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    console.error('IndexedDB事务异常:', e);
                     resolve();
-                };
-                
-                request.onerror = function(event) {
-                    console.error('删除背景图片失败:', event.target.error);
-                    reject('删除背景图片失败');
-                };
-            }).catch(reject);
+                }
+            }).catch(function(err) {
+                clearTimeout(timeoutId);
+                console.error('IndexedDB初始化失败:', err);
+                resolve();
+            });
         });
     }
     
@@ -4494,11 +4541,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        var maxSize = 100 * 1024 * 1024; // 100MB
+        var maxSize = 20 * 1024 * 1024; // 20MB
         var warningSize = 5 * 1024 * 1024; // 5MB
         
+        var supportedTypes = [
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
+            'image/webp', 'image/bmp', 'image/x-icon'
+        ];
+        
         if (file.size > maxSize) {
-            showAlert('背景图片文件大小不能超过100MB');
+            showAlert('背景图片文件大小不能超过20MB');
             event.target.value = '';
             return;
         }
@@ -4509,9 +4561,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 检查是否超过5MB，如果超过则显示确认弹窗
+        if (file.type && supportedTypes.indexOf(file.type) === -1) {
+            showAlert('不支持的图片格式，请使用 JPG、PNG、GIF、WebP 或 BMP 格式');
+            event.target.value = '';
+            return;
+        }
+        
         if (file.size > warningSize) {
-            showConfirm('您正在上传的图片文件已大于5MB，继续使用会出现页面背景加载不及时的问题，但总归可用，是否继续操作？', function(confirm) {
+            showConfirm('您正在上传的图片文件已大于5MB，继续使用会出现页面背景加载不及时的问题，是否继续操作？', function(confirm) {
                 if (confirm) {
                     processBackgroundUpload(file, event);
                 } else {
@@ -4524,26 +4581,50 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function processBackgroundUpload(file, event) {
-        // 显示加载状态
         var preview = document.getElementById('backgroundPreview');
         preview.innerHTML = '<div class="preview-loading"><i class="fas fa-spinner fa-spin"></i><span>处理中...</span></div>';
         
         var reader = new FileReader();
+        var timeoutId = null;
+        var isDone = false;
+        
+        timeoutId = setTimeout(function() {
+            if (!isDone) {
+                isDone = true;
+                reader.abort();
+                console.error('图片处理超时');
+                showAlert('图片处理超时，请尝试使用较小的图片');
+                event.target.value = '';
+                preview.innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i><span>预览</span></div>';
+            }
+        }, 30000);
         
         reader.onload = function(e) {
+            if (isDone) return;
+            isDone = true;
+            clearTimeout(timeoutId);
+            
             try {
                 var base64 = e.target.result;
                 
-                // 清除之前可能设置的背景图片样式
                 preview.innerHTML = '';
                 
-                // 显示预览
-                preview.style.backgroundImage = 'url(' + base64 + ')';
-                preview.style.backgroundSize = 'cover';
-                preview.style.backgroundPosition = 'center';
+                var img = new Image();
+                img.onerror = function() {
+                    console.error('图片格式无效，无法解码');
+                    showAlert('图片格式无效或已损坏，请尝试其他图片');
+                    event.target.value = '';
+                    preview.innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i><span>预览</span></div>';
+                };
                 
-                // 保存到临时变量
-                window.tempBackground = base64;
+                img.onload = function() {
+                    preview.style.backgroundImage = 'url(' + base64 + ')';
+                    preview.style.backgroundSize = 'cover';
+                    preview.style.backgroundPosition = 'center';
+                    window.tempBackground = base64;
+                };
+                
+                img.src = base64;
             } catch (e) {
                 console.error('图片处理失败:', e);
                 showAlert('图片处理失败，请重试');
@@ -4553,9 +4634,18 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         reader.onerror = function() {
+            if (isDone) return;
+            isDone = true;
+            clearTimeout(timeoutId);
             showAlert('背景图片上传失败，请重试');
             event.target.value = '';
             preview.innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i><span>预览</span></div>';
+        };
+        
+        reader.onabort = function() {
+            if (isDone) return;
+            isDone = true;
+            clearTimeout(timeoutId);
         };
         
         reader.readAsDataURL(file);

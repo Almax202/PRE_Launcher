@@ -249,6 +249,35 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260609",
+            title: "RC 2.6.3.6 开发日志",
+            date: "2026-06-09",
+            tag: "update",
+            tagText: "更新公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.3.6 版本更新，主要修复了上一版本发现的三个关键问题，并优化了背景图片处理和页面加载机制！",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 背景图片上传优化：最大文件限制从100MB调整为20MB，防止过大图片导致内存占用过高",
+                "• 背景图片格式验证：添加图片格式白名单机制，仅支持JPG、PNG、GIF、WebP、BMP格式，过滤HDR等不支持的格式",
+                "• 图片处理超时机制：背景图片上传添加30秒超时限制，防止异常格式图片处理超时导致页面卡死",
+                "• 图片解码验证：使用Image对象验证图片解码有效性，防止无效或损坏图片导致页面卡死",
+                "• IndexedDB超时优化：所有页面背景读取添加5秒超时机制，超时后自动跳过背景加载，避免页面卡死",
+                "• IndexedDB异常保护：所有IndexedDB操作添加try-catch保护，防止数据库异常导致页面崩溃",
+                "• 背景设置参数验证：加载背景时验证fit、opacity、blur参数有效性，防止无效值导致样式错误",
+                "• 全局错误监听：登录页、游戏大厅页、账户设置页添加window.onerror和unhandledrejection监听",
+                "• Font Awesome资源容错：CSS加载添加onerror回退机制，CDN加载失败时使用本地资源",
+                "• JSZip资源容错：JSZip脚本添加onerror处理，标记fallback状态以便代码降级处理",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复移动端账户设置页更换自选背景后设置不会同步到其他页面的问题",
+                "• 修复重新加载页面时CSS和JS文件加载异常导致页面卡死的问题",
+                "• 修复使用HDR图片作为背景时有概率导致页面卡死的问题",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260608",
             title: "RC 2.6.3.5 开发日志",
             date: "2026-06-08",

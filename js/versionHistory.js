@@ -267,6 +267,30 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.3.6 (b6)",
+            date: "2026-06-09",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "优化改进",
+                "- 背景图片上传：最大文件限制从100MB调整为20MB，防止过大图片导致内存占用过高",
+                "- 背景图片上传：添加图片格式白名单验证，仅支持JPG、PNG、GIF、WebP、BMP格式",
+                "- 背景图片上传：添加30秒超时机制，防止异常格式图片处理超时",
+                "- 背景图片上传：使用Image对象验证图片解码有效性，防止无效图片导致页面卡死",
+                "- IndexedDB操作：所有页面背景读取添加5秒超时机制，超时后跳过背景加载",
+                "- IndexedDB操作：所有IndexedDB操作添加try-catch保护，防止异常导致页面卡死",
+                "- 背景设置验证：加载背景时验证fit、opacity、blur参数有效性，防止无效值导致错误",
+                "- 全局错误监听：所有页面添加window.onerror和unhandledrejection监听",
+                "- 外部资源加载：Font Awesome CSS添加onerror回退机制",
+                "- 外部资源加载：JSZip脚本添加onerror处理，标记fallback状态",
+                "修复问题",
+                "- 修复移动端账户设置页更换自选背景后设置不会同步到其他页面的问题",
+                "- 修复重新加载页面时CSS和JS文件加载异常导致页面卡死的问题",
+                "- 修复使用HDR图片作为背景时有概率导致页面卡死的问题"
+            ]
+        },
+        {
             version: "RC 2.6.3.5 (b6)",
             date: "2026-06-08",
             tag: "normal",

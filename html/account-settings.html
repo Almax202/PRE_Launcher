@@ -13,13 +13,23 @@
     <link rel="preload" href="../css/account-settings.css" as="style">
     <link rel="stylesheet" href="../css/denglu.css">
     <link rel="stylesheet" href="../css/account-settings.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='../css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
     <script src="../js/settings.js" defer></script>
     <script src="../js/accountlang.js" defer></script>
     <script src="../js/versionManager.js" defer></script>
 </head>
 <body>
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('页面错误:', e.message, '在', e.filename, '第', e.lineno, '行');
+            return false;
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的Promise拒绝:', e.reason);
+        });
+    </script>
     <div class="settings-container">
         <div class="settings-sidebar">
             <div class="sidebar-header">
@@ -1358,7 +1368,7 @@
                                                 <h4 style="margin: 0;">上传背景图片</h4>
                                             </div>
                                         </div>
-                                        <p style="margin: 0; font-size: 13px; color: #666;">支持 JPG、PNG 格式，最大 100MB</p>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">支持 JPG、PNG 格式，最大 20MB</p>
                                     </div>
                                     <input type="file" id="backgroundUpload" accept="image/*" style="display: none;">
                                     <button class="two-factor-btn" id="uploadBackgroundBtn">

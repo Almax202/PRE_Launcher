@@ -13,9 +13,9 @@
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="./css/denglu.css" as="style">
     <link rel="stylesheet" href="./css/denglu.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='./css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" onerror="this.onerror=null; window.JSZipFallback=true" defer></script>
     <script src="./js/settings.js" defer></script>
     <script src="./js/versionHistory.js" defer></script>
     <script src="./js/versionManager.js" defer></script>
@@ -25,7 +25,15 @@
     <script src="./js/announcement.js" defer></script>
     
     <script>
-        // 加载用户头像
+        window.addEventListener('error', function(e) {
+            console.error('页面错误:', e.message, '在', e.filename, '第', e.lineno, '行');
+            return false;
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的Promise拒绝:', e.reason);
+        });
+        
         function loadUserAvatar() {
             var avatarInfo = JSON.parse(localStorage.getItem('currentUserAvatar') || 'null');
             if (avatarInfo) {
@@ -68,25 +76,41 @@
             });
         }
         
-        // 从IndexedDB读取背景图片
         function getBackgroundFromIndexedDB(userId) {
             return new Promise(function(resolve, reject) {
+                var timeoutId = setTimeout(function() {
+                    console.warn('IndexedDB读取超时，跳过背景加载');
+                    resolve(null);
+                }, 5000);
+                
                 initIndexedDB().then(function(db) {
-                    var transaction = db.transaction(['backgrounds'], 'readonly');
-                    var store = transaction.objectStore('backgrounds');
-                    
-                    var request = store.get('background_' + userId);
-                    
-                    request.onsuccess = function(event) {
-                        var result = event.target.result;
-                        resolve(result ? result.image : null);
-                    };
-                    
-                    request.onerror = function(event) {
-                        console.error('读取背景图片失败:', event.target.error);
-                        reject('读取背景图片失败');
-                    };
-                }).catch(reject);
+                    try {
+                        var transaction = db.transaction(['backgrounds'], 'readonly');
+                        var store = transaction.objectStore('backgrounds');
+                        
+                        var request = store.get('background_' + userId);
+                        
+                        request.onsuccess = function(event) {
+                            clearTimeout(timeoutId);
+                            var result = event.target.result;
+                            resolve(result ? result.image : null);
+                        };
+                        
+                        request.onerror = function(event) {
+                            clearTimeout(timeoutId);
+                            console.error('读取背景图片失败:', event.target.error);
+                            resolve(null);
+                        };
+                    } catch (e) {
+                        clearTimeout(timeoutId);
+                        console.error('IndexedDB事务异常:', e);
+                        resolve(null);
+                    }
+                }).catch(function(err) {
+                    clearTimeout(timeoutId);
+                    console.error('IndexedDB初始化失败:', err);
+                    resolve(null);
+                });
             });
         }
         
@@ -180,40 +204,54 @@
             document.head.appendChild(style);
         }
         
-        // 加载自定义背景
         function loadCustomBackground() {
-            var backgroundSettings = localStorage.getItem('customBackground');
-            if (backgroundSettings) {
-                try {
-                    backgroundSettings = JSON.parse(backgroundSettings);
+            try {
+                var backgroundSettings = localStorage.getItem('customBackground');
+                if (!backgroundSettings) {
+                    return;
+                }
+                
+                backgroundSettings = JSON.parse(backgroundSettings);
+                
+                if (!backgroundSettings || typeof backgroundSettings !== 'object') {
+                    console.warn('背景设置数据无效');
+                    return;
+                }
+                
+                if (backgroundSettings.useIndexedDB && !backgroundSettings.image) {
+                    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    var userId = currentUser.userId || currentUser.username;
                     
-                    // 检查是否使用IndexedDB存储
-                    if (backgroundSettings.useIndexedDB && !backgroundSettings.image) {
-                        // 从IndexedDB中读取背景图片
-                        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                        var userId = currentUser.userId || currentUser.username;
-                        
-                        if (userId) {
-                            getBackgroundFromIndexedDB(userId).then(function(imageData) {
-                                if (imageData) {
+                    if (userId) {
+                        getBackgroundFromIndexedDB(userId).then(function(imageData) {
+                            if (imageData) {
+                                try {
                                     applyBackgroundStyle({
                                         image: imageData,
-                                        fit: backgroundSettings.fit,
-                                        opacity: backgroundSettings.opacity,
-                                        blur: backgroundSettings.blur
+                                        fit: backgroundSettings.fit || 'cover',
+                                        opacity: typeof backgroundSettings.opacity === 'number' ? backgroundSettings.opacity : 1,
+                                        blur: typeof backgroundSettings.blur === 'number' ? backgroundSettings.blur : 0
                                     });
+                                } catch (e) {
+                                    console.error('应用背景样式失败:', e);
                                 }
-                            }).catch(function(error) {
-                                console.error('从IndexedDB读取背景图片失败:', error);
-                            });
-                        }
-                    } else {
-                        // 直接使用localStorage中的数据
-                        applyBackgroundStyle(backgroundSettings);
+                            }
+                        });
                     }
-                } catch (e) {
-                    console.error('加载背景设置失败:', e);
+                } else if (backgroundSettings.image) {
+                    try {
+                        applyBackgroundStyle({
+                            image: backgroundSettings.image,
+                            fit: backgroundSettings.fit || 'cover',
+                            opacity: typeof backgroundSettings.opacity === 'number' ? backgroundSettings.opacity : 1,
+                            blur: typeof backgroundSettings.blur === 'number' ? backgroundSettings.blur : 0
+                        });
+                    } catch (e) {
+                        console.error('应用背景样式失败:', e);
+                    }
                 }
+            } catch (e) {
+                console.error('加载背景设置失败:', e);
             }
         }
         
