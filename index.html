@@ -1239,6 +1239,10 @@
                                     <i class="fas fa-search"></i>
                                     <span>调整UI比例</span>
                                 </button>
+                                <button class="more-feature-btn" id="mobileModalShowGuideBtn">
+                                    <i class="fas fa-compass"></i>
+                                    <span>查看引导</span>
+                                </button>
                             </div>
                         </div>
                         <div class="confirm-footer">
@@ -1267,6 +1271,13 @@
                 document.getElementById('mobileModalUiScaleBtn').addEventListener('click', function() {
                     document.getElementById('mobileFunctionsModal').style.display = 'none';
                     document.getElementById('uiScaleBtn').click();
+                });
+                
+                document.getElementById('mobileModalShowGuideBtn').addEventListener('click', function() {
+                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    if (typeof showGuide === 'function') {
+                        showGuide();
+                    }
                 });
             }
             
@@ -1861,6 +1872,10 @@
                     <button class="more-feature-btn" id="modalUiScaleBtn">
                         <i class="fas fa-search"></i>
                         <span>调整UI比例</span>
+                    </button>
+                    <button class="more-feature-btn" id="modalShowGuideBtn">
+                        <i class="fas fa-compass"></i>
+                        <span>查看引导</span>
                     </button>
                 </div>
             </div>
@@ -4072,6 +4087,13 @@
         document.getElementById('modalUiScaleBtn').addEventListener('click', function() {
             document.getElementById('moreFeaturesModal').style.display = 'none';
             document.getElementById('uiScaleBtn').click();
+        });
+        
+        document.getElementById('modalShowGuideBtn').addEventListener('click', function() {
+            document.getElementById('moreFeaturesModal').style.display = 'none';
+            if (typeof showGuide === 'function') {
+                showGuide();
+            }
         });
         
         // 更新名片按钮状态
@@ -8096,6 +8118,275 @@
             // 显示游戏成就详情
             alert(`${gameNames[gameCode]}成就完成度：${completedAchievements}/${total} (${completionRate}%)`);
         }
+
+        // ==================== 引导功能 ====================
+        var guideSteps = [
+            {
+                elementId: 'loginContainer',
+                title: '登录卡片',
+                description: '这是登录区域，您需要在此输入账号和密码完成登录',
+                position: 'top'
+            },
+            {
+                elementId: 'username',
+                title: '账号输入',
+                description: '在此输入您注册时设置的账号',
+                position: 'top'
+            },
+            {
+                elementId: 'captcha',
+                title: '验证码',
+                description: '输入图片中的验证码进行安全验证',
+                position: 'top'
+            },
+            {
+                elementId: 'loginButton',
+                title: '登录按钮',
+                description: '完成输入后点击此按钮进行登录',
+                position: 'top'
+            },
+            {
+                elementId: 'sidebar-menu',
+                title: '侧边栏菜单',
+                description: '侧边栏包含启动器所有核心功能入口',
+                position: 'right'
+            },
+            {
+                elementId: 'settings-sidebar',
+                title: '侧边栏整体',
+                description: '这是启动器的导航中心，包含登录注册、设置、反馈等功能',
+                position: 'right'
+            },
+            {
+                elementId: 'collapseSidebarBtn',
+                title: '收起侧边栏',
+                description: '点击此按钮可收起侧边栏，仅保留图标显示，让界面更简洁',
+                position: 'right'
+            },
+            {
+                elementId: 'sidebarRegister',
+                title: '注册账号',
+                description: '新用户请从此入口注册账号',
+                position: 'right'
+            },
+            {
+                elementId: 'sidebarSettings',
+                title: '全局设置',
+                description: '可设置语言、游戏服务器等启动器全局选项',
+                position: 'right'
+            },
+            {
+                elementId: 'sidebarFeedback',
+                title: '反馈建议',
+                description: '遇到问题或有想法？在这里反馈给开发者',
+                position: 'right'
+            },
+            {
+                elementId: 'sidebarVersion',
+                title: '版本更新',
+                description: '查看启动器和各游戏的版本更新记录',
+                position: 'right'
+            },
+            {
+                elementId: 'sidebarAnnouncement',
+                title: '开发者公告',
+                description: '了解最新的开发者公告和重要通知',
+                position: 'right'
+            },
+            {
+                elementId: 'userCenter',
+                title: '个人卡片',
+                description: '登录后显示您的头像、用户名和ID，可查看个人信息',
+                position: 'right'
+            },
+            {
+                elementId: 'moreActionsBtn',
+                title: '更多操作',
+                description: '登录后点击可进入账户设置、查看名片、退出登录',
+                position: 'right'
+            },
+            {
+                elementId: 'toggleButtonsBtn',
+                title: '更多功能',
+                description: '点击展开更多实用功能',
+                position: 'left'
+            }
+        ];
+
+        var currentGuideStep = 0;
+        var isGuideActive = false;
+
+        function showGuideWelcome() {
+            var hasSeenGuide = localStorage.getItem('hasSeenGuide');
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            
+            if (!hasSeenGuide && !currentUser) {
+                document.getElementById('guideWelcomeModal').classList.remove('hidden');
+            }
+        }
+
+        function startGuide() {
+            document.getElementById('guideWelcomeModal').classList.add('hidden');
+            localStorage.setItem('hasSeenGuide', 'true');
+            isGuideActive = true;
+            currentGuideStep = 0;
+            showGuideStep(0);
+        }
+
+        function skipGuide() {
+            document.getElementById('guideWelcomeModal').classList.add('hidden');
+            localStorage.setItem('hasSeenGuide', 'true');
+        }
+
+        function showGuideStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= guideSteps.length) {
+                endGuide();
+                return;
+            }
+
+            currentGuideStep = stepIndex;
+            var step = guideSteps[stepIndex];
+            var targetElement = document.getElementById(step.elementId);
+            
+            if (!targetElement) {
+                targetElement = document.querySelector('.' + step.elementId);
+            }
+
+            if (!targetElement) {
+                nextGuideStep();
+                return;
+            }
+
+            var isElementVisible = targetElement.offsetParent !== null;
+            
+            if (!isElementVisible && step.elementId !== 'passwordSection') {
+                nextGuideStep();
+                return;
+            }
+
+            var overlay = document.getElementById('guideStepOverlay');
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            var footer = document.getElementById('guideStepFooter');
+            var indicators = document.getElementById('guideStepIndicators');
+            var prevBtn = document.getElementById('guidePrevBtn');
+            var nextBtn = document.getElementById('guideNextBtn');
+            var stepTitle = document.getElementById('stepTitle');
+            var stepDesc = document.getElementById('stepDesc');
+
+            overlay.classList.add('active');
+            footer.style.display = 'flex';
+
+            var rect = targetElement.getBoundingClientRect();
+            
+            if (isElementVisible) {
+                highlight.style.left = rect.left - 10 + 'px';
+                highlight.style.top = rect.top - 10 + 'px';
+                highlight.style.width = rect.width + 20 + 'px';
+                highlight.style.height = rect.height + 20 + 'px';
+                highlight.style.display = 'block';
+            } else {
+                highlight.style.display = 'none';
+            }
+
+            stepTitle.textContent = step.title;
+            stepDesc.textContent = step.description;
+
+            tooltip.className = 'guide-step-tooltip ' + step.position;
+
+            var tooltipWidth = tooltip.offsetWidth;
+            var tooltipHeight = tooltip.offsetHeight;
+
+            if (isElementVisible) {
+                switch (step.position) {
+                    case 'top':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.top - tooltipHeight - 15 + 'px';
+                        break;
+                    case 'bottom':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.bottom + 15 + 'px';
+                        break;
+                    case 'left':
+                        tooltip.style.left = rect.left - tooltipWidth - 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                    case 'right':
+                        tooltip.style.left = rect.right + 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                }
+            } else {
+                var loginButton = document.getElementById('loginButton');
+                if (loginButton) {
+                    var loginRect = loginButton.getBoundingClientRect();
+                    tooltip.style.left = loginRect.left + loginRect.width / 2 - tooltipWidth / 2 + 'px';
+                    tooltip.style.top = loginRect.top - tooltipHeight - 15 - 50 + 'px';
+                }
+            }
+
+            indicators.innerHTML = '';
+            for (var i = 0; i < guideSteps.length; i++) {
+                var indicator = document.createElement('div');
+                indicator.className = 'guide-step-indicator' + (i === stepIndex ? ' active' : '');
+                indicators.appendChild(indicator);
+            }
+
+            prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
+            nextBtn.textContent = stepIndex === guideSteps.length - 1 ? '完成' : '下一步';
+        }
+
+        function nextGuideStep() {
+            if (currentGuideStep === guideSteps.length - 1) {
+                showGuideEndModal();
+            } else {
+                showGuideStep(currentGuideStep + 1);
+            }
+        }
+
+        function prevGuideStep() {
+            showGuideStep(currentGuideStep - 1);
+        }
+
+        function showGuideEndModal() {
+            document.getElementById('guideEndModal').classList.remove('hidden');
+            document.getElementById('guideStepFooter').style.display = 'none';
+            document.getElementById('guideStepOverlay').classList.remove('active');
+        }
+
+        function hideGuideEndModal() {
+            document.getElementById('guideEndModal').classList.add('hidden');
+        }
+
+        function endGuide() {
+            isGuideActive = false;
+            document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideStepFooter').style.display = 'none';
+            hideGuideEndModal();
+        }
+
+        function restartGuide() {
+            hideGuideEndModal();
+            localStorage.removeItem('hasSeenGuide');
+            showGuideWelcome();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showGuideWelcome();
+
+            document.getElementById('startGuideBtn').addEventListener('click', startGuide);
+            document.getElementById('skipGuideBtn').addEventListener('click', skipGuide);
+            document.getElementById('guideNextBtn').addEventListener('click', nextGuideStep);
+            document.getElementById('guidePrevBtn').addEventListener('click', prevGuideStep);
+            document.getElementById('guideSkipBtn').addEventListener('click', endGuide);
+            document.getElementById('guideEndFinishBtn').addEventListener('click', endGuide);
+            document.getElementById('guideEndRestartBtn').addEventListener('click', restartGuide);
+        });
+
+        window.showGuide = function() {
+            localStorage.removeItem('hasSeenGuide');
+            document.getElementById('guideWelcomeModal').classList.remove('hidden');
+        };
     </script>
 <!-- 关于启动器模态框将通过JavaScript生成 -->
         <!-- 移动端提示弹窗 -->
@@ -8111,6 +8402,55 @@
                 <div class="mobile-warning-footer">
                     <button class="mobile-warning-btn" id="mobileWarningBtn">我知道了</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- 引导功能弹窗 -->
+        <div id="guideWelcomeModal" class="guide-overlay hidden">
+            <div class="guide-content">
+                <div class="guide-icon">
+                    <i class="fas fa-compass"></i>
+                </div>
+                <h2>欢迎使用 PRE Launcher</h2>
+                <p>为了帮助您更好地了解启动器的各项功能，我们准备了一个简短的引导。是否要开始？</p>
+                <div class="guide-buttons">
+                    <button class="guide-btn guide-btn-primary" id="startGuideBtn">开始引导</button>
+                    <button class="guide-btn guide-btn-secondary" id="skipGuideBtn">跳过引导</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 引导结束弹窗 -->
+        <div id="guideEndModal" class="guide-overlay hidden">
+            <div class="guide-content">
+                <div class="guide-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>引导已结束</h2>
+                <p>您已完成基础操作引导。是否结束引导或重新开始？</p>
+                <div class="guide-buttons">
+                    <button class="guide-btn guide-btn-secondary" id="guideEndRestartBtn">重新开始</button>
+                    <button class="guide-btn guide-btn-primary" id="guideEndFinishBtn">结束引导</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 引导步骤覆盖层 -->
+        <div id="guideStepOverlay" class="guide-step-overlay">
+            <div class="guide-highlight" id="guideHighlight"></div>
+            <div class="guide-step-tooltip" id="guideTooltip">
+                <div class="step-title" id="stepTitle"></div>
+                <div class="step-desc" id="stepDesc"></div>
+            </div>
+        </div>
+
+        <!-- 引导步骤底部控制栏 -->
+        <div id="guideStepFooter" class="guide-step-footer" style="display: none;">
+            <div class="guide-step-indicators" id="guideStepIndicators"></div>
+            <div class="guide-step-buttons">
+                <button class="guide-step-btn prev" id="guidePrevBtn" style="display: none;">上一步</button>
+                <button class="guide-step-btn next" id="guideNextBtn">下一步</button>
+                <button class="guide-step-btn skip" id="guideSkipBtn">跳过引导</button>
             </div>
         </div>
     </body>

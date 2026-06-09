@@ -7320,13 +7320,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p style="margin: 15px 0;"><strong>跳转地址：</strong><span style="color: #666; word-break: break-all;">${url}</span></p>
                 </div>
                 <div class="modal-buttons">
-                    <button class="alert-confirm" onclick="closeLeaveConfirmModal()">取消</button>
-                    <button class="alert-confirm" onclick="confirmLeave('${url}')" style="background-color: #d45d79;">确认跳转</button>
+                    <button id="leaveConfirmCancel" class="alert-confirm">取消</button>
+                    <button id="leaveConfirmOk" class="alert-confirm" style="background-color: #d45d79;">确认跳转</button>
                 </div>
             </div>
         `;
         
         document.body.appendChild(modal);
+        
+        var cancelBtn = modal.querySelector('#leaveConfirmCancel');
+        var okBtn = modal.querySelector('#leaveConfirmOk');
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeLeaveConfirmModal);
+        }
+        if (okBtn) {
+            okBtn.addEventListener('click', function() {
+                confirmLeave(url);
+            });
+        }
         
         modal.style.display = 'flex';
         setTimeout(function() {
@@ -7523,6 +7535,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showThemeConfirmModal(callback) {
         var confirmModal = document.createElement('div');
+        confirmModal.id = 'themeConfirmModal';
         confirmModal.className = 'theme-confirm-modal';
         confirmModal.innerHTML = `
             <div class="theme-confirm-backdrop"></div>
@@ -7534,8 +7547,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p>当前主题为早期测试版，使用该主题可能会出现各种未知的显示错误，您确定要继续应用该主题吗？</p>
                 </div>
                 <div class="theme-confirm-footer">
-                    <button class="theme-confirm-btn theme-confirm-btn-cancel">取消</button>
-                    <button class="theme-confirm-btn theme-confirm-btn-ok">确定</button>
+                    <button id="themeConfirmCancel" class="theme-confirm-btn theme-confirm-btn-cancel">取消</button>
+                    <button id="themeConfirmOk" class="theme-confirm-btn theme-confirm-btn-ok">确定</button>
                 </div>
             </div>
         `;
@@ -7565,6 +7578,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showThemeNoticeModal(message) {
         var noticeModal = document.createElement('div');
+        noticeModal.id = 'themeNoticeModal';
         noticeModal.className = 'theme-notice-modal';
         noticeModal.innerHTML = `
             <div class="theme-notice-backdrop"></div>
@@ -7576,7 +7590,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p>${message}</p>
                 </div>
                 <div class="theme-notice-footer">
-                    <button class="theme-notice-btn">确定</button>
+                    <button id="themeNoticeOk" class="theme-notice-btn">确定</button>
                 </div>
             </div>
         `;
@@ -7612,5 +7626,106 @@ document.addEventListener('DOMContentLoaded', function() {
             target = target.parentNode;
         }
     }, true);
+    
+    // 弹窗键盘快捷键支持
+    function getVisibleModal() {
+        var modals = [
+            { id: 'alertModal', confirmBtn: 'alertConfirm', cancelBtn: null },
+            { id: 'editModal', confirmBtn: 'editConfirm', cancelBtn: 'editCancel' },
+            { id: 'bindModal', confirmBtn: 'bindConfirm', cancelBtn: 'bindCancel' },
+            { id: 'deleteAccountConfirmModal', confirmBtn: 'deleteAccountConfirm', cancelBtn: 'deleteAccountCancel' },
+            { id: 'logoutConfirmModal', confirmBtn: 'logoutConfirm', cancelBtn: 'logoutCancel' },
+            { id: 'resetSettingsConfirmModal', confirmBtn: 'resetSettingsConfirm', cancelBtn: 'resetSettingsCancel' },
+            { id: 'setNewPasswordModal', confirmBtn: 'setNewPasswordConfirm', cancelBtn: 'setNewPasswordCancel' },
+            { id: 'passwordVerificationModal', confirmBtn: 'passwordVerificationConfirm', cancelBtn: 'passwordVerificationCancel' },
+            { id: 'twoFactorAuthModal', confirmBtn: 'twoFactorAuthConfirm', cancelBtn: 'twoFactorAuthCancel' },
+            { id: 'changeTwoFactorPinModal', confirmBtn: 'changeTwoFactorPinConfirm', cancelBtn: 'changeTwoFactorPinCancel' },
+            { id: 'verifyTwoFactorPinModal', confirmBtn: 'verifyTwoFactorPinConfirm', cancelBtn: 'verifyTwoFactorPinCancel' },
+            { id: 'updateSecurityQuestionsModal', confirmBtn: 'updateSecurityQuestionsConfirm', cancelBtn: 'updateSecurityQuestionsCancel' },
+            { id: 'deleteAccountFinalConfirmModal', confirmBtn: 'deleteAccountFinalConfirm', cancelBtn: 'deleteAccountFinalCancel' },
+            { id: 'termsAgreementModal', confirmBtn: null, cancelBtn: 'termsAgreementCancel', rejectBtn: 'termsAgreementReject' },
+            { id: 'rejectTermsConfirmModal', confirmBtn: 'rejectTermsConfirm', cancelBtn: 'rejectTermsCancel' },
+            { id: 'unbindConfirmModal', confirmBtn: 'unbindConfirm', cancelBtn: 'unbindCancel' },
+            { id: 'devModeConfirmModal', confirmBtn: 'devModeConfirmOk', cancelBtn: 'devModeConfirmCancel' },
+            { id: 'devModePasswordModal', confirmBtn: 'devModePasswordConfirm', cancelBtn: 'devModePasswordCancel' },
+            { id: 'devModeSuccessModal', confirmBtn: 'devModeSuccessOk', cancelBtn: null },
+            { id: 'exitDevModeConfirmModal', confirmBtn: 'exitDevModeConfirm', cancelBtn: 'exitDevModeCancel' },
+            { id: 'toggleAchievementsConfirmModal', confirmBtn: 'toggleAchievementsConfirm', cancelBtn: 'toggleAchievementsCancel' },
+            { id: 'gpuAccelerationModal', confirmBtn: 'gpuAccelerationConfirm', cancelBtn: 'gpuAccelerationCancel' },
+            { id: 'exportDataConfirmModal', confirmBtn: 'exportDataConfirm', cancelBtn: 'exportDataCancel' },
+            { id: 'clearCacheSelectModal', confirmBtn: 'clearCacheSelectConfirm', cancelBtn: 'clearCacheSelectCancel' },
+            { id: 'clearCacheConfirmModal', confirmBtn: 'clearCacheConfirm', cancelBtn: 'clearCacheCancel' },
+            { id: 'exportDataVerifyModal', confirmBtn: 'exportDataVerifyConfirm', cancelBtn: 'exportDataVerifyCancel' },
+            { id: 'importDataModal', confirmBtn: 'importDataConfirm', cancelBtn: 'importDataCancel' },
+            { id: 'presetBackgroundModal', confirmBtn: 'confirmPresetBtn', cancelBtn: 'cancelPresetBtn', closeBtn: 'closePresetModal' },
+            { id: 'moreThemesModal', confirmBtn: null, cancelBtn: 'moreThemesCancel', closeBtn: 'moreThemesClose' },
+            { id: 'themeVersionModal', confirmBtn: null, cancelBtn: null, closeBtn: 'themeVersionClose' },
+            { id: 'leaveConfirmModal', confirmBtn: 'leaveConfirmOk', cancelBtn: 'leaveConfirmCancel' },
+            { id: 'themeConfirmModal', confirmBtn: 'themeConfirmOk', cancelBtn: 'themeConfirmCancel' },
+            { id: 'themeNoticeModal', confirmBtn: 'themeNoticeOk', cancelBtn: null }
+        ];
+        
+        for (var i = 0; i < modals.length; i++) {
+            var modalEl = document.getElementById(modals[i].id);
+            if (modalEl) {
+                var isVisible = modalEl.style.display === 'flex' || modalEl.classList.contains('show');
+                if (isVisible) {
+                    return {
+                        element: modalEl,
+                        info: modals[i]
+                    };
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    function handleModalKeydown(e) {
+        var visibleModal = getVisibleModal();
+        if (!visibleModal) return;
+        
+        var info = visibleModal.info;
+        
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            var confirmBtn = document.getElementById(info.confirmBtn);
+            if (confirmBtn) {
+                confirmBtn.click();
+            } else if (info.rejectBtn) {
+                var rejectBtn = document.getElementById(info.rejectBtn);
+                if (rejectBtn) {
+                    rejectBtn.click();
+                }
+            } else if (info.closeBtn) {
+                var closeBtn = document.getElementById(info.closeBtn);
+                if (closeBtn) {
+                    closeBtn.click();
+                }
+            }
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            var cancelBtn = document.getElementById(info.cancelBtn);
+            if (cancelBtn) {
+                cancelBtn.click();
+            } else if (info.closeBtn) {
+                var closeBtn = document.getElementById(info.closeBtn);
+                if (closeBtn) {
+                    closeBtn.click();
+                }
+            } else if (info.confirmBtn) {
+                var confirmBtn = document.getElementById(info.confirmBtn);
+                if (confirmBtn) {
+                    confirmBtn.click();
+                }
+            }
+        }
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === 'Escape') {
+            handleModalKeydown(e);
+        }
+    });
     
 });
