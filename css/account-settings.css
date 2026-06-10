@@ -6169,25 +6169,6 @@ body.dark-mode .more-themes-btn:hover {
     transition: all 0.2s ease;
 }
 
-.theme-confirm-btn-cancel {
-    background: #f5f5f5;
-    color: #666;
-}
-
-.theme-confirm-btn-cancel:hover {
-    background: #eee;
-}
-
-.theme-confirm-btn-ok {
-    background: linear-gradient(135deg, #d45d79 0%, #76abf7 100%);
-    color: #fff;
-}
-
-.theme-confirm-btn-ok:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.4);
-}
-
 .theme-notice-btn {
     background: linear-gradient(135deg, #d45d79 0%, #76abf7 100%);
     color: #fff;
@@ -6223,15 +6204,6 @@ body.dark-mode .theme-notice-body p {
 body.dark-mode .theme-confirm-footer,
 body.dark-mode .theme-notice-footer {
     border-top-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .theme-confirm-btn-cancel {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ccc;
-}
-
-body.dark-mode .theme-confirm-btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.12);
 }
 
 /* ===================== 透明主题 (transparent-mode) ===================== */
@@ -6981,6 +6953,30 @@ body.transparent-mode .theme-version-modal-footer button {
 body.transparent-mode .theme-version-modal-footer button:hover {
     background: rgba(255, 255, 255, 0.32) !important;
     border-color: #fff;
+}
+
+body.transparent-mode .theme-notice-content {
+    background: rgba(255, 255, 255, 0.92);
+}
+
+body.transparent-mode .theme-notice-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom-color: #eee;
+}
+
+body.transparent-mode .theme-notice-header h3 {
+    color: #333;
+    text-shadow: none;
+}
+
+body.transparent-mode .theme-notice-body p {
+    color: #333;
+    text-shadow: none;
+}
+
+body.transparent-mode .theme-notice-footer {
+    background: #fff;
+    border-top-color: #eee;
 }
 
 /* 透明主题暗色模式 - 小游戏按钮 */

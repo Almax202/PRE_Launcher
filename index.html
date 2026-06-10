@@ -905,6 +905,75 @@
                     border-color: rgba(255, 255, 255, 0.5) !important;
                     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
                 }
+                
+                /* 透明主题 - 引导弹窗 */
+                body.transparent-mode .guide-content {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+                
+                body.transparent-mode .guide-content h2 {
+                    color: rgba(255, 255, 255, 0.95) !important;
+                    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+                }
+                
+                body.transparent-mode .guide-content p {
+                    color: rgba(255, 255, 255, 0.8) !important;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+                }
+                
+                body.transparent-mode .guide-content .guide-icon {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%) !important;
+                }
+                
+                body.transparent-mode .guide-content .guide-btn {
+                    background: rgba(255, 255, 255, 0.14) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+                    color: #fff !important;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+                }
+                
+                body.transparent-mode .guide-content .guide-btn:hover {
+                    background: rgba(255, 255, 255, 0.22) !important;
+                    border-color: #fff !important;
+                }
+                
+                body.transparent-mode .guide-content .guide-btn.guide-btn-primary {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%) !important;
+                    border: none !important;
+                }
+                
+                body.transparent-mode .guide-content .guide-btn.guide-btn-primary:hover {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 1) 0%, rgba(118, 75, 162, 1) 100%) !important;
+                }
+                
+                body.transparent-mode .guide-content .guide-btn.guide-btn-single-image {
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.9) 0%, rgba(255, 118, 117, 0.9) 100%) !important;
+                    border: none !important;
+                }
+                
+                body.transparent-mode .guide-content .guide-btn.guide-btn-single-image:hover {
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 1) 0%, rgba(255, 118, 117, 1) 100%) !important;
+                }
+                
+                /* 透明主题暗色模式 - 引导弹窗 */
+                body.transparent-mode.dark-mode .guide-content {
+                    background: rgba(0, 0, 0, 0.25) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                }
+                
+                body.transparent-mode.dark-mode .guide-content .guide-btn {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+                    color: rgba(255, 255, 255, 0.92) !important;
+                }
+                
+                body.transparent-mode.dark-mode .guide-content .guide-btn:hover {
+                    background: rgba(255, 255, 255, 0.16) !important;
+                    border-color: rgba(255, 255, 255, 0.5) !important;
+                }
             `;
             
             document.head.appendChild(style);
@@ -2422,6 +2491,31 @@
             <div class="modal-buttons">
                 <button class="alert-confirm" id="resetPasswordCancel">取消</button>
                 <button class="alert-confirm" id="resetPasswordConfirm" style="background-color: #4CAF50;">确认重置</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedbackChoiceModal" class="custom-alert">
+        <div class="alert-content" style="max-width: 600px; text-align: center;">
+            <div class="alert-icon" style="color: #3498db;">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <h3>反馈建议</h3>
+            <p style="color: #666; margin: 15px 0 25px 0;">请选择您的反馈方式</p>
+            <div class="feedback-choice-buttons">
+                <button class="feedback-choice-btn feedback-choice-local" id="localFeedbackBtn">
+                    <i class="fas fa-desktop"></i>
+                    <span>本地反馈</span>
+                    <small>提交到本地存储</small>
+                </button>
+                <button class="feedback-choice-btn feedback-choice-github" id="githubFeedbackBtn">
+                    <i class="fab fa-github"></i>
+                    <span>提交到 Github Issue</span>
+                    <small>在 Github 上创建 Issue</small>
+                </button>
+            </div>
+            <div class="modal-buttons" style="margin-top: 25px;">
+                <button class="alert-confirm" id="feedbackChoiceCancel">取消</button>
             </div>
         </div>
     </div>
@@ -5032,23 +5126,67 @@
         });
         
         document.getElementById('sidebarFeedback').addEventListener('click', function() {
-            // 检查是否为离线模式
-            if (localStorage.getItem('offlineMode') === 'true') {
-                showAlert('当前为离线模式，请先上线');
-                return;
-            }
-            
-            // 检查网络连接
-            if (!navigator.onLine) {
-                showAlert('无网络连接，请检查网络设置');
-                return;
-            }
-            
-            var feedbackModal = document.getElementById('feedbackModal');
-            feedbackModal.style.display = 'flex';
+            var feedbackChoiceModal = document.getElementById('feedbackChoiceModal');
+            feedbackChoiceModal.style.display = 'flex';
             setTimeout(function() {
-                feedbackModal.classList.add('show');
+                feedbackChoiceModal.classList.add('show');
             }, 10);
+        });
+        
+        document.getElementById('localFeedbackBtn').addEventListener('click', function() {
+            showAlert('由于暂未提供后端服务器，本地反馈现已停止支持，开放时间另行通知，敬请谅解');
+        });
+        
+        document.getElementById('githubFeedbackBtn').addEventListener('click', function() {
+            var url = 'https://github.com/Almax202/PRE_Launcher/issues';
+            
+            var modal = document.createElement('div');
+            modal.id = 'leaveConfirmModal';
+            modal.className = 'custom-alert';
+            
+            modal.innerHTML = `
+                <div class="alert-content" style="max-width: 500px;">
+                    <div class="alert-header">
+                        <h2>即将离开PRE Launcher</h2>
+                    </div>
+                    <div class="about-content" style="text-align: left;">
+                        <p style="margin: 15px 0;">是否要进行反馈？</p>
+                        <p style="margin: 15px 0;">如果无法打开GitHub，请使用VPN改善网络环境</p>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="alert-confirm" onclick="closeLeaveConfirmModal()">取消</button>
+                        <button class="alert-confirm" onclick="confirmLeave('${url}')" style="background-color: #d45d79;">确认反馈</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+            
+            // 关闭反馈选择弹窗
+            var feedbackChoiceModal = document.getElementById('feedbackChoiceModal');
+            feedbackChoiceModal.classList.remove('show');
+            setTimeout(function() {
+                feedbackChoiceModal.style.display = 'none';
+            }, 300);
+        });
+        
+        document.getElementById('feedbackChoiceCancel').addEventListener('click', function() {
+            var feedbackChoiceModal = document.getElementById('feedbackChoiceModal');
+            feedbackChoiceModal.classList.remove('show');
+            setTimeout(function() {
+                feedbackChoiceModal.style.display = 'none';
+            }, 300);
+        });
+        
+        document.getElementById('feedbackChoiceModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                document.getElementById('feedbackChoiceCancel').click();
+            }
         });
         
         document.getElementById('versionHistoryCancel').addEventListener('click', function() {
@@ -8371,6 +8509,81 @@
             showGuideWelcome();
         }
 
+        var currentSingleImageStep = 0;
+
+        function openSingleImageGuide() {
+            document.getElementById('guideWelcomeModal').classList.add('hidden');
+            document.getElementById('singleImageGuideModal').classList.remove('hidden');
+            currentSingleImageStep = 0;
+            renderSingleImageSteps();
+            updateSingleImageStep(0);
+        }
+
+        function closeSingleImageGuide() {
+            document.getElementById('singleImageGuideModal').classList.add('hidden');
+        }
+
+        function renderSingleImageSteps() {
+            var stepList = document.getElementById('singleImageStepList');
+            stepList.innerHTML = '';
+
+            for (var i = 0; i < guideSteps.length; i++) {
+                var step = guideSteps[i];
+                var stepItem = document.createElement('div');
+                stepItem.className = 'single-image-step-item';
+                stepItem.dataset.step = i;
+                stepItem.innerHTML = '\
+                    <span class="step-number">' + (i + 1) + '</span>\
+                    <span class="step-title">' + step.title + '</span>\
+                    <div class="step-desc">' + step.description + '</div>\
+                ';
+                stepItem.addEventListener('click', function() {
+                    var stepIndex = parseInt(this.dataset.step);
+                    updateSingleImageStep(stepIndex);
+                });
+                stepList.appendChild(stepItem);
+            }
+        }
+
+        function updateSingleImageStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= guideSteps.length) {
+                return;
+            }
+
+            currentSingleImageStep = stepIndex;
+
+            var stepCount = document.getElementById('singleImageStepCount');
+            stepCount.textContent = (stepIndex + 1) + ' / ' + guideSteps.length;
+
+            var prevBtn = document.getElementById('singleImagePrevBtn');
+            var nextBtn = document.getElementById('singleImageNextBtn');
+
+            prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
+            nextBtn.textContent = stepIndex === guideSteps.length - 1 ? '完成' : '下一步';
+
+            var stepItems = document.querySelectorAll('.single-image-step-item');
+            for (var i = 0; i < stepItems.length; i++) {
+                if (i === stepIndex) {
+                    stepItems[i].classList.add('active');
+                    stepItems[i].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    stepItems[i].classList.remove('active');
+                }
+            }
+        }
+
+        function nextSingleImageStep() {
+            if (currentSingleImageStep === guideSteps.length - 1) {
+                closeSingleImageGuide();
+            } else {
+                updateSingleImageStep(currentSingleImageStep + 1);
+            }
+        }
+
+        function prevSingleImageStep() {
+            updateSingleImageStep(currentSingleImageStep - 1);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             showGuideWelcome();
 
@@ -8381,6 +8594,11 @@
             document.getElementById('guideSkipBtn').addEventListener('click', endGuide);
             document.getElementById('guideEndFinishBtn').addEventListener('click', endGuide);
             document.getElementById('guideEndRestartBtn').addEventListener('click', restartGuide);
+            document.getElementById('singleImageGuideBtn').addEventListener('click', openSingleImageGuide);
+            document.getElementById('singleImageGuideCloseBtn').addEventListener('click', closeSingleImageGuide);
+            document.getElementById('singleImageFinishBtn').addEventListener('click', closeSingleImageGuide);
+            document.getElementById('singleImageNextBtn').addEventListener('click', nextSingleImageStep);
+            document.getElementById('singleImagePrevBtn').addEventListener('click', prevSingleImageStep);
         });
 
         window.showGuide = function() {
@@ -8415,6 +8633,7 @@
                 <p>为了帮助您更好地了解启动器的各项功能，我们准备了一个简短的引导。是否要开始？</p>
                 <div class="guide-buttons">
                     <button class="guide-btn guide-btn-primary" id="startGuideBtn">开始引导</button>
+                    <button class="guide-btn guide-btn-single-image" id="singleImageGuideBtn">一图流</button>
                     <button class="guide-btn guide-btn-secondary" id="skipGuideBtn">跳过引导</button>
                 </div>
             </div>
@@ -8431,6 +8650,36 @@
                 <div class="guide-buttons">
                     <button class="guide-btn guide-btn-secondary" id="guideEndRestartBtn">重新开始</button>
                     <button class="guide-btn guide-btn-primary" id="guideEndFinishBtn">结束引导</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 一图流引导弹窗 -->
+        <div id="singleImageGuideModal" class="single-image-guide-overlay hidden">
+            <div class="single-image-guide-container">
+                <div class="single-image-guide-header">
+                    <h3>一图流引导</h3>
+                    <button class="single-image-guide-close" id="singleImageGuideCloseBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="single-image-guide-content">
+                    <div class="single-image-wrapper">
+                        <img src="./images/guide.png" alt="登录页引导" class="single-guide-image" id="singleGuideImage">
+                    </div>
+                    <div class="single-image-steps">
+                        <div class="single-image-steps-header">
+                            <span>引导步骤</span>
+                            <span id="singleImageStepCount">1 / 15</span>
+                        </div>
+                        <div class="single-image-step-list" id="singleImageStepList">
+                        </div>
+                    </div>
+                </div>
+                <div class="single-image-guide-footer">
+                    <button class="single-image-guide-btn prev" id="singleImagePrevBtn" style="display: none;">上一步</button>
+                    <button class="single-image-guide-btn next" id="singleImageNextBtn">下一步</button>
+                    <button class="single-image-guide-btn close" id="singleImageFinishBtn">关闭</button>
                 </div>
             </div>
         </div>

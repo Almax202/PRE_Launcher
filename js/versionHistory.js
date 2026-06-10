@@ -267,6 +267,22 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.3.8 (b6)",
+            date: "2026-06-10",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2638.png", "./images/2638_2.png"],
+            features: [
+                "新增功能",
+                "- 反馈选择弹窗：点击反馈建议先弹出选择弹窗，包含\"本地反馈\"和\"提交到Github Issue\"两个按钮",
+                "- 透明主题正式版现已推出：包含登录页、游戏大厅、游戏内界面等所有元素的透明毛玻璃效果",
+                "优化改进",
+                "- Github跳转确认：点击Github按钮弹出离开页面确认弹窗，确认后才跳转",
+                "- 透明主题全面优化：登录页所有弹窗、侧边栏、导航项、公告项、版本记录等全部改为透明毛玻璃样式",
+                "- 透明主题文本：所有文字颜色提升亮度，添加文字阴影增强对比度和可读性",
+            ]
+        },
+        {
             version: "RC 2.6.3.7 (b6)",
             date: "2026-06-09",
             tag: "important",

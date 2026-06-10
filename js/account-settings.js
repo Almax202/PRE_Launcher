@@ -7435,19 +7435,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // 透明主题需要确认
-                if (theme === 'transparent') {
-                    showThemeConfirmModal(function() {
-                        // 用户点击确定
-                        document.querySelectorAll('.more-theme-card').forEach(function(c) {
-                            c.classList.remove('selected');
-                        });
-                        card.classList.add('selected');
-                        setTheme(theme);
-                        setTimeout(closeMoreThemesModal, 250);
-                    });
-                    return;
-                }
+
 
                 // 立即更新选中态
                 document.querySelectorAll('.more-theme-card').forEach(function(c) {
@@ -7531,49 +7519,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 closeThemeVersionModal();
             }
         });
-    }
-
-    function showThemeConfirmModal(callback) {
-        var confirmModal = document.createElement('div');
-        confirmModal.id = 'themeConfirmModal';
-        confirmModal.className = 'theme-confirm-modal';
-        confirmModal.innerHTML = `
-            <div class="theme-confirm-backdrop"></div>
-            <div class="theme-confirm-content">
-                <div class="theme-confirm-header">
-                    <h3>提示</h3>
-                </div>
-                <div class="theme-confirm-body">
-                    <p>当前主题为早期测试版，使用该主题可能会出现各种未知的显示错误，您确定要继续应用该主题吗？</p>
-                </div>
-                <div class="theme-confirm-footer">
-                    <button id="themeConfirmCancel" class="theme-confirm-btn theme-confirm-btn-cancel">取消</button>
-                    <button id="themeConfirmOk" class="theme-confirm-btn theme-confirm-btn-ok">确定</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(confirmModal);
-
-        var backdrop = confirmModal.querySelector('.theme-confirm-backdrop');
-        var cancelBtn = confirmModal.querySelector('.theme-confirm-btn-cancel');
-        var okBtn = confirmModal.querySelector('.theme-confirm-btn-ok');
-
-        function closeModal() {
-            confirmModal.remove();
-        }
-
-        backdrop.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
-        okBtn.addEventListener('click', function() {
-            closeModal();
-            if (typeof callback === 'function') {
-                callback();
-            }
-        });
-
-        setTimeout(function() {
-            confirmModal.classList.add('show');
-        }, 10);
     }
 
     function showThemeNoticeModal(message) {
