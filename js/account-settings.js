@@ -204,7 +204,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.menu-item').forEach(function(item) {
             item.addEventListener('click', function() {
                 var section = this.getAttribute('data-section');
-                switchSection(section);
+                if (section === 'experimental') {
+                    showExperimentalWarningModal();
+                } else {
+                    switchSection(section);
+                }
             });
         });
         
@@ -873,6 +877,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideUnbindConfirmModal();
             }
         });
+        
+        document.getElementById('experimentalWarningCancel').addEventListener('click', function() {
+            hideExperimentalWarningModal();
+        });
+        
+        document.getElementById('experimentalWarningConfirm').addEventListener('click', function() {
+            hideExperimentalWarningModal();
+            switchSection('experimental');
+        });
+        
+        document.getElementById('experimentalWarningModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideExperimentalWarningModal();
+            }
+        });
+    }
+    
+    function showExperimentalWarningModal() {
+        var modal = document.getElementById('experimentalWarningModal');
+        modal.style.display = 'flex';
+        setTimeout(function() {
+            modal.classList.add('show');
+        }, 10);
+    }
+    
+    function hideExperimentalWarningModal() {
+        var modal = document.getElementById('experimentalWarningModal');
+        modal.classList.remove('show');
+        setTimeout(function() {
+            modal.style.display = 'none';
+        }, 300);
     }
     
     function switchSection(sectionId) {
@@ -906,7 +941,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 'account-management': { title: texts.data, desc: texts.dataDesc },
                 'terms': { title: texts.terms, desc: texts.termsDesc },
                 'privacy-policy': { title: texts.privacyPolicy, desc: texts.privacyPolicyDesc },
-                'test': { title: texts.testPage || '测试页面', desc: texts.testPageDesc || '用于测试主题适配性、按钮风格统一度以及各种测试案例' }
+                'test': { title: texts.testPage || '测试页面', desc: texts.testPageDesc || '用于测试主题适配性、按钮风格统一度以及各种测试案例' },
+                'experimental': { title: '实验性功能', desc: '探索并启用处于测试阶段的新功能' }
             };
             
             if (titles[sectionId]) {
@@ -4030,6 +4066,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (userProfile.gpuAcceleration !== undefined) {
             document.getElementById('gpuAcceleration').checked = userProfile.gpuAcceleration;
+        }
+        
+        if (userProfile.pageClockEnabled !== undefined) {
+            document.getElementById('pageClockEnabled').checked = userProfile.pageClockEnabled;
         }
         
         // 应用GPU加速设置

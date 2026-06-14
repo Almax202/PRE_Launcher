@@ -267,6 +267,25 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.3.9 (b6)",
+            date: "2026-06-14",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2639.png", "./images/2639_2.png", "./images/2639_3.png"],
+            features: [
+                "新增功能",
+                "- 账户设置页新增\"实验室\"类别和\"实验性功能\"页面",
+                "- 页面时钟实验性功能：隐藏UI后显示时间、日期、天气和农历",
+                "- 页面时钟设置弹窗：可调整位置、格式、字体大小等多项参数",
+                "优化改进",
+                "- 页面时钟支持9种位置、3种日期格式、3种字体样式、12/24小时制",
+                "- 页面时钟设置弹窗采用双列布局，全局开关置于顶部",
+                "- \"保持UI隐藏\"模式下所有调节按钮自动禁用变灰",
+                "修复问题",
+                "- 修复关闭页面时钟实验功能后登录页仍显示该功能的问题"
+            ]
+        },
+        {
             version: "RC 2.6.3.8 (b6)",
             date: "2026-06-10",
             tag: "normal",

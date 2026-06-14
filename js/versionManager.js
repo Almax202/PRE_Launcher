@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.3.8 (b6)",
+    login: "RC 2.6.3.9 (b6)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.0 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260610.2638.b6.85",
+    launcher: "20260610.2639.b6.86",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -41,7 +41,7 @@ const versionInfo = {
             status: "停用优化中"
         },
         transparent: {
-            version: "RC 1.2.0",
+            version: "RC 1.2.1",
             releaseDate: "2026-06-06",
             updateDate: "2026-06-10",
             status: "公开正式版"

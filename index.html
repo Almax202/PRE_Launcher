@@ -982,6 +982,680 @@
         
         // 移动端菜单按钮点击事件
         document.addEventListener('DOMContentLoaded', function() {
+            // 页面时钟功能函数
+            var pageClockInterval = null;
+            var weatherCache = null;
+            var weatherCacheTime = 0;
+            
+            function isPageClockEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.pageClockEnabled === true;
+                    }
+                }
+                return false;
+            }
+            
+            function getWeekDay(date) {
+                var weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                return weekDays[date.getDay()];
+            }
+            
+            function updateClockDisplay() {
+                var now = new Date();
+                
+                var hours = now.getHours().toString().padStart(2, '0');
+                var minutes = now.getMinutes().toString().padStart(2, '0');
+                var timeEl = document.getElementById('pageClockTime');
+                if (timeEl) {
+                    timeEl.textContent = hours + ':' + minutes;
+                }
+                
+                var year = now.getFullYear();
+                var month = (now.getMonth() + 1).toString().padStart(2, '0');
+                var day = now.getDate().toString().padStart(2, '0');
+                var weekDay = getWeekDay(now);
+                var dateEl = document.getElementById('pageClockDate');
+                if (dateEl) {
+                    dateEl.textContent = year + '年' + month + '月' + day + '日 ' + weekDay;
+                }
+                
+                updateWeatherDisplay();
+            }
+            
+            function getWeatherIcon(code) {
+                var iconMap = {
+                    '01d': 'fa-sun',
+                    '01n': 'fa-moon',
+                    '02d': 'fa-cloud-sun',
+                    '02n': 'fa-cloud-moon',
+                    '03d': 'fa-cloud',
+                    '03n': 'fa-cloud',
+                    '04d': 'fa-clouds',
+                    '04n': 'fa-clouds',
+                    '09d': 'fa-cloud-showers-heavy',
+                    '09n': 'fa-cloud-showers-heavy',
+                    '10d': 'fa-cloud-sun-rain',
+                    '10n': 'fa-cloud-moon-rain',
+                    '11d': 'fa-bolt',
+                    '11n': 'fa-bolt',
+                    '13d': 'fa-snowflake',
+                    '13n': 'fa-snowflake',
+                    '50d': 'fa-smog',
+                    '50n': 'fa-smog'
+                };
+                return iconMap[code] || 'fa-cloud-sun';
+            }
+            
+            function updateWeatherDisplay() {
+                var weatherEl = document.getElementById('pageClockWeather');
+                if (!weatherEl) return;
+                
+                var now = Date.now();
+                if (weatherCache && (now - weatherCacheTime) < 30 * 60 * 1000) {
+                    renderWeather(weatherCache);
+                    return;
+                }
+                
+                fetchWeatherData();
+            }
+            
+            function fetchWeatherData() {
+                if (!navigator.onLine) {
+                    renderWeather(null);
+                    return;
+                }
+                
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            var lat = position.coords.latitude;
+                            var lon = position.coords.longitude;
+                            var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code';
+                            
+                            fetch(url)
+                                .then(function(response) {
+                                    return response.json();
+                                })
+                                .then(function(data) {
+                                    if (data && data.current) {
+                                        var weatherData = {
+                                            temp: Math.round(data.current.temperature_2m),
+                                            code: data.current.weather_code,
+                                            isNight: new Date().getHours() < 6 || new Date().getHours() >= 18
+                                        };
+                                        weatherCache = weatherData;
+                                        weatherCacheTime = Date.now();
+                                        renderWeather(weatherData);
+                                    } else {
+                                        renderWeather(null);
+                                    }
+                                })
+                                .catch(function() {
+                                    renderWeather(null);
+                                });
+                        },
+                        function() {
+                            renderWeather(null);
+                        },
+                        { timeout: 5000 }
+                    );
+                } else {
+                    renderWeather(null);
+                }
+            }
+            
+            function getIconFromWeatherCode(code, isNight) {
+                var suffix = isNight ? 'n' : 'd';
+                
+                if (code === 0) return '01' + suffix;
+                if (code === 1) return '02' + suffix;
+                if (code === 2) return '03' + suffix;
+                if (code === 3) return '04' + suffix;
+                if (code >= 45 && code <= 48) return '50' + suffix;
+                if (code >= 51 && code <= 67) return '10' + suffix;
+                if (code >= 71 && code <= 77) return '13' + suffix;
+                if (code >= 80 && code <= 82) return '10' + suffix;
+                if (code >= 85 && code <= 86) return '13' + suffix;
+                if (code >= 95 && code <= 99) return '11' + suffix;
+                
+                return '02' + suffix;
+            }
+            
+            function renderWeather(data) {
+                var weatherEl = document.getElementById('pageClockWeather');
+                if (!weatherEl) return;
+                
+                var iconEl = weatherEl.querySelector('i');
+                var tempEl = weatherEl.querySelector('span');
+                
+                if (data && data.temp !== undefined) {
+                    var iconCode = getIconFromWeatherCode(data.code, data.isNight);
+                    var iconClass = getWeatherIcon(iconCode);
+                    iconEl.className = 'fas ' + iconClass;
+                    tempEl.textContent = data.temp + '°C';
+                } else {
+                    iconEl.className = 'fas fa-cloud-sun';
+                    tempEl.textContent = '--°C';
+                }
+            }
+            
+            function showPageClock() {
+                var clockOverlay = document.getElementById('pageClockOverlay');
+                if (clockOverlay) {
+                    clockOverlay.style.display = 'flex';
+                    updateClockDisplay();
+                    
+                    if (!pageClockInterval) {
+                        pageClockInterval = setInterval(updateClockDisplay, 1000);
+                    }
+                }
+            }
+            
+            function hidePageClock() {
+                var clockOverlay = document.getElementById('pageClockOverlay');
+                if (clockOverlay) {
+                    clockOverlay.style.display = 'none';
+                }
+                
+                if (pageClockInterval) {
+                    clearInterval(pageClockInterval);
+                    pageClockInterval = null;
+                }
+                
+                var settingsModal = document.getElementById('pageClockSettingsModal');
+                if (settingsModal) {
+                    settingsModal.style.display = 'none';
+                }
+            }
+            
+            var clockSettings = {
+                globalEnabled: true,
+                position: 'center',
+                showDate: true,
+                showWeather: true,
+                showLunar: false,
+                timeFormat: '24',
+                fontStyle: 'sans',
+                dateFormat: 'yyyy/mm/dd',
+                fontSize: 100
+            };
+            
+            function getLunarDate(date) {
+                var lunarInfo = [
+                    0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
+                    0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977,
+                    0x04970, 0x0a4b0, 0x0b4b5, 0x06a50, 0x06d40, 0x1ab54, 0x02b60, 0x09570, 0x052f2, 0x04970,
+                    0x06566, 0x0d4a0, 0x0ea50, 0x06e95, 0x05ad0, 0x02b60, 0x186e3, 0x092e0, 0x1c8d7, 0x0c950,
+                    0x0d4a0, 0x1d8a6, 0x0b550, 0x056a0, 0x1a5b4, 0x025d0, 0x092d0, 0x0d2b2, 0x0a950, 0x0b557,
+                    0x06ca0, 0x0b550, 0x15355, 0x04da0, 0x0a5d0, 0x14573, 0x052d0, 0x0a9a8, 0x0e950, 0x06aa0,
+                    0x0aea6, 0x0ab50, 0x04b60, 0x0aae4, 0x0a570, 0x05260, 0x0f263, 0x0d950, 0x05b57, 0x056a0,
+                    0x096d0, 0x04dd5, 0x04ad0, 0x0a4d0, 0x0d4d4, 0x0d250, 0x0d558, 0x0b540, 0x0b5a0, 0x195a6,
+                    0x095b0, 0x049b0, 0x0a974, 0x0a4b0, 0x0b27a, 0x06a50, 0x06d40, 0x0af46, 0x0ab60, 0x09570,
+                    0x04af5, 0x04970, 0x064b0, 0x074a3, 0x0ea50, 0x06b58, 0x055c0, 0x0ab60, 0x096d5, 0x092e0,
+                    0x0c960, 0x0d954, 0x0d4a0, 0x0da50, 0x07552, 0x056a0, 0x0abb7, 0x025d0, 0x092d0, 0x0cab5,
+                    0x0a950, 0x0b4a0, 0x0baa4, 0x0ad50, 0x055d9, 0x04ba0, 0x0a5b0, 0x15176, 0x052b0, 0x0a930,
+                    0x07954, 0x06aa0, 0x0ad50, 0x05b52, 0x04b60, 0x0a6e6, 0x0a4e0, 0x0d260, 0x0ea65, 0x0d530,
+                    0x05aa0, 0x076a3, 0x096d0, 0x04bd7, 0x04ad0, 0x0a4d0, 0x1d0b6, 0x0d250, 0x0d520, 0x0dd45,
+                    0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0
+                ];
+                
+                var solarMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                var Gan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+                var Zhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+                var Animals = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+                var lunarDayName = ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十",
+                                   "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十",
+                                   "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十"];
+                
+                var year = date.getFullYear();
+                var month = date.getMonth() + 1;
+                var day = date.getDate();
+                
+                var i, leap = 0, temp = 0;
+                var baseYear = 1900;
+                
+                if ((year < 1900) || (year > 2100)) {
+                    return "超出范围";
+                }
+                
+                temp = lunarInfo[year - 1900] & 0xf;
+                leap = temp == 0 ? 3 : temp;
+                
+                for (i = 1900; i < year; i++) {
+                    temp = lunarInfo[i - 1900] & 0xffff;
+                    day += (temp & 0xff) + ((temp & 0xff00) >> 8);
+                }
+                
+                for (i = 1; i < month; i++) {
+                    if ((leap > 0) && (i == (leap + 1))) {
+                        day += (lunarInfo[year - 1900] & 0xff00) >> 8;
+                    }
+                    day += solarMonth[i - 1];
+                }
+                
+                if ((leap > 0) && (month > leap)) {
+                    day -= (lunarInfo[year - 1900] & 0xff00) >> 8;
+                }
+                
+                var offset = day - 1;
+                var monthStart = 0;
+                var lunarYear = year;
+                var lunarMonth = 1;
+                
+                for (i = 1900; i <= year; i++) {
+                    temp = lunarInfo[i - 1900] & 0xffff;
+                    var daysInYear = (temp & 0xff) + ((temp & 0xff00) >> 8);
+                    if (offset < daysInYear) {
+                        lunarYear = i;
+                        break;
+                    }
+                    offset -= daysInYear;
+                }
+                
+                temp = lunarInfo[lunarYear - 1900] & 0xf;
+                var leapMonth = temp == 0 ? 0 : temp;
+                
+                for (i = 1; i <= 12; i++) {
+                    if (leapMonth > 0 && i == leapMonth) {
+                        var leapDays = (lunarInfo[lunarYear - 1900] & 0xff00) >> 8;
+                        if (offset < leapDays) {
+                            lunarMonth = i;
+                            break;
+                        }
+                        offset -= leapDays;
+                    }
+                    var monthDays = (lunarInfo[lunarYear - 1900] & (0x10000 >> i)) ? 30 : 29;
+                    if (offset < monthDays) {
+                        lunarMonth = i;
+                        break;
+                    }
+                    offset -= monthDays;
+                }
+                
+                var lunarDay = offset + 1;
+                var yearGanZhi = Gan[(lunarYear - 4) % 10] + Zhi[(lunarYear - 4) % 12];
+                var animal = Animals[(lunarYear - 4) % 12];
+                
+                return lunarDayName[lunarDay - 1] + " " + yearGanZhi + "年 " + animal + "年";
+            }
+            
+            function loadClockSettings() {
+                var saved = localStorage.getItem('pageClockSettings');
+                if (saved) {
+                    try {
+                        var savedSettings = JSON.parse(saved);
+                        clockSettings = Object.assign({}, clockSettings, savedSettings);
+                    } catch (e) {
+                        console.error('Failed to parse clock settings:', e);
+                    }
+                }
+                
+                var contentEl = document.getElementById('pageClockContent');
+                if (contentEl) {
+                    var scaleClass = 'scale-' + Math.round(clockSettings.fontSize / 10) * 10;
+                    contentEl.className = 'page-clock-content font-' + clockSettings.fontStyle + ' ' + clockSettings.position + ' ' + scaleClass;
+                }
+                
+                var dateEl = document.getElementById('pageClockDate');
+                if (dateEl) {
+                    dateEl.style.display = clockSettings.showDate ? 'block' : 'none';
+                }
+                
+                var weatherEl = document.getElementById('pageClockWeather');
+                if (weatherEl) {
+                    weatherEl.style.display = clockSettings.showWeather ? 'flex' : 'none';
+                }
+                
+                var lunarEl = document.getElementById('pageClockLunar');
+                if (lunarEl) {
+                    lunarEl.style.display = clockSettings.showLunar ? 'block' : 'none';
+                }
+                
+                var posBtns = document.querySelectorAll('.position-btn');
+                posBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.position === clockSettings.position);
+                });
+                
+                var formatBtns = document.querySelectorAll('.format-btn');
+                formatBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.format === clockSettings.timeFormat);
+                });
+                
+                var fontBtns = document.querySelectorAll('.font-btn');
+                fontBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.font === clockSettings.fontStyle);
+                });
+                
+                var dateFormatBtns = document.querySelectorAll('.date-format-btn');
+                dateFormatBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.dateFormat === clockSettings.dateFormat);
+                });
+                
+                var showDateCheckbox = document.getElementById('clockShowDate');
+                if (showDateCheckbox) {
+                    showDateCheckbox.checked = clockSettings.showDate;
+                }
+                
+                var showWeatherCheckbox = document.getElementById('clockShowWeather');
+                if (showWeatherCheckbox) {
+                    showWeatherCheckbox.checked = clockSettings.showWeather;
+                }
+                
+                var showLunarCheckbox = document.getElementById('clockShowLunar');
+                if (showLunarCheckbox) {
+                    showLunarCheckbox.checked = clockSettings.showLunar;
+                }
+                
+                var fontSizeSlider = document.getElementById('clockFontSizeSlider');
+                var fontSizeValue = document.getElementById('fontSizeValue');
+                if (fontSizeSlider) {
+                    fontSizeSlider.value = clockSettings.fontSize;
+                }
+                if (fontSizeValue) {
+                    fontSizeValue.textContent = clockSettings.fontSize + '%';
+                }
+                
+                var globalToggleBtn = document.getElementById('globalClockToggle');
+                if (globalToggleBtn) {
+                    globalToggleBtn.classList.toggle('active', clockSettings.globalEnabled);
+                    updateGlobalToggleText(globalToggleBtn);
+                }
+                
+                toggleSettingsEnabled(clockSettings.globalEnabled);
+                
+                updateHideInterfaceButton();
+            }
+            
+            function saveClockSettings() {
+                localStorage.setItem('pageClockSettings', JSON.stringify(clockSettings));
+            }
+            
+            function updateClockDisplay() {
+                var now = new Date();
+                
+                var hours = now.getHours();
+                var minutes = now.getMinutes().toString().padStart(2, '0');
+                
+                var timeStr = '';
+                if (clockSettings.timeFormat === '12') {
+                    var period = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12 || 12;
+                    timeStr = hours.toString().padStart(2, '0') + ':' + minutes + ' ' + period;
+                } else {
+                    timeStr = hours.toString().padStart(2, '0') + ':' + minutes;
+                }
+                
+                var timeEl = document.getElementById('pageClockTime');
+                if (timeEl) {
+                    timeEl.textContent = timeStr;
+                }
+                
+                if (clockSettings.showDate) {
+                    var year = now.getFullYear();
+                    var month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    var day = now.getDate().toString().padStart(2, '0');
+                    var weekDay = getWeekDay(now);
+                    var dateStr = '';
+                    
+                    switch (clockSettings.dateFormat) {
+                        case 'yyyy/mm/dd':
+                            dateStr = year + '/' + month + '/' + day + ' ' + weekDay;
+                            break;
+                        case 'mm/dd/yyyy':
+                            dateStr = month + '/' + day + '/' + year + ' ' + weekDay;
+                            break;
+                        case 'mm-dd-yyyy':
+                            dateStr = month + '-' + day + '-' + year + ' ' + weekDay;
+                            break;
+                        default:
+                            dateStr = year + '年' + month + '月' + day + '日 ' + weekDay;
+                    }
+                    
+                    var dateEl = document.getElementById('pageClockDate');
+                    if (dateEl) {
+                        dateEl.textContent = dateStr;
+                    }
+                }
+                
+                if (clockSettings.showLunar) {
+                    var lunarStr = getLunarDate(now);
+                    var lunarEl = document.getElementById('pageClockLunar');
+                    if (lunarEl) {
+                        lunarEl.textContent = lunarStr;
+                    }
+                }
+                
+                if (clockSettings.showWeather) {
+                    updateWeatherDisplay();
+                }
+            }
+            
+            function initClockSettings() {
+                loadClockSettings();
+                
+                var settingsBtn = document.getElementById('pageClockSettingsBtn');
+                var settingsModal = document.getElementById('pageClockSettingsModal');
+                var closeBtn = document.getElementById('pageClockSettingsClose');
+                
+                if (settingsBtn && settingsModal) {
+                    settingsBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        settingsModal.style.display = 'flex';
+                    });
+                }
+                
+                if (closeBtn && settingsModal) {
+                    closeBtn.addEventListener('click', function() {
+                        settingsModal.style.display = 'none';
+                    });
+                }
+                
+                settingsModal.addEventListener('click', function(e) {
+                    if (e.target === settingsModal) {
+                        settingsModal.style.display = 'none';
+                    }
+                });
+                
+                var globalToggleBtn = document.getElementById('globalClockToggle');
+                if (globalToggleBtn) {
+                    globalToggleBtn.addEventListener('click', function() {
+                        clockSettings.globalEnabled = !clockSettings.globalEnabled;
+                        globalToggleBtn.classList.toggle('active', clockSettings.globalEnabled);
+                        updateGlobalToggleText(globalToggleBtn);
+                        toggleSettingsEnabled(clockSettings.globalEnabled);
+                        saveClockSettings();
+                    });
+                }
+                
+                var posBtns = document.querySelectorAll('.position-btn');
+                posBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        posBtns.forEach(function(b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        
+                        clockSettings.position = btn.dataset.position;
+                        updateContentClass();
+                        saveClockSettings();
+                    });
+                });
+                
+                var formatBtns = document.querySelectorAll('.format-btn');
+                formatBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        formatBtns.forEach(function(b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        
+                        clockSettings.timeFormat = btn.dataset.format;
+                        saveClockSettings();
+                    });
+                });
+                
+                var fontBtns = document.querySelectorAll('.font-btn');
+                fontBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        fontBtns.forEach(function(b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        
+                        clockSettings.fontStyle = btn.dataset.font;
+                        updateContentClass();
+                        saveClockSettings();
+                    });
+                });
+                
+                var dateFormatBtns = document.querySelectorAll('.date-format-btn');
+                dateFormatBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        dateFormatBtns.forEach(function(b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        
+                        clockSettings.dateFormat = btn.dataset.dateFormat;
+                        saveClockSettings();
+                    });
+                });
+                
+                var showDateCheckbox = document.getElementById('clockShowDate');
+                if (showDateCheckbox) {
+                    showDateCheckbox.addEventListener('change', function() {
+                        clockSettings.showDate = this.checked;
+                        var dateEl = document.getElementById('pageClockDate');
+                        if (dateEl) {
+                            dateEl.style.display = this.checked ? 'block' : 'none';
+                        }
+                        saveClockSettings();
+                    });
+                }
+                
+                var showWeatherCheckbox = document.getElementById('clockShowWeather');
+                if (showWeatherCheckbox) {
+                    showWeatherCheckbox.addEventListener('change', function() {
+                        clockSettings.showWeather = this.checked;
+                        var weatherEl = document.getElementById('pageClockWeather');
+                        if (weatherEl) {
+                            weatherEl.style.display = this.checked ? 'flex' : 'none';
+                        }
+                        saveClockSettings();
+                    });
+                }
+                
+                var showLunarCheckbox = document.getElementById('clockShowLunar');
+                if (showLunarCheckbox) {
+                    showLunarCheckbox.addEventListener('change', function() {
+                        clockSettings.showLunar = this.checked;
+                        var lunarEl = document.getElementById('pageClockLunar');
+                        if (lunarEl) {
+                            lunarEl.style.display = this.checked ? 'block' : 'none';
+                        }
+                        saveClockSettings();
+                    });
+                }
+                
+                var fontSizeSlider = document.getElementById('clockFontSizeSlider');
+                var fontSizeValue = document.getElementById('fontSizeValue');
+                if (fontSizeSlider) {
+                    fontSizeSlider.addEventListener('input', function() {
+                        clockSettings.fontSize = parseInt(this.value);
+                        if (fontSizeValue) {
+                            fontSizeValue.textContent = clockSettings.fontSize + '%';
+                        }
+                        updateContentClass();
+                        saveClockSettings();
+                    });
+                }
+            }
+            
+            function toggleSettingsEnabled(enabled) {
+                var settingsBody = document.getElementById('clockSettingsBody');
+                if (!settingsBody) return;
+                
+                var allButtons = settingsBody.querySelectorAll('button');
+                var allCheckboxes = settingsBody.querySelectorAll('input[type="checkbox"]');
+                var allSliders = settingsBody.querySelectorAll('input[type="range"]');
+                
+                allButtons.forEach(function(btn) {
+                    btn.disabled = !enabled;
+                    btn.classList.toggle('disabled', !enabled);
+                });
+                
+                allCheckboxes.forEach(function(cb) {
+                    cb.disabled = !enabled;
+                });
+                
+                allSliders.forEach(function(slider) {
+                    slider.disabled = !enabled;
+                });
+                
+                settingsBody.classList.toggle('disabled', !enabled);
+            }
+            
+            function updateContentClass() {
+                var contentEl = document.getElementById('pageClockContent');
+                if (contentEl) {
+                    var scaleClass = 'scale-' + Math.round(clockSettings.fontSize / 10) * 10;
+                    contentEl.className = 'page-clock-content font-' + clockSettings.fontStyle + ' ' + clockSettings.position + ' ' + scaleClass;
+                }
+            }
+            
+            function updateGlobalToggleText(btn) {
+                var iconEl = btn.querySelector('i');
+                var spanEl = btn.querySelector('span');
+                if (clockSettings.globalEnabled) {
+                    iconEl.className = 'fas fa-clock';
+                    spanEl.textContent = '启用页面时钟';
+                } else {
+                    iconEl.className = 'fas fa-eye-slash';
+                    spanEl.textContent = '保持UI隐藏';
+                }
+            }
+            
+            function updateHideInterfaceButton() {
+                var pageClockEnabled = isPageClockEnabled();
+                
+                document.body.classList.toggle('page-clock-enabled', pageClockEnabled);
+                
+                var iconEl = document.getElementById('hideInterfaceIcon');
+                var tooltipEl = document.getElementById('hideInterfaceTooltip');
+                var mobileIconEl = document.getElementById('mobileModalHideInterfaceIcon');
+                var mobileTextEl = document.getElementById('mobileModalHideInterfaceText');
+                var modalIconEl = document.getElementById('modalHideInterfaceIcon');
+                var modalTextEl = document.getElementById('modalHideInterfaceText');
+                
+                if (pageClockEnabled) {
+                    if (iconEl) iconEl.className = 'fas fa-clock';
+                    if (tooltipEl) tooltipEl.textContent = '页面时钟';
+                    if (mobileIconEl) mobileIconEl.className = 'fas fa-clock';
+                    if (mobileTextEl) mobileTextEl.textContent = '页面时钟';
+                    if (modalIconEl) modalIconEl.className = 'fas fa-clock';
+                    if (modalTextEl) modalTextEl.textContent = '页面时钟';
+                } else {
+                    if (iconEl) iconEl.className = 'fas fa-eye-slash';
+                    if (tooltipEl) tooltipEl.textContent = '隐藏UI';
+                    if (mobileIconEl) mobileIconEl.className = 'fas fa-eye-slash';
+                    if (mobileTextEl) mobileTextEl.textContent = '隐藏UI';
+                    if (modalIconEl) modalIconEl.className = 'fas fa-eye-slash';
+                    if (modalTextEl) modalTextEl.textContent = '隐藏UI';
+                }
+            }
+            
+            function isPageClockEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.pageClockEnabled === true;
+                    }
+                }
+                return false;
+            }
+            
             // 加载用户头像
             loadUserAvatar();
             
@@ -990,6 +1664,9 @@
             
             // 加载毛玻璃主题设置
             loadThemeSettings();
+            
+            // 初始化页面时钟设置
+            initClockSettings();
             
             // 生成移动端功能选择弹窗
             if (typeof generateMobileFunctionsModal === 'function') {
@@ -1073,19 +1750,32 @@
             if (hideInterfaceBtn) {
                 hideInterfaceBtn.addEventListener('click', function() {
                     document.body.classList.toggle('interface-hidden');
+                    
+                    if (document.body.classList.contains('interface-hidden')) {
+                        var pageClockEnabled = isPageClockEnabled();
+                        if (pageClockEnabled && clockSettings.globalEnabled) {
+                            showPageClock();
+                        } else {
+                            hidePageClock();
+                        }
+                    } else {
+                        hidePageClock();
+                    }
                 });
                 
                 // 按ESC键显示界面
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape' && document.body.classList.contains('interface-hidden')) {
                         document.body.classList.remove('interface-hidden');
+                        hidePageClock();
                     }
                 });
                 
                 // 点击空白处显示界面
             document.addEventListener('click', function(e) {
-                if (document.body.classList.contains('interface-hidden') && e.target === document.body) {
+                if (document.body.classList.contains('interface-hidden') && (e.target === document.body || e.target.id === 'pageClockOverlay')) {
                     document.body.classList.remove('interface-hidden');
+                    hidePageClock();
                     // 重置提示横条的隐藏状态
                     var hintBar = document.getElementById('hideUiHintBar');
                     if (hintBar) {
@@ -1301,8 +1991,8 @@
                                     <span>关于启动器</span>
                                 </button>
                                 <button class="more-feature-btn" id="mobileModalHideInterfaceBtn">
-                                    <i class="fas fa-eye-slash"></i>
-                                    <span>隐藏UI</span>
+                                    <i class="fas fa-clock" id="mobileModalHideInterfaceIcon"></i>
+                                    <span id="mobileModalHideInterfaceText">页面时钟</span>
                                 </button>
                                 <button class="more-feature-btn" id="mobileModalUiScaleBtn">
                                     <i class="fas fa-search"></i>
@@ -1397,6 +2087,114 @@
     <div class="hide-ui-hint-bar" id="hideUiHintBar">
         <span>点击空白处显示UI</span>
     </div>
+    
+    <div class="page-clock-settings-btn" id="pageClockSettingsBtn">
+        <i class="fas fa-cog"></i>
+    </div>
+    
+    <div class="page-clock-overlay" id="pageClockOverlay" style="display: none;">
+        <div class="page-clock-content" id="pageClockContent">
+            <div class="page-clock-time" id="pageClockTime">00:00</div>
+            <div class="page-clock-date" id="pageClockDate">----年--月--日 星期--</div>
+            <div class="page-clock-lunar" id="pageClockLunar" style="display: none;"></div>
+            <div class="page-clock-weather" id="pageClockWeather">
+                <i class="fas fa-cloud-sun"></i>
+                <span>--°C</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="page-clock-settings-modal" id="pageClockSettingsModal" style="display: none;">
+        <div class="page-clock-settings-content">
+            <div class="page-clock-settings-header">
+                <h3>时钟设置</h3>
+                <button class="page-clock-settings-close" id="pageClockSettingsClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="global-toggle-section">
+                <button class="global-toggle-btn active" id="globalClockToggle">
+                    <i class="fas fa-clock"></i>
+                    <span>启用页面时钟</span>
+                </button>
+            </div>
+            <div class="page-clock-settings-body" id="clockSettingsBody">
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h4>时钟位置</h4>
+                        <div class="position-options-grid">
+                            <button class="position-btn" data-position="top-left">左上</button>
+                            <button class="position-btn" data-position="top">顶部</button>
+                            <button class="position-btn" data-position="top-right">右上</button>
+                            <button class="position-btn" data-position="left">左侧</button>
+                            <button class="position-btn active" data-position="center">居中</button>
+                            <button class="position-btn" data-position="right">右侧</button>
+                            <button class="position-btn" data-position="bottom-left">左下</button>
+                            <button class="position-btn" data-position="bottom">底部</button>
+                            <button class="position-btn" data-position="bottom-right">右下</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>时间格式</h4>
+                        <div class="format-options">
+                            <button class="format-btn active" data-format="24">24小时制</button>
+                            <button class="format-btn" data-format="12">12小时制</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>字体样式</h4>
+                        <div class="font-options">
+                            <button class="font-btn active" data-font="sans">无衬线体</button>
+                            <button class="font-btn" data-font="serif">衬线体</button>
+                            <button class="font-btn" data-font="mono">等宽体</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h4>显示选项</h4>
+                        <label class="settings-toggle-reverse">
+                            <span>显示日期</span>
+                            <input type="checkbox" id="clockShowDate" checked>
+                        </label>
+                        <label class="settings-toggle-reverse">
+                            <span>显示天气</span>
+                            <input type="checkbox" id="clockShowWeather" checked>
+                        </label>
+                        <label class="settings-toggle-reverse">
+                            <span>显示农历</span>
+                            <input type="checkbox" id="clockShowLunar">
+                        </label>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>日期格式</h4>
+                        <div class="date-format-options">
+                            <button class="date-format-btn active" data-date-format="yyyy/mm/dd">2026/12/12</button>
+                            <button class="date-format-btn" data-date-format="mm/dd/yyyy">12/12/2026</button>
+                            <button class="date-format-btn" data-date-format="mm-dd-yyyy">12-12-2026</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>字体大小</h4>
+                        <div class="font-size-slider-container">
+                            <input type="range" id="clockFontSizeSlider" min="60" max="160" value="100">
+                            <div class="font-size-labels">
+                                <span>小</span>
+                                <span id="fontSizeValue">100%</span>
+                                <span>大</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="community-bg">
         <div class="building building-1"></div>
         <div class="building building-2"></div>
@@ -1583,10 +2381,10 @@
                         </div>
                         <div class="hide-interface-btn-container btn-container">
                             <button class="hide-interface-btn" id="hideInterfaceBtn">
-                                <i class="fas fa-eye-slash"></i>
+                                <i class="fas fa-clock" id="hideInterfaceIcon"></i>
                             </button>
                             <div class="btn-tooltip">
-                                <span>隐藏UI</span>
+                                <span id="hideInterfaceTooltip">页面时钟</span>
                             </div>
                         </div>
                         <div class="ui-scale-btn-container btn-container">
@@ -1935,8 +2733,8 @@
                         <span>关于启动器</span>
                     </button>
                     <button class="more-feature-btn" id="modalHideInterfaceBtn">
-                        <i class="fas fa-eye-slash"></i>
-                        <span>隐藏UI</span>
+                        <i class="fas fa-clock" id="modalHideInterfaceIcon"></i>
+                        <span id="modalHideInterfaceText">页面时钟</span>
                     </button>
                     <button class="more-feature-btn" id="modalUiScaleBtn">
                         <i class="fas fa-search"></i>

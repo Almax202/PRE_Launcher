@@ -108,6 +108,14 @@
                     </div>
                 </div>
                 
+                <div class="menu-group">
+                    <div class="menu-group-title">实验室</div>
+                    <div class="menu-item" data-section="experimental">
+                        <i class="fas fa-flask"></i>
+                        <span>实验性功能</span>
+                    </div>
+                </div>
+                
                 <div class="menu-group dev-mode-group" id="devModeGroup" style="display: none;">
                     <div class="menu-group-title">开发测试</div>
                     <div class="menu-item" data-section="test" id="testPageButton">
@@ -281,6 +289,35 @@
                                     <input type="range" min="0" max="100" value="50" class="slider">
                                     <div class="slider-value">50</div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section" id="section-experimental">
+                    <div class="section-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                            <div class="card-title">
+                                <h3>实验性功能</h3>
+                                <p>探索并启用处于测试阶段的新功能</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-clock" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">页面时钟</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，隐藏UI时将在屏幕上显示当前时间、日期和天气信息</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="pageClockEnabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -1981,6 +2018,36 @@
             </div>
             
 
+        </div>
+    </div>
+    
+    <div id="experimentalWarningModal" class="custom-alert">
+        <div class="alert-content" style="max-width: 550px; text-align: left;">
+            <div class="alert-icon" style="color: #ffc107;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 style="text-align: center;">实验性功能提示</h3>
+            <div style="margin-top: 15px; padding: 16px; background: rgba(255, 193, 7, 0.1); border-radius: 8px; border-left: 4px solid #ffc107;">
+                <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #666;">
+                    该类别是尚未正式发布的测试特性，用户可选择启用以体验新功能，但可能存在不稳定或风险。
+                </p>
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 10px; font-size: 14px; font-weight: 600; color: #333;">注意事项</h4>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                        <li style="color: #666; margin-bottom: 4px;"><strong style="color: #333;">稳定性风险：</strong>实验性功能可能导致软件崩溃、数据丢失或性能下降。</li>
+                        <li style="color: #666; margin-bottom: 4px;"><strong style="color: #333;">版本依赖：</strong>某些功能可能随更新被移除或默认启用。</li>
+                        <li style="color: #666; margin-bottom: 4px;"><strong style="color: #333;">操作谨慎：</strong>启用前应了解功能用途及潜在影响，必要时请备份数据。</li>
+                        <li style="color: #666; margin-bottom: 4px;"><strong style="color: #333;">重启生效：</strong>大多数实验性功能在启用后需要重启程序或浏览器才能生效。</li>
+                    </ul>
+                    <p style="margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: #666;">
+                        实验性功能适合希望尝试新特性、开发者或高级用户，但在生产环境或重要数据环境中应谨慎使用。
+                    </p>
+                </div>
+            </div>
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button class="alert-confirm" id="experimentalWarningCancel">取消</button>
+                <button class="alert-confirm" id="experimentalWarningConfirm" style="background-color: #4CAF50;">我已阅读，继续</button>
+            </div>
         </div>
     </div>
     
