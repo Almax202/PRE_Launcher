@@ -7927,6 +7927,37 @@ body.transparent-mode .more-action-btn:hover {
     box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
 }
 
+/* 页面时钟天气设置按钮 */
+.page-clock-weather-btn {
+    position: fixed;
+    top: 20px;
+    right: 78px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.3s ease;
+    color: #fff;
+    font-size: 20px;
+}
+
+body.interface-hidden.page-clock-enabled .page-clock-weather-btn {
+    display: flex;
+}
+
+.page-clock-weather-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
 /* 页面时钟设置按钮 */
 .page-clock-settings-btn {
     position: fixed;
@@ -7955,7 +7986,7 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
 
 .page-clock-settings-btn:hover {
     background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
 }
 
 .page-clock-settings-btn i {
@@ -7964,6 +7995,295 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
 
 .page-clock-settings-btn:hover i {
     transform: rotate(90deg);
+}
+
+/* 页面时钟天气设置弹窗 */
+.page-clock-weather-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.page-clock-weather-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 800px;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-clock-weather-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.page-clock-weather-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.page-clock-weather-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #666;
+}
+
+.page-clock-weather-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.page-clock-weather-body {
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+    flex: 1;
+}
+
+.weather-body-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-body-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-section {
+    margin-bottom: 24px;
+}
+
+.page-clock-weather-footer {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.weather-section h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.city-select-container {
+    display: flex;
+    gap: 12px;
+}
+
+.city-select-container select {
+    flex: 1;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    font-size: 14px;
+    color: #333;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.city-select-container select:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+.city-select-container select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.current-selection {
+    padding: 12px 16px;
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: 10px;
+}
+
+.current-selection span {
+    font-size: 14px;
+    color: #666;
+}
+
+.weather-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.weather-btn {
+    flex: 1;
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.weather-btn-auto {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+.weather-btn-auto:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.weather-btn-confirm {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+}
+
+.weather-btn-confirm:hover {
+    background: linear-gradient(135deg, #0069d9, #004085);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.unit-options {
+    display: flex;
+    gap: 12px;
+}
+
+.unit-btn {
+    flex: 1;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(0, 0, 0, 0.05);
+    color: #666;
+}
+
+.unit-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.unit-btn.active {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+    border-color: transparent;
+}
+
+.weather-preview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+    border-radius: 12px;
+    position: relative;
+    min-height: 80px;
+}
+
+.weather-preview-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #007bff;
+    font-size: 24px;
+}
+
+.weather-preview-icon {
+    font-size: 48px;
+    color: #007bff;
+    flex-shrink: 0;
+}
+
+.weather-preview-info {
+    flex: 1;
+}
+
+.weather-preview-temp {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+}
+
+.weather-preview-status {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.weather-preview-btn {
+    width: 100%;
+    height: 40px;
+    margin-top: 12px;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    border-radius: 8px;
+    background: transparent;
+    color: #007bff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.weather-preview-btn:hover {
+    background: rgba(0, 123, 255, 0.1);
+    border-color: #007bff;
+}
+
+.weather-copyright {
+    text-align: center;
+    padding: 12px 24px 20px;
+    font-size: 12px;
+    color: #999;
 }
 
 /* 页面时钟设置弹窗 */

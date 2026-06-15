@@ -986,6 +986,114 @@
             var pageClockInterval = null;
             var weatherCache = null;
             var weatherCacheTime = 0;
+            var weatherSettings = {
+                cityName: '',
+                provinceName: '',
+                latitude: null,
+                longitude: null,
+                useAutoLocation: true,
+                temperatureUnit: 'celsius'
+            };
+            
+            var cityData = {
+                '北京市': ['东城区', '西城区', '朝阳区', '海淀区', '丰台区', '石景山区', '通州区', '顺义区', '昌平区'],
+                '天津市': ['和平区', '河东区', '河西区', '南开区', '河北区', '红桥区', '东丽区', '西青区', '津南区', '北辰区'],
+                '河北省': ['石家庄市', '唐山市', '秦皇岛市', '邯郸市', '邢台市', '保定市', '张家口市', '承德市', '沧州市', '廊坊市', '衡水市'],
+                '山西省': ['太原市', '大同市', '阳泉市', '长治市', '晋城市', '朔州市', '晋中市', '运城市', '忻州市', '临汾市', '吕梁市'],
+                '内蒙古自治区': ['呼和浩特市', '包头市', '乌海市', '赤峰市', '通辽市', '鄂尔多斯市', '呼伦贝尔市', '巴彦淖尔市', '乌兰察布市'],
+                '辽宁省': ['沈阳市', '大连市', '鞍山市', '抚顺市', '本溪市', '丹东市', '锦州市', '营口市', '阜新市', '辽阳市', '盘锦市', '铁岭市', '朝阳市', '葫芦岛市'],
+                '吉林省': ['长春市', '吉林市', '四平市', '辽源市', '通化市', '白山市', '松原市', '白城市'],
+                '黑龙江省': ['哈尔滨市', '齐齐哈尔市', '鸡西市', '鹤岗市', '双鸭山市', '大庆市', '伊春市', '佳木斯市', '七台河市', '牡丹江市', '黑河市', '绥化市'],
+                '上海市': ['黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区'],
+                '江苏省': ['南京市', '无锡市', '徐州市', '常州市', '苏州市', '南通市', '连云港市', '淮安市', '盐城市', '扬州市', '镇江市', '泰州市', '宿迁市'],
+                '浙江省': ['杭州市', '宁波市', '温州市', '嘉兴市', '湖州市', '绍兴市', '金华市', '衢州市', '舟山市', '台州市', '丽水市'],
+                '安徽省': ['合肥市', '芜湖市', '蚌埠市', '淮南市', '马鞍山市', '淮北市', '铜陵市', '安庆市', '黄山市', '滁州市', '阜阳市', '宿州市', '六安市', '亳州市', '池州市', '宣城市'],
+                '福建省': ['福州市', '厦门市', '莆田市', '三明市', '泉州市', '漳州市', '南平市', '龙岩市', '宁德市'],
+                '江西省': ['南昌市', '景德镇市', '萍乡市', '九江市', '新余市', '鹰潭市', '赣州市', '吉安市', '宜春市', '抚州市', '上饶市'],
+                '山东省': ['济南市', '青岛市', '淄博市', '枣庄市', '东营市', '烟台市', '潍坊市', '济宁市', '泰安市', '威海市', '日照市', '莱芜市', '临沂市', '德州市', '聊城市', '滨州市', '菏泽市'],
+                '河南省': ['郑州市', '开封市', '洛阳市', '平顶山市', '安阳市', '鹤壁市', '新乡市', '焦作市', '濮阳市', '许昌市', '漯河市', '三门峡市', '南阳市', '商丘市', '信阳市', '周口市', '驻马店市'],
+                '湖北省': ['武汉市', '黄石市', '十堰市', '宜昌市', '襄阳市', '鄂州市', '荆门市', '孝感市', '荆州市', '黄冈市', '咸宁市', '随州市'],
+                '湖南省': ['长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市'],
+                '广东省': ['广州市', '韶关市', '深圳市', '珠海市', '汕头市', '佛山市', '江门市', '湛江市', '茂名市', '肇庆市', '惠州市', '梅州市', '汕尾市', '河源市', '阳江市', '清远市', '东莞市', '中山市', '潮州市', '揭阳市', '云浮市'],
+                '广西壮族自治区': ['南宁市', '柳州市', '桂林市', '梧州市', '北海市', '防城港市', '钦州市', '贵港市', '玉林市', '百色市', '贺州市', '河池市', '来宾市', '崇左市'],
+                '海南省': ['海口市', '三亚市', '三沙市', '儋州市'],
+                '重庆市': ['万州区', '涪陵区', '渝中区', '大渡口区', '江北区', '沙坪坝区', '九龙坡区', '南岸区', '北碚区', '綦江区', '大足区', '渝北区', '巴南区', '黔江区'],
+                '四川省': ['成都市', '自贡市', '攀枝花市', '泸州市', '德阳市', '绵阳市', '广元市', '遂宁市', '内江市', '乐山市', '南充市', '眉山市', '宜宾市', '广安市', '达州市', '雅安市', '巴中市', '资阳市'],
+                '贵州省': ['贵阳市', '六盘水市', '遵义市', '安顺市', '毕节市', '铜仁市'],
+                '云南省': ['昆明市', '曲靖市', '玉溪市', '保山市', '昭通市', '丽江市', '普洱市', '临沧市'],
+                '西藏自治区': ['拉萨市', '日喀则市', '昌都市', '林芝市'],
+                '陕西省': ['西安市', '铜川市', '宝鸡市', '咸阳市', '渭南市', '延安市', '汉中市', '榆林市', '安康市', '商洛市'],
+                '甘肃省': ['兰州市', '嘉峪关市', '金昌市', '白银市', '天水市', '武威市', '张掖市', '平凉市', '酒泉市', '庆阳市', '定西市', '陇南市'],
+                '青海省': ['西宁市', '海东市'],
+                '宁夏回族自治区': ['银川市', '石嘴山市', '吴忠市', '固原市', '中卫市'],
+                '新疆维吾尔自治区': ['乌鲁木齐市', '克拉玛依市', '吐鲁番市', '哈密市'],
+                '香港特别行政区': ['香港'],
+                '澳门特别行政区': ['澳门'],
+                '台湾省': ['台北市', '新北市', '桃园市', '台中市', '台南市', '高雄市']
+            };
+            
+            var cityCoordinates = {
+                '北京市': { lat: 39.9042, lon: 116.4074 },
+                '东城区': { lat: 39.9289, lon: 116.4136 },
+                '西城区': { lat: 39.9138, lon: 116.3665 },
+                '朝阳区': { lat: 39.9999, lon: 116.4716 },
+                '海淀区': { lat: 39.9962, lon: 116.2993 },
+                '丰台区': { lat: 39.8586, lon: 116.2858 },
+                '天津市': { lat: 39.0842, lon: 117.2009 },
+                '石家庄市': { lat: 38.0423, lon: 114.4779 },
+                '唐山市': { lat: 39.6378, lon: 118.1973 },
+                '太原市': { lat: 37.8716, lon: 112.5492 },
+                '呼和浩特市': { lat: 40.8173, lon: 111.6791 },
+                '沈阳市': { lat: 41.8045, lon: 123.4328 },
+                '大连市': { lat: 38.9140, lon: 121.6147 },
+                '长春市': { lat: 43.8868, lon: 125.3245 },
+                '哈尔滨市': { lat: 45.8038, lon: 126.5349 },
+                '上海市': { lat: 31.2304, lon: 121.4737 },
+                '黄浦区': { lat: 31.2397, lon: 121.4998 },
+                '南京市': { lat: 32.0603, lon: 118.7969 },
+                '苏州市': { lat: 31.3251, lon: 120.6196 },
+                '杭州市': { lat: 30.2741, lon: 120.1552 },
+                '宁波市': { lat: 29.8739, lon: 121.5497 },
+                '合肥市': { lat: 31.8654, lon: 117.2272 },
+                '福州市': { lat: 26.0753, lon: 119.2878 },
+                '厦门市': { lat: 24.4798, lon: 118.0894 },
+                '南昌市': { lat: 28.6824, lon: 115.8555 },
+                '济南市': { lat: 36.6769, lon: 116.9850 },
+                '青岛市': { lat: 36.0671, lon: 120.3826 },
+                '郑州市': { lat: 34.7466, lon: 113.6253 },
+                '武汉市': { lat: 30.5928, lon: 114.3055 },
+                '长沙市': { lat: 28.2280, lon: 112.9388 },
+                '广州市': { lat: 23.1291, lon: 113.2644 },
+                '深圳市': { lat: 22.5431, lon: 114.0579 },
+                '南宁市': { lat: 22.8170, lon: 108.3677 },
+                '桂林市': { lat: 25.2741, lon: 110.2993 },
+                '海口市': { lat: 20.0231, lon: 110.3497 },
+                '三亚市': { lat: 18.2239, lon: 109.5018 },
+                '重庆市': { lat: 29.4316, lon: 106.9123 },
+                '成都市': { lat: 30.5728, lon: 104.0668 },
+                '贵阳市': { lat: 26.5789, lon: 106.7132 },
+                '昆明市': { lat: 25.0389, lon: 102.7183 },
+                '拉萨市': { lat: 29.6540, lon: 91.1276 },
+                '西安市': { lat: 34.2619, lon: 108.9463 },
+                '兰州市': { lat: 36.0611, lon: 103.8343 },
+                '西宁市': { lat: 36.6171, lon: 101.7789 },
+                '银川市': { lat: 38.4722, lon: 106.2761 },
+                '乌鲁木齐市': { lat: 43.8268, lon: 87.6169 },
+                '香港': { lat: 22.3193, lon: 114.1694 },
+                '澳门': { lat: 22.1987, lon: 113.5439 },
+                '台北市': { lat: 25.0329, lon: 121.5654 },
+                '高雄市': { lat: 22.6273, lon: 120.3017 }
+            };
+            
+            function getCityCoordinates(cityName, provinceName) {
+                if (cityCoordinates[cityName]) {
+                    return cityCoordinates[cityName];
+                }
+                if (cityCoordinates[provinceName]) {
+                    return cityCoordinates[provinceName];
+                }
+                return null;
+            }
             
             function isPageClockEnabled() {
                 var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
@@ -1036,12 +1144,12 @@
                     '02n': 'fa-cloud-moon',
                     '03d': 'fa-cloud',
                     '03n': 'fa-cloud',
-                    '04d': 'fa-clouds',
-                    '04n': 'fa-clouds',
-                    '09d': 'fa-cloud-showers-heavy',
-                    '09n': 'fa-cloud-showers-heavy',
-                    '10d': 'fa-cloud-sun-rain',
-                    '10n': 'fa-cloud-moon-rain',
+                    '04d': 'fa-cloud',
+                    '04n': 'fa-cloud',
+                    '09d': 'fa-cloud-rain',
+                    '09n': 'fa-cloud-rain',
+                    '10d': 'fa-cloud-rain',
+                    '10n': 'fa-cloud-rain',
                     '11d': 'fa-bolt',
                     '11n': 'fa-bolt',
                     '13d': 'fa-snowflake',
@@ -1049,7 +1157,7 @@
                     '50d': 'fa-smog',
                     '50n': 'fa-smog'
                 };
-                return iconMap[code] || 'fa-cloud-sun';
+                return iconMap[code] || 'fa-cloud';
             }
             
             function updateWeatherDisplay() {
@@ -1071,34 +1179,40 @@
                     return;
                 }
                 
-                if (navigator.geolocation) {
+                var fetchWeatherByCoords = function(lat, lon) {
+                    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code';
+                    
+                    fetch(url)
+                        .then(function(response) {
+                            return response.json();
+                        })
+                        .then(function(data) {
+                            if (data && data.current) {
+                                var weatherData = {
+                                    temp: Math.round(data.current.temperature_2m),
+                                    code: data.current.weather_code,
+                                    isNight: new Date().getHours() < 6 || new Date().getHours() >= 18
+                                };
+                                weatherCache = weatherData;
+                                weatherCacheTime = Date.now();
+                                renderWeather(weatherData);
+                            } else {
+                                renderWeather(null);
+                            }
+                        })
+                        .catch(function() {
+                            renderWeather(null);
+                        });
+                };
+                
+                if (!weatherSettings.useAutoLocation && weatherSettings.latitude !== null && weatherSettings.longitude !== null) {
+                    fetchWeatherByCoords(weatherSettings.latitude, weatherSettings.longitude);
+                } else if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         function(position) {
                             var lat = position.coords.latitude;
                             var lon = position.coords.longitude;
-                            var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code';
-                            
-                            fetch(url)
-                                .then(function(response) {
-                                    return response.json();
-                                })
-                                .then(function(data) {
-                                    if (data && data.current) {
-                                        var weatherData = {
-                                            temp: Math.round(data.current.temperature_2m),
-                                            code: data.current.weather_code,
-                                            isNight: new Date().getHours() < 6 || new Date().getHours() >= 18
-                                        };
-                                        weatherCache = weatherData;
-                                        weatherCacheTime = Date.now();
-                                        renderWeather(weatherData);
-                                    } else {
-                                        renderWeather(null);
-                                    }
-                                })
-                                .catch(function() {
-                                    renderWeather(null);
-                                });
+                            fetchWeatherByCoords(lat, lon);
                         },
                         function() {
                             renderWeather(null);
@@ -1108,6 +1222,325 @@
                 } else {
                     renderWeather(null);
                 }
+            }
+            
+            function loadWeatherSettings() {
+                var saved = localStorage.getItem('weatherSettings');
+                if (saved) {
+                    try {
+                        var savedSettings = JSON.parse(saved);
+                        weatherSettings = Object.assign({}, weatherSettings, savedSettings);
+                    } catch (e) {
+                        console.error('Failed to load weather settings:', e);
+                    }
+                }
+            }
+            
+            function saveWeatherSettings() {
+                localStorage.setItem('weatherSettings', JSON.stringify(weatherSettings));
+            }
+            
+            function initWeatherSettingsModal() {
+                var weatherBtn = document.getElementById('pageClockWeatherBtn');
+                var weatherModal = document.getElementById('pageClockWeatherModal');
+                var closeBtn = document.getElementById('pageClockWeatherClose');
+                var provinceSelect = document.getElementById('weatherProvinceSelect');
+                var citySelect = document.getElementById('weatherCitySelect');
+                var currentCityDisplay = document.getElementById('currentCityDisplay');
+                var autoBtn = document.getElementById('weatherAutoBtn');
+                var confirmBtn = document.getElementById('weatherConfirmBtn');
+                
+                var previewIcon = document.getElementById('weatherPreview').querySelector('i');
+                var previewTemp = document.getElementById('weatherPreview').querySelector('.weather-preview-temp');
+                var previewStatus = document.getElementById('weatherPreview').querySelector('.weather-preview-status');
+                var previewLoading = document.getElementById('weatherPreviewLoading');
+                var previewBtn = document.getElementById('weatherPreviewBtn');
+                
+                for (var province in cityData) {
+                    var option = document.createElement('option');
+                    option.value = province;
+                    option.textContent = province;
+                    provinceSelect.appendChild(option);
+                }
+                
+                provinceSelect.addEventListener('change', function() {
+                    citySelect.innerHTML = '<option value="">请选择城市</option>';
+                    var selectedProvince = this.value;
+                    if (selectedProvince && cityData[selectedProvince]) {
+                        cityData[selectedProvince].forEach(function(city) {
+                            var option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            citySelect.appendChild(option);
+                        });
+                    }
+                    updateCurrentCityDisplay();
+                    resetPreview();
+                });
+                
+                citySelect.addEventListener('change', function() {
+                    updateCurrentCityDisplay();
+                    fetchWeatherForPreview();
+                });
+                
+                previewBtn.addEventListener('click', function() {
+                    fetchWeatherForPreview();
+                });
+                
+                function updateCurrentCityDisplay() {
+                    var province = provinceSelect.value;
+                    var city = citySelect.value;
+                    if (province && city) {
+                        currentCityDisplay.textContent = province + ' - ' + city;
+                    } else {
+                        currentCityDisplay.textContent = '未选择城市，将使用定位获取天气';
+                    }
+                }
+                
+                function resetPreview() {
+                    previewIcon.className = 'fas fa-cloud-sun';
+                    previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                    previewStatus.textContent = '选择城市查看预览';
+                    previewLoading.style.display = 'none';
+                    document.getElementById('weatherPreview').style.opacity = '1';
+                }
+                
+                function fetchWeatherForPreview() {
+                    var province = provinceSelect.value;
+                    var city = citySelect.value;
+                    
+                    if (!province || !city) {
+                        resetPreview();
+                        return;
+                    }
+                    
+                    var coords = getCityCoordinates(city, province);
+                    if (!coords) {
+                        previewIcon.className = 'fas fa-cloud-sun';
+                        previewTemp.textContent = '--°C';
+                        previewStatus.textContent = '暂不支持该城市的天气查询';
+                        previewLoading.style.display = 'none';
+                        return;
+                    }
+                    
+                    previewLoading.style.display = 'flex';
+                    document.getElementById('weatherPreview').style.opacity = '0.5';
+                    
+                    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + coords.lat + '&longitude=' + coords.lon + '&current=temperature_2m,weather_code';
+                    
+                    fetch(url)
+                        .then(function(response) {
+                            return response.json();
+                        })
+                        .then(function(data) {
+                            if (data && data.current) {
+                                var temp = Math.round(data.current.temperature_2m);
+                                var code = data.current.weather_code;
+                                var isNight = new Date().getHours() < 6 || new Date().getHours() >= 18;
+                                
+                                var iconCode = getIconFromWeatherCode(code, isNight);
+                                var iconClass = getWeatherIcon(iconCode);
+                                
+                                var unit = weatherSettings.temperatureUnit;
+                                var convertedTemp = convertTemperature(temp, unit);
+                                
+                                previewIcon.className = 'fas ' + iconClass;
+                                previewTemp.textContent = convertedTemp + getTemperatureUnitSymbol(unit);
+                                previewStatus.textContent = getWeatherStatus(code);
+                            } else {
+                                previewIcon.className = 'fas fa-cloud-sun';
+                                previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                                previewStatus.textContent = '获取天气失败';
+                            }
+                        })
+                        .catch(function() {
+                            previewIcon.className = 'fas fa-cloud-sun';
+                            previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                            previewStatus.textContent = '获取天气失败';
+                        })
+                        .finally(function() {
+                            previewLoading.style.display = 'none';
+                            document.getElementById('weatherPreview').style.opacity = '1';
+                        });
+                }
+                
+                function getWeatherStatus(code) {
+                    if (code === 0) return '晴天';
+                    if (code === 1) return '少云';
+                    if (code === 2) return '多云';
+                    if (code === 3) return '阴天';
+                    if (code >= 45 && code <= 48) return '雾/霾';
+                    if (code >= 51 && code <= 67) return '雨';
+                    if (code >= 71 && code <= 77) return '雪';
+                    if (code >= 80 && code <= 82) return '阵雨';
+                    if (code >= 85 && code <= 86) return '阵雪';
+                    if (code >= 95 && code <= 99) return '雷阵雨';
+                    return '多云';
+                }
+                
+                weatherBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    loadWeatherSettings();
+                    provinceSelect.value = weatherSettings.provinceName || '';
+                    provinceSelect.dispatchEvent(new Event('change'));
+                    setTimeout(function() {
+                        citySelect.value = weatherSettings.cityName || '';
+                        updateCurrentCityDisplay();
+                        fetchWeatherForPreview();
+                    }, 0);
+                    
+                    unitButtons.forEach(function(btn) {
+                        btn.classList.remove('active');
+                        if (btn.dataset.unit === weatherSettings.temperatureUnit) {
+                            btn.classList.add('active');
+                        }
+                    });
+                    
+                    weatherModal.style.display = 'flex';
+                });
+                
+                closeBtn.addEventListener('click', function() {
+                    weatherModal.style.display = 'none';
+                });
+                
+                weatherModal.addEventListener('click', function(e) {
+                    if (e.target === weatherModal) {
+                        weatherModal.style.display = 'none';
+                    }
+                });
+                
+                autoBtn.addEventListener('click', function() {
+                    weatherSettings.useAutoLocation = true;
+                    weatherSettings.cityName = '';
+                    weatherSettings.provinceName = '';
+                    weatherSettings.latitude = null;
+                    weatherSettings.longitude = null;
+                    saveWeatherSettings();
+                    provinceSelect.value = '';
+                    citySelect.innerHTML = '<option value="">请选择城市</option>';
+                    updateCurrentCityDisplay();
+                    
+                    previewLoading.style.display = 'flex';
+                    document.getElementById('weatherPreview').style.opacity = '0.5';
+                    previewIcon.className = 'fas fa-map-marker-alt';
+                    previewTemp.textContent = '--';
+                    previewStatus.textContent = '获取位置信息中...';
+                    
+                    if (!navigator.onLine) {
+                        previewLoading.style.display = 'none';
+                        document.getElementById('weatherPreview').style.opacity = '1';
+                        previewIcon.className = 'fas fa-cloud';
+                        previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                        previewStatus.textContent = '网络离线，请连接网络后重试';
+                        return;
+                    }
+                    
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                var lat = position.coords.latitude;
+                                var lon = position.coords.longitude;
+                                
+                                weatherSettings.latitude = lat;
+                                weatherSettings.longitude = lon;
+                                saveWeatherSettings();
+                                
+                                var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code';
+                                
+                                fetch(url)
+                                    .then(function(response) {
+                                        return response.json();
+                                    })
+                                    .then(function(data) {
+                                        if (data && data.current) {
+                                            var temp = Math.round(data.current.temperature_2m);
+                                            var code = data.current.weather_code;
+                                            var isNight = new Date().getHours() < 6 || new Date().getHours() >= 18;
+                                            
+                                            var iconCode = getIconFromWeatherCode(code, isNight);
+                                            var iconClass = getWeatherIcon(iconCode);
+                                            
+                                            var unit = weatherSettings.temperatureUnit;
+                                            var convertedTemp = convertTemperature(temp, unit);
+                                            
+                                            previewIcon.className = 'fas ' + iconClass;
+                                            previewTemp.textContent = convertedTemp + getTemperatureUnitSymbol(unit);
+                                            previewStatus.textContent = getWeatherStatus(code);
+                                        } else {
+                                            previewIcon.className = 'fas fa-cloud';
+                                            previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                                            previewStatus.textContent = '获取天气失败';
+                                        }
+                                    })
+                                    .catch(function() {
+                                        previewIcon.className = 'fas fa-cloud';
+                                        previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                                        previewStatus.textContent = '获取天气失败';
+                                    })
+                                    .finally(function() {
+                                        previewLoading.style.display = 'none';
+                                        document.getElementById('weatherPreview').style.opacity = '1';
+                                        weatherCache = null;
+                                        weatherCacheTime = 0;
+                                        updateWeatherDisplay();
+                                    });
+                            },
+                            function() {
+                                previewLoading.style.display = 'none';
+                                document.getElementById('weatherPreview').style.opacity = '1';
+                                previewIcon.className = 'fas fa-cloud';
+                        previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                        previewStatus.textContent = '定位失败，请手动选择城市';
+                    },
+                    { timeout: 10000 }
+                );
+                    } else {
+                        previewLoading.style.display = 'none';
+                        document.getElementById('weatherPreview').style.opacity = '1';
+                        previewIcon.className = 'fas fa-cloud';
+                        previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                        previewStatus.textContent = '您的设备不支持定位功能';
+                    }
+                });
+                
+                var unitButtons = document.querySelectorAll('.unit-btn');
+                unitButtons.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        unitButtons.forEach(function(b) { b.classList.remove('active'); });
+                        this.classList.add('active');
+                        weatherSettings.temperatureUnit = this.dataset.unit;
+                        saveWeatherSettings();
+                        fetchWeatherForPreview();
+                        weatherCache = null;
+                        weatherCacheTime = 0;
+                        updateWeatherDisplay();
+                    });
+                });
+                
+                confirmBtn.addEventListener('click', function() {
+                    var province = provinceSelect.value;
+                    var city = citySelect.value;
+                    
+                    if (province && city) {
+                        var coords = getCityCoordinates(city, province);
+                        if (coords) {
+                            weatherSettings.useAutoLocation = false;
+                            weatherSettings.provinceName = province;
+                            weatherSettings.cityName = city;
+                            weatherSettings.latitude = coords.lat;
+                            weatherSettings.longitude = coords.lon;
+                            saveWeatherSettings();
+                            weatherCache = null;
+                            weatherCacheTime = 0;
+                            updateWeatherDisplay();
+                            weatherModal.style.display = 'none';
+                        } else {
+                            alert('暂不支持该城市的天气查询');
+                        }
+                    } else {
+                        alert('请选择省份和城市');
+                    }
+                });
             }
             
             function getIconFromWeatherCode(code, isNight) {
@@ -1127,6 +1560,17 @@
                 return '02' + suffix;
             }
             
+            function convertTemperature(temp, unit) {
+                if (unit === 'fahrenheit') {
+                    return Math.round(temp * 9 / 5 + 32);
+                }
+                return temp;
+            }
+            
+            function getTemperatureUnitSymbol(unit) {
+                return unit === 'fahrenheit' ? '°F' : '°C';
+            }
+            
             function renderWeather(data) {
                 var weatherEl = document.getElementById('pageClockWeather');
                 if (!weatherEl) return;
@@ -1134,14 +1578,17 @@
                 var iconEl = weatherEl.querySelector('i');
                 var tempEl = weatherEl.querySelector('span');
                 
+                var unit = weatherSettings.temperatureUnit;
+                
                 if (data && data.temp !== undefined) {
                     var iconCode = getIconFromWeatherCode(data.code, data.isNight);
                     var iconClass = getWeatherIcon(iconCode);
                     iconEl.className = 'fas ' + iconClass;
-                    tempEl.textContent = data.temp + '°C';
+                    var convertedTemp = convertTemperature(data.temp, unit);
+                    tempEl.textContent = convertedTemp + getTemperatureUnitSymbol(unit);
                 } else {
                     iconEl.className = 'fas fa-cloud-sun';
-                    tempEl.textContent = '--°C';
+                    tempEl.textContent = '--' + getTemperatureUnitSymbol(unit);
                 }
             }
             
@@ -1665,8 +2112,14 @@
             // 加载毛玻璃主题设置
             loadThemeSettings();
             
+            // 加载天气设置（包括温度单位）
+            loadWeatherSettings();
+            
             // 初始化页面时钟设置
             initClockSettings();
+            
+            // 初始化天气设置弹窗
+            initWeatherSettingsModal();
             
             // 生成移动端功能选择弹窗
             if (typeof generateMobileFunctionsModal === 'function') {
@@ -1950,6 +2403,7 @@
             // 切换按钮点击事件 - 改为弹出窗口
             if (toggleButtonsBtn) {
                 toggleButtonsBtn.addEventListener('click', function() {
+                    updateHideInterfaceButton();
                     document.getElementById('moreFeaturesModal').style.display = 'flex';
                 });
             }
@@ -2088,6 +2542,10 @@
         <span>点击空白处显示UI</span>
     </div>
     
+    <div class="page-clock-weather-btn" id="pageClockWeatherBtn">
+        <i class="fas fa-cloud-sun"></i>
+    </div>
+    
     <div class="page-clock-settings-btn" id="pageClockSettingsBtn">
         <i class="fas fa-cog"></i>
     </div>
@@ -2190,6 +2648,81 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="page-clock-weather-modal" id="pageClockWeatherModal" style="display: none;">
+        <div class="page-clock-weather-content">
+            <div class="page-clock-weather-header">
+                <h3>天气设置</h3>
+                <button class="page-clock-weather-close" id="pageClockWeatherClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="page-clock-weather-body">
+                <div class="weather-body-left">
+                    <div class="weather-section">
+                        <h4>选择城市</h4>
+                        <div class="city-select-container">
+                            <select id="weatherProvinceSelect">
+                                <option value="">请选择省份</option>
+                            </select>
+                            <select id="weatherCitySelect">
+                                <option value="">请选择城市</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="weather-section">
+                        <h4>当前选择</h4>
+                        <div class="current-selection">
+                            <span id="currentCityDisplay">未选择城市，将使用定位获取天气</span>
+                        </div>
+                    </div>
+                    <div class="weather-section">
+                        <h4>温度单位</h4>
+                        <div class="unit-options">
+                            <button class="unit-btn active" data-unit="celsius">摄氏度 (°C)</button>
+                            <button class="unit-btn" data-unit="fahrenheit">华氏度 (°F)</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="weather-body-right">
+                    <div class="weather-section">
+                        <h4>天气预览</h4>
+                        <div class="weather-preview" id="weatherPreview">
+                            <div class="weather-preview-icon">
+                                <i class="fas fa-cloud-sun"></i>
+                            </div>
+                            <div class="weather-preview-info">
+                                <div class="weather-preview-temp">--°C</div>
+                                <div class="weather-preview-status">选择城市查看预览</div>
+                            </div>
+                            <div class="weather-preview-loading" id="weatherPreviewLoading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                        <button class="weather-preview-btn" id="weatherPreviewBtn">
+                            <i class="fas fa-refresh"></i>
+                            <span>刷新预览</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="page-clock-weather-footer">
+                <div class="weather-actions">
+                    <button class="weather-btn weather-btn-auto" id="weatherAutoBtn">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>自动定位</span>
+                    </button>
+                    <button class="weather-btn weather-btn-confirm" id="weatherConfirmBtn">
+                        <i class="fas fa-check"></i>
+                        <span>确认选择</span>
+                    </button>
+                </div>
+                <div class="weather-copyright">
+                    天气数据由 Open-Meteo API 提供支持
                 </div>
             </div>
         </div>
@@ -7248,13 +7781,39 @@
                                     <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
                                     <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
                                     <p>各独立资源版权、著作权归原作者及版权方所有。</p>
-                                    <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看：</p>
+                                    <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
                                 </div>
                                 <div class="copyright-buttons">
-                                    <button class="copyright-btn" onclick="showMitLicenseModal()">MIT License</button>
-                                    <button class="copyright-btn" onclick="showDummyImageModal()">dummyimage</button>
-                                    <button class="copyright-btn" onclick="showFontCopyrightModal()">OPPO Sans</button>
-                                    <button class="copyright-btn" onclick="showMuiCopyrightModal()">MUI</button>
+                                    <div style="margin-bottom: 15px;">
+                                        <span style="font-weight: bold; color: #666;">1. MIT 开源许可</span>
+                                        <div style="margin-top: 8px; margin-left: 20px;">
+                                            <button class="copyright-btn" onclick="showMitLicenseModal()">MIT License</button>
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <span style="font-weight: bold; color: #666;">2. 验证码图片服务</span>
+                                        <div style="margin-top: 8px; margin-left: 20px;">
+                                            <button class="copyright-btn" onclick="showDummyImageModal()">dummyimage</button>
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
+                                        <div style="margin-top: 8px; margin-left: 20px;">
+                                            <button class="copyright-btn" onclick="showFontCopyrightModal()">OPPO Sans</button>
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <span style="font-weight: bold; color: #666;">4. 前端开发框架</span>
+                                        <div style="margin-top: 8px; margin-left: 20px;">
+                                            <button class="copyright-btn" onclick="showMuiCopyrightModal()">MUI</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span style="font-weight: bold; color: #666;">5. 天气API</span>
+                                        <div style="margin-top: 8px; margin-left: 20px;">
+                                            <button class="copyright-btn" onclick="showOpenMeteoModal()">Open-Meteo API</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -7294,11 +7853,39 @@
                                         <p style="margin: 10px 0;">本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
                                         <p style="margin: 10px 0;">所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
                                         <p style="margin: 10px 0;">各独立资源版权、著作权归原作者及版权方所有。</p>
-                                        <p style="margin: 10px 0;">如需了解各资源的详细开源许可协议，请点击下方按钮查看：</p>
-                                        <button class="alert-confirm" onclick="showMitLicenseModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">MIT License</button>
-                                        <button class="alert-confirm" onclick="showDummyImageModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">dummyimage</button>
-                                        <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-right: 10px;">OPPO Sans</button>
-                                        <button class="alert-confirm" onclick="showMuiCopyrightModal()" style="padding: 8px 16px; font-size: 14px; margin-top: 15px;">MUI</button>
+                                        <p style="margin: 10px 0;">如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
+                                        <div style="margin-top: 15px;">
+                                            <div style="margin-bottom: 15px;">
+                                                <span style="font-weight: bold; color: #666;">1. MIT 开源许可</span>
+                                                <div style="margin-top: 8px; margin-left: 20px;">
+                                                    <button class="alert-confirm" onclick="showMitLicenseModal()" style="padding: 8px 16px; font-size: 14px;">MIT License</button>
+                                                </div>
+                                            </div>
+                                            <div style="margin-bottom: 15px;">
+                                                <span style="font-weight: bold; color: #666;">2. 验证码图片服务</span>
+                                                <div style="margin-top: 8px; margin-left: 20px;">
+                                                    <button class="alert-confirm" onclick="showDummyImageModal()" style="padding: 8px 16px; font-size: 14px;">dummyimage</button>
+                                                </div>
+                                            </div>
+                                            <div style="margin-bottom: 15px;">
+                                                <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
+                                                <div style="margin-top: 8px; margin-left: 20px;">
+                                                    <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px;">OPPO Sans</button>
+                                                </div>
+                                            </div>
+                                            <div style="margin-bottom: 15px;">
+                                                <span style="font-weight: bold; color: #666;">4. 前端开发框架</span>
+                                                <div style="margin-top: 8px; margin-left: 20px;">
+                                                    <button class="alert-confirm" onclick="showMuiCopyrightModal()" style="padding: 8px 16px; font-size: 14px;">MUI</button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span style="font-weight: bold; color: #666;">5. 天气API</span>
+                                                <div style="margin-top: 8px; margin-left: 20px;">
+                                                    <button class="alert-confirm" onclick="showOpenMeteoModal()" style="padding: 8px 16px; font-size: 14px;">Open-Meteo API</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -7431,7 +8018,7 @@
                     <div class="about-content" style="text-align: left;">
                         <p style="margin: 15px 0;"><strong>dummyimage.com 项目著作权与知识产权专属归属：Russell Heimlich。</strong></p>
                         <p style="margin: 15px 0;">本项目合法使用 dummyimage.com 开源服务，其完整版权归原作者 Russell Heimlich 所有，已严格遵守官方 MIT 使用协议，仅作正常验证码图片生成与内容应用，未进行源码修改、售卖及二次分发等违规操作。</p>
-                        <p style="margin: 15px 0;"><strong>项目地址：</strong><a href="https://github.com/kingkool68/dummyimage" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/kingkool68/dummyimage</a></p>
+                        <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="https://github.com/kingkool68/dummyimage" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/kingkool68/dummyimage</a></p>
                     </div>
                     
                     <div class="modal-buttons">
@@ -7513,7 +8100,7 @@
             modal.innerHTML = `
                 <div class="alert-content" style="max-width: 700px;">
                     <div class="alert-header">
-                        <h2>MIT License</h2>
+                        <h2>MIT 开源许可</h2>
                     </div>
                     <div class="about-content" style="text-align: left; max-height: 50vh; overflow-y: auto;">
                         <div id="mitLicenseChinese">
@@ -7522,7 +8109,7 @@
                             <p style="margin: 10px 0;">特此免费授予任何获得本软件及相关文档文件（以下简称 "软件"）副本的人，不受限制地处理本软件，包括但不限于使用、复制、修改、合并、发布、分发、再许可和 / 或出售本软件副本的权利，并允许向其提供本软件的人这样做，但须符合以下条件：</p>
                             <p style="margin: 10px 0;">上述版权声明和本许可声明应包含在本软件的所有副本或重要部分中。</p>
                             <p style="margin: 10px 0;">本软件按 "现状" 提供，不提供任何明示或暗示的保证，包括但不限于对适销性、特定用途适用性和非侵权性的保证。在任何情况下，作者或版权持有人均不对任何索赔、损害或其他责任承担任何责任，无论是在合同、侵权或其他法律行为中，因使用或与本软件有关或由此产生的、使用本软件而产生的任何索赔、损害或其他责任。</p>
-                            <p style="margin: 15px 0;"><strong>本项目地址：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
+                            <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
                         </div>
                         <div id="mitLicenseEnglish" style="display: none;">
                             <h3 style="margin-bottom: 15px; color: #d45d79;">English Ver</h3>
@@ -7530,7 +8117,7 @@
                             <p style="margin: 10px 0;">Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
                             <p style="margin: 10px 0;">The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
                             <p style="margin: 10px 0;">THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-                            <p style="margin: 15px 0;"><strong>Website：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
+                            <p style="margin: 15px 0;"><strong>GitHub Website：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
                         </div>
                     </div>
                     <div class="modal-buttons">
@@ -7594,7 +8181,7 @@
                     <div class="about-content" style="text-align: left;">
                         <p style="margin: 15px 0;">本项目界面搭建与基础能力开发引用并使用 MUI 开源框架。</p>
                         <p style="margin: 15px 0;">MUI 为开源前端框架，其著作权、知识产权归属原开发团队与贡献者，本项目严格遵守其官方开源许可证条款，仅用于项目内部集成与业务展示，未对框架核心源码进行恶意篡改、破解、二次分发等违规操作。</p>
-                        <p style="margin: 15px 0;"><strong>项目地址：</strong><a href="https://github.com/dcloudio/mui" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/dcloudio/mui</a></p>
+                        <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="https://github.com/dcloudio/mui" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/dcloudio/mui</a></p>
                     </div>
                     <div class="modal-buttons">
                         <button class="alert-confirm" onclick="closeMuiCopyrightModal()">关闭</button>
@@ -7619,6 +8206,48 @@
                 muiCopyrightModal.classList.remove('show');
                 setTimeout(function() {
                     muiCopyrightModal.remove();
+                }, 300);
+            }
+        }
+        
+        // 显示Open-Meteo API版权声明模态框
+        function showOpenMeteoModal() {
+            var modal = document.createElement('div');
+            modal.id = 'openMeteoModal';
+            modal.className = 'custom-alert';
+            
+            modal.innerHTML = `
+                <div class="alert-content" style="max-width: 600px;">
+                    <div class="alert-header">
+                        <h2>Open-Meteo API 版权声明</h2>
+                    </div>
+                    <div class="about-content" style="text-align: left;">
+                        <p style="margin: 15px 0;">本项目的天气查询功能使用 Open-Meteo API 获取实时天气数据。</p>
+                        <p style="margin: 15px 0;">Open-Meteo 提供免费的天气 API 服务，其数据来源于全球气象机构，本项目严格遵守其使用条款，仅用于非商业用途的天气信息展示。</p>
+                        <p style="margin: 15px 0;"><strong>官方网站：</strong><a href="https://open-meteo.com" target="_blank" style="color: #d45d79; text-decoration: underline;">https://open-meteo.com</a></p>
+                        <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="https://github.com/open-meteo/open-meteo" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/open-meteo/open-meteo</a></p>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="alert-confirm" onclick="closeOpenMeteoModal()">关闭</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+        }
+        
+        // 关闭Open-Meteo API版权信息模态框
+        function closeOpenMeteoModal() {
+            var openMeteoModal = document.getElementById('openMeteoModal');
+            if (openMeteoModal) {
+                openMeteoModal.classList.remove('show');
+                setTimeout(function() {
+                    openMeteoModal.remove();
                 }, 300);
             }
         }
