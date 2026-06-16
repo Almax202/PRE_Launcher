@@ -7997,6 +7997,183 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
     transform: rotate(90deg);
 }
 
+/* 页面时钟返回按钮 */
+.page-clock-back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.3s ease;
+    color: #fff;
+    font-size: 20px;
+}
+
+body.interface-hidden.page-clock-enabled .page-clock-back-btn {
+    display: flex;
+}
+
+.page-clock-back-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+/* 时钟调整面板 */
+.clock-adjust-panel {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 340px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    overflow: hidden;
+}
+
+.adjust-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: move;
+}
+
+.adjust-panel-header span {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.adjust-panel-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.adjust-panel-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.adjust-panel-body {
+    padding: 16px;
+}
+
+.adjust-section {
+    margin-bottom: 20px;
+}
+
+.adjust-section:last-child {
+    margin-bottom: 0;
+}
+
+.adjust-section h5 {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.adjust-section input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    outline: none;
+}
+
+.adjust-section input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.font-size-display {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.font-size-display span {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.align-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.align-btn {
+    flex: 1;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+}
+
+.align-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.align-btn.active {
+    background: rgba(52, 152, 219, 0.6);
+    border-color: rgba(52, 152, 219, 0.8);
+    color: #fff;
+}
+
+.confirm-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(52, 152, 219, 0.8);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirm-btn:hover {
+    background: rgba(52, 152, 219, 1);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
 /* 页面时钟天气设置弹窗 */
 .page-clock-weather-modal {
     position: fixed;
@@ -8340,7 +8517,8 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
 .page-clock-settings-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 16px;
     padding: 20px 24px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     position: sticky;
@@ -8349,6 +8527,11 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 20px 20px 0 0;
+}
+
+.page-clock-settings-header .header-title-container {
+    flex: 1;
+    text-align: center;
 }
 
 .page-clock-settings-header h3 {
@@ -8423,6 +8606,40 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
     transform: none;
 }
 
+.global-toggle-btn-header {
+    width: auto;
+    padding: 8px 16px;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.global-toggle-btn-header:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.global-toggle-btn-header:not(.active) {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #666;
+    box-shadow: none;
+}
+
+.global-toggle-btn-header:not(.active):hover {
+    background: rgba(0, 0, 0, 0.08);
+    transform: none;
+}
+
 .page-clock-settings-body.disabled {
     opacity: 0.5;
     pointer-events: none;
@@ -8481,6 +8698,12 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
     gap: 24px;
 }
 
+.settings-column.single-column {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
 .page-clock-settings-body .settings-section {
     margin: 0;
 }
@@ -8494,7 +8717,7 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
 
 .position-options-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
     gap: 8px;
 }
 
@@ -8714,7 +8937,82 @@ body.interface-hidden.page-clock-enabled .page-clock-settings-btn {
     letter-spacing: 1px;
     margin-top: 8px;
     opacity: 0.85;
-    font-family: 'STKaiti', 'KaiTi', '楷体', serif;
+}
+
+.page-clock-content.font-sans .page-clock-lunar {
+    font-family: 'OPPO Sans 4.0', 'Segoe UI Light', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.page-clock-content.font-serif .page-clock-lunar {
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.page-clock-content.font-mono .page-clock-lunar {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.page-clock-quote {
+    margin-top: 30px;
+    padding: 20px 30px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    max-width: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.quote-content {
+    font-size: 18px;
+    line-height: 1.6;
+    font-style: italic;
+    opacity: 0.95;
+    letter-spacing: 1px;
+}
+
+.quote-author {
+    font-size: 14px;
+    margin-top: 12px;
+    opacity: 0.7;
+    text-align: right;
+    letter-spacing: 2px;
+}
+
+.quote-author::before {
+    content: '—— ';
+}
+
+@media (max-width: 768px) {
+    .page-clock-quote {
+        margin-top: 20px;
+        padding: 15px 20px;
+        max-width: 350px;
+    }
+    
+    .quote-content {
+        font-size: 16px;
+    }
+    
+    .quote-author {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-clock-quote {
+        margin-top: 15px;
+        padding: 12px 15px;
+        max-width: 280px;
+    }
+    
+    .quote-content {
+        font-size: 14px;
+    }
+    
+    .quote-author {
+        font-size: 12px;
+    }
 }
 
 /* 字体大小缩放 */

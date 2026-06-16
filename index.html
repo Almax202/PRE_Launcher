@@ -1602,6 +1602,11 @@
                         pageClockInterval = setInterval(updateClockDisplay, 1000);
                     }
                 }
+                
+                var hintBar = document.getElementById('hideUiHintBar');
+                if (hintBar) {
+                    hintBar.classList.add('hint-hidden');
+                }
             }
             
             function hidePageClock() {
@@ -1619,19 +1624,450 @@
                 if (settingsModal) {
                     settingsModal.style.display = 'none';
                 }
+                
+                var hintBar = document.getElementById('hideUiHintBar');
+                if (hintBar) {
+                    hintBar.classList.remove('hint-hidden');
+                }
             }
             
             var clockSettings = {
                 globalEnabled: true,
                 position: 'center',
+                customPosition: { x: 50, y: 50 },
+                textAlign: 'left',
                 showDate: true,
                 showWeather: true,
                 showLunar: false,
+                showQuote: true,
+                quotePosition: 'below-clock',
+                quoteCustomPosition: { x: 50, y: 70 },
                 timeFormat: '24',
                 fontStyle: 'sans',
                 dateFormat: 'yyyy/mm/dd',
                 fontSize: 100
             };
+            
+            var quoteCache = null;
+            var quoteCacheTime = 0;
+            
+            function fetchQuoteData() {
+                if (!navigator.onLine) {
+                    renderQuote(null);
+                    return;
+                }
+                
+                var now = Date.now();
+                if (quoteCache && (now - quoteCacheTime) < 30 * 60 * 1000) {
+                    renderQuote(quoteCache);
+                    return;
+                }
+                
+                var url = 'https://v1.hitokoto.cn/';
+                
+                fetch(url)
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data && data.hitokoto) {
+                            quoteCache = {
+                                content: data.hitokoto || '',
+                                author: data.from_who || data.from || ''
+                            };
+                            quoteCacheTime = Date.now();
+                            renderQuote(quoteCache);
+                        } else {
+                            renderQuote(null);
+                        }
+                    })
+                    .catch(function() {
+                        renderQuote(null);
+                    });
+            }
+            
+            function renderQuote(data) {
+                var quoteContentEl = document.getElementById('quoteContent');
+                var quoteAuthorEl = document.getElementById('quoteAuthor');
+                var quoteEl = document.getElementById('pageClockQuote');
+                
+                if (!quoteContentEl || !quoteAuthorEl || !quoteEl) return;
+                
+                if (data && data.content) {
+                    quoteContentEl.textContent = data.content;
+                    quoteAuthorEl.textContent = data.author || '佚名';
+                    quoteEl.style.display = 'block';
+                } else {
+                    quoteContentEl.textContent = '——';
+                    quoteAuthorEl.textContent = '';
+                    quoteEl.style.display = 'block';
+                }
+            }
+            
+            function initDragPositionButton() {
+                var clockDragBtn = document.getElementById('clockDragBtn');
+                var settingsModal = document.getElementById('pageClockSettingsModal');
+                
+                if (clockDragBtn) {
+                    clockDragBtn.addEventListener('click', function() {
+                        settingsModal.style.display = 'none';
+                        showAdjustPanel();
+                        enableClockDragMode(true);
+                    });
+                }
+            }
+            
+            function showAdjustPanel() {
+                var panel = document.getElementById('clockAdjustPanel');
+                if (!panel) return;
+                
+                panel.style.display = 'block';
+                
+                var slider = document.getElementById('adjustFontSizeSlider');
+                var valueEl = document.getElementById('adjustFontSizeValue');
+                if (slider && valueEl) {
+                    slider.value = clockSettings.fontSize;
+                    valueEl.textContent = clockSettings.fontSize + '%';
+                }
+                
+                var alignBtns = document.querySelectorAll('.align-btn');
+                alignBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.align === clockSettings.textAlign);
+                });
+                
+                initPanelDrag();
+            }
+            
+            function initPanelDrag() {
+                var panel = document.getElementById('clockAdjustPanel');
+                var header = document.getElementById('adjustPanelHeader');
+                if (!panel || !header) return;
+                
+                var isDragging = false;
+                var offset = { x: 0, y: 0 };
+                
+                header.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    var rect = panel.getBoundingClientRect();
+                    offset.x = e.clientX - rect.left;
+                    offset.y = e.clientY - rect.top;
+                    
+                    document.addEventListener('mousemove', onPanelMouseMove);
+                    document.addEventListener('mouseup', onPanelMouseUp);
+                });
+                
+                function onPanelMouseMove(e) {
+                    if (!isDragging) return;
+                    
+                    var x = e.clientX - offset.x;
+                    var y = e.clientY - offset.y;
+                    
+                    var maxX = window.innerWidth - panel.offsetWidth;
+                    var maxY = window.innerHeight - panel.offsetHeight;
+                    
+                    x = Math.max(0, Math.min(x, maxX));
+                    y = Math.max(0, Math.min(y, maxY));
+                    
+                    panel.style.left = x + 'px';
+                    panel.style.top = y + 'px';
+                    panel.style.transform = 'none';
+                }
+                
+                function onPanelMouseUp() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onPanelMouseMove);
+                    document.removeEventListener('mouseup', onPanelMouseUp);
+                }
+            }
+            
+            function initAdjustPanelEvents() {
+                var closeBtn = document.getElementById('adjustPanelClose');
+                var slider = document.getElementById('adjustFontSizeSlider');
+                var valueEl = document.getElementById('adjustFontSizeValue');
+                var alignBtns = document.querySelectorAll('.align-btn');
+                var confirmBtn = document.getElementById('adjustConfirmBtn');
+                var panel = document.getElementById('clockAdjustPanel');
+                
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        panel.style.display = 'none';
+                    });
+                }
+                
+                if (slider && valueEl) {
+                    slider.addEventListener('input', function() {
+                        clockSettings.fontSize = parseInt(this.value);
+                        valueEl.textContent = clockSettings.fontSize + '%';
+                        updateContentClass();
+                        saveClockSettings();
+                    });
+                }
+                
+                alignBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var attrName = '';
+                        if (btn.dataset.align) attrName = 'data-align';
+                        else if (btn.dataset.format) attrName = 'data-format';
+                        else if (btn.dataset.font) attrName = 'data-font';
+                        else if (btn.dataset.dateFormat) attrName = 'data-date-format';
+                        
+                        var sameGroupBtns = document.querySelectorAll('[' + attrName + ']');
+                        sameGroupBtns.forEach(function(b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        
+                        if (btn.dataset.align) {
+                            clockSettings.textAlign = btn.dataset.align;
+                            updateContentAlign();
+                        } else if (btn.dataset.format) {
+                            clockSettings.timeFormat = btn.dataset.format;
+                            updateClockDisplay();
+                        } else if (btn.dataset.font) {
+                            clockSettings.fontStyle = btn.dataset.font;
+                            updateContentClass();
+                        } else if (btn.dataset.dateFormat) {
+                            clockSettings.dateFormat = btn.dataset.dateFormat;
+                            updateClockDisplay();
+                        }
+                        saveClockSettings();
+                    });
+                });
+                
+                if (confirmBtn) {
+                    confirmBtn.addEventListener('click', function() {
+                        panel.style.display = 'none';
+                        disableClockDragMode();
+                    });
+                }
+            }
+            
+            function updateContentAlign() {
+                var contentEl = document.getElementById('pageClockContent');
+                if (!contentEl) return;
+                
+                contentEl.style.textAlign = clockSettings.textAlign;
+                
+                var weatherEl = document.getElementById('pageClockWeather');
+                if (weatherEl) {
+                    var justifyContent = 'flex-start';
+                    if (clockSettings.textAlign === 'center') {
+                        justifyContent = 'center';
+                    } else if (clockSettings.textAlign === 'right') {
+                        justifyContent = 'flex-end';
+                    }
+                    weatherEl.style.justifyContent = justifyContent;
+                }
+            }
+            
+            var isDraggingClock = false;
+            var isDraggingQuote = false;
+            var dragOffset = { x: 0, y: 0 };
+            
+            function enableClockDragMode(showPanel) {
+                var contentEl = document.getElementById('pageClockContent');
+                var overlayEl = document.getElementById('pageClockOverlay');
+                
+                if (!contentEl || !overlayEl) return;
+                
+                isDraggingClock = true;
+                contentEl.style.cursor = 'move';
+                contentEl.style.userSelect = 'none';
+                
+                overlayEl.style.display = 'flex';
+                updateClockDisplay();
+                
+                function onMouseDown(e) {
+                    if (!isDraggingClock) return;
+                    if (e.target.closest('.clock-adjust-panel')) return;
+                    
+                    var rect = contentEl.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                }
+                
+                function onMouseMove(e) {
+                    if (!isDraggingClock) return;
+                    
+                    var x = e.clientX - dragOffset.x;
+                    var y = e.clientY - dragOffset.y;
+                    
+                    var maxX = window.innerWidth - contentEl.offsetWidth;
+                    var maxY = window.innerHeight - contentEl.offsetHeight;
+                    
+                    x = Math.max(0, Math.min(x, maxX));
+                    y = Math.max(0, Math.min(y, maxY));
+                    
+                    contentEl.style.position = 'fixed';
+                    contentEl.style.left = x + 'px';
+                    contentEl.style.top = y + 'px';
+                    contentEl.style.transform = '';
+                    
+                    clockSettings.position = 'custom';
+                    clockSettings.customPosition = {
+                        x: Math.round((x / window.innerWidth) * 100),
+                        y: Math.round((y / window.innerHeight) * 100)
+                    };
+                }
+                
+                function onMouseUp() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                }
+                
+                function onWheel(e) {
+                    if (!isDraggingClock) return;
+                    if (e.target.closest('.clock-adjust-panel')) return;
+                    
+                    e.preventDefault();
+                    
+                    var delta = e.deltaY > 0 ? -5 : 5;
+                    var newSize = clockSettings.fontSize + delta;
+                    
+                    if (newSize < 60) newSize = 60;
+                    if (newSize > 160) newSize = 160;
+                    
+                    clockSettings.fontSize = newSize;
+                    updateContentClass();
+                    saveClockSettings();
+                    
+                    var slider = document.getElementById('adjustFontSizeSlider');
+                    var valueEl = document.getElementById('adjustFontSizeValue');
+                    if (slider) slider.value = newSize;
+                    if (valueEl) valueEl.textContent = newSize + '%';
+                }
+                
+                contentEl.addEventListener('mousedown', onMouseDown);
+                contentEl.addEventListener('wheel', onWheel, { passive: false });
+            }
+            
+            function disableClockDragMode() {
+                var contentEl = document.getElementById('pageClockContent');
+                if (!contentEl) return;
+                
+                isDraggingClock = false;
+                contentEl.style.cursor = 'default';
+                contentEl.style.userSelect = '';
+                
+                saveClockSettings();
+            }
+            
+            function enableQuoteDragMode() {
+                var quoteEl = document.getElementById('pageClockQuote');
+                var overlayEl = document.getElementById('pageClockOverlay');
+                
+                if (!quoteEl || !overlayEl) return;
+                
+                isDraggingQuote = true;
+                quoteEl.style.cursor = 'move';
+                quoteEl.style.userSelect = 'none';
+                
+                var clockOverlay = document.createElement('div');
+                clockOverlay.id = 'dragGuideOverlay';
+                clockOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.3);
+                    z-index: 9997;
+                    cursor: move;
+                `;
+                document.body.appendChild(clockOverlay);
+                
+                overlayEl.style.display = 'flex';
+                fetchQuoteData();
+                
+                function onMouseDown(e) {
+                    if (!isDraggingQuote || e.target !== quoteEl && !quoteEl.contains(e.target)) return;
+                    
+                    e.stopPropagation();
+                    var rect = quoteEl.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                }
+                
+                function onMouseMove(e) {
+                    if (!isDraggingQuote) return;
+                    
+                    var x = e.clientX - dragOffset.x;
+                    var y = e.clientY - dragOffset.y;
+                    
+                    var maxX = window.innerWidth - quoteEl.offsetWidth;
+                    var maxY = window.innerHeight - quoteEl.offsetHeight;
+                    
+                    x = Math.max(0, Math.min(x, maxX));
+                    y = Math.max(0, Math.min(y, maxY));
+                    
+                    quoteEl.style.position = 'fixed';
+                    quoteEl.style.left = x + 'px';
+                    quoteEl.style.top = y + 'px';
+                    quoteEl.style.marginTop = '0';
+                    
+                    clockSettings.quotePosition = 'custom';
+                    clockSettings.quoteCustomPosition = {
+                        x: Math.round((x / window.innerWidth) * 100),
+                        y: Math.round((y / window.innerHeight) * 100)
+                    };
+                }
+                
+                function onMouseUp() {
+                    isDraggingQuote = false;
+                    quoteEl.style.cursor = 'default';
+                    quoteEl.style.userSelect = '';
+                    
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    
+                    setTimeout(function() {
+                        var guideOverlay = document.getElementById('dragGuideOverlay');
+                        if (guideOverlay) {
+                            guideOverlay.remove();
+                        }
+                    }, 100);
+                    
+                    saveClockSettings();
+                }
+                
+                quoteEl.addEventListener('mousedown', onMouseDown);
+                clockOverlay.addEventListener('click', onMouseUp);
+            }
+            
+            function updateContentPosition() {
+                var contentEl = document.getElementById('pageClockContent');
+                var quoteEl = document.getElementById('pageClockQuote');
+                
+                if (!contentEl) return;
+                
+                if (clockSettings.position === 'custom') {
+                    contentEl.style.position = 'fixed';
+                    contentEl.style.left = (clockSettings.customPosition.x / 100 * window.innerWidth) + 'px';
+                    contentEl.style.top = (clockSettings.customPosition.y / 100 * window.innerHeight) + 'px';
+                    contentEl.style.transform = 'none';
+                } else {
+                    contentEl.style.position = '';
+                    contentEl.style.left = '';
+                    contentEl.style.top = '';
+                    updateContentClass();
+                }
+                
+                if (quoteEl && clockSettings.quotePosition === 'custom') {
+                    quoteEl.style.position = 'fixed';
+                    quoteEl.style.left = (clockSettings.quoteCustomPosition.x / 100 * window.innerWidth) + 'px';
+                    quoteEl.style.top = (clockSettings.quoteCustomPosition.y / 100 * window.innerHeight) + 'px';
+                    quoteEl.style.marginTop = '0';
+                } else if (quoteEl) {
+                    quoteEl.style.position = '';
+                    quoteEl.style.left = '';
+                    quoteEl.style.top = '';
+                    quoteEl.style.marginTop = '';
+                }
+            }
             
             function getLunarDate(date) {
                 var lunarInfo = [
@@ -1746,7 +2182,15 @@
                 var contentEl = document.getElementById('pageClockContent');
                 if (contentEl) {
                     var scaleClass = 'scale-' + Math.round(clockSettings.fontSize / 10) * 10;
-                    contentEl.className = 'page-clock-content font-' + clockSettings.fontStyle + ' ' + clockSettings.position + ' ' + scaleClass;
+                    var positionClass = clockSettings.position !== 'custom' ? ' ' + clockSettings.position : '';
+                    contentEl.className = 'page-clock-content font-' + clockSettings.fontStyle + positionClass + ' ' + scaleClass;
+                    
+                    if (clockSettings.position === 'custom' && clockSettings.customPosition) {
+                        contentEl.style.position = 'fixed';
+                        contentEl.style.left = (clockSettings.customPosition.x / 100 * window.innerWidth) + 'px';
+                        contentEl.style.top = (clockSettings.customPosition.y / 100 * window.innerHeight) + 'px';
+                        contentEl.style.transform = '';
+                    }
                 }
                 
                 var dateEl = document.getElementById('pageClockDate');
@@ -1764,10 +2208,17 @@
                     lunarEl.style.display = clockSettings.showLunar ? 'block' : 'none';
                 }
                 
-                var posBtns = document.querySelectorAll('.position-btn');
-                posBtns.forEach(function(btn) {
-                    btn.classList.toggle('active', btn.dataset.position === clockSettings.position);
-                });
+                var quoteEl = document.getElementById('pageClockQuote');
+                if (quoteEl) {
+                    quoteEl.style.display = clockSettings.showQuote ? 'block' : 'none';
+                }
+                
+                updateContentAlign();
+                
+                var showQuoteCheckbox = document.getElementById('clockShowQuote');
+                if (showQuoteCheckbox) {
+                    showQuoteCheckbox.checked = clockSettings.showQuote;
+                }
                 
                 var formatBtns = document.querySelectorAll('.format-btn');
                 formatBtns.forEach(function(btn) {
@@ -1881,6 +2332,10 @@
                 if (clockSettings.showWeather) {
                     updateWeatherDisplay();
                 }
+                
+                if (clockSettings.showQuote) {
+                    fetchQuoteData();
+                }
             }
             
             function initClockSettings() {
@@ -1894,6 +2349,15 @@
                     settingsBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         settingsModal.style.display = 'flex';
+                    });
+                }
+                
+                var backBtn = document.getElementById('pageClockBackBtn');
+                if (backBtn) {
+                    backBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        document.body.classList.remove('interface-hidden');
+                        hidePageClock();
                     });
                 }
                 
@@ -1920,51 +2384,8 @@
                     });
                 }
                 
-                var posBtns = document.querySelectorAll('.position-btn');
-                posBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        posBtns.forEach(function(b) { b.classList.remove('active'); });
-                        btn.classList.add('active');
-                        
-                        clockSettings.position = btn.dataset.position;
-                        updateContentClass();
-                        saveClockSettings();
-                    });
-                });
-                
-                var formatBtns = document.querySelectorAll('.format-btn');
-                formatBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        formatBtns.forEach(function(b) { b.classList.remove('active'); });
-                        btn.classList.add('active');
-                        
-                        clockSettings.timeFormat = btn.dataset.format;
-                        saveClockSettings();
-                    });
-                });
-                
-                var fontBtns = document.querySelectorAll('.font-btn');
-                fontBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        fontBtns.forEach(function(b) { b.classList.remove('active'); });
-                        btn.classList.add('active');
-                        
-                        clockSettings.fontStyle = btn.dataset.font;
-                        updateContentClass();
-                        saveClockSettings();
-                    });
-                });
-                
-                var dateFormatBtns = document.querySelectorAll('.date-format-btn');
-                dateFormatBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        dateFormatBtns.forEach(function(b) { b.classList.remove('active'); });
-                        btn.classList.add('active');
-                        
-                        clockSettings.dateFormat = btn.dataset.dateFormat;
-                        saveClockSettings();
-                    });
-                });
+                initDragPositionButton();
+                initAdjustPanelEvents();
                 
                 var showDateCheckbox = document.getElementById('clockShowDate');
                 if (showDateCheckbox) {
@@ -1997,6 +2418,21 @@
                         var lunarEl = document.getElementById('pageClockLunar');
                         if (lunarEl) {
                             lunarEl.style.display = this.checked ? 'block' : 'none';
+                        }
+                        saveClockSettings();
+                    });
+                }
+                
+                var showQuoteCheckbox = document.getElementById('clockShowQuote');
+                if (showQuoteCheckbox) {
+                    showQuoteCheckbox.addEventListener('change', function() {
+                        clockSettings.showQuote = this.checked;
+                        var quoteEl = document.getElementById('pageClockQuote');
+                        if (quoteEl) {
+                            quoteEl.style.display = this.checked ? 'block' : 'none';
+                        }
+                        if (this.checked) {
+                            fetchQuoteData();
                         }
                         saveClockSettings();
                     });
@@ -2044,7 +2480,15 @@
                 var contentEl = document.getElementById('pageClockContent');
                 if (contentEl) {
                     var scaleClass = 'scale-' + Math.round(clockSettings.fontSize / 10) * 10;
-                    contentEl.className = 'page-clock-content font-' + clockSettings.fontStyle + ' ' + clockSettings.position + ' ' + scaleClass;
+                    var positionClass = clockSettings.position !== 'custom' ? ' ' + clockSettings.position : '';
+                    contentEl.className = 'page-clock-content font-' + clockSettings.fontStyle + positionClass + ' ' + scaleClass;
+                    
+                    if (clockSettings.position === 'custom' && clockSettings.customPosition) {
+                        contentEl.style.position = 'fixed';
+                        contentEl.style.left = (clockSettings.customPosition.x / 100 * window.innerWidth) + 'px';
+                        contentEl.style.top = (clockSettings.customPosition.y / 100 * window.innerHeight) + 'px';
+                        contentEl.style.transform = '';
+                    }
                 }
             }
             
@@ -2227,12 +2671,14 @@
                 // 点击空白处显示界面
             document.addEventListener('click', function(e) {
                 if (document.body.classList.contains('interface-hidden') && (e.target === document.body || e.target.id === 'pageClockOverlay')) {
-                    document.body.classList.remove('interface-hidden');
-                    hidePageClock();
-                    // 重置提示横条的隐藏状态
-                    var hintBar = document.getElementById('hideUiHintBar');
-                    if (hintBar) {
-                        hintBar.classList.remove('hint-hidden');
+                    var pageClockEnabled = isPageClockEnabled();
+                    if (!pageClockEnabled || !clockSettings.globalEnabled) {
+                        document.body.classList.remove('interface-hidden');
+                        hidePageClock();
+                        var hintBar = document.getElementById('hideUiHintBar');
+                        if (hintBar) {
+                            hintBar.classList.remove('hint-hidden');
+                        }
                     }
                 }
             });
@@ -2265,7 +2711,7 @@
                     if (hintBarSpan) {
                         hintBarSpan.style.opacity = '0';
                         setTimeout(function() {
-                            var texts = LangManager.getLanguageText('hideUIHint') || '点击空白处显示UI';
+                            var texts = LangManager.getLanguageText('hideUIHint') || '点击左上角返回按钮显示UI';
                             hintBarSpan.textContent = texts;
                             hintBarSpan.style.opacity = '1';
                         }, 300);
@@ -2290,7 +2736,7 @@
                                 // 恢复默认文本
                                 var hintBarSpan = hintBar.querySelector('span');
                                 if (hintBarSpan) {
-                                    var texts = LangManager.getLanguageText('hideUIHint') || '点击空白处显示UI';
+                                    var texts = LangManager.getLanguageText('hideUIHint') || '点击左上角返回按钮显示UI';
                                     hintBarSpan.textContent = texts;
                                 }
                             }
@@ -2539,7 +2985,7 @@
 </head>
 <body>
     <div class="hide-ui-hint-bar" id="hideUiHintBar">
-        <span>点击空白处显示UI</span>
+        <span>点击左上角返回按钮显示UI</span>
     </div>
     
     <div class="page-clock-weather-btn" id="pageClockWeatherBtn">
@@ -2548,6 +2994,68 @@
     
     <div class="page-clock-settings-btn" id="pageClockSettingsBtn">
         <i class="fas fa-cog"></i>
+    </div>
+    
+    <div class="page-clock-back-btn" id="pageClockBackBtn">
+        <i class="fas fa-arrow-left"></i>
+    </div>
+    
+    <div class="clock-adjust-panel" id="clockAdjustPanel" style="display: none;">
+        <div class="adjust-panel-header" id="adjustPanelHeader">
+            <span>时钟调整</span>
+            <button class="adjust-panel-close" id="adjustPanelClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="adjust-panel-body">
+            <div class="adjust-section">
+                <h5>文字大小</h5>
+                <input type="range" id="adjustFontSizeSlider" min="60" max="160" value="100">
+                <div class="font-size-display">
+                    <span id="adjustFontSizeValue">100%</span>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>对齐方式</h5>
+                <div class="align-buttons">
+                    <button class="align-btn active" id="alignLeft" data-align="left">
+                        <i class="fas fa-align-left"></i>
+                    </button>
+                    <button class="align-btn" id="alignCenter" data-align="center">
+                        <i class="fas fa-align-center"></i>
+                    </button>
+                    <button class="align-btn" id="alignRight" data-align="right">
+                        <i class="fas fa-align-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>时间格式</h5>
+                <div class="align-buttons">
+                    <button class="align-btn active" data-format="24">24小时制</button>
+                    <button class="align-btn" data-format="12">12小时制</button>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>字体样式</h5>
+                <div class="align-buttons">
+                    <button class="align-btn active" data-font="sans">无衬线体</button>
+                    <button class="align-btn" data-font="serif">衬线体</button>
+                    <button class="align-btn" data-font="mono">等宽体</button>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>日期格式</h5>
+                <div class="align-buttons">
+                    <button class="align-btn active" data-date-format="yyyy/mm/dd">2026/12/12</button>
+                    <button class="align-btn" data-date-format="mm/dd/yyyy">12/12/2026</button>
+                    <button class="align-btn" data-date-format="mm-dd-yyyy">12-12-2026</button>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <button class="confirm-btn" id="adjustConfirmBtn">完成调整</button>
+            </div>
+        </div>
     </div>
     
     <div class="page-clock-overlay" id="pageClockOverlay" style="display: none;">
@@ -2559,59 +3067,36 @@
                 <i class="fas fa-cloud-sun"></i>
                 <span>--°C</span>
             </div>
+            <div class="page-clock-quote" id="pageClockQuote">
+                <div class="quote-content" id="quoteContent">——</div>
+                <div class="quote-author" id="quoteAuthor"></div>
+            </div>
         </div>
     </div>
     
     <div class="page-clock-settings-modal" id="pageClockSettingsModal" style="display: none;">
         <div class="page-clock-settings-content">
             <div class="page-clock-settings-header">
-                <h3>时钟设置</h3>
+                <button class="global-toggle-btn-header active" id="globalClockToggle">
+                    <i class="fas fa-clock"></i>
+                    <span>启用页面时钟</span>
+                </button>
+                <div class="header-title-container">
+                    <h3>组件调整</h3>
+                </div>
                 <button class="page-clock-settings-close" id="pageClockSettingsClose">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="global-toggle-section">
-                <button class="global-toggle-btn active" id="globalClockToggle">
-                    <i class="fas fa-clock"></i>
-                    <span>启用页面时钟</span>
-                </button>
-            </div>
             <div class="page-clock-settings-body" id="clockSettingsBody">
-                <div class="settings-column">
+                <div class="settings-column single-column">
                     <div class="settings-section">
                         <h4>时钟位置</h4>
                         <div class="position-options-grid">
-                            <button class="position-btn" data-position="top-left">左上</button>
-                            <button class="position-btn" data-position="top">顶部</button>
-                            <button class="position-btn" data-position="top-right">右上</button>
-                            <button class="position-btn" data-position="left">左侧</button>
-                            <button class="position-btn active" data-position="center">居中</button>
-                            <button class="position-btn" data-position="right">右侧</button>
-                            <button class="position-btn" data-position="bottom-left">左下</button>
-                            <button class="position-btn" data-position="bottom">底部</button>
-                            <button class="position-btn" data-position="bottom-right">右下</button>
+                            <button class="position-btn" id="clockDragBtn">调整位置</button>
                         </div>
                     </div>
                     
-                    <div class="settings-section">
-                        <h4>时间格式</h4>
-                        <div class="format-options">
-                            <button class="format-btn active" data-format="24">24小时制</button>
-                            <button class="format-btn" data-format="12">12小时制</button>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4>字体样式</h4>
-                        <div class="font-options">
-                            <button class="font-btn active" data-font="sans">无衬线体</button>
-                            <button class="font-btn" data-font="serif">衬线体</button>
-                            <button class="font-btn" data-font="mono">等宽体</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="settings-column">
                     <div class="settings-section">
                         <h4>显示选项</h4>
                         <label class="settings-toggle-reverse">
@@ -2626,27 +3111,10 @@
                             <span>显示农历</span>
                             <input type="checkbox" id="clockShowLunar">
                         </label>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4>日期格式</h4>
-                        <div class="date-format-options">
-                            <button class="date-format-btn active" data-date-format="yyyy/mm/dd">2026/12/12</button>
-                            <button class="date-format-btn" data-date-format="mm/dd/yyyy">12/12/2026</button>
-                            <button class="date-format-btn" data-date-format="mm-dd-yyyy">12-12-2026</button>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4>字体大小</h4>
-                        <div class="font-size-slider-container">
-                            <input type="range" id="clockFontSizeSlider" min="60" max="160" value="100">
-                            <div class="font-size-labels">
-                                <span>小</span>
-                                <span id="fontSizeValue">100%</span>
-                                <span>大</span>
-                            </div>
-                        </div>
+                        <label class="settings-toggle-reverse">
+                            <span>显示名言</span>
+                            <input type="checkbox" id="clockShowQuote" checked>
+                        </label>
                     </div>
                 </div>
             </div>
