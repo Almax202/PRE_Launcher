@@ -7812,6 +7812,35 @@ body.transparent-mode.dark-mode .hide-ui-hint-bar:hover {
     cursor: pointer;
 }
 
+.clock-drag-hint-bar {
+    position: fixed;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 30px;
+    color: #fff;
+    font-size: 14px;
+    z-index: 9999;
+    transition: bottom 0.4s ease-out;
+    pointer-events: none;
+}
+
+.clock-drag-hint-bar.show {
+    bottom: 30px;
+}
+
+.clock-drag-hint-bar i {
+    font-size: 16px;
+    color: #4ecdc4;
+}
+
 .page-clock-content {
     text-align: center;
     color: #fff;
@@ -8026,6 +8055,85 @@ body.interface-hidden.page-clock-enabled .page-clock-back-btn {
 .page-clock-back-btn:hover {
     background: rgba(255, 255, 255, 0.25);
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+.page-clock-back-btn:hover,
+.page-clock-weather-btn:hover,
+.page-clock-settings-btn:hover {
+    opacity: 1 !important;
+    transition: opacity 0.3s ease;
+}
+
+/* 问号提示图标 */
+.hint-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.text-with-hint {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hint-icon {
+    font-size: 14px;
+    color: #666;
+    cursor: help;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.hint-icon:hover {
+    color: #3498db;
+}
+
+.hint-tooltip {
+    display: none;
+    position: absolute;
+    top: auto;
+    bottom: 100%;
+    left: 0;
+    right: auto;
+    transform: none;
+    margin-bottom: 8px;
+    background: #333;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: normal;
+    width: 280px;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    text-align: left;
+}
+
+.hint-tooltip p {
+    margin: 0 0 8px 0;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.hint-tooltip p:last-child {
+    margin-bottom: 0;
+}
+
+.text-with-hint:hover .hint-tooltip {
+    display: block;
+}
+
+.hint-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border: 6px solid transparent;
+    border-top-color: #333;
 }
 
 /* 时钟调整面板 */
@@ -8958,9 +9066,38 @@ body.interface-hidden.page-clock-enabled .page-clock-back-btn {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 15px;
-    max-width: 500px;
+    width: 450px;
+    height: 115px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     animation: fadeInUp 0.5s ease-out 0.3s both;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.page-clock-quote:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.quote-loading {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.quote-loading i {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .quote-content {
@@ -8987,7 +9124,8 @@ body.interface-hidden.page-clock-enabled .page-clock-back-btn {
     .page-clock-quote {
         margin-top: 20px;
         padding: 15px 20px;
-        max-width: 350px;
+        width: 300px;
+        height: 100px;
     }
     
     .quote-content {
@@ -9003,7 +9141,8 @@ body.interface-hidden.page-clock-enabled .page-clock-back-btn {
     .page-clock-quote {
         margin-top: 15px;
         padding: 12px 15px;
-        max-width: 280px;
+        width: 250px;
+        height: 95px;
     }
     
     .quote-content {

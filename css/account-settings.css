@@ -706,6 +706,28 @@ body.transparent-mode.dark-mode .sidebar-backdrop.show {
     overflow: visible;
 }
 
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.6;
+    margin: 0;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;

@@ -147,7 +147,7 @@ const AccountLangManager = (function() {
             loginHistoryDesc: '查看最近的登录记录',
             
             // 主题设置
-            theme: '主题设置',
+            theme: '个性化',
             themeDesc: '自定义界面外观',
             light: '明亮主题',
             dark: '暗色主题',
