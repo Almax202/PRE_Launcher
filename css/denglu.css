@@ -338,7 +338,13 @@ body.page-transition-in {
 .captcha-row {
     display: flex;
     gap: 10px;
-    align-items: center;
+    align-items: stretch;
+}
+
+.captcha-input input {
+    height: 50px;
+    padding: 0 45px;
+    line-height: 50px;
 }
 
 .captcha-img {
@@ -5866,6 +5872,85 @@ body.transparent-mode .alert-confirm:hover {
     box-shadow: 0 4px 15px rgba(212, 93, 121, 0.3);
 }
 
+/* 透明主题 - 注册弹窗样式 */
+body.transparent-mode .register-modal-content {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+body.transparent-mode .register-header h3 {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+body.transparent-mode .register-steps {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .register-steps .step-item .step-number {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.transparent-mode .register-steps .step-item .step-title {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .register-steps .step-item.active .step-title {
+    color: #fff;
+}
+
+body.transparent-mode .register-steps .step-divider {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .register-modal-content .input-group input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #fff !important;
+}
+
+body.transparent-mode .register-modal-content .input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.transparent-mode .register-modal-content .input-group i {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .register-modal-content .input-hint {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .register-modal-content .random-username-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.transparent-mode .register-modal-content .random-username-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+body.transparent-mode .register-modal-content .alert-confirm {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #fff;
+}
+
+body.transparent-mode .register-modal-content .alert-confirm:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.transparent-mode .register-modal-content .register-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 body.dark-mode .forgot-password a {
     color: #e67e8a;
 }
@@ -7391,10 +7476,10 @@ body.dark-mode .sidebar-copyright p {
     display: flex;
     align-items: flex-start;
     padding: 12px 15px;
-    background: #f8f9fa;
+    background: transparent;
     border-radius: 8px;
     margin-bottom: 15px;
-    color: #666;
+    color: #fff;
     font-size: 14px;
 }
 
@@ -7473,22 +7558,22 @@ body.dark-mode .sidebar-copyright p {
 #securityVerifyModal .pin-switch-btn {
     width: 100%;
     padding: 10px 15px;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: #667eea;
+    color: #fff;
     font-size: 14px;
     transition: all 0.3s ease;
 }
 
 #securityVerifyModal .pin-switch-btn:hover {
-    background: #eef2ff;
-    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 #securityVerifyModal .pin-switch-btn i {
@@ -9269,6 +9354,15 @@ body.transparent-mode .confirm-header h3 {
 
 body.transparent-mode .confirm-body p {
     color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .confirm-header .header-desc,
+body.transparent-mode .alert-content .alert-message,
+body.transparent-mode .confirm-content p,
+body.transparent-mode .confirm-body span,
+body.transparent-mode .alert-content span {
+    color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 

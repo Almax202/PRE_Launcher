@@ -6286,8 +6286,22 @@ body.transparent-mode .sidebar-username,
 body.transparent-mode .sidebar-uid,
 body.transparent-mode .sidebar-version,
 body.transparent-mode .menu-item span,
-body.transparent-mode .menu-group-title {
-    color: rgba(255, 255, 255, 0.92);
+body.transparent-mode .menu-group-title,
+body.transparent-mode .card-title p {
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode .section-card .card-content .two-factor-item .two-factor-info p {
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode .section-card .card-content p,
+body.transparent-mode .section-card .card-body p,
+body.transparent-mode .card-content .item-desc,
+body.transparent-mode .card-content .description {
+    color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -6755,9 +6769,12 @@ body.transparent-mode .alert-message {
 }
 
 body.transparent-mode .alert-content p,
-body.transparent-mode .alert-content span {
-    color: #ffffff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+body.transparent-mode .alert-content span,
+body.transparent-mode .confirm-content p,
+body.transparent-mode .confirm-content span,
+body.transparent-mode .confirm-header .header-desc {
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 body.transparent-mode .alert-confirm {
@@ -7047,4 +7064,32 @@ body.transparent-mode.dark-mode .game-progress-fill {
 
 body.transparent-mode.dark-mode .game-progress-text {
     color: rgba(255, 255, 255, 0.92);
+}
+
+/* 透明主题 - 实验性功能提示弹窗 */
+body.transparent-mode #experimentalWarningModal .alert-content {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+body.transparent-mode #experimentalWarningModal .alert-content p {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.transparent-mode #experimentalWarningModal .alert-content h4 {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.transparent-mode #experimentalWarningModal .alert-content li {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.transparent-mode #experimentalWarningModal .alert-content li strong {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }

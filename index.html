@@ -1819,7 +1819,8 @@
                 timeFormat: '24',
                 fontStyle: 'sans',
                 dateFormat: 'yyyy/mm/dd',
-                fontSize: 100
+                fontSize: 100,
+                weatherClickable: false
             };
             
             var quoteCache = null;
@@ -2503,6 +2504,8 @@
                 toggleSettingsEnabled(clockSettings.globalEnabled);
                 
                 updateHideInterfaceButton();
+                
+                initWeatherClickEvent();
             }
             
             function saveClockSettings() {
@@ -2571,6 +2574,22 @@
                 if (clockSettings.showQuote) {
                     fetchQuoteData();
                 }
+            }
+            
+            function initWeatherClickEvent() {
+                var weatherEl = document.getElementById('pageClockWeather');
+                if (!weatherEl) return;
+                
+                weatherEl.style.cursor = clockSettings.weatherClickable ? 'pointer' : 'default';
+                
+                weatherEl.removeEventListener('click', onWeatherClick);
+                if (clockSettings.weatherClickable) {
+                    weatherEl.addEventListener('click', onWeatherClick);
+                }
+            }
+            
+            function onWeatherClick() {
+                window.open('https://www.msn.com/zh-cn/weather', '_blank');
             }
             
             function initClockSettings() {
@@ -2642,6 +2661,16 @@
                         if (weatherEl) {
                             weatherEl.style.display = this.checked ? 'flex' : 'none';
                         }
+                        saveClockSettings();
+                    });
+                }
+                
+                var weatherClickableCheckbox = document.getElementById('clockWeatherClickable');
+                if (weatherClickableCheckbox) {
+                    weatherClickableCheckbox.checked = clockSettings.weatherClickable;
+                    weatherClickableCheckbox.addEventListener('change', function() {
+                        clockSettings.weatherClickable = this.checked;
+                        initWeatherClickEvent();
                         saveClockSettings();
                     });
                 }
@@ -3357,7 +3386,7 @@
                     </div>
                     
                     <div class="settings-section">
-                        <h4>显示选项</h4>
+                        <h4>更多选项</h4>
                         <label class="settings-toggle-reverse">
                             <span>显示日期</span>
                             <input type="checkbox" id="clockShowDate" checked>
@@ -3365,6 +3394,10 @@
                         <label class="settings-toggle-reverse">
                             <span>显示天气</span>
                             <input type="checkbox" id="clockShowWeather" checked>
+                        </label>
+                        <label class="settings-toggle-reverse">
+                            <span>跳转到 MSN Weather</span>
+                            <input type="checkbox" id="clockWeatherClickable">
                         </label>
                         <label class="settings-toggle-reverse">
                             <span>显示农历</span>
