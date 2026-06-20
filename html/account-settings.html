@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="账户设置 - PRE Launcher">
+    <meta name="description" content="系统设置 - PRE Launcher">
     <meta name="theme-color" content="#667eea">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>账户设置 - PRE的游戏启动器</title>
+    <title>系统设置 - PRE的游戏启动器</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="../css/account-settings.css" as="style">
@@ -89,6 +89,10 @@
                     <div class="menu-item" data-section="advanced">
                         <i class="fas fa-palette"></i>
                         <span>个性化</span>
+                    </div>
+                    <div class="menu-item" data-section="enhanced-features">
+                        <i class="fas fa-bolt"></i>
+                        <span>增强功能</span>
                     </div>
                     <div class="menu-item danger" data-section="account-management">
                         <i class="fas fa-user-times"></i>
@@ -306,9 +310,20 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p>当前没有新发布的实验性预览内容，请等待后续的功能更新，敬请期待</p>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-sticky-note" style="color: #ffc107; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">便签</h4>
+                                            <p style="margin: 0; font-size: 13px; color: #666;">启用后可在更多功能弹窗中使用便签功能</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableStickyNotes" onchange="toggleStickyNotes()">
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -1364,33 +1379,6 @@
                     <div class="section-card">
                         <div class="card-header">
                             <div class="card-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="card-title">
-                                <h3>页面时钟</h3>
-                                <p>隐藏UI时在屏幕上显示时间和天气</p>
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <div class="two-factor-item">
-                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
-                                    <i class="fas fa-clock" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
-                                    <div>
-                                        <h4 style="margin: 0;">页面时钟</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，隐藏UI时将在屏幕上显示当前时间、日期和天气信息</p>
-                                    </div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="pageClockEnabled">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section-card">
-                        <div class="card-header">
-                            <div class="card-icon">
                                 <i class="fas fa-image"></i>
                             </div>
                             <div class="card-title">
@@ -1530,6 +1518,35 @@
                                     <option value="ja">日本語</option>
                                     <option value="ko">한국어</option>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section" id="section-enhanced-features">
+                    <div class="section-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="card-title">
+                                <h3>增强功能</h3>
+                                <p>扩展界面功能和体验</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-clock" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">页面时钟</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，隐藏UI时将在屏幕上显示当前时间、日期和天气信息</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="pageClockEnabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
                     </div>

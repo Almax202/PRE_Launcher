@@ -3815,7 +3815,7 @@
                 </div>
                 <p id="loginPinError" style="color: #ff4444; display: none; margin-top: 10px;">PIN码错误，请重试</p>
                 <div class="pin-tips">
-                    <p><i class="fas fa-key"></i> 忘记PIN码？请在账户设置中重置</p>
+                    <p><i class="fas fa-key"></i> 忘记PIN码？请在系统设置中重置</p>
                 </div>
                 <div class="no-verify-today">
                     <input type="checkbox" id="pinNoVerifyToday">
@@ -4007,7 +4007,7 @@
                 <div class="more-actions-buttons">
                     <button class="more-action-btn settings-action" id="goToAccountSettingsBtn">
                         <i class="fas fa-user-cog"></i>
-                        <span>进入账户设置</span>
+                        <span>系统设置</span>
                     </button>
                     <button class="more-action-btn card-action" id="goToCardBtn">
                         <i class="fas fa-id-card"></i>
@@ -4048,10 +4048,108 @@
                         <i class="fas fa-compass"></i>
                         <span>查看引导</span>
                     </button>
+                    <button class="more-feature-btn" id="modalStickyNotesBtn" style="display: none;">
+                        <i class="fas fa-sticky-note"></i>
+                        <span>便签</span>
+                    </button>
                 </div>
             </div>
             <div class="confirm-footer">
                 <button class="confirm-btn confirm-ok" id="moreFeaturesClose">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stickyNotesModal" class="custom-fullscreen-modal" style="display: none;">
+        <div class="sticky-notes-container">
+            <div class="sticky-notes-sidebar">
+                <div class="sidebar-header">
+                    <h3>便签</h3>
+                    <button class="sidebar-close" id="stickyNotesClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="sidebar-search">
+                    <input type="text" id="stickyNotesSearch" placeholder="快速搜索关键字" class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <div class="sidebar-content">
+                    <div class="notes-list" id="stickyNotesList"></div>
+                </div>
+                <button class="add-note-btn" id="addStickyNote">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <div class="sticky-notes-main">
+                <div class="main-header">
+                    <input type="text" id="stickyNoteTitle" placeholder="便签标题" class="note-title-input">
+                    <div class="main-actions">
+                        <button class="action-btn" id="deleteStickyNote" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            <span>删除</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <select id="formatHeading" class="toolbar-select">
+                            <option value="">段落格式</option>
+                            <option value="h1">标题</option>
+                            <option value="h2">小标题</option>
+                            <option value="h3">副标题</option>
+                            <option value="p">正文</option>
+                            <option value="code">等宽样式</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnBold" title="粗体 (Ctrl+B)">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnItalic" title="斜体 (Ctrl+I)">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnUnderline" title="下划线 (Ctrl+U)">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnStrikethrough" title="删除线">
+                            <i class="fas fa-strikethrough"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnAlignCenter" title="居中对齐">
+                            <i class="fas fa-align-center"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnListBullets" title="项目符号列表">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnListNumbered" title="编号列表">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnQuote" title="引用">
+                            <i class="fas fa-quote-right"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnTodo" title="待办事项">
+                            <i class="fas fa-check-square"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div id="stickyNoteEditor" contenteditable="true" class="note-editor" placeholder="在这里输入便签内容..."></div>
+                </div>
+                <div class="main-footer">
+                    <button class="save-btn" id="saveStickyNote">
+                        <i class="fas fa-save"></i>
+                        <span>保存</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -5786,6 +5884,9 @@
                 
                 showAlert(getLanguageText('loginSuccess'));
                 
+                sessionStorage.setItem('loginAuthenticated', 'true');
+                sessionStorage.setItem('loginTimestamp', Date.now().toString());
+                
                 setTimeout(function() {
                     window.location.href = 'html/homepage4.0.html';
                 }, 1500);
@@ -6706,6 +6807,9 @@
                         
                         showAlert(getLanguageText('loginSuccess'));
                         
+                        sessionStorage.setItem('loginAuthenticated', 'true');
+                        sessionStorage.setItem('loginTimestamp', Date.now().toString());
+                        
                         setTimeout(function() {
                             window.location.href = 'html/homepage4.0.html';
                         }, 1500);
@@ -7021,6 +7125,9 @@
                 updateUserCenter(username, validUser ? validUser.userId : null);
                 
                 showAlert(getLanguageText('loginSuccess'));
+                
+                sessionStorage.setItem('loginAuthenticated', 'true');
+                sessionStorage.setItem('loginTimestamp', Date.now().toString());
                 
                 setTimeout(function() {
                     window.location.href = 'html/homepage4.0.html';
@@ -8570,7 +8677,7 @@
                                     <div style="margin-bottom: 15px;">
                                         <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
                                         <div style="margin-top: 8px; margin-left: 20px;">
-                                            <button class="copyright-btn" onclick="showFontCopyrightModal()">OPPO Sans</button>
+                                            <button class="copyright-btn" onclick="showFontCopyrightModal()">HarmonyOS Sans</button>
                                         </div>
                                     </div>
                                     <div style="margin-bottom: 15px;">
@@ -8641,7 +8748,7 @@
                                             <div style="margin-bottom: 15px;">
                                                 <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
                                                 <div style="margin-top: 8px; margin-left: 20px;">
-                                                    <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px;">OPPO Sans</button>
+                                                    <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px;">HarmonyOS Sans</button>
                                                 </div>
                                             </div>
                                             <div style="margin-bottom: 15px;">
@@ -8828,12 +8935,12 @@
             modal.innerHTML = `
                 <div class="alert-content" style="max-width: 600px;">
                     <div class="alert-header">
-                        <h2>OPPO Sans 字体版权声明</h2>
+                        <h2>HarmonyOS Sans 字体版权声明</h2>
                     </div>
                     <div class="about-content" style="text-align: left;">
-                        <p style="margin: 15px 0;"><strong>OPPO Sans 字体著作权与知识产权专属归属：OPPO 广东移动通信有限公司。</strong></p>
-                        <p style="margin: 15px 0;">本项目合法使用 OPPO Sans 开源免费字体，字体完整版权归 OPPO 广东移动通信有限公司所有，已严格遵守官方字体使用协议，仅作正常展示与内容应用，未进行字体修改、售卖及二次分发等违规操作。</p>
-                        <p style="margin: 15px 0;"><strong>OPPO 开放平台：</strong><a href="https://open.oppomobile.com/documentation/page/info?id=13223" target="_blank" style="color: #d45d79; text-decoration: underline;">https://open.oppomobile.com/documentation/page/info?id=13223</a></p>
+                        <p style="margin: 15px 0;"><strong>HarmonyOS Sans 字体著作权与知识产权专属归属：华为技术有限公司。</strong></p>
+                        <p style="margin: 15px 0;">本项目合法使用 HarmonyOS Sans 开源免费字体，字体完整版权归华为技术有限公司所有，已严格遵守官方字体使用协议，仅作正常展示与内容应用，未进行字体修改、售卖及二次分发等违规操作。</p>
+                        <p style="margin: 15px 0;"><strong>HarmonyOS 开发者文档：</strong><a href="https://developer.huawei.com/consumer/cn/" target="_blank" style="color: #d45d79; text-decoration: underline;">https://developer.huawei.com/consumer/cn/</a></p>
                     </div>
                     <div class="modal-buttons">
                         <button class="alert-confirm" onclick="closeFontCopyrightModal()">关闭</button>
@@ -10538,7 +10645,7 @@
             {
                 elementId: 'moreActionsBtn',
                 title: '更多操作',
-                description: '登录后点击可进入账户设置、查看名片、退出登录',
+                description: '登录后点击可进入系统设置、查看名片、退出登录',
                 position: 'right'
             },
             {
@@ -10900,5 +11007,327 @@
                 <button class="guide-step-btn skip" id="guideSkipBtn">跳过引导</button>
             </div>
         </div>
+
+        <script>
+            var stickyNotes = [];
+            var currentNoteId = null;
+            var editor = null;
+
+            function loadStickyNotes() {
+                var saved = localStorage.getItem('stickyNotes');
+                if (saved) {
+                    stickyNotes = JSON.parse(saved);
+                } else {
+                    stickyNotes = [];
+                }
+            }
+
+            function saveStickyNotes() {
+                localStorage.setItem('stickyNotes', JSON.stringify(stickyNotes));
+            }
+
+            function renderNotesList(searchKeyword) {
+                var list = document.getElementById('stickyNotesList');
+                list.innerHTML = '';
+                
+                var filteredNotes = stickyNotes;
+                if (searchKeyword && searchKeyword.trim()) {
+                    var keyword = searchKeyword.toLowerCase().trim();
+                    filteredNotes = stickyNotes.filter(function(note) {
+                        var title = (note.title || '').toLowerCase();
+                        var content = stripHtml(note.content || '').toLowerCase();
+                        return title.includes(keyword) || content.includes(keyword);
+                    });
+                }
+                
+                if (filteredNotes.length === 0) {
+                    var emptyMsg = document.createElement('div');
+                    emptyMsg.style.padding = '20px';
+                    emptyMsg.style.textAlign = 'center';
+                    emptyMsg.style.color = 'rgba(255,255,255,0.6)';
+                    emptyMsg.style.fontSize = '14px';
+                    emptyMsg.textContent = searchKeyword ? '未找到匹配的便签' : '暂无便签，点击下方按钮创建';
+                    list.appendChild(emptyMsg);
+                    return;
+                }
+
+                filteredNotes.forEach(function(note) {
+                    var item = document.createElement('div');
+                    item.className = 'note-item' + (currentNoteId === note.id ? ' active' : '');
+                    item.setAttribute('data-note-id', note.id);
+                    
+                    var title = document.createElement('div');
+                    title.className = 'note-item-title';
+                    title.textContent = note.title || '无标题';
+                    item.appendChild(title);
+                    
+                    var preview = document.createElement('div');
+                    preview.className = 'note-item-preview';
+                    var textContent = note.content ? stripHtml(note.content) : '';
+                    preview.textContent = textContent.substring(0, 50) + (textContent.length > 50 ? '...' : '');
+                    item.appendChild(preview);
+                    
+                    var date = document.createElement('div');
+                    date.className = 'note-item-date';
+                    date.textContent = formatDate(note.createdAt);
+                    item.appendChild(date);
+                    
+                    item.addEventListener('click', function() {
+                        openNote(note.id);
+                    });
+                    
+                    list.appendChild(item);
+                });
+            }
+
+            function stripHtml(html) {
+                var temp = document.createElement('div');
+                temp.innerHTML = html;
+                return temp.textContent || temp.innerText || '';
+            }
+
+            function formatDate(timestamp) {
+                var date = new Date(timestamp);
+                return date.toLocaleDateString('zh-CN', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            function openNote(noteId) {
+                var note = stickyNotes.find(function(n) {
+                    return n.id === noteId;
+                });
+                
+                if (note) {
+                    currentNoteId = noteId;
+                    document.getElementById('stickyNoteTitle').value = note.title || '';
+                    editor.innerHTML = note.content || '';
+                    document.getElementById('deleteStickyNote').style.display = 'flex';
+                    renderNotesList();
+                }
+            }
+
+            function createNewNote() {
+                var newNote = {
+                    id: Date.now().toString(),
+                    title: '',
+                    content: '',
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                };
+                
+                stickyNotes.unshift(newNote);
+                saveStickyNotes();
+                openNote(newNote.id);
+            }
+
+            function saveCurrentNote() {
+                if (!currentNoteId) {
+                    showAlert('请先选择或创建一个便签');
+                    return;
+                }
+                
+                var note = stickyNotes.find(function(n) {
+                    return n.id === currentNoteId;
+                });
+                
+                if (note) {
+                    note.title = document.getElementById('stickyNoteTitle').value;
+                    note.content = editor.innerHTML;
+                    note.updatedAt = Date.now();
+                    saveStickyNotes();
+                    renderNotesList();
+                    showAlert('便签已保存');
+                }
+            }
+
+            function deleteCurrentNote() {
+                if (!currentNoteId) {
+                    showAlert('请先选择一个便签');
+                    return;
+                }
+                
+                showConfirmModal('确定要删除这个便签吗？', function() {
+                    stickyNotes = stickyNotes.filter(function(n) {
+                        return n.id !== currentNoteId;
+                    });
+                    saveStickyNotes();
+                    currentNoteId = null;
+                    document.getElementById('stickyNoteTitle').value = '';
+                    editor.innerHTML = '';
+                    document.getElementById('deleteStickyNote').style.display = 'none';
+                    renderNotesList();
+                    showAlert('便签已删除');
+                });
+            }
+
+            function showStickyNotesModal() {
+                loadStickyNotes();
+                currentNoteId = null;
+                document.getElementById('stickyNoteTitle').value = '';
+                editor.innerHTML = '';
+                document.getElementById('deleteStickyNote').style.display = 'none';
+                document.getElementById('formatHeading').value = '';
+                renderNotesList();
+                
+                document.getElementById('stickyNotesModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeStickyNotesModal() {
+                document.getElementById('stickyNotesModal').style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            function execCommand(command, value) {
+                document.execCommand(command, false, value);
+                editor.focus();
+            }
+
+            function applyHeading(format) {
+                if (!format) return;
+                execCommand('formatBlock', '<' + format + '>');
+                document.getElementById('formatHeading').value = '';
+            }
+
+            function applyBold() {
+                execCommand('bold');
+            }
+
+            function applyItalic() {
+                execCommand('italic');
+            }
+
+            function applyUnderline() {
+                execCommand('underline');
+            }
+
+            function applyStrikethrough() {
+                execCommand('strikeThrough');
+            }
+
+            function applyAlignCenter() {
+                execCommand('justifyCenter');
+            }
+
+            function applyBulletList() {
+                execCommand('insertUnorderedList');
+            }
+
+            function applyNumberedList() {
+                execCommand('insertOrderedList');
+            }
+
+            function applyQuote() {
+                execCommand('formatBlock', '<blockquote>');
+            }
+
+            function applyTodo() {
+                var selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    var range = selection.getRangeAt(0);
+                    var selectedText = range.toString() || '待办事项';
+                    
+                    var todoDiv = document.createElement('div');
+                    todoDiv.className = 'todo-item';
+                    
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'todo-checkbox';
+                    checkbox.addEventListener('change', function() {
+                        var textSpan = this.nextElementSibling;
+                        if (this.checked) {
+                            textSpan.classList.add('completed');
+                        } else {
+                            textSpan.classList.remove('completed');
+                        }
+                    });
+                    
+                    var textSpan = document.createElement('span');
+                    textSpan.className = 'todo-text';
+                    textSpan.textContent = selectedText;
+                    
+                    todoDiv.appendChild(checkbox);
+                    todoDiv.appendChild(textSpan);
+                    
+                    range.deleteContents();
+                    range.insertNode(todoDiv);
+                    
+                    editor.focus();
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                editor = document.getElementById('stickyNoteEditor');
+                
+                var isStickyNotesEnabled = localStorage.getItem('stickyNotesEnabled') === 'true';
+                var stickyNotesBtn = document.getElementById('modalStickyNotesBtn');
+                
+                if (isStickyNotesEnabled && stickyNotesBtn) {
+                    stickyNotesBtn.style.display = 'flex';
+                }
+                
+                if (stickyNotesBtn) {
+                    stickyNotesBtn.addEventListener('click', function() {
+                        showStickyNotesModal();
+                        document.getElementById('moreFeaturesModal').style.display = 'none';
+                    });
+                }
+                
+                document.getElementById('stickyNotesClose').addEventListener('click', closeStickyNotesModal);
+                
+                document.getElementById('addStickyNote').addEventListener('click', createNewNote);
+                
+                document.getElementById('saveStickyNote').addEventListener('click', saveCurrentNote);
+                
+                document.getElementById('deleteStickyNote').addEventListener('click', deleteCurrentNote);
+                
+                document.getElementById('stickyNotesModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeStickyNotesModal();
+                    }
+                });
+                
+                editor.addEventListener('keydown', function(e) {
+                    if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        saveCurrentNote();
+                    }
+                    if (e.key === 'b' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        applyBold();
+                    }
+                    if (e.key === 'i' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        applyItalic();
+                    }
+                    if (e.key === 'u' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        applyUnderline();
+                    }
+                });
+                
+                document.getElementById('formatHeading').addEventListener('change', function() {
+                    applyHeading(this.value);
+                });
+                
+                document.getElementById('btnBold').addEventListener('click', applyBold);
+                document.getElementById('btnItalic').addEventListener('click', applyItalic);
+                document.getElementById('btnUnderline').addEventListener('click', applyUnderline);
+                document.getElementById('btnStrikethrough').addEventListener('click', applyStrikethrough);
+                document.getElementById('btnAlignCenter').addEventListener('click', applyAlignCenter);
+                document.getElementById('btnListBullets').addEventListener('click', applyBulletList);
+                document.getElementById('btnListNumbered').addEventListener('click', applyNumberedList);
+                document.getElementById('btnQuote').addEventListener('click', applyQuote);
+                document.getElementById('btnTodo').addEventListener('click', applyTodo);
+                
+                document.getElementById('stickyNotesSearch').addEventListener('input', function() {
+                    renderNotesList(this.value);
+                });
+            });
+        </script>
     </body>
 </html>

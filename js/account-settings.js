@@ -938,6 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'notifications': { title: texts.notifications, desc: texts.notificationsDesc },
                 'devices': { title: texts.devices, desc: texts.devicesDesc },
                 'advanced': { title: texts.theme, desc: texts.themeDesc },
+                'enhanced-features': { title: '增强功能', desc: '扩展界面功能和体验' },
                 'account-management': { title: texts.data, desc: texts.dataDesc },
                 'terms': { title: texts.terms, desc: texts.termsDesc },
                 'privacy-policy': { title: texts.privacyPolicy, desc: texts.privacyPolicyDesc },
@@ -7713,4 +7714,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    var stickyNotesToggle = document.getElementById('enableStickyNotes');
+    if (stickyNotesToggle) {
+        var isStickyNotesEnabled = localStorage.getItem('stickyNotesEnabled') === 'true';
+        stickyNotesToggle.checked = isStickyNotesEnabled;
+    }
+    
 });
+
+function toggleStickyNotes() {
+    var enabled = document.getElementById('enableStickyNotes').checked;
+    localStorage.setItem('stickyNotesEnabled', enabled ? 'true' : 'false');
+    
+    if (enabled) {
+        showAlert('便签功能已启用，在登录页更多功能弹窗中可使用');
+    } else {
+        showAlert('便签功能已关闭');
+    }
+}

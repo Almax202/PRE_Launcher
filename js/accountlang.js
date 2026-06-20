@@ -2,7 +2,7 @@ const AccountLangManager = (function() {
     const langMap = {
         'zh': {
             // 页面标题和描述
-            pageTitle: '账户设置',
+            pageTitle: '系统设置',
             accountInfo: '账户信息',
             accountInfoDesc: '管理您的账户基本信息',
             

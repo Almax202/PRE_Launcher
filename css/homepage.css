@@ -1,6 +1,6 @@
 @font-face {
-            font-family: 'OPPO Sans';
-            src: url('../fonts/OPPO Sans 4.0.ttf') format('truetype');
+            font-family: 'HarmonyOS Sans';
+            src: url('../fonts/HarmonyOS_Sans_SC_Regular.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -152,7 +152,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'OPPO Sans', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            font-family: 'HarmonyOS Sans', 'Segoe UI', 'Microsoft YaHei', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
