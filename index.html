@@ -2828,6 +2828,128 @@
                 return false;
             }
             
+            function isGuideEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.guideEnabled === true;
+                    }
+                }
+                return false;
+            }
+            
+            function isUiScaleEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.uiScaleEnabled === true;
+                    }
+                }
+                return false;
+            }
+            
+            function isHideUiEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.hideUiEnabled === true;
+                    }
+                }
+                return false;
+            }
+            
+            function isAboutLauncherEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.aboutLauncherEnabled === true;
+                    }
+                }
+                return false;
+            }
+            
+            function updateEnhancedFeatureButtons() {
+                var guideEnabled = isGuideEnabled();
+                var uiScaleEnabled = isUiScaleEnabled();
+                var hideUiEnabled = isHideUiEnabled();
+                var aboutLauncherEnabled = isAboutLauncherEnabled();
+                var isStickyNotesEnabled = localStorage.getItem('stickyNotesEnabled') === 'true';
+                
+                var guideBtn = document.getElementById('modalShowGuideBtn');
+                var uiScaleBtn = document.getElementById('modalUiScaleBtn');
+                var hideInterfaceBtn = document.getElementById('modalHideInterfaceBtn');
+                var aboutLauncherBtn = document.getElementById('modalAboutLauncherBtn');
+                var stickyNotesBtn = document.getElementById('modalStickyNotesBtn');
+                var moreFeaturesButtons = document.querySelector('.more-features-buttons');
+                var moreFeaturesEmpty = document.getElementById('moreFeaturesEmpty');
+                var mobileGuideBtn = document.getElementById('mobileModalShowGuideBtn');
+                var mobileUiScaleBtn = document.getElementById('mobileModalUiScaleBtn');
+                var mobileHideInterfaceBtn = document.getElementById('mobileModalHideInterfaceBtn');
+                var mobileAboutLauncherBtn = document.getElementById('mobileModalAboutLauncherBtn');
+                var mobileStickyNotesBtn = document.getElementById('mobileModalStickyNotesBtn');
+                var mobileMoreFeaturesEmpty = document.getElementById('mobileMoreFeaturesEmpty');
+                
+                if (guideBtn) {
+                    guideBtn.style.display = guideEnabled ? 'flex' : 'none';
+                }
+                if (uiScaleBtn) {
+                    uiScaleBtn.style.display = uiScaleEnabled ? 'flex' : 'none';
+                }
+                if (hideInterfaceBtn) {
+                    hideInterfaceBtn.style.display = hideUiEnabled ? 'flex' : 'none';
+                }
+                if (aboutLauncherBtn) {
+                    aboutLauncherBtn.style.display = aboutLauncherEnabled ? 'flex' : 'none';
+                }
+                
+                if (stickyNotesBtn) {
+                    stickyNotesBtn.style.display = isStickyNotesEnabled ? 'flex' : 'none';
+                }
+                
+                var hasAnyFeature = guideEnabled || uiScaleEnabled || hideUiEnabled || aboutLauncherEnabled || isStickyNotesEnabled;
+                if (moreFeaturesButtons) {
+                    moreFeaturesButtons.style.display = hasAnyFeature ? 'grid' : 'none';
+                }
+                if (moreFeaturesEmpty) {
+                    moreFeaturesEmpty.style.display = hasAnyFeature ? 'none' : 'flex';
+                }
+                
+                if (mobileGuideBtn) {
+                    mobileGuideBtn.style.display = guideEnabled ? 'flex' : 'none';
+                }
+                if (mobileUiScaleBtn) {
+                    mobileUiScaleBtn.style.display = uiScaleEnabled ? 'flex' : 'none';
+                }
+                if (mobileHideInterfaceBtn) {
+                    mobileHideInterfaceBtn.style.display = hideUiEnabled ? 'flex' : 'none';
+                }
+                if (mobileAboutLauncherBtn) {
+                    mobileAboutLauncherBtn.style.display = aboutLauncherEnabled ? 'flex' : 'none';
+                }
+                if (mobileStickyNotesBtn) {
+                    mobileStickyNotesBtn.style.display = isStickyNotesEnabled ? 'flex' : 'none';
+                }
+                if (mobileMoreFeaturesEmpty) {
+                    mobileMoreFeaturesEmpty.style.display = hasAnyFeature ? 'none' : 'flex';
+                }
+            }
+            
             // 加载用户头像
             loadUserAvatar();
             
@@ -2850,6 +2972,9 @@
             if (typeof generateMobileFunctionsModal === 'function') {
                 generateMobileFunctionsModal();
             }
+            
+            // 更新增强功能按钮显示状态
+            updateEnhancedFeatureButtons();
             
             // 用户协议勾选框处理
             const loginAgreement = document.getElementById('loginAgreement');
@@ -3183,6 +3308,15 @@
                                     <i class="fas fa-compass"></i>
                                     <span>查看引导</span>
                                 </button>
+                                <button class="more-feature-btn" id="mobileModalStickyNotesBtn" style="display: none;">
+                                    <i class="fas fa-sticky-note"></i>
+                                    <span>便签</span>
+                                </button>
+                            </div>
+                            <div class="more-features-empty" id="mobileMoreFeaturesEmpty" style="display: none;">
+                                <i class="fas fa-inbox empty-icon"></i>
+                                <p class="empty-text">这里空空如也~</p>
+                                <p class="empty-hint">请前往系统设置→增强功能中开启您需要的功能吧</p>
                             </div>
                         </div>
                         <div class="confirm-footer">
@@ -3217,6 +3351,13 @@
                     document.getElementById('mobileFunctionsModal').style.display = 'none';
                     if (typeof showGuide === 'function') {
                         showGuide();
+                    }
+                });
+                
+                document.getElementById('mobileModalStickyNotesBtn').addEventListener('click', function() {
+                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    if (typeof toggleStickyNotes === 'function') {
+                        toggleStickyNotes();
                     }
                 });
             }
@@ -4053,6 +4194,11 @@
                         <span>便签</span>
                     </button>
                 </div>
+                <div class="more-features-empty" id="moreFeaturesEmpty" style="display: none;">
+                    <i class="fas fa-inbox empty-icon"></i>
+                    <p class="empty-text">这里空空如也~</p>
+                    <p class="empty-hint">请前往系统设置→增强功能中开启您需要的功能吧</p>
+                </div>
             </div>
             <div class="confirm-footer">
                 <button class="confirm-btn confirm-ok" id="moreFeaturesClose">关闭</button>
@@ -4140,6 +4286,15 @@
                     </div>
                     <div class="toolbar-divider"></div>
                     <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnUndo" title="撤销 (Ctrl+Z)">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnRedo" title="重做 (Ctrl+Y)">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
                         <button class="toolbar-btn" id="btnBold" title="粗体 (Ctrl+B)">
                             <i class="fas fa-bold"></i>
                         </button>
@@ -4155,8 +4310,17 @@
                     </div>
                     <div class="toolbar-divider"></div>
                     <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnAlignLeft" title="左对齐">
+                            <i class="fas fa-align-left"></i>
+                        </button>
                         <button class="toolbar-btn" id="btnAlignCenter" title="居中对齐">
                             <i class="fas fa-align-center"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnAlignRight" title="右对齐">
+                            <i class="fas fa-align-right"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnAlignJustify" title="两端对齐">
+                            <i class="fas fa-align-justify"></i>
                         </button>
                     </div>
                     <div class="toolbar-divider"></div>
@@ -4166,6 +4330,35 @@
                         </button>
                         <button class="toolbar-btn" id="btnListNumbered" title="编号列表">
                             <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnIndent" title="增加缩进">
+                            <i class="fas fa-indent"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnOutdent" title="减少缩进">
+                            <i class="fas fa-outdent"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnTextColor" title="文字颜色">
+                            <i class="fas fa-font"></i>
+                        </button>
+                        <input type="color" id="textColorPicker" class="toolbar-colorpicker" value="#333333">
+                        <button class="toolbar-btn" id="btnHighlight" title="高亮颜色">
+                            <i class="fas fa-highlighter"></i>
+                        </button>
+                        <input type="color" id="highlightColorPicker" class="toolbar-colorpicker" value="#ffff00">
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnLink" title="插入链接">
+                            <i class="fas fa-link"></i>
+                        </button>
+                        <button class="toolbar-btn" id="btnHr" title="插入水平线">
+                            <i class="fas fa-minus"></i>
                         </button>
                     </div>
                     <div class="toolbar-divider"></div>
@@ -11683,8 +11876,57 @@
                 execCommand('strikeThrough');
             }
 
+            function applyAlignLeft() {
+                execCommand('justifyLeft');
+            }
+
             function applyAlignCenter() {
                 execCommand('justifyCenter');
+            }
+
+            function applyAlignRight() {
+                execCommand('justifyRight');
+            }
+
+            function applyAlignJustify() {
+                execCommand('justifyFull');
+            }
+
+            function applyUndo() {
+                execCommand('undo');
+            }
+
+            function applyRedo() {
+                execCommand('redo');
+            }
+
+            function applyIndent() {
+                execCommand('indent');
+            }
+
+            function applyOutdent() {
+                execCommand('outdent');
+            }
+
+            function applyTextColor() {
+                var color = document.getElementById('textColorPicker').value;
+                execCommand('foreColor', color);
+            }
+
+            function applyHighlight() {
+                var color = document.getElementById('highlightColorPicker').value;
+                execCommand('hiliteColor', color);
+            }
+
+            function applyLink() {
+                var url = prompt('请输入链接地址:', 'https://');
+                if (url && url.trim()) {
+                    execCommand('createLink', url.trim());
+                }
+            }
+
+            function applyHr() {
+                execCommand('insertHorizontalRule');
             }
 
             function applyBulletList() {
@@ -11737,12 +11979,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 editor = document.getElementById('stickyNoteEditor');
                 
-                var isStickyNotesEnabled = localStorage.getItem('stickyNotesEnabled') === 'true';
                 var stickyNotesBtn = document.getElementById('modalStickyNotesBtn');
-                
-                if (isStickyNotesEnabled && stickyNotesBtn) {
-                    stickyNotesBtn.style.display = 'flex';
-                }
                 
                 if (stickyNotesBtn) {
                     stickyNotesBtn.addEventListener('click', function() {
@@ -11764,6 +12001,18 @@
                         e.preventDefault();
                         saveCurrentNote();
                     }
+                    if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            applyRedo();
+                        } else {
+                            applyUndo();
+                        }
+                    }
+                    if (e.key === 'y' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        applyRedo();
+                    }
                     if (e.key === 'b' && (e.ctrlKey || e.metaKey)) {
                         e.preventDefault();
                         applyBold();
@@ -11782,13 +12031,24 @@
                     applyHeading(this.value);
                 });
                 
+                document.getElementById('btnUndo').addEventListener('click', applyUndo);
+                document.getElementById('btnRedo').addEventListener('click', applyRedo);
                 document.getElementById('btnBold').addEventListener('click', applyBold);
                 document.getElementById('btnItalic').addEventListener('click', applyItalic);
                 document.getElementById('btnUnderline').addEventListener('click', applyUnderline);
                 document.getElementById('btnStrikethrough').addEventListener('click', applyStrikethrough);
+                document.getElementById('btnAlignLeft').addEventListener('click', applyAlignLeft);
                 document.getElementById('btnAlignCenter').addEventListener('click', applyAlignCenter);
+                document.getElementById('btnAlignRight').addEventListener('click', applyAlignRight);
+                document.getElementById('btnAlignJustify').addEventListener('click', applyAlignJustify);
                 document.getElementById('btnListBullets').addEventListener('click', applyBulletList);
                 document.getElementById('btnListNumbered').addEventListener('click', applyNumberedList);
+                document.getElementById('btnIndent').addEventListener('click', applyIndent);
+                document.getElementById('btnOutdent').addEventListener('click', applyOutdent);
+                document.getElementById('btnTextColor').addEventListener('click', applyTextColor);
+                document.getElementById('btnHighlight').addEventListener('click', applyHighlight);
+                document.getElementById('btnLink').addEventListener('click', applyLink);
+                document.getElementById('btnHr').addEventListener('click', applyHr);
                 document.getElementById('btnQuote').addEventListener('click', applyQuote);
                 document.getElementById('btnTodo').addEventListener('click', applyTodo);
                 

@@ -1531,20 +1531,73 @@
                             </div>
                             <div class="card-title">
                                 <h3>增强功能</h3>
-                                <p>扩展界面功能和体验</p>
+                                <p>扩展或关闭特定功能</p>
                             </div>
                         </div>
                         <div class="card-content">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-eye-slash" style="color: #e67e22; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">隐藏UI</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"隐藏UI"按钮</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="hideUiEnabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
                             <div class="two-factor-item">
                                 <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
                                     <i class="fas fa-clock" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">页面时钟</h4>
                                         <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，隐藏UI时将在屏幕上显示当前时间、日期和天气信息</p>
+                                        <p style="margin: 5px 0 0; font-size: 12px; color: #999;" id="pageClockDisabledHint">请先启用"隐藏UI"功能</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" id="pageClockEnabled">
+                                    <input type="checkbox" id="pageClockEnabled" disabled>
+                                    <span class="toggle-slider disabled"></span>
+                                </label>
+                            </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-info-circle" style="color: #e74c3c; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">关于启动器</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"关于启动器"按钮</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="aboutLauncherEnabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-compass" style="color: #e74c3c; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">系统引导</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"查看引导"按钮</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="guideEnabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-search" style="color: #9b59b6; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">UI调整</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"调整UI比例"按钮</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="uiScaleEnabled">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>

@@ -1661,6 +1661,27 @@ textarea:focus {
     transform: translateX(24px);
 }
 
+.toggle-switch input:disabled + .toggle-slider,
+.toggle-slider.disabled {
+    background-color: #e0e0e0 !important;
+    cursor: not-allowed;
+}
+
+.toggle-switch input:disabled + .toggle-slider:before,
+.toggle-slider.disabled:before {
+    background-color: #bdbdbd !important;
+}
+
+body.dark-mode .toggle-switch input:disabled + .toggle-slider,
+body.dark-mode .toggle-slider.disabled {
+    background-color: #555 !important;
+}
+
+body.dark-mode .toggle-switch input:disabled + .toggle-slider:before,
+body.dark-mode .toggle-slider.disabled:before {
+    background-color: #666 !important;
+}
+
 .verification-methods {
     display: flex;
     flex-direction: column;

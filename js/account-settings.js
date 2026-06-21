@@ -3618,6 +3618,42 @@ document.addEventListener('DOMContentLoaded', function() {
             if (setting === 'gpuAcceleration') {
                 applyGpuAcceleration();
             }
+            
+            // 如果是隐藏UI设置，更新页面时钟开关状态
+            if (setting === 'hideUiEnabled') {
+                updatePageClockToggleState();
+            }
+        }
+    }
+    
+    function updatePageClockToggleState() {
+        var hideUiEnabled = document.getElementById('hideUiEnabled').checked;
+        var pageClockEnabled = document.getElementById('pageClockEnabled');
+        var pageClockSlider = pageClockEnabled ? pageClockEnabled.nextElementSibling : null;
+        var pageClockHint = document.getElementById('pageClockDisabledHint');
+        
+        if (pageClockEnabled) {
+            if (hideUiEnabled) {
+                pageClockEnabled.disabled = false;
+                pageClockEnabled.classList.remove('disabled');
+                if (pageClockSlider) {
+                    pageClockSlider.classList.remove('disabled');
+                }
+                if (pageClockHint) {
+                    pageClockHint.style.display = 'none';
+                }
+            } else {
+                pageClockEnabled.disabled = true;
+                pageClockEnabled.checked = false;
+                pageClockEnabled.classList.add('disabled');
+                if (pageClockSlider) {
+                    pageClockSlider.classList.add('disabled');
+                }
+                if (pageClockHint) {
+                    pageClockHint.style.display = 'block';
+                }
+                saveSetting('pageClockEnabled', false);
+            }
         }
     }
     
@@ -4069,9 +4105,27 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('gpuAcceleration').checked = userProfile.gpuAcceleration;
         }
         
+        if (userProfile.hideUiEnabled !== undefined) {
+            document.getElementById('hideUiEnabled').checked = userProfile.hideUiEnabled;
+        }
+        
+        if (userProfile.aboutLauncherEnabled !== undefined) {
+            document.getElementById('aboutLauncherEnabled').checked = userProfile.aboutLauncherEnabled;
+        }
+        
         if (userProfile.pageClockEnabled !== undefined) {
             document.getElementById('pageClockEnabled').checked = userProfile.pageClockEnabled;
         }
+        
+        if (userProfile.guideEnabled !== undefined) {
+            document.getElementById('guideEnabled').checked = userProfile.guideEnabled;
+        }
+        
+        if (userProfile.uiScaleEnabled !== undefined) {
+            document.getElementById('uiScaleEnabled').checked = userProfile.uiScaleEnabled;
+        }
+        
+        updatePageClockToggleState();
         
         // 应用GPU加速设置
         applyGpuAcceleration();
@@ -7730,5 +7784,9 @@ function toggleStickyNotes() {
         showAlert('便签功能已启用，在登录页更多功能弹窗中可使用');
     } else {
         showAlert('便签功能已关闭');
+    }
+    
+    if (typeof parent.updateEnhancedFeatureButtons === 'function') {
+        parent.updateEnhancedFeatureButtons();
     }
 }

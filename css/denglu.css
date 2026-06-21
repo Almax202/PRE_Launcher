@@ -10409,6 +10409,50 @@ body.dark-mode .more-action-btn:hover {
     transform: none !important;
 }
 
+/* 更多功能空状态样式 */
+.more-features-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 48px;
+    color: #d45d79;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.empty-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4a5568;
+    margin: 0 0 8px 0;
+}
+
+.empty-hint {
+    font-size: 13px;
+    color: #999;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* 暗色模式下的空状态样式 */
+body.dark-mode .empty-icon {
+    color: #e67e8a;
+}
+
+body.dark-mode .empty-text {
+    color: #e0e0e0;
+}
+
+body.dark-mode .empty-hint {
+    color: #888;
+}
+
 /* 暗色模式下的更多功能按钮样式 */
 body.dark-mode .more-feature-btn {
     background: linear-gradient(145deg, #2d2d44 0%, #252538 100%);
@@ -11284,6 +11328,30 @@ body.transparent-mode.dark-mode .guide-step-tooltip.right::after {
     pointer-events: none;
 }
 
+.toolbar-colorpicker {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.toolbar-colorpicker:hover {
+    transform: scale(1.1);
+}
+
+.toolbar-colorpicker::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.toolbar-colorpicker::-webkit-color-swatch {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
 /* 编辑器样式 */
 .note-editor {
     width: 100%;
@@ -11972,6 +12040,14 @@ body.dark-mode .toolbar-btn:active {
     background: #6a6a7a;
 }
 
+body.dark-mode .toolbar-colorpicker {
+    background: #4a4a5a;
+}
+
+body.dark-mode .toolbar-colorpicker::-webkit-color-swatch {
+    border-color: #5a5a6a;
+}
+
 body.dark-mode .sidebar-menu-panel {
     background: rgba(45, 45, 61, 0.98);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -12124,6 +12200,14 @@ body.transparent-mode .toolbar-divider {
     background: rgba(255, 255, 255, 0.15);
 }
 
+body.transparent-mode .toolbar-colorpicker {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode .toolbar-colorpicker::-webkit-color-swatch {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
 body.transparent-mode .action-btn {
     background: rgba(255, 107, 107, 0.8);
 }
@@ -12216,4 +12300,12 @@ body.transparent-mode.dark-mode .toolbar-select {
 
 body.transparent-mode.dark-mode .toolbar-btn {
     background: rgba(255, 255, 255, 0.08);
+}
+
+body.transparent-mode.dark-mode .toolbar-colorpicker {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.transparent-mode.dark-mode .toolbar-colorpicker::-webkit-color-swatch {
+    border-color: rgba(255, 255, 255, 0.2);
 }
