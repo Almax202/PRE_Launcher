@@ -7013,126 +7013,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     ];
     
-    // 本地预设背景图片缓存（从zip文件读取）
-    var LocalBgImageCache = {
-        isReady: false,
-        cache: {},
-        pendingCallbacks: [],
-        
-        init: function() {
-            var self = this;
-            if (typeof JSZip === 'undefined') {
-                console.warn('[LocalBgImageCache] JSZip 未加载，将使用原始图片路径');
-                self.isReady = true;
-                self._executeCallbacks();
-                return;
-            }
-            
-            if (window.location.protocol === 'file:') {
-                console.warn('[LocalBgImageCache] 当前为 file:// 协议，将使用原始图片路径');
-                self.isReady = true;
-                self._executeCallbacks();
-                return;
-            }
-            
-            self._loadZipWithXHR('../bgimg/bgimg.zip')
-                .then(function(zipBlob) {
-                    return JSZip.loadAsync(zipBlob);
-                })
-                .then(function(zip) {
-                    var promises = [];
-                    
-                    zip.forEach(function(relativePath, zipEntry) {
-                        if (!zipEntry.dir && /\.(png|jpg|jpeg|gif|webp)$/i.test(relativePath)) {
-                            var fileName = self._normalizeFileName(relativePath);
-                            
-                            var promise = zipEntry.async('blob').then(function(blob) {
-                                var url = URL.createObjectURL(blob);
-                                self.cache[fileName] = url;
-                                console.log('[LocalBgImageCache] 已缓存图片:', fileName);
-                            });
-                            
-                            promises.push(promise);
-                        }
-                    });
-                    
-                    return Promise.all(promises);
-                })
-                .then(function() {
-                    self.isReady = true;
-                    console.log('[LocalBgImageCache] 缓存初始化完成，共', Object.keys(self.cache).length, '张图片');
-                    self._executeCallbacks();
-                })
-                .catch(function(err) {
-                    console.warn('[LocalBgImageCache] 解压失败，将使用原始图片路径:', err);
-                    self.isReady = true;
-                    self._executeCallbacks();
-                });
-        },
-        
-        _loadZipWithXHR: function(url) {
-            return new Promise(function(resolve, reject) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', url, true);
-                xhr.responseType = 'blob';
-                
-                xhr.onload = function() {
-                    if (xhr.status === 200 || xhr.status === 0) {
-                        resolve(xhr.response);
-                    } else {
-                        reject(new Error('加载失败: ' + xhr.status));
-                    }
-                };
-                
-                xhr.onerror = function() {
-                    reject(new Error('网络错误'));
-                };
-                
-                xhr.send();
-            });
-        },
-        
-        _normalizeFileName: function(path) {
-            var parts = path.replace(/\\/g, '/').split('/');
-            var fileName = parts[parts.length - 1];
-            return fileName.toLowerCase();
-        },
-        
-        _getImageKey: function(imagePath) {
-            var parts = imagePath.replace(/\\/g, '/').split('/');
-            var fileName = parts[parts.length - 1];
-            return fileName.toLowerCase();
-        },
-        
-        getImageUrl: function(imagePath) {
-            if (!this.isReady) {
-                return imagePath;
-            }
-            
-            var key = this._getImageKey(imagePath);
-            if (this.cache[key]) {
-                return this.cache[key];
-            }
-            
-            return imagePath;
-        },
-        
-        whenReady: function(callback) {
-            if (this.isReady) {
-                callback();
-            } else {
-                this.pendingCallbacks.push(callback);
-            }
-        },
-        
-        _executeCallbacks: function() {
-            this.pendingCallbacks.forEach(function(cb) {
-                cb();
-            });
-            this.pendingCallbacks = [];
-        }
-    };
-    
     // 当前使用的预设背景数据
     var presetBackgrounds = onlinePresetBackgrounds;
     
@@ -7143,14 +7023,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function openPresetBackgroundModal() {
         var modal = document.getElementById('presetBackgroundModal');
         if (modal) {
-            // 初始化本地背景图片缓存
-            LocalBgImageCache.whenReady(function() {
-                modal.classList.add('show');
-                selectedPresetBackground = null;
-                renderPresetBackgrounds();
-                updateConfirmButtonState();
-            });
-            LocalBgImageCache.init();
+            modal.classList.add('show');
+            selectedPresetBackground = null;
+            renderPresetBackgrounds();
+            updateConfirmButtonState();
         }
     }
     
@@ -7158,20 +7034,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function switchPresetSource(isOnline) {
         presetBackgrounds = isOnline ? onlinePresetBackgrounds : localPresetBackgrounds;
         selectedPresetBackground = null;
-        
-        // 如果切换到本地预设，确保缓存已就绪
-        if (!isOnline) {
-            LocalBgImageCache.whenReady(function() {
-                renderPresetBackgrounds();
-                updateConfirmButtonState();
-            });
-            if (!LocalBgImageCache.isReady) {
-                LocalBgImageCache.init();
-            }
-        } else {
-            renderPresetBackgrounds();
-            updateConfirmButtonState();
-        }
+        renderPresetBackgrounds();
+        updateConfirmButtonState();
     }
     
     // 关闭预设背景选择窗口
@@ -7251,11 +7115,8 @@ document.addEventListener('DOMContentLoaded', function() {
             item.setAttribute('data-name', background.name);
             item.setAttribute('data-id', background.id);
             
-            // 对于本地预设背景，使用缓存的图片URL；对于在线预设背景，直接使用原始URL
-            var imageUrl = (presetBackgrounds === localPresetBackgrounds) ? LocalBgImageCache.getImageUrl(background.url) : background.url;
-            
             item.innerHTML = `
-                <img src="${imageUrl}" alt="${background.name}" loading="lazy">
+                <img src="${background.url}" alt="${background.name}" loading="lazy">
                 <div class="preset-background-name">${background.name}</div>
                 ${selectedPresetBackground && selectedPresetBackground.id === background.id ? '<div class="preset-background-check"><i class="fas fa-check"></i></div>' : ''}
             `;

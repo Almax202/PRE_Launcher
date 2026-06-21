@@ -267,6 +267,17 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.4.1 (b7)",
+            date: "2026-06-21",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 回退了个性化中的某个更新，因为该更新导致背景图片出现异常",
+            ]
+        },
+        {
             version: "RC 2.6.4.1 (b6)",
             date: "2026-06-21",
             tag: "important",
