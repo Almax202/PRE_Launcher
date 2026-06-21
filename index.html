@@ -4065,9 +4065,46 @@
             <div class="sticky-notes-sidebar">
                 <div class="sidebar-header">
                     <h3>便签</h3>
-                    <button class="sidebar-close" id="stickyNotesClose">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div class="sidebar-actions">
+                        <button class="sidebar-menu-btn" id="stickyNotesMenuBtn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <button class="sidebar-close" id="stickyNotesClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="sidebar-menu-panel" id="stickyNotesMenuPanel" style="display: none;">
+                    <div class="menu-item" id="menuEdit">
+                        <i class="fas fa-pencil-alt"></i>
+                        <span>编辑</span>
+                    </div>
+                    <div class="menu-item" id="menuViewMode">
+                        <i class="fas fa-th"></i>
+                        <span>列表模式</span>
+                    </div>
+                    <div class="menu-item" id="menuComponentInfo">
+                        <i class="fas fa-info-circle"></i>
+                        <span>组件信息</span>
+                    </div>
+                    <div class="menu-divider"></div>
+                    <div class="menu-item" id="menuExportNote">
+                        <i class="fas fa-download"></i>
+                        <span>导出便签</span>
+                    </div>
+                    <div class="menu-item" id="menuImportNote">
+                        <i class="fas fa-upload"></i>
+                        <span>导入便签</span>
+                    </div>
+                    <div class="menu-divider"></div>
+                    <div class="menu-item" id="menuSortByCreated">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span>按创建时间排序</span>
+                    </div>
+                    <div class="menu-item" id="menuSortByUpdated">
+                        <i class="fas fa-calendar-check-o"></i>
+                        <span>按修改时间排序</span>
+                    </div>
                 </div>
                 <div class="sidebar-search">
                     <input type="text" id="stickyNotesSearch" placeholder="快速搜索关键字" class="search-input">
@@ -11012,6 +11049,10 @@
             var stickyNotes = [];
             var currentNoteId = null;
             var editor = null;
+            var isEditMode = false;
+            var isGridView = false;
+            var sortBy = 'created';
+            var selectedNotes = [];
 
             function loadStickyNotes() {
                 var saved = localStorage.getItem('stickyNotes');
@@ -11030,10 +11071,27 @@
                 var list = document.getElementById('stickyNotesList');
                 list.innerHTML = '';
                 
-                var filteredNotes = stickyNotes;
+                var filteredNotes = stickyNotes.slice();
+                
+                if (sortBy === 'created') {
+                    filteredNotes.sort(function(a, b) {
+                        return b.createdAt - a.createdAt;
+                    });
+                } else if (sortBy === 'updated') {
+                    filteredNotes.sort(function(a, b) {
+                        return b.updatedAt - a.updatedAt;
+                    });
+                }
+                
+                filteredNotes.sort(function(a, b) {
+                    var aPinned = a.isPinned ? 1 : 0;
+                    var bPinned = b.isPinned ? 1 : 0;
+                    return bPinned - aPinned;
+                });
+                
                 if (searchKeyword && searchKeyword.trim()) {
                     var keyword = searchKeyword.toLowerCase().trim();
-                    filteredNotes = stickyNotes.filter(function(note) {
+                    filteredNotes = filteredNotes.filter(function(note) {
                         var title = (note.title || '').toLowerCase();
                         var content = stripHtml(note.content || '').toLowerCase();
                         return title.includes(keyword) || content.includes(keyword);
@@ -11053,13 +11111,23 @@
 
                 filteredNotes.forEach(function(note) {
                     var item = document.createElement('div');
-                    item.className = 'note-item' + (currentNoteId === note.id ? ' active' : '');
+                    var itemClass = 'note-item';
+                    if (currentNoteId === note.id) itemClass += ' active';
+                    if (isEditMode) itemClass += ' selectable';
+                    item.className = itemClass;
                     item.setAttribute('data-note-id', note.id);
                     
                     var title = document.createElement('div');
                     title.className = 'note-item-title';
                     title.textContent = note.title || '无标题';
                     item.appendChild(title);
+                    
+                    if (note.isPinned) {
+                        var pinIcon = document.createElement('div');
+                        pinIcon.className = 'note-pin-icon';
+                        pinIcon.innerHTML = '<i class="fas fa-thumbtack"></i>';
+                        item.appendChild(pinIcon);
+                    }
                     
                     var preview = document.createElement('div');
                     preview.className = 'note-item-preview';
@@ -11069,21 +11137,403 @@
                     
                     var date = document.createElement('div');
                     date.className = 'note-item-date';
-                    date.textContent = formatDate(note.createdAt);
+                    date.textContent = formatDate(sortBy === 'updated' ? note.updatedAt : note.createdAt);
                     item.appendChild(date);
                     
+                    if (isEditMode) {
+                        var selectBtn = document.createElement('div');
+                        selectBtn.className = 'note-select' + (selectedNotes.includes(note.id) ? ' selected' : '');
+                        selectBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            toggleNoteSelection(note.id);
+                        });
+                        item.appendChild(selectBtn);
+                    }
+                    
                     item.addEventListener('click', function() {
-                        openNote(note.id);
+                        if (isEditMode) {
+                            toggleNoteSelection(note.id);
+                        } else {
+                            openNote(note.id);
+                        }
                     });
                     
                     list.appendChild(item);
                 });
+                
+                if (isGridView) {
+                    list.classList.add('grid-view');
+                } else {
+                    list.classList.remove('grid-view');
+                }
+                
+                updateEditModeActions();
             }
 
             function stripHtml(html) {
                 var temp = document.createElement('div');
                 temp.innerHTML = html;
                 return temp.textContent || temp.innerText || '';
+            }
+            
+            function toggleNoteSelection(noteId) {
+                var index = selectedNotes.indexOf(noteId);
+                if (index > -1) {
+                    selectedNotes.splice(index, 1);
+                } else {
+                    selectedNotes.push(noteId);
+                }
+                renderNotesList(document.getElementById('stickyNotesSearch').value);
+            }
+            
+            function updateEditModeActions() {
+                var sidebar = document.querySelector('.sticky-notes-sidebar');
+                var existingActions = sidebar.querySelector('.edit-mode-actions');
+                if (existingActions) {
+                    existingActions.remove();
+                }
+                
+                if (isEditMode && stickyNotes.length > 0) {
+                    var actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'edit-mode-actions';
+                    
+                    var topBtn = document.createElement('button');
+                    topBtn.className = 'edit-mode-btn primary';
+                    topBtn.innerHTML = '<i class="fas fa-arrow-up"></i><span>置顶</span>';
+                    topBtn.addEventListener('click', function() {
+                        topSelectedNotes();
+                    });
+                    actionsDiv.appendChild(topBtn);
+                    
+                    var unpinBtn = document.createElement('button');
+                    unpinBtn.className = 'edit-mode-btn secondary';
+                    unpinBtn.innerHTML = '<i class="fas fa-thumbtack"></i><span>取消置顶</span>';
+                    unpinBtn.addEventListener('click', function() {
+                        unpinSelectedNotes();
+                    });
+                    actionsDiv.appendChild(unpinBtn);
+                    
+                    var deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'edit-mode-btn danger';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i><span>删除</span>';
+                    deleteBtn.addEventListener('click', function() {
+                        deleteSelectedNotes();
+                    });
+                    actionsDiv.appendChild(deleteBtn);
+                    
+                    var cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'edit-mode-btn cancel';
+                    cancelBtn.innerHTML = '<i class="fas fa-times"></i><span>取消</span>';
+                    cancelBtn.addEventListener('click', function() {
+                        toggleEditMode();
+                    });
+                    actionsDiv.appendChild(cancelBtn);
+                    
+                    sidebar.appendChild(actionsDiv);
+                }
+            }
+            
+            function topSelectedNotes() {
+                if (selectedNotes.length === 0) {
+                    showAlert('请先选择要置顶的便签');
+                    return;
+                }
+                
+                selectedNotes.forEach(function(noteId) {
+                    var note = stickyNotes.find(function(n) {
+                        return n.id === noteId;
+                    });
+                    if (note) {
+                        note.isPinned = true;
+                    }
+                });
+                
+                saveStickyNotes();
+                renderNotesList(document.getElementById('stickyNotesSearch').value);
+                showAlert('已将选中的便签置顶');
+            }
+            
+            function unpinSelectedNotes() {
+                if (selectedNotes.length === 0) {
+                    showAlert('请先选择要取消置顶的便签');
+                    return;
+                }
+                
+                selectedNotes.forEach(function(noteId) {
+                    var note = stickyNotes.find(function(n) {
+                        return n.id === noteId;
+                    });
+                    if (note) {
+                        note.isPinned = false;
+                    }
+                });
+                
+                saveStickyNotes();
+                renderNotesList(document.getElementById('stickyNotesSearch').value);
+                showAlert('已取消选中便签的置顶');
+            }
+            
+            function deleteSelectedNotes() {
+                if (selectedNotes.length === 0) {
+                    showAlert('请先选择要删除的便签');
+                    return;
+                }
+                
+                var wasCurrentNoteSelected = selectedNotes.includes(currentNoteId);
+                
+                showConfirmModal('确定要删除选中的 ' + selectedNotes.length + ' 个便签吗？', function() {
+                    stickyNotes = stickyNotes.filter(function(n) {
+                        return !selectedNotes.includes(n.id);
+                    });
+                    saveStickyNotes();
+                    selectedNotes = [];
+                    isEditMode = false;
+                    
+                    if (wasCurrentNoteSelected) {
+                        currentNoteId = null;
+                        document.getElementById('stickyNoteTitle').value = '';
+                        editor.innerHTML = '';
+                        document.getElementById('deleteStickyNote').style.display = 'none';
+                    }
+                    renderNotesList(document.getElementById('stickyNotesSearch').value);
+                    showAlert('已删除选中的便签');
+                });
+            }
+            
+            function exportNote() {
+                closeMenu();
+                
+                if (stickyNotes.length === 0) {
+                    showAlert('暂无便签可导出');
+                    return;
+                }
+                
+                var noteListHtml = '<div style="max-height: 300px; overflow-y: auto;">';
+                stickyNotes.forEach(function(note) {
+                    var title = note.title || '无标题';
+                    noteListHtml += '<div style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;" data-note-id="' + note.id + '">';
+                    noteListHtml += '<input type="radio" name="exportNoteSelect" value="' + note.id + '" style="margin-right: 10px;">';
+                    noteListHtml += '<span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + title + '</span>';
+                    noteListHtml += '</div>';
+                });
+                noteListHtml += '</div>';
+                
+                var modal = document.createElement('div');
+                modal.id = 'exportNoteModal';
+                modal.className = 'custom-alert';
+                
+                modal.innerHTML = `
+                    <div class="alert-content" style="max-width: 450px;">
+                        <div class="alert-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h3>导出便签</h3>
+                        <p style="color: #666; margin-bottom: 15px;">请选择要导出的便签：</p>
+                        ${noteListHtml}
+                        <div class="modal-buttons">
+                            <button class="alert-confirm" onclick="document.getElementById('exportNoteModal').remove()">取消</button>
+                            <button class="alert-confirm" style="background-color: #4CAF50;" onclick="doExportNote()">导出</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                modal.style.display = 'flex';
+                modal.style.zIndex = '20000';
+                setTimeout(function() {
+                    modal.classList.add('show');
+                }, 10);
+            }
+            
+            function doExportNote() {
+                var selectedId = document.querySelector('input[name="exportNoteSelect"]:checked');
+                if (!selectedId) {
+                    showAlert('请先选择要导出的便签');
+                    return;
+                }
+                
+                var note = stickyNotes.find(function(n) {
+                    return n.id === selectedId.value;
+                });
+                
+                if (note) {
+                    var content = '标题：' + (note.title || '无标题') + '\n\n';
+                    content += '创建时间：' + formatDate(note.createdAt) + '\n';
+                    content += '修改时间：' + formatDate(note.updatedAt) + '\n\n';
+                    content += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+                    content += stripHtml(note.content || '');
+                    
+                    var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = (note.title || '便签').replace(/[\\/:*?"<>|]/g, '_') + '.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    document.getElementById('exportNoteModal').remove();
+                    showAlert('便签导出成功');
+                }
+            }
+            
+            function importNote() {
+                closeMenu();
+                
+                var modal = document.createElement('div');
+                modal.id = 'importNoteModal';
+                modal.className = 'custom-alert';
+                
+                modal.innerHTML = `
+                    <div class="alert-content" style="max-width: 450px;">
+                        <div class="alert-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3>导入便签</h3>
+                        <p style="color: #666; margin-bottom: 15px;">请选择要导入的TXT文件：</p>
+                        <input type="file" id="importFileInput" accept=".txt" style="display: none;">
+                        <button class="alert-confirm" style="background-color: #3498db; margin-bottom: 15px; width: 100%;" onclick="document.getElementById('importFileInput').click()">选择文件</button>
+                        <div id="importFileName" style="text-align: center; color: #666; padding: 10px; background: #f5f5f5; border-radius: 8px; min-height: 40px;">未选择文件</div>
+                        <div class="modal-buttons">
+                            <button class="alert-confirm" onclick="document.getElementById('importNoteModal').remove()">取消</button>
+                            <button class="alert-confirm" style="background-color: #4CAF50;" onclick="doImportNote()">导入</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                modal.style.display = 'flex';
+                modal.style.zIndex = '20000';
+                setTimeout(function() {
+                    modal.classList.add('show');
+                }, 10);
+                
+                document.getElementById('importFileInput').addEventListener('change', function(e) {
+                    var fileName = e.target.files[0] ? e.target.files[0].name : '未选择文件';
+                    document.getElementById('importFileName').textContent = fileName;
+                });
+            }
+            
+            function doImportNote() {
+                var input = document.getElementById('importFileInput');
+                if (!input.files || input.files.length === 0) {
+                    showAlert('请先选择要导入的文件');
+                    return;
+                }
+                
+                var file = input.files[0];
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    var content = e.target.result;
+                    var lines = content.split('\n');
+                    var title = '无标题';
+                    var noteContent = '';
+                    var inContent = false;
+                    
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i];
+                        if (line.startsWith('标题：')) {
+                            title = line.substring(3).trim();
+                        } else if (line.indexOf('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━') >= 0) {
+                            inContent = true;
+                        } else if (inContent) {
+                            noteContent += line + '\n';
+                        }
+                    }
+                    
+                    noteContent = noteContent.trim();
+                    
+                    var newNote = {
+                        id: Date.now().toString(),
+                        title: title,
+                        content: noteContent,
+                        createdAt: Date.now(),
+                        updatedAt: Date.now(),
+                        isPinned: false
+                    };
+                    
+                    stickyNotes.push(newNote);
+                    saveStickyNotes();
+                    renderNotesList(document.getElementById('stickyNotesSearch').value);
+                    openNote(newNote.id);
+                    
+                    document.getElementById('importNoteModal').remove();
+                    showAlert('便签导入成功');
+                };
+                
+                reader.readAsText(file, 'utf-8');
+            }
+            
+            function toggleEditMode() {
+                isEditMode = !isEditMode;
+                selectedNotes = [];
+                renderNotesList(document.getElementById('stickyNotesSearch').value);
+                closeMenu();
+                
+                var addBtn = document.getElementById('addStickyNote');
+                if (addBtn) {
+                    addBtn.style.display = isEditMode ? 'none' : 'flex';
+                }
+            }
+            
+            function toggleViewMode() {
+                isGridView = !isGridView;
+                renderNotesList(document.getElementById('stickyNotesSearch').value);
+                
+                var menuItem = document.getElementById('menuViewMode');
+                var icon = menuItem.querySelector('i');
+                var span = menuItem.querySelector('span');
+                
+                if (isGridView) {
+                    icon.className = 'fas fa-list';
+                    span.textContent = '列表模式';
+                } else {
+                    icon.className = 'fas fa-th';
+                    span.textContent = '宫格模式';
+                }
+                
+                closeMenu();
+            }
+            
+            function showComponentInfo() {
+                if (typeof showComponentInfoModal === 'function') {
+                    showComponentInfoModal('stickyNotes');
+                }
+                closeMenu();
+            }
+            
+            function toggleMenu() {
+                var menuPanel = document.getElementById('stickyNotesMenuPanel');
+                var menuBtn = document.getElementById('stickyNotesMenuBtn');
+                
+                if (menuPanel.style.display === 'none' || menuPanel.style.display === '') {
+                    menuPanel.style.display = 'block';
+                    menuBtn.classList.add('active');
+                } else {
+                    menuPanel.style.display = 'none';
+                    menuBtn.classList.remove('active');
+                }
+            }
+            
+            function closeMenu() {
+                var menuPanel = document.getElementById('stickyNotesMenuPanel');
+                var menuBtn = document.getElementById('stickyNotesMenuBtn');
+                menuPanel.style.display = 'none';
+                menuBtn.classList.remove('active');
+            }
+            
+            function sortNotesByCreated() {
+                sortBy = 'created';
+                renderNotesList(document.getElementById('stickyNotesSearch').value);
+                closeMenu();
+            }
+            
+            function sortNotesByUpdated() {
+                sortBy = 'updated';
+                renderNotesList(document.getElementById('stickyNotesSearch').value);
+                closeMenu();
             }
 
             function formatDate(timestamp) {
@@ -11116,17 +11566,38 @@
                     title: '',
                     content: '',
                     createdAt: Date.now(),
-                    updatedAt: Date.now()
+                    updatedAt: Date.now(),
+                    isPinned: false
                 };
                 
-                stickyNotes.unshift(newNote);
+                stickyNotes.push(newNote);
                 saveStickyNotes();
                 openNote(newNote.id);
             }
 
             function saveCurrentNote() {
+                var title = document.getElementById('stickyNoteTitle').value;
+                var content = editor.innerHTML;
+                
                 if (!currentNoteId) {
-                    showAlert('请先选择或创建一个便签');
+                    if (!title && !content.trim()) {
+                        showAlert('请先选择或创建一个便签');
+                        return;
+                    }
+                    
+                    var newNote = {
+                        id: Date.now().toString(),
+                        title: title || '无标题',
+                        content: content,
+                        createdAt: Date.now(),
+                        updatedAt: Date.now()
+                    };
+                    stickyNotes.unshift(newNote);
+                    saveStickyNotes();
+                    renderNotesList();
+                    showAlert('便签已创建并保存');
+                    currentNoteId = newNote.id;
+                    document.getElementById('deleteStickyNote').style.display = 'flex';
                     return;
                 }
                 
@@ -11135,8 +11606,8 @@
                 });
                 
                 if (note) {
-                    note.title = document.getElementById('stickyNoteTitle').value;
-                    note.content = editor.innerHTML;
+                    note.title = title || '无标题';
+                    note.content = content;
                     note.updatedAt = Date.now();
                     saveStickyNotes();
                     renderNotesList();
@@ -11180,6 +11651,9 @@
             function closeStickyNotesModal() {
                 document.getElementById('stickyNotesModal').style.display = 'none';
                 document.body.style.overflow = '';
+                isEditMode = false;
+                selectedNotes = [];
+                closeMenu();
             }
 
             function execCommand(command, value) {
@@ -11285,12 +11759,6 @@
                 
                 document.getElementById('deleteStickyNote').addEventListener('click', deleteCurrentNote);
                 
-                document.getElementById('stickyNotesModal').addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        closeStickyNotesModal();
-                    }
-                });
-                
                 editor.addEventListener('keydown', function(e) {
                     if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
                         e.preventDefault();
@@ -11326,6 +11794,27 @@
                 
                 document.getElementById('stickyNotesSearch').addEventListener('input', function() {
                     renderNotesList(this.value);
+                });
+                
+                document.getElementById('stickyNotesMenuBtn').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleMenu();
+                });
+                
+                document.getElementById('menuEdit').addEventListener('click', toggleEditMode);
+                document.getElementById('menuViewMode').addEventListener('click', toggleViewMode);
+                document.getElementById('menuComponentInfo').addEventListener('click', showComponentInfo);
+                document.getElementById('menuExportNote').addEventListener('click', exportNote);
+                document.getElementById('menuImportNote').addEventListener('click', importNote);
+                document.getElementById('menuSortByCreated').addEventListener('click', sortNotesByCreated);
+                document.getElementById('menuSortByUpdated').addEventListener('click', sortNotesByUpdated);
+                
+                document.getElementById('stickyNotesModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeStickyNotesModal();
+                    } else if (!e.target.closest('.sidebar-menu-panel')) {
+                        closeMenu();
+                    }
                 });
             });
         </script>

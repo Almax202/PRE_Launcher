@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.4.0 (b6)",
+    login: "RC 2.6.4.1 (b6)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.0 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260620.2640.b6.91",
+    launcher: "20260621.2641.b6.92",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -46,6 +46,18 @@ const versionInfo = {
             updateDate: "2026-06-20",
             status: "公开正式版"
         }
+    },
+    
+    components: {
+        stickyNotes: {
+            name: "便签",
+            version: "RC 1.1.1",
+            releaseDate: "2026-06-20",
+            updateDate: "2026-06-21",
+            status: "公开正式版",
+            developer: "PREAlmax",
+            copyright: "© 2014-2026 PREAlmax, All rights reserved."
+        }
     }
 };
 // 启动器信息
@@ -53,8 +65,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-06-20",
-    patchDate: "2026-06-20",
+    buildDate: "2026-06-21",
+    patchDate: "2026-06-21",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""
@@ -68,6 +80,60 @@ function getVersion(page) {
 
 function getThemeVersionInfo(themeName) {
     return versionInfo.themes && versionInfo.themes[themeName] || null;
+}
+
+function getComponentVersionInfo(componentName) {
+    return versionInfo.components && versionInfo.components[componentName] || null;
+}
+
+function showComponentInfoModal(componentName) {
+    const componentInfo = getComponentVersionInfo(componentName);
+    
+    const modal = document.createElement('div');
+    modal.id = 'componentInfoModal';
+    modal.className = 'custom-alert component-info-modal';
+    
+    let versionInfoContent = '';
+    if (componentInfo) {
+        versionInfoContent = `
+            <div class="about-info">
+                <p><strong>组件名称：</strong>${componentInfo.name}</p>
+                <p><strong>版本号：</strong>${componentInfo.version}</p>
+                <p><strong>发布日期：</strong>${componentInfo.releaseDate}</p>
+                <p><strong>更新日期：</strong>${componentInfo.updateDate}</p>
+                <p><strong>状态：</strong>${componentInfo.status}</p>
+                <p><strong>开发者：</strong>${componentInfo.developer}</p>
+                <p><strong>版权信息：</strong>${componentInfo.copyright}</p>
+            </div>
+        `;
+    } else {
+        versionInfoContent = `
+            <div class="about-info">
+                <p>无法获取组件信息</p>
+            </div>
+        `;
+    }
+    
+    modal.innerHTML = `
+        <div class="alert-content" style="max-width: 500px;">
+            <div class="alert-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h2>组件信息</h2>
+            ${versionInfoContent}
+            <div class="modal-buttons">
+                <button class="alert-confirm" onclick="document.getElementById('componentInfoModal').remove()">关闭</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.style.display = 'flex';
+    modal.style.zIndex = '20000';
+    setTimeout(function() {
+        modal.classList.add('show');
+    }, 10);
 }
 
 function getLastKnownLoginVersion() {

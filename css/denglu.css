@@ -11202,6 +11202,10 @@ body.transparent-mode.dark-mode .guide-step-tooltip.right::after {
     animation: fadeIn 0.3s ease;
 }
 
+.custom-alert.component-info-modal {
+    z-index: 20000;
+}
+
 .sticky-notes-container {
     display: flex;
     width: 100%;
@@ -11422,10 +11426,177 @@ body.transparent-mode.dark-mode .guide-step-tooltip.right::after {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.sidebar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar-menu-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-menu-btn.active {
+    background: rgba(255, 255, 255, 0.4);
+}
+
 .sidebar-search {
     position: relative;
     padding: 15px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu-panel {
+    position: absolute;
+    top: 70px;
+    right: 10px;
+    width: 180px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    z-index: 100;
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sidebar-menu-panel .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.sidebar-menu-panel .menu-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.sidebar-menu-panel .menu-item i {
+    font-size: 14px;
+    color: #667eea;
+    width: 16px;
+}
+
+.sidebar-menu-panel .menu-item span {
+    font-size: 13px;
+}
+
+.sidebar-menu-panel .menu-divider {
+    height: 1px;
+    background: #eee;
+    margin: 5px 0;
+}
+
+.notes-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.note-item .note-select {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.note-item:hover .note-select,
+.note-item.selectable .note-select {
+    opacity: 1;
+}
+
+.note-item .note-select:hover,
+.note-item .note-select.selected {
+    background: #fff;
+    border-color: #667eea;
+}
+
+.note-item.selectable {
+    position: relative;
+    padding-right: 40px;
+}
+
+.edit-mode-actions {
+    position: absolute;
+    bottom: 100px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+}
+
+.edit-mode-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+
+.edit-mode-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+
+.edit-mode-btn.danger {
+    background: rgba(239, 68, 68, 0.9);
+    color: #fff;
+}
+
+.edit-mode-btn.secondary {
+    background: rgba(255, 215, 0, 0.9);
+    color: #333;
+}
+
+.edit-mode-btn.cancel {
+    background: rgba(145, 158, 171, 0.9);
+    color: #fff;
+}
+
+.edit-mode-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-search .search-input {
@@ -11532,6 +11703,7 @@ body.transparent-mode.dark-mode .guide-step-tooltip.right::after {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    position: relative;
 }
 
 .note-item:hover {
@@ -11564,6 +11736,15 @@ body.transparent-mode.dark-mode .guide-step-tooltip.right::after {
     font-size: 11px;
     opacity: 0.6;
     margin-top: 4px;
+}
+
+.note-item .note-pin-icon {
+    position: absolute;
+    right: 40px;
+    top: 10px;
+    color: #FFD700;
+    font-size: 14px;
+    opacity: 0.8;
 }
 
 .sticky-notes-main {
@@ -11631,7 +11812,8 @@ body.transparent-mode.dark-mode .guide-step-tooltip.right::after {
 .main-content {
     flex: 1;
     padding: 20px;
-    overflow: hidden;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .main-content textarea {
@@ -11721,11 +11903,94 @@ body.dark-mode .note-title-input::placeholder {
 body.dark-mode .main-content textarea {
     background: #3a3a4a;
     border-color: #4a4a5a;
-    color: #e0e0e0;
+    color: #f5f5f5;
 }
 
 body.dark-mode .main-content textarea::placeholder {
-    color: #666;
+    color: #999;
+}
+
+body.dark-mode .note-editor {
+    color: #f5f5f5;
+}
+
+body.dark-mode .note-editor:empty:before {
+    color: #999;
+}
+
+body.dark-mode .note-editor h1 {
+    color: #ffffff;
+}
+
+body.dark-mode .note-editor h2 {
+    color: #fafafa;
+}
+
+body.dark-mode .note-editor h3 {
+    color: #f0f0f0;
+}
+
+body.dark-mode .note-editor blockquote {
+    color: #b0b0b0;
+    background: rgba(102, 126, 234, 0.15);
+}
+
+body.dark-mode .note-editor .todo-text.completed {
+    color: #888;
+}
+
+body.dark-mode .toolbar {
+    background: #3a3a4a;
+    border-color: #4a4a5a;
+}
+
+body.dark-mode .toolbar-divider {
+    background: #5a5a6a;
+}
+
+body.dark-mode .toolbar-select {
+    background: #4a4a5a;
+    border-color: #5a5a6a;
+    color: #f0f0f0;
+}
+
+body.dark-mode .toolbar-select option {
+    background: #3a3a4a;
+    color: #f0f0f0;
+}
+
+body.dark-mode .toolbar-btn {
+    background: #4a4a5a;
+    color: #e0e0e0;
+}
+
+body.dark-mode .toolbar-btn:hover {
+    background: #5a5a6a;
+}
+
+body.dark-mode .toolbar-btn:active {
+    background: #6a6a7a;
+}
+
+body.dark-mode .sidebar-menu-panel {
+    background: rgba(45, 45, 61, 0.98);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .sidebar-menu-panel .menu-item {
+    color: #e0e0e0;
+}
+
+body.dark-mode .sidebar-menu-panel .menu-item:hover {
+    background: rgba(102, 126, 234, 0.2);
+}
+
+body.dark-mode .sidebar-menu-panel .menu-item i {
+    color: #8892d6;
+}
+
+body.dark-mode .sidebar-menu-panel .menu-divider {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* 透明主题便签样式 */
@@ -11865,6 +12130,66 @@ body.transparent-mode .action-btn {
 
 body.transparent-mode .save-btn {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+}
+
+body.transparent-mode .sidebar-menu-panel {
+    background: rgba(102, 126, 234, 0.3);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode .sidebar-menu-panel .menu-item {
+    color: #fff;
+}
+
+body.transparent-mode .sidebar-menu-panel .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .sidebar-menu-panel .menu-item i {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.transparent-mode .sidebar-menu-panel .menu-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode #exportNoteModal .alert-content,
+body.transparent-mode #importNoteModal .alert-content {
+    background: rgba(102, 126, 234, 0.3);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode #exportNoteModal .alert-content h3,
+body.transparent-mode #importNoteModal .alert-content h3 {
+    color: #fff;
+}
+
+body.transparent-mode #exportNoteModal .alert-content p,
+body.transparent-mode #importNoteModal .alert-content p {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.transparent-mode #exportNoteModal .alert-confirm:last-child,
+body.transparent-mode #importNoteModal .alert-confirm:last-child {
+    background: rgba(255, 107, 107, 0.9) !important;
+    color: #fff;
+}
+
+body.transparent-mode #exportNoteModal .alert-confirm:not(:last-child),
+body.transparent-mode #importNoteModal .alert-confirm:not(:last-child) {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #fff;
+}
+
+body.transparent-mode #importFileName {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.transparent-mode #importNoteModal button[style*="background-color: #3498db"] {
+    background: rgba(255, 107, 107, 0.9) !important;
 }
 
 /* 透明主题暗色模式便签样式 */
