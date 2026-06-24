@@ -267,11 +267,25 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.4.3 (b8)",
+            date: "2026-06-24",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "优化改进",
+                "- 对《用户协议》和《隐私政策》进行了全面更新，更新后的协议将于 2026年6月24日 起正式生效",
+                "修复问题",
+                "- 修复了在开发者公告中，普通公告tag标签错误使用的问题",
+                "- 在RC 2.6.4.3 (b7)版本更新记录中新增了一张预览图片，因为该图片在更新整合时被意外遗落，故此补充"
+            ]
+        },
+        {
             version: "RC 2.6.4.3 (b7)",
             date: "2026-06-24",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2643.png", "./images/2643_2.png", "./images/2643_3.png"],
+            images: ["./images/2643.png", "./images/2643_2.png", "./images/2643_3.png", "./images/2643_4.png"],
             features: [
                 "新增功能",
                 "- 便签全屏显示：便签弹窗侧边栏右上角新增\"全屏显示\"按钮，点击后侧边栏向右延展铺满全屏，放大便签卡片比例显示更多内容",
