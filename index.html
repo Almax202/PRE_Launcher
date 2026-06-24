@@ -1429,6 +1429,12 @@
                 var previewLoading = document.getElementById('weatherPreviewLoading');
                 var previewBtn = document.getElementById('weatherPreviewBtn');
                 
+                var sidebarPreviewIcon = document.getElementById('weatherPreviewSidebar')?.querySelector('i');
+                var sidebarPreviewTemp = document.getElementById('weatherPreviewSidebar')?.querySelector('.weather-preview-temp');
+                var sidebarPreviewStatus = document.getElementById('weatherPreviewSidebar')?.querySelector('.weather-preview-status');
+                var sidebarPreviewLoading = document.getElementById('weatherPreviewLoadingSidebar');
+                var sidebarPreviewBtn = document.getElementById('weatherPreviewBtnSidebar');
+                
                 for (var province in cityData) {
                     var option = document.createElement('option');
                     option.value = province;
@@ -1460,6 +1466,12 @@
                     fetchWeatherForPreview();
                 });
                 
+                if (sidebarPreviewBtn) {
+                    sidebarPreviewBtn.addEventListener('click', function() {
+                        fetchWeatherForPreview();
+                    });
+                }
+                
                 function updateCurrentCityDisplay() {
                     var province = provinceSelect.value;
                     var city = citySelect.value;
@@ -1476,6 +1488,20 @@
                     previewStatus.textContent = '选择城市查看预览';
                     previewLoading.style.display = 'none';
                     document.getElementById('weatherPreview').style.opacity = '1';
+                    
+                    if (sidebarPreviewIcon) {
+                        sidebarPreviewIcon.className = 'fas fa-cloud-sun';
+                    }
+                    if (sidebarPreviewTemp) {
+                        sidebarPreviewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                    }
+                    if (sidebarPreviewStatus) {
+                        sidebarPreviewStatus.textContent = '选择城市查看预览';
+                    }
+                    if (sidebarPreviewLoading) {
+                        sidebarPreviewLoading.style.display = 'none';
+                        document.getElementById('weatherPreviewSidebar').style.opacity = '1';
+                    }
                 }
                 
                 function fetchWeatherForPreview() {
@@ -1493,11 +1519,21 @@
                         previewTemp.textContent = '--°C';
                         previewStatus.textContent = '暂不支持该城市的天气查询';
                         previewLoading.style.display = 'none';
+                        
+                        if (sidebarPreviewIcon) sidebarPreviewIcon.className = 'fas fa-cloud-sun';
+                        if (sidebarPreviewTemp) sidebarPreviewTemp.textContent = '--°C';
+                        if (sidebarPreviewStatus) sidebarPreviewStatus.textContent = '暂不支持该城市的天气查询';
+                        if (sidebarPreviewLoading) sidebarPreviewLoading.style.display = 'none';
                         return;
                     }
                     
                     previewLoading.style.display = 'flex';
                     document.getElementById('weatherPreview').style.opacity = '0.5';
+                    
+                    if (sidebarPreviewLoading) {
+                        sidebarPreviewLoading.style.display = 'flex';
+                        document.getElementById('weatherPreviewSidebar').style.opacity = '0.5';
+                    }
                     
                     var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + coords.lat + '&longitude=' + coords.lon + '&current=temperature_2m,weather_code';
                     
@@ -1520,20 +1556,37 @@
                                 previewIcon.className = 'fas ' + iconClass;
                                 previewTemp.textContent = convertedTemp + getTemperatureUnitSymbol(unit);
                                 previewStatus.textContent = getWeatherStatus(code);
+                                
+                                if (sidebarPreviewIcon) sidebarPreviewIcon.className = 'fas ' + iconClass;
+                                if (sidebarPreviewTemp) sidebarPreviewTemp.textContent = convertedTemp + getTemperatureUnitSymbol(unit);
+                                if (sidebarPreviewStatus) sidebarPreviewStatus.textContent = getWeatherStatus(code);
                             } else {
                                 previewIcon.className = 'fas fa-cloud-sun';
                                 previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
                                 previewStatus.textContent = '获取天气失败';
+                                
+                                if (sidebarPreviewIcon) sidebarPreviewIcon.className = 'fas fa-cloud-sun';
+                                if (sidebarPreviewTemp) sidebarPreviewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                                if (sidebarPreviewStatus) sidebarPreviewStatus.textContent = '获取天气失败';
                             }
                         })
                         .catch(function() {
                             previewIcon.className = 'fas fa-cloud-sun';
                             previewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
                             previewStatus.textContent = '获取天气失败';
+                            
+                            if (sidebarPreviewIcon) sidebarPreviewIcon.className = 'fas fa-cloud-sun';
+                            if (sidebarPreviewTemp) sidebarPreviewTemp.textContent = '--' + getTemperatureUnitSymbol(weatherSettings.temperatureUnit);
+                            if (sidebarPreviewStatus) sidebarPreviewStatus.textContent = '获取天气失败';
                         })
                         .finally(function() {
                             previewLoading.style.display = 'none';
                             document.getElementById('weatherPreview').style.opacity = '1';
+                            
+                            if (sidebarPreviewLoading) {
+                                sidebarPreviewLoading.style.display = 'none';
+                                document.getElementById('weatherPreviewSidebar').style.opacity = '1';
+                            }
                         });
                 }
                 
@@ -1569,16 +1622,33 @@
                         }
                     });
                     
+                    weatherModal.classList.toggle('sidebar-mode', clockSettings.sidebarMode);
                     weatherModal.style.display = 'flex';
                 });
                 
                 closeBtn.addEventListener('click', function() {
-                    weatherModal.style.display = 'none';
+                    if (clockSettings.sidebarMode) {
+                        weatherModal.style.animation = 'slideOutToRight 0.3s ease';
+                    } else {
+                        weatherModal.style.animation = 'fadeOut 0.3s ease';
+                    }
+                    setTimeout(function() {
+                        weatherModal.style.display = 'none';
+                        weatherModal.style.animation = '';
+                    }, 300);
                 });
                 
                 weatherModal.addEventListener('click', function(e) {
                     if (e.target === weatherModal) {
-                        weatherModal.style.display = 'none';
+                        if (clockSettings.sidebarMode) {
+                            weatherModal.style.animation = 'slideOutToRight 0.3s ease';
+                        } else {
+                            weatherModal.style.animation = 'fadeOut 0.3s ease';
+                        }
+                        setTimeout(function() {
+                            weatherModal.style.display = 'none';
+                            weatherModal.style.animation = '';
+                        }, 300);
                     }
                 });
                 
@@ -1706,7 +1776,11 @@
                             weatherCache = null;
                             weatherCacheTime = 0;
                             updateWeatherDisplay();
-                            weatherModal.style.display = 'none';
+                            weatherModal.style.animation = 'fadeOut 0.3s ease';
+                            setTimeout(function() {
+                                weatherModal.style.display = 'none';
+                                weatherModal.style.animation = '';
+                            }, 300);
                         } else {
                             alert('暂不支持该城市的天气查询');
                         }
@@ -1795,7 +1869,11 @@
                 
                 var settingsModal = document.getElementById('pageClockSettingsModal');
                 if (settingsModal) {
-                    settingsModal.style.display = 'none';
+                    settingsModal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        settingsModal.style.display = 'none';
+                        settingsModal.style.animation = '';
+                    }, 300);
                 }
                 
                 var hintBar = document.getElementById('hideUiHintBar');
@@ -1820,7 +1898,8 @@
                 fontStyle: 'sans',
                 dateFormat: 'yyyy/mm/dd',
                 fontSize: 100,
-                weatherClickable: false
+                weatherClickable: false,
+                sidebarMode: false
             };
             
             var quoteCache = null;
@@ -1897,7 +1976,11 @@
                 
                 if (clockDragBtn) {
                     clockDragBtn.addEventListener('click', function() {
-                        settingsModal.style.display = 'none';
+                        settingsModal.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(function() {
+                            settingsModal.style.display = 'none';
+                            settingsModal.style.animation = '';
+                        }, 300);
                         showAdjustPanel();
                         enableClockDragMode(true);
                     });
@@ -2602,6 +2685,7 @@
                 if (settingsBtn && settingsModal) {
                     settingsBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
+                        settingsModal.classList.toggle('sidebar-mode', clockSettings.sidebarMode);
                         settingsModal.style.display = 'flex';
                     });
                 }
@@ -2617,13 +2701,29 @@
                 
                 if (closeBtn && settingsModal) {
                     closeBtn.addEventListener('click', function() {
-                        settingsModal.style.display = 'none';
+                        if (clockSettings.sidebarMode) {
+                            settingsModal.style.animation = 'slideOutToRight 0.3s ease';
+                        } else {
+                            settingsModal.style.animation = 'fadeOut 0.3s ease';
+                        }
+                        setTimeout(function() {
+                            settingsModal.style.display = 'none';
+                            settingsModal.style.animation = '';
+                        }, 300);
                     });
                 }
                 
                 settingsModal.addEventListener('click', function(e) {
                     if (e.target === settingsModal) {
-                        settingsModal.style.display = 'none';
+                        if (clockSettings.sidebarMode) {
+                            settingsModal.style.animation = 'slideOutToRight 0.3s ease';
+                        } else {
+                            settingsModal.style.animation = 'fadeOut 0.3s ease';
+                        }
+                        setTimeout(function() {
+                            settingsModal.style.display = 'none';
+                            settingsModal.style.animation = '';
+                        }, 300);
                     }
                 });
                 
@@ -2708,6 +2808,32 @@
                         clockSettings.hideIcons = this.checked;
                         updateIconsVisibility();
                         saveClockSettings();
+                    });
+                }
+                
+                var sidebarModeCheckbox = document.getElementById('clockSidebarMode');
+                if (sidebarModeCheckbox) {
+                    sidebarModeCheckbox.checked = clockSettings.sidebarMode;
+                    sidebarModeCheckbox.addEventListener('change', function() {
+                        clockSettings.sidebarMode = this.checked;
+                        saveClockSettings();
+                    });
+                }
+                
+                var versionBtn = document.getElementById('pageClockVersionBtn');
+                var versionNumberEl = document.getElementById('pageClockVersionNumber');
+                if (versionBtn) {
+                    if (versionNumberEl && typeof getComponentVersionInfo === 'function') {
+                        var pageClockInfo = getComponentVersionInfo('pageClock');
+                        if (pageClockInfo && pageClockInfo.version) {
+                            versionNumberEl.textContent = pageClockInfo.version;
+                        }
+                    }
+                    
+                    versionBtn.addEventListener('click', function() {
+                        if (typeof showComponentInfoModal === 'function') {
+                            showComponentInfoModal('pageClock');
+                        }
                     });
                 }
                 
@@ -3256,7 +3382,9 @@
             if (toggleButtonsBtn) {
                 toggleButtonsBtn.addEventListener('click', function() {
                     updateHideInterfaceButton();
-                    document.getElementById('moreFeaturesModal').style.display = 'flex';
+                    var modal = document.getElementById('moreFeaturesModal');
+                    modal.style.animation = 'fadeIn 0.3s ease';
+                    modal.style.display = 'flex';
                 });
             }
             
@@ -3329,33 +3457,63 @@
                 
                 // 添加点击事件
                 document.getElementById('mobileMoreFeaturesClose').addEventListener('click', function() {
-                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    var modal = document.getElementById('mobileFunctionsModal');
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                        modal.style.animation = '';
+                    }, 300);
                 });
                 
                 document.getElementById('mobileModalAboutLauncherBtn').addEventListener('click', function() {
-                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    var modal = document.getElementById('mobileFunctionsModal');
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                        modal.style.animation = '';
+                    }, 300);
                     document.getElementById('aboutLauncherBtn').click();
                 });
                 
                 document.getElementById('mobileModalHideInterfaceBtn').addEventListener('click', function() {
-                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    var modal = document.getElementById('mobileFunctionsModal');
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                        modal.style.animation = '';
+                    }, 300);
                     document.getElementById('hideInterfaceBtn').click();
                 });
                 
                 document.getElementById('mobileModalUiScaleBtn').addEventListener('click', function() {
-                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    var modal = document.getElementById('mobileFunctionsModal');
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                        modal.style.animation = '';
+                    }, 300);
                     document.getElementById('uiScaleBtn').click();
                 });
                 
                 document.getElementById('mobileModalShowGuideBtn').addEventListener('click', function() {
-                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    var modal = document.getElementById('mobileFunctionsModal');
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                        modal.style.animation = '';
+                    }, 300);
                     if (typeof showGuide === 'function') {
                         showGuide();
                     }
                 });
                 
                 document.getElementById('mobileModalStickyNotesBtn').addEventListener('click', function() {
-                    document.getElementById('mobileFunctionsModal').style.display = 'none';
+                    var modal = document.getElementById('mobileFunctionsModal');
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                        modal.style.animation = '';
+                    }, 300);
                     if (typeof toggleStickyNotes === 'function') {
                         toggleStickyNotes();
                     }
@@ -3366,6 +3524,7 @@
             function showMobileFunctionsModal() {
                 const modal = document.getElementById('mobileFunctionsModal');
                 if (modal) {
+                    modal.style.animation = 'fadeIn 0.3s ease';
                     modal.style.display = 'flex';
                 }
             }
@@ -3374,7 +3533,11 @@
             function closeMobileFunctionsModal() {
                 const modal = document.getElementById('mobileFunctionsModal');
                 if (modal) {
-                    modal.style.display = 'none';
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                        modal.style.animation = '';
+                    }, 300);
                 }
             }
             
@@ -3548,6 +3711,10 @@
                             <span>显示名言</span>
                             <input type="checkbox" id="clockShowQuote" checked>
                         </label>
+                        <label class="settings-toggle-reverse">
+                            <span>侧边栏模式</span>
+                            <input type="checkbox" id="clockSidebarMode">
+                        </label>
                         <label class="settings-toggle-reverse hint-toggle">
                             <div class="text-with-hint">
                                 <span>隐藏所有图标</span>
@@ -3559,6 +3726,15 @@
                             </div>
                             <input type="checkbox" id="clockHideIcons">
                         </label>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>组件版本</h4>
+                        <button class="component-version-btn" id="pageClockVersionBtn">
+                            <span>页面时钟</span>
+                            <span class="version-info" id="pageClockVersionNumber"></span>
+                            <i class="fas fa-info-circle version-info-icon"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -3598,6 +3774,25 @@
                             <button class="unit-btn active" data-unit="celsius">摄氏度 (°C)</button>
                             <button class="unit-btn" data-unit="fahrenheit">华氏度 (°F)</button>
                         </div>
+                    </div>
+                    <div class="weather-section weather-preview-sidebar">
+                        <h4>天气预览</h4>
+                        <div class="weather-preview" id="weatherPreviewSidebar">
+                            <div class="weather-preview-icon">
+                                <i class="fas fa-cloud-sun"></i>
+                            </div>
+                            <div class="weather-preview-info">
+                                <div class="weather-preview-temp">--°C</div>
+                                <div class="weather-preview-status">选择城市查看预览</div>
+                            </div>
+                            <div class="weather-preview-loading" id="weatherPreviewLoadingSidebar" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                        <button class="weather-preview-btn" id="weatherPreviewBtnSidebar">
+                            <i class="fas fa-refresh"></i>
+                            <span>刷新预览</span>
+                        </button>
                     </div>
                 </div>
                 <div class="weather-body-right">
@@ -3656,7 +3851,7 @@
         <div class="settings-sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-avatar">
-                    <i class="fas fa-gamepad"></i>
+                    <i class="fas fa-rocket"></i>
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-username">PRE Launcher</div>
@@ -4212,6 +4407,9 @@
                 <div class="sidebar-header">
                     <h3>便签</h3>
                     <div class="sidebar-actions">
+                        <button class="sidebar-fullscreen-btn" id="stickyNotesFullscreenBtn" title="全屏显示">
+                            <i class="fas fa-expand"></i>
+                        </button>
                         <button class="sidebar-menu-btn" id="stickyNotesMenuBtn">
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
@@ -6567,23 +6765,40 @@
         document.getElementById('moreActionsBtn').addEventListener('click', function(e) {
             e.stopPropagation();
             updateMoreActionsBtnStatus();
-            document.getElementById('moreActionsModal').style.display = 'flex';
+            var modal = document.getElementById('moreActionsModal');
+            modal.style.animation = 'fadeIn 0.3s ease';
+            modal.style.display = 'flex';
         });
         
         // 关闭更多操作弹窗
         document.getElementById('moreActionsClose').addEventListener('click', function() {
-            document.getElementById('moreActionsModal').style.display = 'none';
+            var modal = document.getElementById('moreActionsModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
         });
         
         // 进入账户设置
         document.getElementById('goToAccountSettingsBtn').addEventListener('click', function() {
-            document.getElementById('moreActionsModal').style.display = 'none';
+            var modal = document.getElementById('moreActionsModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
             showSecurityVerifyModal();
         });
         
         // 打开名片
         document.getElementById('goToCardBtn').addEventListener('click', function() {
-            document.getElementById('moreActionsModal').style.display = 'none';
+            var modal = document.getElementById('moreActionsModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             if (currentUser.username) {
                 showUserCardModal();
@@ -6592,32 +6807,62 @@
         
         // 退出登录
         document.getElementById('logoutFromActionsBtn').addEventListener('click', function() {
-            document.getElementById('moreActionsModal').style.display = 'none';
+            var modal = document.getElementById('moreActionsModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
             handleLogout();
         });
         
         // 更多功能弹窗事件
         document.getElementById('moreFeaturesClose').addEventListener('click', function() {
-            document.getElementById('moreFeaturesModal').style.display = 'none';
+            var modal = document.getElementById('moreFeaturesModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
         });
         
         document.getElementById('modalAboutLauncherBtn').addEventListener('click', function() {
-            document.getElementById('moreFeaturesModal').style.display = 'none';
+            var modal = document.getElementById('moreFeaturesModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
             document.getElementById('aboutLauncherBtn').click();
         });
         
         document.getElementById('modalHideInterfaceBtn').addEventListener('click', function() {
-            document.getElementById('moreFeaturesModal').style.display = 'none';
+            var modal = document.getElementById('moreFeaturesModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
             document.getElementById('hideInterfaceBtn').click();
         });
         
         document.getElementById('modalUiScaleBtn').addEventListener('click', function() {
-            document.getElementById('moreFeaturesModal').style.display = 'none';
+            var modal = document.getElementById('moreFeaturesModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
             document.getElementById('uiScaleBtn').click();
         });
         
         document.getElementById('modalShowGuideBtn').addEventListener('click', function() {
-            document.getElementById('moreFeaturesModal').style.display = 'none';
+            var modal = document.getElementById('moreFeaturesModal');
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.style.animation = '';
+            }, 300);
             if (typeof showGuide === 'function') {
                 showGuide();
             }
@@ -11325,7 +11570,9 @@
                     var preview = document.createElement('div');
                     preview.className = 'note-item-preview';
                     var textContent = note.content ? stripHtml(note.content) : '';
-                    preview.textContent = textContent.substring(0, 50) + (textContent.length > 50 ? '...' : '');
+                    var sidebar = document.querySelector('.sticky-notes-sidebar');
+                    var maxLength = sidebar && sidebar.classList.contains('fullscreen-mode') ? 200 : 50;
+                    preview.textContent = textContent.substring(0, maxLength) + (textContent.length > maxLength ? '...' : '');
                     item.appendChild(preview);
                     
                     var date = document.createElement('div');
@@ -11842,11 +12089,31 @@
             }
 
             function closeStickyNotesModal() {
-                document.getElementById('stickyNotesModal').style.display = 'none';
-                document.body.style.overflow = '';
-                isEditMode = false;
-                selectedNotes = [];
-                closeMenu();
+                var modal = document.getElementById('stickyNotesModal');
+                var sidebar = document.querySelector('.sticky-notes-sidebar');
+                var mainContent = document.querySelector('.sticky-notes-main');
+                var fullscreenBtn = document.getElementById('stickyNotesFullscreenBtn');
+                
+                modal.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                    modal.style.animation = '';
+                    document.body.style.overflow = '';
+                    isEditMode = false;
+                    selectedNotes = [];
+                    closeMenu();
+                    
+                    // 恢复到正常模式
+                    if (sidebar.classList.contains('fullscreen-mode')) {
+                        sidebar.classList.remove('fullscreen-mode');
+                        mainContent.style.display = 'flex';
+                        if (fullscreenBtn) {
+                            fullscreenBtn.classList.remove('active');
+                            fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                            fullscreenBtn.title = '全屏显示';
+                        }
+                    }
+                }, 300);
             }
 
             function execCommand(command, value) {
@@ -11983,12 +12250,38 @@
                 
                 if (stickyNotesBtn) {
                     stickyNotesBtn.addEventListener('click', function() {
+                        var modal = document.getElementById('moreFeaturesModal');
+                        modal.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(function() {
+                            modal.style.display = 'none';
+                            modal.style.animation = '';
+                        }, 300);
                         showStickyNotesModal();
-                        document.getElementById('moreFeaturesModal').style.display = 'none';
                     });
                 }
                 
                 document.getElementById('stickyNotesClose').addEventListener('click', closeStickyNotesModal);
+                
+                var fullscreenBtn = document.getElementById('stickyNotesFullscreenBtn');
+                var sidebar = document.querySelector('.sticky-notes-sidebar');
+                var mainContent = document.querySelector('.sticky-notes-main');
+                
+                fullscreenBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('fullscreen-mode');
+                    fullscreenBtn.classList.toggle('active');
+                    
+                    if (sidebar.classList.contains('fullscreen-mode')) {
+                        mainContent.style.display = 'none';
+                        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                        fullscreenBtn.title = '退出全屏';
+                    } else {
+                        mainContent.style.display = 'flex';
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        fullscreenBtn.title = '全屏显示';
+                    }
+                    
+                    renderNotesList(document.getElementById('stickyNotesSearch').value);
+                });
                 
                 document.getElementById('addStickyNote').addEventListener('click', createNewNote);
                 

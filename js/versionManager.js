@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.4.2 (b7)",
+    login: "RC 2.6.4.3 (b7)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.0 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260621.2642.b7.94",
+    launcher: "20260624.2643.b7.95",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -51,9 +51,18 @@ const versionInfo = {
     components: {
         stickyNotes: {
             name: "便签",
-            version: "RC 1.1.1",
+            version: "Public Beta 0.1.1.2",
             releaseDate: "2026-06-20",
-            updateDate: "2026-06-21",
+            updateDate: "2026-06-24",
+            status: "公开测试版",
+            developer: "PREAlmax",
+            copyright: "© 2014-2026 PREAlmax, All rights reserved."
+        },
+        pageClock: {
+            name: "页面时钟",
+            version: "RC 1.1.3",
+            releaseDate: "2026-06-14",
+            updateDate: "2026-06-24",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved."
@@ -65,8 +74,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-06-21",
-    patchDate: "2026-06-21",
+    buildDate: "2026-06-24",
+    patchDate: "2026-06-24",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""

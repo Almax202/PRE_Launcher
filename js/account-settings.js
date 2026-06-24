@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     checkOfflineModeAndDisableFeatures();
     
+    updateExperimentalFeaturesState();
+    
     function loadUserInfo() {
         var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
         var user = users.find(function(u) {
@@ -205,7 +207,14 @@ document.addEventListener('DOMContentLoaded', function() {
             item.addEventListener('click', function() {
                 var section = this.getAttribute('data-section');
                 if (section === 'experimental') {
-                    showExperimentalWarningModal();
+                    var isDisabled = localStorage.getItem('experimentalFeaturesDisabled') === 'true';
+                    var hasRead = localStorage.getItem('experimentalWarningRead') === 'true';
+                    
+                    if (isDisabled || !hasRead) {
+                        showExperimentalWarningModal();
+                    } else {
+                        switchSection('experimental');
+                    }
                 } else {
                     switchSection(section);
                 }
@@ -884,7 +893,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.getElementById('experimentalWarningConfirm').addEventListener('click', function() {
             hideExperimentalWarningModal();
+            localStorage.setItem('experimentalWarningRead', 'true');
+            localStorage.removeItem('experimentalFeaturesDisabled');
             switchSection('experimental');
+            updateExperimentalFeaturesState();
         });
         
         document.getElementById('experimentalWarningModal').addEventListener('click', function(e) {
@@ -892,6 +904,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideExperimentalWarningModal();
             }
         });
+        
+        var disableBtn = document.getElementById('disableExperimentalBtn');
+        if (disableBtn) {
+            disableBtn.addEventListener('click', function() {
+                var isDisabled = localStorage.getItem('experimentalFeaturesDisabled') === 'true';
+                if (isDisabled) {
+                    showExperimentalWarningModal();
+                } else {
+                    showDisableExperimentalConfirmModal();
+                }
+            });
+        }
+        
+        var disableCancel = document.getElementById('disableExperimentalCancel');
+        if (disableCancel) {
+            disableCancel.addEventListener('click', function() {
+                hideDisableExperimentalConfirmModal();
+            });
+        }
+        
+        var disableConfirm = document.getElementById('disableExperimentalConfirm');
+        if (disableConfirm) {
+            disableConfirm.addEventListener('click', function() {
+                disableAllExperimentalFeatures();
+                hideDisableExperimentalConfirmModal();
+            });
+        }
+        
+        var disableModal = document.getElementById('disableExperimentalConfirmModal');
+        if (disableModal) {
+            disableModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideDisableExperimentalConfirmModal();
+                }
+            });
+        }
     }
     
     function showExperimentalWarningModal() {
@@ -908,6 +956,65 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
             modal.style.display = 'none';
         }, 300);
+    }
+    
+    function showDisableExperimentalConfirmModal() {
+        var modal = document.getElementById('disableExperimentalConfirmModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+        }
+    }
+    
+    function hideDisableExperimentalConfirmModal() {
+        var modal = document.getElementById('disableExperimentalConfirmModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+        }
+    }
+    
+    function disableAllExperimentalFeatures() {
+        localStorage.setItem('experimentalFeaturesDisabled', 'true');
+        
+        var stickyCheckbox = document.getElementById('enableStickyNotes');
+        if (stickyCheckbox) {
+            stickyCheckbox.checked = false;
+            if (typeof toggleStickyNotes === 'function') {
+                toggleStickyNotes();
+            }
+        }
+        
+        updateExperimentalFeaturesState();
+    }
+    
+    function updateExperimentalFeaturesState() {
+        var isDisabled = localStorage.getItem('experimentalFeaturesDisabled') === 'true';
+        var hasRead = localStorage.getItem('experimentalWarningRead') === 'true';
+        
+        var featureItems = document.querySelectorAll('#section-experimental .two-factor-item');
+        featureItems.forEach(function(item) {
+            if (isDisabled) {
+                item.classList.add('experimental-feature-disabled');
+            } else {
+                item.classList.remove('experimental-feature-disabled');
+            }
+        });
+        
+        var disableBtn = document.getElementById('disableExperimentalBtn');
+        if (disableBtn) {
+            if (isDisabled) {
+                disableBtn.innerHTML = '<i class="fas fa-redo"></i><span>重新启用实验性功能</span>';
+                disableBtn.style.backgroundColor = '#4CAF50';
+            } else {
+                disableBtn.innerHTML = '<i class="fas fa-ban"></i><span>禁用实验性功能</span>';
+                disableBtn.style.backgroundColor = '';
+            }
+        }
     }
     
     function switchSection(sectionId) {

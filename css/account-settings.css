@@ -6783,6 +6783,48 @@ body.transparent-mode .alert-content h3 {
     font-weight: 600;
 }
 
+#experimentalWarningModal {
+    background: rgba(220, 38, 38, 0.2);
+}
+
+body.transparent-mode #experimentalWarningModal {
+    background: rgba(220, 38, 38, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.disable-experimental-btn {
+    width: 100%;
+    padding: 12px 20px;
+    margin-top: 16px;
+    background-color: #e53e3e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.disable-experimental-btn:hover {
+    background-color: #c53030;
+}
+
+.experimental-feature-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.5);
+}
+
+.experimental-feature-disabled .toggle-switch {
+    cursor: not-allowed;
+}
+
 body.transparent-mode .alert-message {
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.7);
