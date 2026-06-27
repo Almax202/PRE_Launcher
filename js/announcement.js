@@ -345,6 +345,33 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260627-2",
+            title: "RC 2.6.4.5 开发日志",
+            date: "2026-06-27",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.4.5 版本更新，主要为页面时钟和天气功能带来了多项实用新功能和优化！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 页面时钟定时开启：页面时钟条目内新增\"定时开启\"子功能，支持设置登录页静置X分钟/秒后自动启用页面时钟，最大可设置1小时，所有子功能都在同一个条目框内显示",
+                "• 天气跳转目标扩展：天气跳转功能新增Yahoo Weather、AccuWeather、Windy.com三个跳转选项，提供更多天气网站选择",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 页面时钟天气跳转优化：将\"跳转到MSN Weather\"改为\"点击天气后跳转到指定程序\"，支持下拉选择MSN Weather、Yahoo Weather、AccuWeather、Windy.com和页面天气五种目标",
+                "• 名言打字机效果：页面时钟名言刷新后文字以打字机效果逐字显示，内容和作者分别打字，带有闪烁光标，视觉效果更生动",
+                "• 城市选择自动保存：手动选择城市后自动保存到本地存储，下次进入天气弹窗时自动使用该地址查询天气，无需每次重新选择",
+                "• MSN天气图标优化：将MSN Weather的图标从通用地球图标改为微软田字格品牌图标，辨识度更高",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复名言打字机效果循环播放的问题，现在打字完成后不会再重新开始",
+                "[color:#667eea]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！",
+                "如果您有任何想法或建议，欢迎通过Github仓库提交Issue与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260627",
             title: "RC 2.6.4.4 开发日志",
             date: "2026-06-27",

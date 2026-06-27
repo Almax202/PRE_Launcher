@@ -7207,3 +7207,108 @@ body.transparent-mode #experimentalWarningModal .alert-content li strong {
     color: #ffffff !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
+
+
+/* 页面时钟子功能样式 */
+.page-clock-sub-features {
+    padding-left: 30px;
+    border-left: 2px solid rgba(52, 152, 219, 0.3);
+    margin-left: 9px;
+}
+
+.timed-start-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.timed-start-item p {
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+    flex: 1;
+}
+
+.timed-start-options {
+    padding-left: 12px;
+    margin-bottom: 5px;
+}
+
+.timed-start-option-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timed-start-option-row p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    flex: 1;
+}
+
+.timed-start-time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.timed-start-time-inputs input[type='number'] {
+    width: 45px;
+    padding: 4px 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.timed-start-time-inputs span {
+    font-size: 12px;
+    color: #666;
+}
+
+body.dark-mode .timed-start-item p {
+    color: #ccc;
+}
+
+body.dark-mode .timed-start-option-row p {
+    color: #aaa;
+}
+
+body.dark-mode .timed-start-time-inputs input[type='number'] {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #e0e0e0;
+}
+
+body.dark-mode .timed-start-time-inputs span {
+    color: #aaa;
+}
+
+body.transparent-mode .timed-start-item p {
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode .timed-start-option-row p {
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode .timed-start-time-inputs input[type='number'] {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #fff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .timed-start-time-inputs span {
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode.dark-mode .timed-start-time-inputs input[type='number'] {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}

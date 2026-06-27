@@ -405,6 +405,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     saveSetting(setting, value);
                 }
+                
+                // 页面时钟开关变化时更新子功能可见性
+                if (setting === 'pageClockEnabled') {
+                    updatePageClockSubFeaturesVisibility();
+                    if (!value) {
+                        saveSetting('pageClockTimedStart', false);
+                        var timedStartToggle = document.getElementById('pageClockTimedStart');
+                        if (timedStartToggle) {
+                            timedStartToggle.checked = false;
+                        }
+                        updatePageClockSubFeaturesVisibility();
+                    }
+                }
+                
+                // 定时开启开关变化时更新选项可见性
+                if (setting === 'pageClockTimedStart') {
+                    updatePageClockSubFeaturesVisibility();
+                }
             });
         });
         
@@ -422,6 +440,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveSetting(setting, value);
             });
         });
+        
+        // 定时开启时间输入框事件处理
+        var timedStartMinutes = document.getElementById('timedStartMinutes');
+        var timedStartSeconds = document.getElementById('timedStartSeconds');
+        
+        function validateTimedStartTime() {
+            var minutes = parseInt(timedStartMinutes.value) || 0;
+            var seconds = parseInt(timedStartSeconds.value) || 0;
+            
+            if (minutes < 0) minutes = 0;
+            if (seconds < 0) seconds = 0;
+            if (minutes > 59) minutes = 59;
+            if (seconds > 59) seconds = 59;
+            
+            if (minutes === 0 && seconds === 0) {
+                seconds = 1;
+            }
+            
+            timedStartMinutes.value = minutes;
+            timedStartSeconds.value = seconds;
+            
+            saveSetting('timedStartMinutes', minutes);
+            saveSetting('timedStartSeconds', seconds);
+        }
+        
+        if (timedStartMinutes) {
+            timedStartMinutes.addEventListener('input', function() {
+                var val = parseInt(this.value);
+                if (val > 59) this.value = 59;
+                if (val < 0) this.value = 0;
+            });
+            timedStartMinutes.addEventListener('change', validateTimedStartTime);
+        }
+        
+        if (timedStartSeconds) {
+            timedStartSeconds.addEventListener('input', function() {
+                var val = parseInt(this.value);
+                if (val > 59) this.value = 59;
+                if (val < 0) this.value = 0;
+            });
+            timedStartSeconds.addEventListener('change', validateTimedStartTime);
+        }
         
         document.querySelectorAll('.theme-option').forEach(function(option) {
             option.addEventListener('click', function() {
@@ -3747,6 +3807,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var pageClockEnabled = document.getElementById('pageClockEnabled');
         var pageClockSlider = pageClockEnabled ? pageClockEnabled.nextElementSibling : null;
         var pageClockHint = document.getElementById('pageClockDisabledHint');
+        var pageClockSubFeatures = document.getElementById('pageClockSubFeatures');
         
         if (pageClockEnabled) {
             if (hideUiEnabled) {
@@ -3758,6 +3819,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (pageClockHint) {
                     pageClockHint.style.display = 'none';
                 }
+                if (pageClockSubFeatures && pageClockEnabled.checked) {
+                    pageClockSubFeatures.style.display = 'block';
+                }
             } else {
                 pageClockEnabled.disabled = true;
                 pageClockEnabled.checked = false;
@@ -3768,8 +3832,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (pageClockHint) {
                     pageClockHint.style.display = 'block';
                 }
+                if (pageClockSubFeatures) {
+                    pageClockSubFeatures.style.display = 'none';
+                }
+                var timedStartToggle = document.getElementById('pageClockTimedStart');
+                var timedStartMinutesInput = document.getElementById('timedStartMinutes');
+                var timedStartSecondsInput = document.getElementById('timedStartSeconds');
+                var timedStartOptions = document.getElementById('timedStartOptions');
+                if (timedStartToggle) {
+                    timedStartToggle.checked = false;
+                }
+                if (timedStartMinutesInput) {
+                    timedStartMinutesInput.value = 5;
+                }
+                if (timedStartSecondsInput) {
+                    timedStartSecondsInput.value = 0;
+                }
+                if (timedStartOptions) {
+                    timedStartOptions.style.display = 'none';
+                }
                 saveSetting('pageClockEnabled', false);
+                saveSetting('pageClockTimedStart', false);
+                saveSetting('timedStartMinutes', 5);
+                saveSetting('timedStartSeconds', 0);
             }
+        }
+    }
+    
+    function updatePageClockSubFeaturesVisibility() {
+        var pageClockEnabled = document.getElementById('pageClockEnabled');
+        var pageClockSubFeatures = document.getElementById('pageClockSubFeatures');
+        var timedStartToggle = document.getElementById('pageClockTimedStart');
+        var timedStartOptions = document.getElementById('timedStartOptions');
+        
+        if (pageClockSubFeatures && pageClockEnabled) {
+            if (pageClockEnabled.checked && !pageClockEnabled.disabled) {
+                pageClockSubFeatures.style.display = 'block';
+            } else {
+                pageClockSubFeatures.style.display = 'none';
+            }
+        }
+        
+        if (timedStartOptions && timedStartToggle) {
+            timedStartOptions.style.display = timedStartToggle.checked ? 'block' : 'none';
         }
     }
     
@@ -4233,6 +4338,18 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('pageClockEnabled').checked = userProfile.pageClockEnabled;
         }
         
+        if (userProfile.pageClockTimedStart !== undefined) {
+            document.getElementById('pageClockTimedStart').checked = userProfile.pageClockTimedStart;
+        }
+        
+        if (userProfile.timedStartMinutes !== undefined) {
+            document.getElementById('timedStartMinutes').value = userProfile.timedStartMinutes;
+        }
+        
+        if (userProfile.timedStartSeconds !== undefined) {
+            document.getElementById('timedStartSeconds').value = userProfile.timedStartSeconds;
+        }
+        
         if (userProfile.guideEnabled !== undefined) {
             document.getElementById('guideEnabled').checked = userProfile.guideEnabled;
         }
@@ -4242,6 +4359,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         updatePageClockToggleState();
+        updatePageClockSubFeaturesVisibility();
         
         // 应用GPU加速设置
         applyGpuAcceleration();

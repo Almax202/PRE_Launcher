@@ -9091,6 +9091,128 @@ body.interface-hidden.page-clock-enabled .page-clock-back-btn {
     color: #333;
 }
 
+.settings-toggle-group {
+    margin-bottom: 10px;
+}
+
+.weather-click-target-select {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 0 0 10px 10px;
+    padding: 12px 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.select-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.select-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.select-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.select-option:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.select-option.active {
+    background: rgba(52, 152, 219, 0.15);
+    color: #3498db;
+}
+
+.select-option i:first-child {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.select-option span {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.select-option .check-icon {
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.select-option.active .check-icon {
+    opacity: 1;
+}
+
+body.dark-mode .settings-toggle-reverse span {
+    color: #e0e0e0;
+}
+
+body.dark-mode .weather-click-target-select {
+    background: rgba(255, 255, 255, 0.02);
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .select-label {
+    color: #999;
+}
+
+body.dark-mode .select-option {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ccc;
+}
+
+body.dark-mode .select-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .select-option.active {
+    background: rgba(52, 152, 219, 0.25);
+    color: #5dade2;
+}
+
+.weather-vpn-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: rgba(52, 152, 219, 0.08);
+    border-radius: 6px;
+    font-size: 11px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.weather-vpn-tip i {
+    font-size: 12px;
+    color: #3498db;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+body.dark-mode .weather-vpn-tip {
+    background: rgba(52, 152, 219, 0.15);
+    color: #aaa;
+}
+
+body.dark-mode .weather-vpn-tip i {
+    color: #5dade2;
+}
+
 .component-version-btn {
     width: 100%;
     display: flex;
@@ -9310,6 +9432,16 @@ body.interface-hidden.page-clock-enabled .page-clock-back-btn {
     font-style: italic;
     opacity: 0.95;
     letter-spacing: 1px;
+    display: inline;
+}
+
+.quote-content.typing::after {
+    content: '|';
+    display: inline-block;
+    margin-left: 2px;
+    animation: quoteBlink 0.8s infinite;
+    font-style: normal;
+    opacity: 0.8;
 }
 
 .quote-author {
@@ -9320,8 +9452,25 @@ body.interface-hidden.page-clock-enabled .page-clock-back-btn {
     letter-spacing: 2px;
 }
 
+.quote-author.typing::after {
+    content: '|';
+    display: inline-block;
+    margin-left: 2px;
+    animation: quoteBlink 0.8s infinite;
+    opacity: 0.8;
+}
+
 .quote-author::before {
     content: '—— ';
+}
+
+@keyframes quoteBlink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0;
+    }
 }
 
 @media (max-width: 768px) {

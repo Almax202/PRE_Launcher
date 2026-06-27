@@ -1589,19 +1589,39 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            <div class="two-factor-item">
-                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                            <div class="two-factor-item" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                                <div style="display: flex; align-items: flex-start; gap: 12px;">
                                     <i class="fas fa-clock" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
-                                    <div>
+                                    <div style="flex: 1;">
                                         <h4 style="margin: 0;">页面时钟</h4>
                                         <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，隐藏UI时将在屏幕上显示当前时间、日期和天气信息</p>
                                         <p style="margin: 5px 0 0; font-size: 12px; color: #999;" id="pageClockDisabledHint">请先启用"隐藏UI"功能</p>
                                     </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="pageClockEnabled" disabled>
+                                        <span class="toggle-slider disabled"></span>
+                                    </label>
                                 </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="pageClockEnabled" disabled>
-                                    <span class="toggle-slider disabled"></span>
-                                </label>
+                                <div id="pageClockSubFeatures" class="page-clock-sub-features" style="display: none;">
+                                    <div class="timed-start-item">
+                                        <p>定时开启</p>
+                                        <label class="toggle-switch" style="transform: scale(0.85);">
+                                            <input type="checkbox" id="pageClockTimedStart">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div id="timedStartOptions" class="timed-start-options" style="display: none;">
+                                        <div class="timed-start-option-row">
+                                            <p>在登录页静置一段时间后自动启用页面时钟</p>
+                                            <div class="timed-start-time-inputs">
+                                                <input type="number" id="timedStartMinutes" min="0" max="59" value="5">
+                                                <span>分</span>
+                                                <input type="number" id="timedStartSeconds" min="0" max="59" value="0">
+                                                <span>秒</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="two-factor-item">
                                 <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">

@@ -1848,6 +1848,10 @@
                     if (!pageClockInterval) {
                         pageClockInterval = setInterval(updateClockDisplay, 1000);
                     }
+                    
+                    if (clockSettings.showQuote) {
+                        fetchQuoteData();
+                    }
                 }
                 
                 var hintBar = document.getElementById('hideUiHintBar');
@@ -1899,11 +1903,14 @@
                 dateFormat: 'yyyy/mm/dd',
                 fontSize: 100,
                 weatherClickable: false,
+                weatherClickTarget: 'msn',
                 sidebarMode: false
             };
             
             var quoteCache = null;
             var quoteCacheTime = 0;
+            var typewriterTimer = null;
+            var typewriterAuthorTimer = null;
             
             function fetchQuoteData(forceRefresh) {
                 var quoteLoading = document.getElementById('quoteLoading');
@@ -1959,10 +1966,54 @@
                 
                 if (!quoteContentEl || !quoteAuthorEl || !quoteEl) return;
                 
+                if (typewriterTimer) {
+                    clearTimeout(typewriterTimer);
+                    typewriterTimer = null;
+                }
+                if (typewriterAuthorTimer) {
+                    clearTimeout(typewriterAuthorTimer);
+                    typewriterAuthorTimer = null;
+                }
+                
+                quoteContentEl.classList.remove('typing');
+                quoteAuthorEl.classList.remove('typing');
+                
                 if (data && data.content) {
-                    quoteContentEl.textContent = data.content;
-                    quoteAuthorEl.textContent = data.author || '佚名';
                     quoteEl.style.display = 'block';
+                    
+                    var content = data.content;
+                    var author = data.author || '佚名';
+                    var contentIndex = 0;
+                    
+                    quoteContentEl.textContent = '';
+                    quoteAuthorEl.textContent = '';
+                    quoteContentEl.classList.add('typing');
+                    
+                    function typeNextChar() {
+                        if (contentIndex < content.length) {
+                            quoteContentEl.textContent += content.charAt(contentIndex);
+                            contentIndex++;
+                            typewriterTimer = setTimeout(typeNextChar, 80);
+                        } else {
+                            typewriterTimer = null;
+                            quoteContentEl.classList.remove('typing');
+                            var authorIndex = 0;
+                            quoteAuthorEl.classList.add('typing');
+                            
+                            function typeNextAuthorChar() {
+                                if (authorIndex < author.length) {
+                                    quoteAuthorEl.textContent += author.charAt(authorIndex);
+                                    authorIndex++;
+                                    typewriterAuthorTimer = setTimeout(typeNextAuthorChar, 60);
+                                } else {
+                                    typewriterAuthorTimer = null;
+                                    quoteAuthorEl.classList.remove('typing');
+                                }
+                            }
+                            typeNextAuthorChar();
+                        }
+                    }
+                    typeNextChar();
                 } else {
                     quoteContentEl.textContent = '——';
                     quoteAuthorEl.textContent = '';
@@ -2653,10 +2704,6 @@
                 if (clockSettings.showWeather) {
                     updateWeatherDisplay();
                 }
-                
-                if (clockSettings.showQuote) {
-                    fetchQuoteData();
-                }
             }
             
             function initWeatherClickEvent() {
@@ -2671,8 +2718,23 @@
                 }
             }
             
-            function onWeatherClick() {
-                window.open('https://www.msn.com/zh-cn/weather', '_blank');
+            function onWeatherClick(e) {
+                if (e && e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                if (clockSettings.weatherClickTarget === 'page') {
+                    if (typeof showWeatherModal === 'function') {
+                        showWeatherModal();
+                    }
+                } else if (clockSettings.weatherClickTarget === 'yahoo') {
+                    window.open('https://weather.yahoo.com/', '_blank');
+                } else if (clockSettings.weatherClickTarget === 'accuweather') {
+                    window.open('https://www.accuweather.com/', '_blank');
+                } else if (clockSettings.weatherClickTarget === 'windy') {
+                    window.open('https://www.windy.com/', '_blank');
+                } else {
+                    window.open('https://www.msn.com/zh-cn/weather', '_blank');
+                }
             }
             
             function initClockSettings() {
@@ -2766,12 +2828,42 @@
                 }
                 
                 var weatherClickableCheckbox = document.getElementById('clockWeatherClickable');
+                var weatherClickTargetSelect = document.getElementById('weatherClickTargetSelect');
                 if (weatherClickableCheckbox) {
                     weatherClickableCheckbox.checked = clockSettings.weatherClickable;
+                    
+                    if (weatherClickTargetSelect) {
+                        weatherClickTargetSelect.style.display = clockSettings.weatherClickable ? 'block' : 'none';
+                    }
+                    
                     weatherClickableCheckbox.addEventListener('change', function() {
                         clockSettings.weatherClickable = this.checked;
+                        if (weatherClickTargetSelect) {
+                            weatherClickTargetSelect.style.display = this.checked ? 'block' : 'none';
+                        }
                         initWeatherClickEvent();
                         saveClockSettings();
+                    });
+                }
+                
+                var weatherClickTargetOptions = document.querySelectorAll('#weatherClickTargetSelect .select-option');
+                if (weatherClickTargetOptions.length > 0) {
+                    weatherClickTargetOptions.forEach(function(option) {
+                        var target = option.getAttribute('data-target');
+                        if (target === clockSettings.weatherClickTarget) {
+                            option.classList.add('active');
+                        } else {
+                            option.classList.remove('active');
+                        }
+                        
+                        option.addEventListener('click', function() {
+                            weatherClickTargetOptions.forEach(function(opt) {
+                                opt.classList.remove('active');
+                            });
+                            option.classList.add('active');
+                            clockSettings.weatherClickTarget = target;
+                            saveClockSettings();
+                        });
                     });
                 }
                 
@@ -3010,6 +3102,36 @@
                 return false;
             }
             
+            function isPageClockTimedStartEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.pageClockTimedStart === true;
+                    }
+                }
+                return false;
+            }
+            
+            function getTimedStartDuration() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        var minutes = user.userProfile.timedStartMinutes !== undefined ? user.userProfile.timedStartMinutes : 5;
+                        var seconds = user.userProfile.timedStartSeconds !== undefined ? user.userProfile.timedStartSeconds : 0;
+                        return minutes * 60 + seconds;
+                    }
+                }
+                return 300;
+            }
+            
             function updateEnhancedFeatureButtons() {
                 var guideEnabled = isGuideEnabled();
                 var uiScaleEnabled = isUiScaleEnabled();
@@ -3111,6 +3233,61 @@
             
             // 更新增强功能按钮显示状态
             updateEnhancedFeatureButtons();
+            
+            var idleTimer = null;
+            var idleDuration = 300;
+            var isIdleActive = false;
+            
+            function resetIdleTimer() {
+                if (document.body.classList.contains('interface-hidden')) {
+                    return;
+                }
+                
+                if (isIdleActive) {
+                    isIdleActive = false;
+                    clearTimeout(idleTimer);
+                    return;
+                }
+                
+                clearTimeout(idleTimer);
+                
+                if (!isPageClockTimedStartEnabled()) {
+                    return;
+                }
+                
+                if (!isPageClockEnabled()) {
+                    return;
+                }
+                
+                if (!isHideUiEnabled()) {
+                    return;
+                }
+                
+                idleDuration = getTimedStartDuration();
+                if (idleDuration <= 0) {
+                    return;
+                }
+                
+                idleTimer = setTimeout(function() {
+                    if (!document.body.classList.contains('interface-hidden')) {
+                        isIdleActive = true;
+                        document.body.classList.add('interface-hidden');
+                        if (isPageClockEnabled() && clockSettings.globalEnabled) {
+                            showPageClock();
+                        }
+                    }
+                }, idleDuration * 1000);
+            }
+            
+            function initIdleDetection() {
+                var events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+                events.forEach(function(event) {
+                    document.addEventListener(event, resetIdleTimer, true);
+                });
+                resetIdleTimer();
+            }
+            
+            initIdleDetection();
             
             // 用户协议勾选框处理
             const loginAgreement = document.getElementById('loginAgreement');
@@ -3713,10 +3890,46 @@
                             <span>显示天气</span>
                             <input type="checkbox" id="clockShowWeather" checked>
                         </label>
-                        <label class="settings-toggle-reverse">
-                            <span>跳转到 MSN Weather</span>
-                            <input type="checkbox" id="clockWeatherClickable">
-                        </label>
+                        <div class="settings-toggle-group">
+                            <label class="settings-toggle-reverse" style="margin-bottom: 0;">
+                                <span>点击天气后跳转到指定程序</span>
+                                <input type="checkbox" id="clockWeatherClickable">
+                            </label>
+                            <div class="weather-click-target-select" id="weatherClickTargetSelect" style="display: none;">
+                                <div class="select-label">跳转目标</div>
+                                <div class="select-options">
+                                    <div class="select-option active" data-target="msn">
+                                        <i class="fab fa-microsoft"></i>
+                                        <span>MSN Weather</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+                                    <div class="select-option" data-target="yahoo">
+                                        <i class="fab fa-yahoo"></i>
+                                        <span>Yahoo Weather</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+                                    <div class="select-option" data-target="accuweather">
+                                        <i class="fas fa-cloud-sun-rain"></i>
+                                        <span>AccuWeather</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+                                    <div class="select-option" data-target="windy">
+                                        <i class="fas fa-wind"></i>
+                                        <span>Windy.com</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+                                    <div class="select-option" data-target="page">
+                                        <i class="fas fa-desktop"></i>
+                                        <span>页面天气</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="weather-vpn-tip">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>如果无法打开对应页面，请使用VPN改善网络环境</span>
+                                </div>
+                            </div>
+                        </div>
                         <label class="settings-toggle-reverse">
                             <span>显示农历</span>
                             <input type="checkbox" id="clockShowLunar">
@@ -13322,9 +13535,18 @@
                 }, 300);
             }
             
-            function selectCity(cityName, lat, lon) {
+            function selectCity(cityName, lat, lon, isAutoLocate) {
                 currentCity = { name: cityName, lat: lat, lon: lon };
                 saveCity(currentCity);
+                
+                if (!isAutoLocate) {
+                    localStorage.setItem('weatherAutoLocate', 'false');
+                    var autoLocateToggle = document.getElementById('weatherAutoLocateToggle');
+                    if (autoLocateToggle) {
+                        autoLocateToggle.checked = false;
+                    }
+                }
+                
                 closeCityModal();
                 weatherDataCache = null;
                 fetchWeatherData();
@@ -13460,13 +13682,13 @@
                                     if (city.admin1 && city.admin1 !== city.name) {
                                         cityName = city.admin1 + ' · ' + city.name;
                                     }
-                                    selectCity(cityName, lat, lon);
+                                    selectCity(cityName, lat, lon, true);
                                 } else {
-                                    selectCity('当前位置', lat, lon);
+                                    selectCity('当前位置', lat, lon, true);
                                 }
                             })
                             .catch(function() {
-                                selectCity('当前位置', lat, lon);
+                                selectCity('当前位置', lat, lon, true);
                             })
                             .finally(function() {
                                 if (locateBtn) locateBtn.classList.remove('loading');
