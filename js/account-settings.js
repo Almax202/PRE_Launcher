@@ -981,11 +981,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function disableAllExperimentalFeatures() {
         localStorage.setItem('experimentalFeaturesDisabled', 'true');
         
-        var stickyCheckbox = document.getElementById('enableStickyNotes');
-        if (stickyCheckbox) {
-            stickyCheckbox.checked = false;
-            if (typeof toggleStickyNotes === 'function') {
-                toggleStickyNotes();
+        var weatherCheckbox = document.getElementById('enableWeatherFeature');
+        if (weatherCheckbox) {
+            weatherCheckbox.checked = false;
+            if (typeof toggleWeatherFeature === 'function') {
+                toggleWeatherFeature();
             }
         }
         
@@ -1004,6 +1004,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.classList.remove('experimental-feature-disabled');
             }
         });
+        
+        var emptyState = document.getElementById('experimentalEmptyState');
+        if (emptyState) {
+            if (featureItems.length === 0) {
+                emptyState.style.display = 'flex';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
         
         var disableBtn = document.getElementById('disableExperimentalBtn');
         if (disableBtn) {
@@ -7881,6 +7890,12 @@ document.addEventListener('DOMContentLoaded', function() {
         stickyNotesToggle.checked = isStickyNotesEnabled;
     }
     
+    var weatherFeatureToggle = document.getElementById('enableWeatherFeature');
+    if (weatherFeatureToggle) {
+        var isWeatherFeatureEnabled = localStorage.getItem('weatherFeatureEnabled') === 'true';
+        weatherFeatureToggle.checked = isWeatherFeatureEnabled;
+    }
+    
 });
 
 function toggleStickyNotes() {
@@ -7891,6 +7906,21 @@ function toggleStickyNotes() {
         showAlert('便签功能已启用，在登录页更多功能弹窗中可使用');
     } else {
         showAlert('便签功能已关闭');
+    }
+    
+    if (typeof parent.updateEnhancedFeatureButtons === 'function') {
+        parent.updateEnhancedFeatureButtons();
+    }
+}
+
+function toggleWeatherFeature() {
+    var enabled = document.getElementById('enableWeatherFeature').checked;
+    localStorage.setItem('weatherFeatureEnabled', enabled ? 'true' : 'false');
+    
+    if (enabled) {
+        showAlert('天气功能已启用，在登录页更多功能弹窗中可使用');
+    } else {
+        showAlert('天气功能已关闭');
     }
     
     if (typeof parent.updateEnhancedFeatureButtons === 'function') {

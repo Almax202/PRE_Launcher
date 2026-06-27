@@ -311,19 +311,26 @@
                         </div>
                         <div class="card-content">
                             <div class="two-factor-item">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-sticky-note" style="color: #ffc107; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;">便签</h4>
-                                            <p style="margin: 0; font-size: 13px; color: #666;">启用后可在更多功能弹窗中使用便签功能</p>
-                                        </div>
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-cloud-sun" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">天气</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后可在更多功能弹窗中查看详细天气信息</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" id="enableStickyNotes" onchange="toggleStickyNotes()">
+                                    <input type="checkbox" id="enableWeatherFeature" onchange="toggleWeatherFeature()">
                                     <span class="toggle-slider"></span>
                                 </label>
+                            </div>
+                            <div class="experimental-empty-state" id="experimentalEmptyState" style="display: none;">
+                                <div class="empty-icon">
+                                    <i class="fas fa-inbox"></i>
+                                </div>
+                                <div class="empty-text">
+                                    <h4>暂无实验性功能</h4>
+                                    <p>当前没有新发布的实验性预览内容，请等待后续的功能更新，敬请期待</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1613,7 +1620,7 @@
                                 <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
                                     <i class="fas fa-compass" style="color: #e74c3c; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
-                                        <h4 style="margin: 0;">系统引导</h4>
+                                        <h4 style="margin: 0;">查看引导</h4>
                                         <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"查看引导"按钮</p>
                                     </div>
                                 </div>
@@ -1626,12 +1633,25 @@
                                 <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
                                     <i class="fas fa-search" style="color: #9b59b6; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
-                                        <h4 style="margin: 0;">UI调整</h4>
+                                        <h4 style="margin: 0;">调整UI比例</h4>
                                         <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"调整UI比例"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="uiScaleEnabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-sticky-note" style="color: #ffc107; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">便签</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"便签"按钮</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableStickyNotes" onchange="toggleStickyNotes()">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>

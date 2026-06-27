@@ -6825,6 +6825,57 @@ body.transparent-mode #experimentalWarningModal {
     cursor: not-allowed;
 }
 
+.experimental-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.experimental-empty-state .empty-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.1) 0%, rgba(230, 126, 138, 0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.experimental-empty-state .empty-icon i {
+    font-size: 28px;
+    color: #d45d79;
+}
+
+.experimental-empty-state .empty-text h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+}
+
+.experimental-empty-state .empty-text p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+}
+
+body.dark-mode .experimental-empty-state .empty-icon {
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.2) 0%, rgba(230, 126, 138, 0.2) 100%);
+}
+
+body.dark-mode .experimental-empty-state .empty-text h4 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .experimental-empty-state .empty-text p {
+    color: #999;
+}
+
 body.transparent-mode .alert-message {
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.7);
