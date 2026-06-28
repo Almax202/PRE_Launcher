@@ -1027,6 +1027,47 @@
                     color: rgba(255, 255, 255, 0.9) !important;
                 }
                 
+                /* 透明主题 - 全屏天气弹窗下拉菜单 */
+                body.transparent-mode .weather-dropdown-menu {
+                    background: rgba(255, 255, 255, 0.12) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-item {
+                    color: rgba(255, 255, 255, 0.9) !important;
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-item:hover {
+                    background: rgba(255, 255, 255, 0.15) !important;
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-item i:first-child {
+                    color: rgba(255, 255, 255, 0.8) !important;
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-divider {
+                    background: rgba(255, 255, 255, 0.15) !important;
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-arrow {
+                    color: rgba(255, 255, 255, 0.6) !important;
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-value {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-toggle-slider {
+                    background-color: rgba(255, 255, 255, 0.3) !important;
+                }
+                
+                body.transparent-mode .weather-dropdown-menu .dropdown-toggle input:checked + .dropdown-toggle-slider {
+                    background-color: rgba(102, 126, 234, 0.8) !important;
+                }
+                
                 /* 透明主题 - 组件调整弹窗 */
                 body.transparent-mode .page-clock-settings-content {
                     background: rgba(255, 255, 255, 0.08) !important;
@@ -2816,6 +2857,25 @@
                 }
                 
                 var showWeatherCheckbox = document.getElementById('clockShowWeather');
+                var weatherClickableCheckbox = document.getElementById('clockWeatherClickable');
+                var weatherClickTargetSelect = document.getElementById('weatherClickTargetSelect');
+                var weatherClickableLabel = weatherClickableCheckbox ? weatherClickableCheckbox.closest('.settings-toggle-reverse') : null;
+                
+                function updateWeatherClickableState() {
+                    if (!weatherClickableCheckbox || !showWeatherCheckbox) return;
+                    
+                    var weatherEnabled = showWeatherCheckbox.checked;
+                    weatherClickableCheckbox.disabled = !weatherEnabled;
+                    
+                    if (weatherClickableLabel) {
+                        weatherClickableLabel.classList.toggle('disabled', !weatherEnabled);
+                    }
+                    
+                    if (weatherClickTargetSelect) {
+                        weatherClickTargetSelect.classList.toggle('disabled', !weatherEnabled);
+                    }
+                }
+                
                 if (showWeatherCheckbox) {
                     showWeatherCheckbox.addEventListener('change', function() {
                         clockSettings.showWeather = this.checked;
@@ -2823,12 +2883,23 @@
                         if (weatherEl) {
                             weatherEl.style.display = this.checked ? 'flex' : 'none';
                         }
+                        
+                        if (!this.checked) {
+                            clockSettings.weatherClickable = false;
+                            if (weatherClickableCheckbox) {
+                                weatherClickableCheckbox.checked = false;
+                            }
+                            if (weatherClickTargetSelect) {
+                                weatherClickTargetSelect.style.display = 'none';
+                            }
+                            initWeatherClickEvent();
+                        }
+                        
+                        updateWeatherClickableState();
                         saveClockSettings();
                     });
                 }
                 
-                var weatherClickableCheckbox = document.getElementById('clockWeatherClickable');
-                var weatherClickTargetSelect = document.getElementById('weatherClickTargetSelect');
                 if (weatherClickableCheckbox) {
                     weatherClickableCheckbox.checked = clockSettings.weatherClickable;
                     
@@ -2845,6 +2916,8 @@
                         saveClockSettings();
                     });
                 }
+                
+                updateWeatherClickableState();
                 
                 var weatherClickTargetOptions = document.querySelectorAll('#weatherClickTargetSelect .select-option');
                 if (weatherClickTargetOptions.length > 0) {
@@ -2955,7 +3028,7 @@
                 var settingsBody = document.getElementById('clockSettingsBody');
                 if (!settingsBody) return;
                 
-                var allButtons = settingsBody.querySelectorAll('button');
+                var allButtons = settingsBody.querySelectorAll('button:not(.component-version-btn)');
                 var allCheckboxes = settingsBody.querySelectorAll('input[type="checkbox"]');
                 var allSliders = settingsBody.querySelectorAll('input[type="range"]');
                 
@@ -3238,6 +3311,35 @@
             var idleDuration = 300;
             var isIdleActive = false;
             
+            function hasOpenModal() {
+                var modalSelectors = [
+                    '.custom-alert[style*="display: flex"]',
+                    '.custom-alert.show',
+                    '.custom-confirm-modal[style*="display: flex"]',
+                    '.custom-confirm-modal.show',
+                    '.custom-fullscreen-modal[style*="display: flex"]',
+                    '.custom-fullscreen-modal.show',
+                    '.custom-modal[style*="display: flex"]',
+                    '.custom-modal.show',
+                    '.page-clock-settings-modal[style*="display: flex"]',
+                    '.page-clock-settings-modal.show',
+                    '.page-clock-weather-modal[style*="display: flex"]',
+                    '.page-clock-weather-modal.show'
+                ];
+                
+                for (var i = 0; i < modalSelectors.length; i++) {
+                    var modal = document.querySelector(modalSelectors[i]);
+                    if (modal) {
+                        var computedStyle = window.getComputedStyle(modal);
+                        if (computedStyle.display !== 'none' && computedStyle.opacity !== '0') {
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+            
             function resetIdleTimer() {
                 if (document.body.classList.contains('interface-hidden')) {
                     return;
@@ -3263,13 +3365,17 @@
                     return;
                 }
                 
+                if (hasOpenModal()) {
+                    return;
+                }
+                
                 idleDuration = getTimedStartDuration();
                 if (idleDuration <= 0) {
                     return;
                 }
                 
                 idleTimer = setTimeout(function() {
-                    if (!document.body.classList.contains('interface-hidden')) {
+                    if (!document.body.classList.contains('interface-hidden') && !hasOpenModal()) {
                         isIdleActive = true;
                         document.body.classList.add('interface-hidden');
                         if (isPageClockEnabled() && clockSettings.globalEnabled) {
@@ -3874,9 +3980,9 @@
             <div class="page-clock-settings-body" id="clockSettingsBody">
                 <div class="settings-column single-column">
                     <div class="settings-section">
-                        <h4>时钟位置</h4>
+                        <h4>调整时钟</h4>
                         <div class="position-options-grid">
-                            <button class="position-btn" id="clockDragBtn">调整位置</button>
+                            <button class="position-btn" id="clockDragBtn">点击调整</button>
                         </div>
                     </div>
                     
@@ -5178,6 +5284,12 @@
                             <i class="fas fa-play-circle"></i>
                             <span>演示模式<ul>Demo Mode</ul></span>
                         </div>
+                    </div>
+                    <div class="sidebar-footer">
+                        <button class="mark-all-read-btn" id="markAllVersionReadBtn">
+                            <i class="fas fa-check-double"></i>
+                            <span>一键已读</span>
+                        </button>
                     </div>
                 </div>
                 <div class="terms-main">
@@ -8335,6 +8447,26 @@
                 versionHistoryModal.style.display = 'none';
             }, 300);
         });
+        
+        // 一键已读按钮功能
+        var markAllVersionReadBtn = document.getElementById('markAllVersionReadBtn');
+        if (markAllVersionReadBtn) {
+            markAllVersionReadBtn.addEventListener('click', function() {
+                if (typeof showConfirmModal === 'function') {
+                    showConfirmModal('确定要已读现有的全部版本更新？', function() {
+                        if (typeof markAllVersionsAsRead === 'function') {
+                            markAllVersionsAsRead();
+                            showAlert('所有版本更新已标记为已读');
+                        }
+                    });
+                } else {
+                    if (typeof markAllVersionsAsRead === 'function') {
+                        markAllVersionsAsRead();
+                        showAlert('所有版本更新已标记为已读');
+                    }
+                }
+            });
+        }
         
         // 快速返回顶部按钮功能
         document.getElementById('backToTopBtn').addEventListener('click', function() {
@@ -13121,9 +13253,15 @@
                 var now = new Date();
                 var weatherTypes = [
                     { code: 0, desc: '晴', icon: 'fa-sun', color: '#ffb74d' },
-                    { code: 1, desc: '多云', icon: 'fa-cloud-sun', color: '#90caf9' },
-                    { code: 2, desc: '阴', icon: 'fa-cloud', color: '#9e9e9e' },
-                    { code: 3, desc: '小雨', icon: 'fa-cloud-rain', color: '#64b5f6' },
+                    { code: 1, desc: '晴间多云', icon: 'fa-cloud-sun', color: '#90caf9' },
+                    { code: 2, desc: '多云', icon: 'fa-cloud', color: '#9e9e9e' },
+                    { code: 3, desc: '阴', icon: 'fa-cloud', color: '#757575' },
+                    { code: 51, desc: '小毛毛雨', icon: 'fa-cloud-rain', color: '#64b5f6' },
+                    { code: 61, desc: '小雨', icon: 'fa-cloud-showers-heavy', color: '#42a5f5' },
+                    { code: 63, desc: '中雨', icon: 'fa-cloud-showers-heavy', color: '#2196f3' },
+                    { code: 71, desc: '小雪', icon: 'fa-snowflake', color: '#90caf9' },
+                    { code: 80, desc: '小阵雨', icon: 'fa-cloud-showers-heavy', color: '#42a5f5' },
+                    { code: 95, desc: '雷暴', icon: 'fa-bolt', color: '#ffd54f' },
                     { code: 45, desc: '雾', icon: 'fa-smog', color: '#bdbdbd' }
                 ];
                 
@@ -13207,24 +13345,31 @@
                     0: 'fa-sun',
                     1: 'fa-cloud-sun',
                     2: 'fa-cloud',
-                    3: 'fa-cloud-rain',
+                    3: 'fa-cloud',
                     45: 'fa-smog',
                     48: 'fa-smog',
                     51: 'fa-cloud-rain',
                     53: 'fa-cloud-rain',
                     55: 'fa-cloud-rain',
+                    56: 'fa-cloud-rain',
+                    57: 'fa-cloud-rain',
                     61: 'fa-cloud-showers-heavy',
                     63: 'fa-cloud-showers-heavy',
                     65: 'fa-cloud-showers-heavy',
+                    66: 'fa-cloud-showers-heavy',
+                    67: 'fa-cloud-showers-heavy',
                     71: 'fa-snowflake',
                     73: 'fa-snowflake',
                     75: 'fa-snowflake',
+                    77: 'fa-snowflake',
                     80: 'fa-cloud-showers-heavy',
                     81: 'fa-cloud-showers-heavy',
                     82: 'fa-cloud-showers-heavy',
-                    95: 'fa-cloud-bolt',
-                    96: 'fa-cloud-bolt',
-                    99: 'fa-cloud-bolt'
+                    85: 'fa-snowflake',
+                    86: 'fa-snowflake',
+                    95: 'fa-bolt',
+                    96: 'fa-bolt',
+                    99: 'fa-bolt'
                 };
                 return iconMap[code] || 'fa-cloud';
             }
@@ -13240,15 +13385,22 @@
                     51: '小毛毛雨',
                     53: '毛毛雨',
                     55: '大毛毛雨',
+                    56: '冻毛毛雨',
+                    57: '强冻毛毛雨',
                     61: '小雨',
                     63: '中雨',
                     65: '大雨',
+                    66: '冻雨',
+                    67: '强冻雨',
                     71: '小雪',
                     73: '中雪',
                     75: '大雪',
+                    77: '雪粒',
                     80: '小阵雨',
                     81: '阵雨',
                     82: '强阵雨',
+                    85: '小阵雪',
+                    86: '大阵雪',
                     95: '雷暴',
                     96: '雷暴伴小冰雹',
                     99: '雷暴伴大冰雹'

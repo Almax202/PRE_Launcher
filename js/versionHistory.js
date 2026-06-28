@@ -225,6 +225,22 @@ function getUnviewedVersionCount() {
     return count;
 }
 
+// 一键标记所有版本为已读
+function markAllVersionsAsRead() {
+    const allVersionIds = [];
+    Object.keys(versionHistoryData).forEach(function(sectionId) {
+        versionHistoryData[sectionId].forEach(function(version) {
+            allVersionIds.push(generateVersionId(version));
+        });
+    });
+    localStorage.setItem(VERSION_STORAGE_KEYS.VIEWED_VERSION_IDS, JSON.stringify(allVersionIds));
+    updateLastViewedVersionDate();
+    updateVersionNotificationDot();
+    if (typeof renderCurrentVersionContent === 'function') {
+        renderCurrentVersionContent();
+    }
+}
+
 // 更新版本更新红点显示
 function updateVersionNotificationDot() {
     const dot = document.getElementById('versionNotificationDot');
@@ -267,6 +283,30 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.6.4.6 (b8)",
+            date: "2026-06-28",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 一键已读：版本更新记录和开发者公告弹窗侧边栏底部新增\"一键已读\"按钮，点击后自动标记所有内容为已读，无需逐个查看",
+                "优化改进",
+                "- 暗色模式适配：天气设置弹窗和组件调整弹窗完整适配暗色模式，所有元素样式与深色主题统一",
+                "- 透明主题适配：天气下拉菜单、版本更新/公告侧边栏子按钮、页面时钟设置按钮等改为透明毛玻璃样式，适配透明主题",
+                "- 便签菜单样式统一：便签多级菜单样式改为与天气下拉菜单一致，圆角、阴影、内边距等风格统一",
+                "- 便签菜单透明度：透明主题下便签多级菜单透明度调整为微透明，提高可读性同时保留毛玻璃质感",
+                "- 页面时钟定时优化：弹窗打开时不触发页面时钟自动定时功能，避免停留弹窗过久自动进入时钟模式",
+                "- 天气功能联动：关闭显示天气时自动关闭并禁用\"点击天气后跳转到指定程序\"功能，开启天气后恢复可用",
+                "- 组件版本条目：保持隐藏UI模式下组件版本条目始终可见可点击，不受全局禁用影响",
+                "- 组件调整滚动条：组件调整弹窗滚动条改为自定义样式，支持亮色、暗色、透明三种主题",
+                "- 文字调整：组件调整弹窗中\"时钟位置\"改为\"调整时钟\"，\"调整位置\"按钮改为\"点击调整\"",
+                "修复问题",
+                "- 修复组件调整弹窗滚动时开关按钮溢出圆角边界的问题",
+                "- 修复部分天气类型（如雷暴）图标不显示的问题，补充缺失的天气代码图标映射"
+            ]
+        },
+        {
             version: "RC 2.6.4.5 (b8)",
             date: "2026-06-27",
             tag: "normal",
@@ -292,6 +332,7 @@ const versionHistoryData = {
             tagText: "重要更新",
             images: ["./images/2644.png", "./images/2644_2.png",],
             features: [
+                "(以下的更新内容为\"天气\"组件的新实验性功能，不建议在生产环境中使用)",
                 "新增功能",
                 "- 天气组件：实验性功能中新增天气组件，支持实时天气、24小时预报、7天预报等功能，数据来源为Open-Meteo API",
                 "- 城市切换：天气弹窗支持切换城市，内置全国主要城市数据库，支持搜索定位",

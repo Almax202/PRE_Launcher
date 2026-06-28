@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.6.4.5 (b8)",
+    login: "RC 2.6.4.6 (b8)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.0 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260627.2645.b8.98",
+    launcher: "20260628.2646.b8.99",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -41,9 +41,9 @@ const versionInfo = {
             status: "停用优化中"
         },
         transparent: {
-            version: "RC 1.2.6",
+            version: "RC 1.2.7",
             releaseDate: "2026-06-06",
-            updateDate: "2026-06-27",
+            updateDate: "2026-06-28",
             status: "公开正式版"
         }
     },
@@ -54,9 +54,9 @@ const versionInfo = {
             icon: "fas fa-sticky-note",
             iconBg: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
             iconColor: "#ff8c42",
-            version: "RC 1.1.3",
+            version: "RC 1.1.4",
             releaseDate: "2026-06-20",
-            updateDate: "2026-06-27",
+            updateDate: "2026-06-28",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -74,9 +74,9 @@ const versionInfo = {
             icon: "fas fa-clock",
             iconBg: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
             iconColor: "#4ecdc4",
-            version: "RC 1.1.5",
+            version: "RC 1.1.6",
             releaseDate: "2026-06-14",
-            updateDate: "2026-06-27",
+            updateDate: "2026-06-28",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -94,9 +94,9 @@ const versionInfo = {
             icon: "fas fa-cloud-sun",
             iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             iconColor: "#ffffff",
-            version: "Public Beta 0.1.0.1",
+            version: "Public Beta 0.1.0.2",
             releaseDate: "2026-06-27",
-            updateDate: "2026-06-27",
+            updateDate: "2026-06-28",
             status: "公开测试版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -119,8 +119,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-06-27",
-    patchDate: "2026-06-27",
+    buildDate: "2026-06-28",
+    patchDate: "2026-06-28",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""

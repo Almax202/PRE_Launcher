@@ -104,6 +104,24 @@ function getUnviewedAnnouncementCount() {
     return count;
 }
 
+// 一键标记所有公告为已读
+function markAllAnnouncementsAsRead() {
+    const allAnnouncementIds = [];
+    ['importantAnnouncements', 'normalAnnouncements', 'devLogs'].forEach(function(category) {
+        if (announcementData[category] && announcementData[category].length > 0) {
+            announcementData[category].forEach(function(announcement) {
+                allAnnouncementIds.push(announcement.id);
+            });
+        }
+    });
+    localStorage.setItem(STORAGE_KEYS.VIEWED_ANNOUNCEMENT_IDS, JSON.stringify(allAnnouncementIds));
+    updateLastViewedAnnouncementDate();
+    updateAnnouncementNotificationDot();
+    if (typeof refreshAnnouncementList === 'function') {
+        refreshAnnouncementList();
+    }
+}
+
 // 更新公告红点显示
 function updateAnnouncementNotificationDot() {
     const dot = document.getElementById('announcementNotificationDot');
@@ -344,6 +362,38 @@ const announcementData = {
     ],
     // 开发日志
     devLogs: [
+        {
+            id: "devlog-20260628",
+            title: "RC 2.6.4.6 开发日志",
+            date: "2026-06-28",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.6.4.6 版本更新，本次更新主要带来了主题适配优化、一键已读功能和多项体验改进！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 一键已读：版本更新记录和开发者公告弹窗侧边栏底部新增\"一键已读\"按钮，点击后自动标记所有内容为已读，无需逐个查看，点击前会弹出确认弹窗防止误触",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 暗色模式适配：天气设置弹窗和组件调整弹窗完整适配暗色模式，所有元素样式与深色主题统一，包括按钮、开关、文字、滚动条等",
+                "• 透明主题适配：天气下拉菜单、版本更新/公告侧边栏子按钮、页面时钟设置按钮等改为透明毛玻璃样式，完美适配透明主题",
+                "• 便签菜单样式统一：便签多级菜单样式改为与天气下拉菜单一致，圆角、阴影、内边距等风格统一，视觉更协调",
+                "• 便签菜单透明度：透明主题下便签多级菜单透明度调整为微透明，提高可读性同时保留毛玻璃质感",
+                "• 页面时钟定时优化：弹窗打开时不触发页面时钟自动定时功能，避免停留弹窗过久自动进入时钟模式",
+                "• 天气功能联动：关闭显示天气时自动关闭并禁用\"点击天气后跳转到指定程序\"功能，开启天气后恢复可用，逻辑更合理",
+                "• 组件版本条目：保持隐藏UI模式下组件版本条目始终可见可点击，不受全局禁用影响，方便随时查看组件信息",
+                "• 组件调整滚动条：组件调整弹窗滚动条改为自定义样式，支持亮色、暗色、透明三种主题，与整体风格统一",
+                "• 文字调整：组件调整弹窗中\"时钟位置\"改为\"调整时钟\"，\"调整位置\"按钮改为\"点击调整\"，表述更准确",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复组件调整弹窗滚动时开关按钮溢出圆角边界的问题，优化了弹窗内容区域的布局结构",
+                "• 修复部分天气类型（如雷暴）图标不显示的问题，补充了缺失的天气代码图标映射",
+                "[color:#667eea]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！",
+                "如果您有任何想法或建议，欢迎通过Github仓库提交Issue与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
         {
             id: "devlog-20260627-2",
             title: "RC 2.6.4.5 开发日志",
@@ -1912,6 +1962,12 @@ function generateAnnouncementModal() {
                             </button>
                         </div>
                     </div>
+                    <div class="sidebar-footer">
+                        <button class="mark-all-read-btn" id="markAllAnnouncementReadBtn">
+                            <i class="fas fa-check-double"></i>
+                            <span>一键已读</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="terms-main">
                     <div class="terms-content" id="announcementContent">
@@ -1966,6 +2022,22 @@ function generateAnnouncementModal() {
             }
         }
     });
+    
+    // 添加一键已读按钮事件
+    var markAllAnnouncementReadBtn = document.getElementById('markAllAnnouncementReadBtn');
+    if (markAllAnnouncementReadBtn) {
+        markAllAnnouncementReadBtn.addEventListener('click', function() {
+            if (typeof showConfirmModal === 'function') {
+                showConfirmModal('确定要已读现有的全部公告？', function() {
+                    markAllAnnouncementsAsRead();
+                    showAlert('所有公告已标记为已读');
+                });
+            } else {
+                markAllAnnouncementsAsRead();
+                showAlert('所有公告已标记为已读');
+            }
+        });
+    }
     
     // 初始化导航
     initializeAnnouncementNavigation();
