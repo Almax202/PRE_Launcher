@@ -949,15 +949,6 @@
                     background: linear-gradient(135deg, rgba(102, 126, 234, 1) 0%, rgba(118, 75, 162, 1) 100%) !important;
                 }
                 
-                body.transparent-mode .guide-content .guide-btn.guide-btn-single-image {
-                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.9) 0%, rgba(255, 118, 117, 0.9) 100%) !important;
-                    border: none !important;
-                }
-                
-                body.transparent-mode .guide-content .guide-btn.guide-btn-single-image:hover {
-                    background: linear-gradient(135deg, rgba(212, 93, 121, 1) 0%, rgba(255, 118, 117, 1) 100%) !important;
-                }
-                
                 /* 透明主题暗色模式 - 引导弹窗 */
                 body.transparent-mode.dark-mode .guide-content {
                     background: rgba(0, 0, 0, 0.25) !important;
@@ -2201,6 +2192,17 @@
                         disableClockDragMode();
                     });
                 }
+
+                var toggleBtn = document.getElementById('adjustPanelToggle');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', function() {
+                        var isCollapsed = panel.classList.toggle('collapsed');
+                        var toggleSpan = toggleBtn.querySelector('span');
+                        if (toggleSpan) {
+                            toggleSpan.textContent = isCollapsed ? '展开' : '收起';
+                        }
+                    });
+                }
             }
             
             function updateContentAlign() {
@@ -2999,6 +3001,40 @@
                         if (typeof showComponentInfoModal === 'function') {
                             showComponentInfoModal('pageClock');
                         }
+                    });
+                }
+                
+                var guideBtn = document.getElementById('pageClockGuideBtn');
+                if (guideBtn) {
+                    guideBtn.addEventListener('click', function() {
+                        var settingsModal = document.getElementById('pageClockSettingsModal');
+                        var weatherModal = document.getElementById('pageClockWeatherModal');
+                        
+                        if (settingsModal) {
+                            if (clockSettings.sidebarMode) {
+                                settingsModal.style.animation = 'slideOutToRight 0.3s ease';
+                            } else {
+                                settingsModal.style.animation = 'fadeOut 0.3s ease';
+                            }
+                            setTimeout(function() {
+                                settingsModal.style.display = 'none';
+                                settingsModal.style.animation = '';
+                            }, 300);
+                        }
+                        
+                        if (weatherModal) {
+                            weatherModal.style.animation = 'fadeOut 0.3s ease';
+                            setTimeout(function() {
+                                weatherModal.style.display = 'none';
+                                weatherModal.style.animation = '';
+                            }, 300);
+                        }
+                        
+                        setTimeout(function() {
+                            if (typeof showPageClockGuide === 'function') {
+                                showPageClockGuide();
+                            }
+                        }, 300);
                     });
                 }
                 
@@ -3938,6 +3974,10 @@
                 <button class="confirm-btn" id="adjustConfirmBtn">完成调整</button>
             </div>
         </div>
+        <button class="adjust-panel-toggle" id="adjustPanelToggle">
+            <i class="fas fa-chevron-down"></i>
+            <span>收起</span>
+        </button>
     </div>
     
     <div class="page-clock-overlay" id="pageClockOverlay" style="display: none;">
@@ -4059,6 +4099,15 @@
                             </div>
                             <input type="checkbox" id="clockHideIcons">
                         </label>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>查看引导</h4>
+                        <button class="guide-entry-btn" id="pageClockGuideBtn">
+                            <i class="fas fa-question-circle"></i>
+                            <span>页面时钟引导</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                     
                     <div class="settings-section">
@@ -4439,7 +4488,7 @@
                                 </label>
                             </div>
                             
-                            <button type="button" id="loginButton" class="login-btn">
+                            <button type="submit" id="loginButton" class="login-btn">
                                 <i class="fas fa-sign-in-alt"></i>
                                 登录
                             </button>
@@ -4782,6 +4831,12 @@
                                 <span>组件信息</span>
                                 <i class="fas fa-chevron-right dropdown-arrow"></i>
                             </div>
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-item" id="weatherGuideItem">
+                                <i class="fas fa-question-circle"></i>
+                                <span>查看引导</span>
+                                <i class="fas fa-chevron-right dropdown-arrow"></i>
+                            </div>
                         </div>
                     </div>
                     <button class="weather-refresh-btn" id="weatherRefreshBtn" title="刷新">
@@ -4991,6 +5046,10 @@
                     <div class="menu-item" id="menuComponentInfo">
                         <i class="fas fa-info-circle"></i>
                         <span>组件信息</span>
+                    </div>
+                    <div class="menu-item" id="menuNoteGuide">
+                        <i class="fas fa-question-circle"></i>
+                        <span>查看引导</span>
                     </div>
                     <div class="menu-divider"></div>
                     <div class="menu-item" id="menuExportNote">
@@ -7218,9 +7277,15 @@
             localStorage.removeItem('savedUsername');
             localStorage.removeItem('savedPassword');
             localStorage.removeItem('autoLogin');
-            localStorage.removeItem('currentUserAvatar'); // 登出后清除头像信息
-            localStorage.removeItem('skipSecurityVerify'); // 退出登录时清除"今日不再验证"标记
+            localStorage.removeItem('currentUserAvatar');
+            localStorage.removeItem('skipSecurityVerify');
             localStorage.removeItem('skipSecurityVerifyExpire');
+            localStorage.removeItem('customBackground');
+            
+            var existingStyle = document.getElementById('custom-background-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
             
             updateUserCenter('未登录');
             
@@ -10393,7 +10458,7 @@
                                 <p class="user-card-id">ID: ${user ? user.userId : '---'}</p>
                                 <p class="user-card-reg-time">注册时间: ${regTime}</p>
                                 <div class="modal-buttons">
-                                    <button class="alert-confirm save-btn" onclick="saveCardSettings()" style="display: none;">保存设置</button>
+                                    <button class="alert-confirm save-btn" id="cardSettingsSaveBtn" onclick="saveCardSettings()" style="display: none;">保存设置</button>
                                     <button class="alert-confirm" onclick="closeUserCardModal()">关闭</button>
                                 </div>
                             </div>
@@ -10929,7 +10994,7 @@
             });
             
             // 显示保存按钮
-            var saveBtn = document.querySelector('.save-btn');
+            var saveBtn = document.getElementById('cardSettingsSaveBtn');
             if (saveBtn) {
                 saveBtn.style.display = 'block';
             }
@@ -10981,7 +11046,7 @@
                 });
                 
                 // 隐藏保存按钮
-                var saveBtn = document.querySelector('.save-btn');
+                var saveBtn = document.getElementById('cardSettingsSaveBtn');
                 if (saveBtn) {
                     saveBtn.style.display = 'none';
                 }
@@ -11757,6 +11822,11 @@
                 targetElement = document.querySelector('.' + step.elementId);
             }
 
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            if (highlight) highlight.style.display = 'none';
+            if (tooltip) tooltip.style.display = 'none';
+
             if (!targetElement) {
                 nextGuideStep();
                 return;
@@ -11798,6 +11868,7 @@
             stepDesc.textContent = step.description;
 
             tooltip.className = 'guide-step-tooltip ' + step.position;
+            tooltip.style.display = 'block';
 
             var tooltipWidth = tooltip.offsetWidth;
             var tooltipHeight = tooltip.offsetHeight;
@@ -11854,9 +11925,12 @@
         }
 
         function showGuideEndModal() {
+            isGuideActive = false;
             document.getElementById('guideEndModal').classList.remove('hidden');
             document.getElementById('guideStepFooter').style.display = 'none';
             document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideHighlight').style.display = 'none';
+            document.getElementById('guideTooltip').style.display = 'none';
         }
 
         function hideGuideEndModal() {
@@ -11873,82 +11947,9 @@
         function restartGuide() {
             hideGuideEndModal();
             localStorage.removeItem('hasSeenGuide');
-            showGuideWelcome();
-        }
-
-        var currentSingleImageStep = 0;
-
-        function openSingleImageGuide() {
-            document.getElementById('guideWelcomeModal').classList.add('hidden');
-            document.getElementById('singleImageGuideModal').classList.remove('hidden');
-            currentSingleImageStep = 0;
-            renderSingleImageSteps();
-            updateSingleImageStep(0);
-        }
-
-        function closeSingleImageGuide() {
-            document.getElementById('singleImageGuideModal').classList.add('hidden');
-        }
-
-        function renderSingleImageSteps() {
-            var stepList = document.getElementById('singleImageStepList');
-            stepList.innerHTML = '';
-
-            for (var i = 0; i < guideSteps.length; i++) {
-                var step = guideSteps[i];
-                var stepItem = document.createElement('div');
-                stepItem.className = 'single-image-step-item';
-                stepItem.dataset.step = i;
-                stepItem.innerHTML = '\
-                    <span class="step-number">' + (i + 1) + '</span>\
-                    <span class="step-title">' + step.title + '</span>\
-                    <div class="step-desc">' + step.description + '</div>\
-                ';
-                stepItem.addEventListener('click', function() {
-                    var stepIndex = parseInt(this.dataset.step);
-                    updateSingleImageStep(stepIndex);
-                });
-                stepList.appendChild(stepItem);
-            }
-        }
-
-        function updateSingleImageStep(stepIndex) {
-            if (stepIndex < 0 || stepIndex >= guideSteps.length) {
-                return;
-            }
-
-            currentSingleImageStep = stepIndex;
-
-            var stepCount = document.getElementById('singleImageStepCount');
-            stepCount.textContent = (stepIndex + 1) + ' / ' + guideSteps.length;
-
-            var prevBtn = document.getElementById('singleImagePrevBtn');
-            var nextBtn = document.getElementById('singleImageNextBtn');
-
-            prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
-            nextBtn.textContent = stepIndex === guideSteps.length - 1 ? '完成' : '下一步';
-
-            var stepItems = document.querySelectorAll('.single-image-step-item');
-            for (var i = 0; i < stepItems.length; i++) {
-                if (i === stepIndex) {
-                    stepItems[i].classList.add('active');
-                    stepItems[i].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                } else {
-                    stepItems[i].classList.remove('active');
-                }
-            }
-        }
-
-        function nextSingleImageStep() {
-            if (currentSingleImageStep === guideSteps.length - 1) {
-                closeSingleImageGuide();
-            } else {
-                updateSingleImageStep(currentSingleImageStep + 1);
-            }
-        }
-
-        function prevSingleImageStep() {
-            updateSingleImageStep(currentSingleImageStep - 1);
+            isGuideActive = true;
+            currentGuideStep = 0;
+            showGuideStep(0);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -11956,22 +11957,946 @@
 
             document.getElementById('startGuideBtn').addEventListener('click', startGuide);
             document.getElementById('skipGuideBtn').addEventListener('click', skipGuide);
-            document.getElementById('guideNextBtn').addEventListener('click', nextGuideStep);
-            document.getElementById('guidePrevBtn').addEventListener('click', prevGuideStep);
-            document.getElementById('guideSkipBtn').addEventListener('click', endGuide);
+            document.getElementById('guideNextBtn').onclick = nextGuideStep;
+            document.getElementById('guidePrevBtn').onclick = prevGuideStep;
+            document.getElementById('guideSkipBtn').onclick = function() {
+                endGuide();
+                localStorage.setItem('hasSeenGuide', 'true');
+            };
             document.getElementById('guideEndFinishBtn').addEventListener('click', endGuide);
             document.getElementById('guideEndRestartBtn').addEventListener('click', restartGuide);
-            document.getElementById('singleImageGuideBtn').addEventListener('click', openSingleImageGuide);
-            document.getElementById('singleImageGuideCloseBtn').addEventListener('click', closeSingleImageGuide);
-            document.getElementById('singleImageFinishBtn').addEventListener('click', closeSingleImageGuide);
-            document.getElementById('singleImageNextBtn').addEventListener('click', nextSingleImageStep);
-            document.getElementById('singleImagePrevBtn').addEventListener('click', prevSingleImageStep);
         });
 
         window.showGuide = function() {
             localStorage.removeItem('hasSeenGuide');
             document.getElementById('guideWelcomeModal').classList.remove('hidden');
         };
+
+        var weatherGuideSteps = [
+            {
+                elementId: 'weatherCurrentTemp',
+                title: '天气组件',
+                description: '这是天气组件，为您提供实时天气信息和预报服务',
+                position: 'bottom'
+            },
+            {
+                elementId: 'weatherLocation',
+                title: '当前城市',
+                description: '显示当前所在城市名称',
+                position: 'bottom'
+            },
+            {
+                elementId: 'weatherChangeCityBtn',
+                title: '切换城市',
+                description: '点击此按钮可手动切换城市查看天气',
+                position: 'bottom'
+            },
+            {
+                elementId: 'weatherMoreBtn',
+                title: '更多选项',
+                description: '点击展开天气设置菜单，可调整温度单位、自动刷新等',
+                position: 'bottom'
+            },
+            {
+                elementId: 'weatherRefreshBtn',
+                title: '刷新天气',
+                description: '点击立即刷新天气数据',
+                position: 'bottom'
+            },
+            {
+                elementId: 'weatherCurrentTemp',
+                title: '当前温度',
+                description: '显示当前实时温度和天气状况',
+                position: 'right'
+            },
+            {
+                elementId: 'weather-details-grid',
+                title: '天气详情',
+                description: '展示体感温度、湿度、风向风力等详细天气信息',
+                position: 'top'
+            },
+            {
+                elementId: 'weatherHourlyScroll',
+                title: '24小时预报',
+                description: '左右滑动查看未来24小时的天气变化趋势',
+                position: 'top'
+            },
+            {
+                elementId: 'weatherDailyList',
+                title: '7天预报',
+                description: '查看未来7天的天气预报信息',
+                position: 'top'
+            },
+            {
+                elementId: 'weatherCloseBtn',
+                title: '关闭组件',
+                description: '点击关闭天气组件',
+                position: 'bottom'
+            }
+        ];
+
+        var currentWeatherGuideStep = 0;
+        var isWeatherGuideActive = false;
+        var savedGuideSteps = null;
+        var savedCurrentGuideStep = 0;
+        var savedIsGuideActive = false;
+
+        function showWeatherGuide() {
+            savedGuideSteps = guideSteps;
+            savedCurrentGuideStep = currentGuideStep;
+            savedIsGuideActive = isGuideActive;
+            
+            guideSteps = weatherGuideSteps;
+            currentGuideStep = 0;
+            isGuideActive = true;
+            
+            showWeatherGuideWelcome();
+        }
+
+        function showWeatherGuideWelcome() {
+            var modal = document.getElementById('weatherGuideWelcomeModal');
+            if (!modal) {
+                createWeatherGuideModals();
+                modal = document.getElementById('weatherGuideWelcomeModal');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function createWeatherGuideModals() {
+            var welcomeModal = document.createElement('div');
+            welcomeModal.id = 'weatherGuideWelcomeModal';
+            welcomeModal.className = 'guide-overlay hidden';
+            welcomeModal.innerHTML = '\
+                <div class="guide-content">\
+                    <div class="guide-icon">\
+                        <i class="fas fa-cloud-sun"></i>\
+                    </div>\
+                    <h2>天气组件引导</h2>\
+                    <p>欢迎使用天气组件！让我们带您了解天气组件的各项功能。</p>\
+                    <div class="guide-buttons">\
+                        <button class="guide-btn guide-btn-primary" id="startWeatherGuideBtn">开始引导</button>\
+                        <button class="guide-btn guide-btn-secondary" id="skipWeatherGuideBtn">跳过引导</button>\
+                    </div>\
+                </div>\
+            ';
+            document.body.appendChild(welcomeModal);
+
+            var endModal = document.createElement('div');
+            endModal.id = 'weatherGuideEndModal';
+            endModal.className = 'guide-overlay hidden';
+            endModal.innerHTML = '\
+                <div class="guide-content">\
+                    <div class="guide-icon">\
+                        <i class="fas fa-check-circle"></i>\
+                    </div>\
+                    <h2>引导已结束</h2>\
+                    <p>您已完成天气组件的功能引导。是否结束引导或重新开始？</p>\
+                    <div class="guide-buttons">\
+                        <button class="guide-btn guide-btn-secondary" id="weatherGuideRestartBtn">重新开始</button>\
+                        <button class="guide-btn guide-btn-primary" id="weatherGuideFinishBtn">结束引导</button>\
+                    </div>\
+                </div>\
+            ';
+            document.body.appendChild(endModal);
+
+            document.getElementById('startWeatherGuideBtn').addEventListener('click', startWeatherGuide);
+            document.getElementById('skipWeatherGuideBtn').addEventListener('click', skipWeatherGuide);
+            document.getElementById('weatherGuideRestartBtn').addEventListener('click', restartWeatherGuide);
+            document.getElementById('weatherGuideFinishBtn').addEventListener('click', finishWeatherGuide);
+        }
+
+        function startWeatherGuide() {
+            document.getElementById('weatherGuideWelcomeModal').classList.add('hidden');
+            document.body.classList.add('weather-guide-active');
+            currentWeatherGuideStep = 0;
+            isWeatherGuideActive = true;
+            showWeatherGuideStep(0);
+        }
+
+        function skipWeatherGuide() {
+            document.getElementById('weatherGuideWelcomeModal').classList.add('hidden');
+            document.body.classList.remove('weather-guide-active');
+            restoreGlobalGuide();
+        }
+
+        function showWeatherGuideStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= weatherGuideSteps.length) {
+                endWeatherGuide();
+                return;
+            }
+
+            currentWeatherGuideStep = stepIndex;
+            var step = weatherGuideSteps[stepIndex];
+            var targetElement = document.getElementById(step.elementId);
+            
+            if (!targetElement) {
+                targetElement = document.querySelector('.' + step.elementId);
+            }
+
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            if (highlight) highlight.style.display = 'none';
+            if (tooltip) tooltip.style.display = 'none';
+
+            if (!targetElement) {
+                nextWeatherGuideStep();
+                return;
+            }
+
+            var isElementVisible = targetElement.offsetParent !== null;
+            
+            if (!isElementVisible) {
+                nextWeatherGuideStep();
+                return;
+            }
+
+            var overlay = document.getElementById('guideStepOverlay');
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            var footer = document.getElementById('guideStepFooter');
+            var indicators = document.getElementById('guideStepIndicators');
+            var prevBtn = document.getElementById('guidePrevBtn');
+            var nextBtn = document.getElementById('guideNextBtn');
+            var stepTitle = document.getElementById('stepTitle');
+            var stepDesc = document.getElementById('stepDesc');
+
+            overlay.classList.add('active');
+            footer.style.display = 'flex';
+
+            var rect = targetElement.getBoundingClientRect();
+            
+            if (isElementVisible) {
+                highlight.style.left = rect.left - 10 + 'px';
+                highlight.style.top = rect.top - 10 + 'px';
+                highlight.style.width = rect.width + 20 + 'px';
+                highlight.style.height = rect.height + 20 + 'px';
+                highlight.style.display = 'block';
+            } else {
+                highlight.style.display = 'none';
+            }
+
+            stepTitle.textContent = step.title;
+            stepDesc.textContent = step.description;
+
+            tooltip.className = 'guide-step-tooltip ' + step.position;
+            tooltip.style.display = 'block';
+
+            var tooltipWidth = tooltip.offsetWidth;
+            var tooltipHeight = tooltip.offsetHeight;
+
+            if (isElementVisible) {
+                switch (step.position) {
+                    case 'top':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.top - tooltipHeight - 15 + 'px';
+                        break;
+                    case 'bottom':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.bottom + 15 + 'px';
+                        break;
+                    case 'left':
+                        tooltip.style.left = rect.left - tooltipWidth - 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                    case 'right':
+                        tooltip.style.left = rect.right + 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                }
+            }
+
+            indicators.innerHTML = '';
+            for (var i = 0; i < weatherGuideSteps.length; i++) {
+                var indicator = document.createElement('div');
+                indicator.className = 'guide-step-indicator' + (i === stepIndex ? ' active' : '');
+                indicators.appendChild(indicator);
+            }
+
+            prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
+            nextBtn.textContent = stepIndex === weatherGuideSteps.length - 1 ? '完成' : '下一步';
+
+            var nextBtnEl = document.getElementById('guideNextBtn');
+            var prevBtnEl = document.getElementById('guidePrevBtn');
+            var skipBtnEl = document.getElementById('guideSkipBtn');
+
+            nextBtnEl.onclick = nextWeatherGuideStep;
+            prevBtnEl.onclick = prevWeatherGuideStep;
+            skipBtnEl.onclick = endWeatherGuide;
+        }
+
+        function nextWeatherGuideStep() {
+            if (currentWeatherGuideStep === weatherGuideSteps.length - 1) {
+                showWeatherGuideEndModal();
+            } else {
+                showWeatherGuideStep(currentWeatherGuideStep + 1);
+            }
+        }
+
+        function prevWeatherGuideStep() {
+            showWeatherGuideStep(currentWeatherGuideStep - 1);
+        }
+
+        function showWeatherGuideEndModal() {
+            isWeatherGuideActive = false;
+            document.getElementById('weatherGuideEndModal').classList.remove('hidden');
+            document.getElementById('guideStepFooter').style.display = 'none';
+            document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideHighlight').style.display = 'none';
+            document.getElementById('guideTooltip').style.display = 'none';
+        }
+
+        function endWeatherGuide() {
+            isWeatherGuideActive = false;
+            document.body.classList.remove('weather-guide-active');
+            document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideStepFooter').style.display = 'none';
+            
+            var nextBtnEl = document.getElementById('guideNextBtn');
+            var prevBtnEl = document.getElementById('guidePrevBtn');
+            var skipBtnEl = document.getElementById('guideSkipBtn');
+
+            nextBtnEl.onclick = nextGuideStep;
+            prevBtnEl.onclick = prevGuideStep;
+            skipBtnEl.onclick = function() {
+                endGuide();
+                localStorage.setItem('hasSeenGuide', 'true');
+            };
+
+            restoreGlobalGuide();
+        }
+
+        function restartWeatherGuide() {
+            document.getElementById('weatherGuideEndModal').classList.add('hidden');
+            currentWeatherGuideStep = 0;
+            isWeatherGuideActive = true;
+            showWeatherGuideStep(0);
+        }
+
+        function finishWeatherGuide() {
+            document.getElementById('weatherGuideEndModal').classList.add('hidden');
+            endWeatherGuide();
+        }
+
+        function restoreGlobalGuide() {
+            guideSteps = savedGuideSteps;
+            currentGuideStep = savedCurrentGuideStep;
+            isGuideActive = savedIsGuideActive;
+        }
+
+        var noteGuideSteps = [
+            {
+                elementId: 'stickyNoteEditor',
+                title: '便签组件',
+                description: '这是便签组件，为您提供便捷的便签记录和管理功能',
+                position: 'top'
+            },
+            {
+                elementId: 'stickyNotesSearch',
+                title: '搜索便签',
+                description: '在此输入关键字快速搜索便签内容',
+                position: 'bottom'
+            },
+            {
+                elementId: 'stickyNotesList',
+                title: '便签列表',
+                description: '显示所有便签，点击即可查看和编辑',
+                position: 'right'
+            },
+            {
+                elementId: 'addStickyNote',
+                title: '新建便签',
+                description: '点击此按钮创建新的便签',
+                position: 'top'
+            },
+            {
+                elementId: 'stickyNotesMenuBtn',
+                title: '更多选项',
+                description: '点击展开更多操作菜单，可导入导出、排序等',
+                position: 'bottom'
+            },
+            {
+                elementId: 'stickyNotesFullscreenBtn',
+                title: '全屏显示',
+                description: '点击切换便签组件的全屏显示模式',
+                position: 'bottom'
+            },
+            {
+                elementId: 'stickyNoteTitle',
+                title: '便签标题',
+                description: '在此输入便签的标题',
+                position: 'bottom'
+            },
+            {
+                elementId: 'toolbar',
+                title: '格式工具栏',
+                description: '使用工具栏设置文字格式、插入图片等',
+                position: 'bottom'
+            },
+            {
+                elementId: 'stickyNoteEditor',
+                title: '编辑区域',
+                description: '在此输入和编辑便签内容',
+                position: 'top'
+            },
+            {
+                elementId: 'saveStickyNote',
+                title: '保存便签',
+                description: '点击保存当前便签内容',
+                position: 'top'
+            }
+        ];
+
+        var currentNoteGuideStep = 0;
+        var isNoteGuideActive = false;
+        var savedNoteGuideSteps = null;
+        var savedNoteCurrentGuideStep = 0;
+        var savedNoteIsGuideActive = false;
+
+        function showNoteGuide() {
+            savedNoteGuideSteps = guideSteps;
+            savedNoteCurrentGuideStep = currentGuideStep;
+            savedNoteIsGuideActive = isGuideActive;
+
+            guideSteps = noteGuideSteps;
+            currentNoteGuideStep = 0;
+            isNoteGuideActive = true;
+
+            showNoteGuideWelcome();
+        }
+
+        function showNoteGuideWelcome() {
+            var modal = document.getElementById('noteGuideWelcomeModal');
+            if (!modal) {
+                createNoteGuideModals();
+                modal = document.getElementById('noteGuideWelcomeModal');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function createNoteGuideModals() {
+            var welcomeModal = document.createElement('div');
+            welcomeModal.id = 'noteGuideWelcomeModal';
+            welcomeModal.className = 'guide-overlay hidden note-guide-modal';
+            welcomeModal.innerHTML = '\
+                <div class="guide-content">\
+                    <div class="guide-icon">\
+                        <i class="fas fa-sticky-note"></i>\
+                    </div>\
+                    <h2>便签组件引导</h2>\
+                    <p>欢迎使用便签组件！让我们带您了解便签组件的各项功能。</p>\
+                    <div class="guide-buttons">\
+                        <button class="guide-btn guide-btn-primary" id="startNoteGuideBtn">开始引导</button>\
+                        <button class="guide-btn guide-btn-secondary" id="skipNoteGuideBtn">跳过引导</button>\
+                    </div>\
+                </div>\
+            ';
+            document.body.appendChild(welcomeModal);
+
+            var endModal = document.createElement('div');
+            endModal.id = 'noteGuideEndModal';
+            endModal.className = 'guide-overlay hidden note-guide-modal';
+            endModal.innerHTML = '\
+                <div class="guide-content">\
+                    <div class="guide-icon">\
+                        <i class="fas fa-check-circle"></i>\
+                    </div>\
+                    <h2>引导已结束</h2>\
+                    <p>您已完成便签组件的功能引导。是否结束引导或重新开始？</p>\
+                    <div class="guide-buttons">\
+                        <button class="guide-btn guide-btn-secondary" id="noteGuideRestartBtn">重新开始</button>\
+                        <button class="guide-btn guide-btn-primary" id="noteGuideFinishBtn">结束引导</button>\
+                    </div>\
+                </div>\
+            ';
+            document.body.appendChild(endModal);
+
+            document.getElementById('startNoteGuideBtn').addEventListener('click', startNoteGuide);
+            document.getElementById('skipNoteGuideBtn').addEventListener('click', skipNoteGuide);
+            document.getElementById('noteGuideRestartBtn').addEventListener('click', restartNoteGuide);
+            document.getElementById('noteGuideFinishBtn').addEventListener('click', finishNoteGuide);
+        }
+
+        function startNoteGuide() {
+            document.getElementById('noteGuideWelcomeModal').classList.add('hidden');
+            document.body.classList.add('note-guide-active');
+            currentNoteGuideStep = 0;
+            isNoteGuideActive = true;
+            showNoteGuideStep(0);
+        }
+
+        function skipNoteGuide() {
+            document.getElementById('noteGuideWelcomeModal').classList.add('hidden');
+            document.body.classList.remove('note-guide-active');
+            restoreNoteGlobalGuide();
+        }
+
+        function showNoteGuideStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= noteGuideSteps.length) {
+                endNoteGuide();
+                return;
+            }
+
+            currentNoteGuideStep = stepIndex;
+            var step = noteGuideSteps[stepIndex];
+            var targetElement = document.getElementById(step.elementId);
+
+            if (!targetElement) {
+                targetElement = document.querySelector('.' + step.elementId);
+            }
+
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            if (highlight) highlight.style.display = 'none';
+            if (tooltip) tooltip.style.display = 'none';
+
+            if (!targetElement) {
+                nextNoteGuideStep();
+                return;
+            }
+
+            var isElementVisible = targetElement.offsetParent !== null;
+
+            if (!isElementVisible) {
+                nextNoteGuideStep();
+                return;
+            }
+
+            var overlay = document.getElementById('guideStepOverlay');
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            var footer = document.getElementById('guideStepFooter');
+            var indicators = document.getElementById('guideStepIndicators');
+            var prevBtn = document.getElementById('guidePrevBtn');
+            var nextBtn = document.getElementById('guideNextBtn');
+            var stepTitle = document.getElementById('stepTitle');
+            var stepDesc = document.getElementById('stepDesc');
+
+            overlay.classList.add('active');
+            footer.style.display = 'flex';
+
+            var rect = targetElement.getBoundingClientRect();
+
+            if (isElementVisible) {
+                highlight.style.left = rect.left - 10 + 'px';
+                highlight.style.top = rect.top - 10 + 'px';
+                highlight.style.width = rect.width + 20 + 'px';
+                highlight.style.height = rect.height + 20 + 'px';
+                highlight.style.display = 'block';
+            } else {
+                highlight.style.display = 'none';
+            }
+
+            stepTitle.textContent = step.title;
+            stepDesc.textContent = step.description;
+
+            tooltip.className = 'guide-step-tooltip ' + step.position;
+            tooltip.style.display = 'block';
+
+            var tooltipWidth = tooltip.offsetWidth;
+            var tooltipHeight = tooltip.offsetHeight;
+
+            if (isElementVisible) {
+                switch (step.position) {
+                    case 'top':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.top - tooltipHeight - 15 + 'px';
+                        break;
+                    case 'bottom':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.bottom + 15 + 'px';
+                        break;
+                    case 'left':
+                        tooltip.style.left = rect.left - tooltipWidth - 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                    case 'right':
+                        tooltip.style.left = rect.right + 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                }
+            }
+
+            indicators.innerHTML = '';
+            for (var i = 0; i < noteGuideSteps.length; i++) {
+                var indicator = document.createElement('div');
+                indicator.className = 'guide-step-indicator' + (i === stepIndex ? ' active' : '');
+                indicators.appendChild(indicator);
+            }
+
+            prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
+            nextBtn.textContent = stepIndex === noteGuideSteps.length - 1 ? '完成' : '下一步';
+
+            var nextBtnEl = document.getElementById('guideNextBtn');
+            var prevBtnEl = document.getElementById('guidePrevBtn');
+            var skipBtnEl = document.getElementById('guideSkipBtn');
+
+            nextBtnEl.onclick = nextNoteGuideStep;
+            prevBtnEl.onclick = prevNoteGuideStep;
+            skipBtnEl.onclick = endNoteGuide;
+        }
+
+        function nextNoteGuideStep() {
+            if (currentNoteGuideStep === noteGuideSteps.length - 1) {
+                showNoteGuideEndModal();
+            } else {
+                showNoteGuideStep(currentNoteGuideStep + 1);
+            }
+        }
+
+        function prevNoteGuideStep() {
+            showNoteGuideStep(currentNoteGuideStep - 1);
+        }
+
+        function showNoteGuideEndModal() {
+            isNoteGuideActive = false;
+            document.getElementById('noteGuideEndModal').classList.remove('hidden');
+            document.getElementById('guideStepFooter').style.display = 'none';
+            document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideHighlight').style.display = 'none';
+            document.getElementById('guideTooltip').style.display = 'none';
+        }
+
+        function endNoteGuide() {
+            isNoteGuideActive = false;
+            document.body.classList.remove('note-guide-active');
+            document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideStepFooter').style.display = 'none';
+
+            var nextBtnEl = document.getElementById('guideNextBtn');
+            var prevBtnEl = document.getElementById('guidePrevBtn');
+            var skipBtnEl = document.getElementById('guideSkipBtn');
+
+            nextBtnEl.onclick = nextGuideStep;
+            prevBtnEl.onclick = prevGuideStep;
+            skipBtnEl.onclick = function() {
+                endGuide();
+                localStorage.setItem('hasSeenGuide', 'true');
+            };
+
+            restoreNoteGlobalGuide();
+        }
+
+        function restartNoteGuide() {
+            document.getElementById('noteGuideEndModal').classList.add('hidden');
+            document.body.classList.add('note-guide-active');
+            currentNoteGuideStep = 0;
+            isNoteGuideActive = true;
+            showNoteGuideStep(0);
+        }
+
+        function finishNoteGuide() {
+            document.getElementById('noteGuideEndModal').classList.add('hidden');
+            endNoteGuide();
+        }
+
+        function restoreNoteGlobalGuide() {
+            guideSteps = savedNoteGuideSteps;
+            currentGuideStep = savedNoteCurrentGuideStep;
+            isGuideActive = savedNoteIsGuideActive;
+        }
+
+        var pageClockGuideSteps = [
+            {
+                elementId: 'pageClockTime',
+                title: '页面时钟',
+                description: '这是页面时钟组件，为您提供时钟、天气、名言等功能',
+                position: 'bottom'
+            },
+            {
+                elementId: 'pageClockTime',
+                title: '时钟显示',
+                description: '显示当前时间，是页面时钟的核心功能',
+                position: 'bottom'
+            },
+            {
+                elementId: 'pageClockDate',
+                title: '日期显示',
+                description: '显示当前日期和星期，可在设置中开关',
+                position: 'bottom'
+            },
+            {
+                elementId: 'pageClockWeather',
+                title: '天气显示',
+                description: '显示当前天气信息，点击可跳转到天气页面',
+                position: 'top'
+            },
+            {
+                elementId: 'pageClockQuote',
+                title: '每日名言',
+                description: '显示精选名言警句，点击可刷新新的名言',
+                position: 'top'
+            },
+            {
+                elementId: 'pageClockSettingsBtn',
+                title: '组件设置',
+                description: '点击打开组件调整弹窗，可自定义时钟的各项功能',
+                position: 'left'
+            },
+            {
+                elementId: 'pageClockWeatherBtn',
+                title: '天气设置',
+                description: '点击打开天气设置弹窗，可切换城市和天气相关功能',
+                position: 'right'
+            },
+            {
+                elementId: 'pageClockBackBtn',
+                title: '返回按钮',
+                description: '点击返回登录页面',
+                position: 'left'
+            }
+        ];
+
+        var currentPageClockGuideStep = 0;
+        var isPageClockGuideActive = false;
+        var savedPageClockGuideSteps = null;
+        var savedPageClockCurrentGuideStep = 0;
+        var savedPageClockIsGuideActive = false;
+
+        function showPageClockGuide() {
+            savedPageClockGuideSteps = guideSteps;
+            savedPageClockCurrentGuideStep = currentGuideStep;
+            savedPageClockIsGuideActive = isGuideActive;
+
+            guideSteps = pageClockGuideSteps;
+            currentPageClockGuideStep = 0;
+            isPageClockGuideActive = true;
+
+            showPageClockGuideWelcome();
+        }
+
+        function showPageClockGuideWelcome() {
+            var modal = document.getElementById('pageClockGuideWelcomeModal');
+            if (!modal) {
+                createPageClockGuideModals();
+                modal = document.getElementById('pageClockGuideWelcomeModal');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function createPageClockGuideModals() {
+            var welcomeModal = document.createElement('div');
+            welcomeModal.id = 'pageClockGuideWelcomeModal';
+            welcomeModal.className = 'guide-overlay hidden page-clock-guide-modal';
+            welcomeModal.innerHTML = '\
+                <div class="guide-content">\
+                    <div class="guide-icon">\
+                        <i class="fas fa-clock"></i>\
+                    </div>\
+                    <h2>页面时钟引导</h2>\
+                    <p>欢迎使用页面时钟组件！让我们带您了解页面时钟的各项功能。</p>\
+                    <div class="guide-buttons">\
+                        <button class="guide-btn guide-btn-primary" id="startPageClockGuideBtn">开始引导</button>\
+                        <button class="guide-btn guide-btn-secondary" id="skipPageClockGuideBtn">跳过引导</button>\
+                    </div>\
+                </div>\
+            ';
+            document.body.appendChild(welcomeModal);
+
+            var endModal = document.createElement('div');
+            endModal.id = 'pageClockGuideEndModal';
+            endModal.className = 'guide-overlay hidden page-clock-guide-modal';
+            endModal.innerHTML = '\
+                <div class="guide-content">\
+                    <div class="guide-icon">\
+                        <i class="fas fa-check-circle"></i>\
+                    </div>\
+                    <h2>引导已结束</h2>\
+                    <p>您已完成页面时钟组件的功能引导。是否结束引导或重新开始？</p>\
+                    <div class="guide-buttons">\
+                        <button class="guide-btn guide-btn-secondary" id="pageClockGuideRestartBtn">重新开始</button>\
+                        <button class="guide-btn guide-btn-primary" id="pageClockGuideFinishBtn">结束引导</button>\
+                    </div>\
+                </div>\
+            ';
+            document.body.appendChild(endModal);
+
+            document.getElementById('startPageClockGuideBtn').addEventListener('click', startPageClockGuide);
+            document.getElementById('skipPageClockGuideBtn').addEventListener('click', skipPageClockGuide);
+            document.getElementById('pageClockGuideRestartBtn').addEventListener('click', restartPageClockGuide);
+            document.getElementById('pageClockGuideFinishBtn').addEventListener('click', finishPageClockGuide);
+        }
+
+        function startPageClockGuide() {
+            document.getElementById('pageClockGuideWelcomeModal').classList.add('hidden');
+            document.body.classList.add('page-clock-guide-active');
+            currentPageClockGuideStep = 0;
+            isPageClockGuideActive = true;
+            showPageClockGuideStep(0);
+        }
+
+        function skipPageClockGuide() {
+            document.getElementById('pageClockGuideWelcomeModal').classList.add('hidden');
+            document.body.classList.remove('page-clock-guide-active');
+            restorePageClockGlobalGuide();
+        }
+
+        function showPageClockGuideStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= pageClockGuideSteps.length) {
+                endPageClockGuide();
+                return;
+            }
+
+            currentPageClockGuideStep = stepIndex;
+            var step = pageClockGuideSteps[stepIndex];
+            var targetElement = document.getElementById(step.elementId);
+
+            if (!targetElement) {
+                targetElement = document.querySelector('.' + step.elementId);
+            }
+
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            if (highlight) highlight.style.display = 'none';
+            if (tooltip) tooltip.style.display = 'none';
+
+            if (!targetElement) {
+                nextPageClockGuideStep();
+                return;
+            }
+
+            var isElementVisible = targetElement.offsetParent !== null;
+
+            if (!isElementVisible) {
+                var style = window.getComputedStyle(targetElement);
+                if (style.display === 'none' || style.visibility === 'hidden') {
+                    nextPageClockGuideStep();
+                    return;
+                }
+            }
+
+            var overlay = document.getElementById('guideStepOverlay');
+            var highlight = document.getElementById('guideHighlight');
+            var tooltip = document.getElementById('guideTooltip');
+            var footer = document.getElementById('guideStepFooter');
+            var indicators = document.getElementById('guideStepIndicators');
+            var prevBtn = document.getElementById('guidePrevBtn');
+            var nextBtn = document.getElementById('guideNextBtn');
+            var stepTitle = document.getElementById('stepTitle');
+            var stepDesc = document.getElementById('stepDesc');
+
+            overlay.classList.add('active');
+            footer.style.display = 'flex';
+
+            var rect = targetElement.getBoundingClientRect();
+
+            if (rect.width > 0 && rect.height > 0) {
+                highlight.style.left = rect.left - 10 + 'px';
+                highlight.style.top = rect.top - 10 + 'px';
+                highlight.style.width = rect.width + 20 + 'px';
+                highlight.style.height = rect.height + 20 + 'px';
+                highlight.style.display = 'block';
+            } else {
+                highlight.style.display = 'none';
+            }
+
+            stepTitle.textContent = step.title;
+            stepDesc.textContent = step.description;
+
+            tooltip.className = 'guide-step-tooltip ' + step.position;
+            tooltip.style.display = 'block';
+
+            var tooltipWidth = tooltip.offsetWidth;
+            var tooltipHeight = tooltip.offsetHeight;
+
+            if (rect.width > 0 && rect.height > 0) {
+                switch (step.position) {
+                    case 'top':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.top - tooltipHeight - 15 + 'px';
+                        break;
+                    case 'bottom':
+                        tooltip.style.left = rect.left + rect.width / 2 - tooltipWidth / 2 + 'px';
+                        tooltip.style.top = rect.bottom + 15 + 'px';
+                        break;
+                    case 'left':
+                        tooltip.style.left = rect.left - tooltipWidth - 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                    case 'right':
+                        tooltip.style.left = rect.right + 15 + 'px';
+                        tooltip.style.top = rect.top + rect.height / 2 - tooltipHeight / 2 + 'px';
+                        break;
+                }
+            }
+
+            indicators.innerHTML = '';
+            for (var i = 0; i < pageClockGuideSteps.length; i++) {
+                var indicator = document.createElement('div');
+                indicator.className = 'guide-step-indicator' + (i === stepIndex ? ' active' : '');
+                indicators.appendChild(indicator);
+            }
+
+            prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
+            nextBtn.textContent = stepIndex === pageClockGuideSteps.length - 1 ? '完成' : '下一步';
+
+            var nextBtnEl = document.getElementById('guideNextBtn');
+            var prevBtnEl = document.getElementById('guidePrevBtn');
+            var skipBtnEl = document.getElementById('guideSkipBtn');
+
+            nextBtnEl.onclick = nextPageClockGuideStep;
+            prevBtnEl.onclick = prevPageClockGuideStep;
+            skipBtnEl.onclick = endPageClockGuide;
+        }
+
+        function nextPageClockGuideStep() {
+            if (currentPageClockGuideStep === pageClockGuideSteps.length - 1) {
+                showPageClockGuideEndModal();
+            } else {
+                showPageClockGuideStep(currentPageClockGuideStep + 1);
+            }
+        }
+
+        function prevPageClockGuideStep() {
+            showPageClockGuideStep(currentPageClockGuideStep - 1);
+        }
+
+        function showPageClockGuideEndModal() {
+            isPageClockGuideActive = false;
+            document.getElementById('pageClockGuideEndModal').classList.remove('hidden');
+            document.getElementById('guideStepFooter').style.display = 'none';
+            document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideHighlight').style.display = 'none';
+            document.getElementById('guideTooltip').style.display = 'none';
+        }
+
+        function endPageClockGuide() {
+            isPageClockGuideActive = false;
+            document.body.classList.remove('page-clock-guide-active');
+            document.getElementById('guideStepOverlay').classList.remove('active');
+            document.getElementById('guideStepFooter').style.display = 'none';
+
+            var nextBtnEl = document.getElementById('guideNextBtn');
+            var prevBtnEl = document.getElementById('guidePrevBtn');
+            var skipBtnEl = document.getElementById('guideSkipBtn');
+
+            nextBtnEl.onclick = nextGuideStep;
+            prevBtnEl.onclick = prevGuideStep;
+            skipBtnEl.onclick = function() {
+                endGuide();
+                localStorage.setItem('hasSeenGuide', 'true');
+            };
+
+            restorePageClockGlobalGuide();
+        }
+
+        function restartPageClockGuide() {
+            document.getElementById('pageClockGuideEndModal').classList.add('hidden');
+            document.body.classList.add('page-clock-guide-active');
+            currentPageClockGuideStep = 0;
+            isPageClockGuideActive = true;
+            showPageClockGuideStep(0);
+        }
+
+        function finishPageClockGuide() {
+            document.getElementById('pageClockGuideEndModal').classList.add('hidden');
+            endPageClockGuide();
+        }
+
+        function restorePageClockGlobalGuide() {
+            guideSteps = savedPageClockGuideSteps;
+            currentGuideStep = savedPageClockCurrentGuideStep;
+            isGuideActive = savedPageClockIsGuideActive;
+        }
     </script>
 <!-- 关于启动器模态框将通过JavaScript生成 -->
         <!-- 移动端提示弹窗 -->
@@ -12000,7 +12925,6 @@
                 <p>为了帮助您更好地了解启动器的各项功能，我们准备了一个简短的引导。是否要开始？</p>
                 <div class="guide-buttons">
                     <button class="guide-btn guide-btn-primary" id="startGuideBtn">开始引导</button>
-                    <button class="guide-btn guide-btn-single-image" id="singleImageGuideBtn">一图流</button>
                     <button class="guide-btn guide-btn-secondary" id="skipGuideBtn">跳过引导</button>
                 </div>
             </div>
@@ -12017,36 +12941,6 @@
                 <div class="guide-buttons">
                     <button class="guide-btn guide-btn-secondary" id="guideEndRestartBtn">重新开始</button>
                     <button class="guide-btn guide-btn-primary" id="guideEndFinishBtn">结束引导</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 一图流引导弹窗 -->
-        <div id="singleImageGuideModal" class="single-image-guide-overlay hidden">
-            <div class="single-image-guide-container">
-                <div class="single-image-guide-header">
-                    <h3>一图流引导</h3>
-                    <button class="single-image-guide-close" id="singleImageGuideCloseBtn">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="single-image-guide-content">
-                    <div class="single-image-wrapper">
-                        <img src="./images/guide.png" alt="登录页引导" class="single-guide-image" id="singleGuideImage">
-                    </div>
-                    <div class="single-image-steps">
-                        <div class="single-image-steps-header">
-                            <span>引导步骤</span>
-                            <span id="singleImageStepCount">1 / 15</span>
-                        </div>
-                        <div class="single-image-step-list" id="singleImageStepList">
-                        </div>
-                    </div>
-                </div>
-                <div class="single-image-guide-footer">
-                    <button class="single-image-guide-btn prev" id="singleImagePrevBtn" style="display: none;">上一步</button>
-                    <button class="single-image-guide-btn next" id="singleImageNextBtn">下一步</button>
-                    <button class="single-image-guide-btn close" id="singleImageFinishBtn">关闭</button>
                 </div>
             </div>
         </div>
@@ -12944,6 +13838,12 @@
                 document.getElementById('menuEdit').addEventListener('click', toggleEditMode);
                 document.getElementById('menuViewMode').addEventListener('click', toggleViewMode);
                 document.getElementById('menuComponentInfo').addEventListener('click', showComponentInfo);
+                document.getElementById('menuNoteGuide').addEventListener('click', function() {
+                    closeMenu();
+                    if (typeof showNoteGuide === 'function') {
+                        showNoteGuide();
+                    }
+                });
                 document.getElementById('menuExportNote').addEventListener('click', exportNote);
                 document.getElementById('menuImportNote').addEventListener('click', importNote);
                 document.getElementById('menuSortByCreated').addEventListener('click', sortNotesByCreated);
@@ -14102,6 +15002,18 @@
                             setTimeout(function() {
                                 modal.classList.add('show');
                             }, 10);
+                        }
+                    });
+                }
+                
+                var weatherGuideItem = document.getElementById('weatherGuideItem');
+                if (weatherGuideItem) {
+                    weatherGuideItem.addEventListener('click', function() {
+                        dropdownMenu.style.display = 'none';
+                        moreBtn.classList.remove('active');
+                        
+                        if (typeof showWeatherGuide === 'function') {
+                            showWeatherGuide();
                         }
                     });
                 }

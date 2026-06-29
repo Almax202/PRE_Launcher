@@ -1591,8 +1591,14 @@
                 }
                 
                 localStorage.removeItem('currentUser');
-                localStorage.removeItem('autoLogin'); // 登出后自动登录失效
-                localStorage.removeItem('currentUserAvatar'); // 登出后清除头像信息
+                localStorage.removeItem('rememberMe');
+                localStorage.removeItem('savedUsername');
+                localStorage.removeItem('savedPassword');
+                localStorage.removeItem('autoLogin');
+                localStorage.removeItem('currentUserAvatar');
+                localStorage.removeItem('customBackground');
+                localStorage.removeItem('skipSecurityVerify');
+                localStorage.removeItem('skipSecurityVerifyExpire');
                 document.getElementById('userName').textContent = '未登录';
                 document.getElementById('userId').textContent = 'ID: ---';
                 document.getElementById('tooltipUserName').textContent = '--';

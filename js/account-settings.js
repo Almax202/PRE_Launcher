@@ -4696,6 +4696,8 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.removeItem('memoryGamesPlayed');
             localStorage.removeItem('colorGamesPlayed');
             localStorage.removeItem('achievements');
+            localStorage.removeItem('skipSecurityVerify');
+            localStorage.removeItem('skipSecurityVerifyExpire');
             
             // 保存更新后的用户数据
             if (userIndex !== -1) {
@@ -4706,7 +4708,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 document.body.classList.add('page-transition-out');
                 setTimeout(function() {
-                    window.location.href = '../denglu.html';
+                    window.location.href = '../index.html';
                 }, 500);
             }, 1500);
         } else {
@@ -4776,6 +4778,10 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('savedUsername');
         localStorage.removeItem('savedPassword');
         localStorage.removeItem('autoLogin');
+        localStorage.removeItem('currentUserAvatar');
+        localStorage.removeItem('customBackground');
+        localStorage.removeItem('skipSecurityVerify');
+        localStorage.removeItem('skipSecurityVerifyExpire');
         
         // 显示账户注销成功弹窗
         showDeleteSuccessModal();
@@ -4811,7 +4817,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.removeChild(modal);
                 document.body.classList.add('page-transition-out');
                 setTimeout(function() {
-                    window.location.href = '../denglu.html';
+                    window.location.href = '../index.html';
                 }, 500);
             }, 300);
         });
@@ -4851,13 +4857,15 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('autoLogin');
         localStorage.removeItem('currentUserAvatar');
         localStorage.removeItem('customBackground');
+        localStorage.removeItem('skipSecurityVerify');
+        localStorage.removeItem('skipSecurityVerifyExpire');
         
         showAlert('已退出登录');
         
         setTimeout(function() {
             document.body.classList.add('page-transition-out');
             setTimeout(function() {
-                window.location.href = '../denglu.html';
+                window.location.href = '../index.html';
             }, 500);
         }, 1000);
     }
@@ -7012,9 +7020,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function confirmRejectTerms() {
         hideRejectTermsConfirmModal();
+        
+        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        var username = currentUser.username;
+        
+        if (username) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === username;
+            });
+            
+            if (user && user.loginHistory && user.loginHistory.length > 0) {
+                user.loginHistory[0].status = '已退出';
+                
+                var userIndex = users.findIndex(function(u) {
+                    return u.username === username;
+                });
+                if (userIndex !== -1) {
+                    users[userIndex] = user;
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                }
+            }
+        }
+        
         localStorage.removeItem('currentUser');
         localStorage.removeItem('isLoggedIn');
-        window.location.href = '../denglu.html';
+        localStorage.removeItem('rememberMe');
+        localStorage.removeItem('savedUsername');
+        localStorage.removeItem('savedPassword');
+        localStorage.removeItem('autoLogin');
+        localStorage.removeItem('currentUserAvatar');
+        localStorage.removeItem('customBackground');
+        localStorage.removeItem('skipSecurityVerify');
+        localStorage.removeItem('skipSecurityVerifyExpire');
+        
+        document.body.classList.add('page-transition-out');
+        setTimeout(function() {
+            window.location.href = '../index.html';
+        }, 500);
     }
     
     document.getElementById('deleteAccountFinalCancel').addEventListener('click', function() {
@@ -7616,9 +7659,9 @@ document.addEventListener('DOMContentLoaded', function() {
         var previousPage = localStorage.getItem('previousPage');
         
         var homePage = '../html/homepage4.0.html';
-        var loginPage = '../denglu.html';
+        var loginPage = '../index.html';
         
-        if (referrer && (referrer.includes('homepage') || referrer.includes('denglu'))) {
+        if (referrer && (referrer.includes('homepage') || referrer.includes('index'))) {
             window.location.href = referrer;
         } else if (previousPage) {
             window.location.href = previousPage;
