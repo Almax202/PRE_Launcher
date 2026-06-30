@@ -1934,9 +1934,15 @@
                 fontStyle: 'sans',
                 dateFormat: 'yyyy/mm/dd',
                 fontSize: 100,
+                timeFontSize: 120,
+                dateFontSize: 100,
+                weatherFontSize: 100,
+                quoteFontSize: 100,
+                showSeconds: false,
                 weatherClickable: false,
                 weatherClickTarget: 'msn',
-                sidebarMode: false
+                sidebarMode: false,
+                quoteTypewriter: true
             };
             
             var quoteCache = null;
@@ -2015,37 +2021,42 @@
                     
                     var content = data.content;
                     var author = data.author || '佚名';
-                    var contentIndex = 0;
                     
-                    quoteContentEl.textContent = '';
-                    quoteAuthorEl.textContent = '';
-                    quoteContentEl.classList.add('typing');
-                    
-                    function typeNextChar() {
-                        if (contentIndex < content.length) {
-                            quoteContentEl.textContent += content.charAt(contentIndex);
-                            contentIndex++;
-                            typewriterTimer = setTimeout(typeNextChar, 80);
-                        } else {
-                            typewriterTimer = null;
-                            quoteContentEl.classList.remove('typing');
-                            var authorIndex = 0;
-                            quoteAuthorEl.classList.add('typing');
-                            
-                            function typeNextAuthorChar() {
-                                if (authorIndex < author.length) {
-                                    quoteAuthorEl.textContent += author.charAt(authorIndex);
-                                    authorIndex++;
-                                    typewriterAuthorTimer = setTimeout(typeNextAuthorChar, 60);
-                                } else {
-                                    typewriterAuthorTimer = null;
-                                    quoteAuthorEl.classList.remove('typing');
+                    if (clockSettings.quoteTypewriter) {
+                        var contentIndex = 0;
+                        quoteContentEl.textContent = '';
+                        quoteAuthorEl.textContent = '';
+                        quoteContentEl.classList.add('typing');
+                        
+                        function typeNextChar() {
+                            if (contentIndex < content.length) {
+                                quoteContentEl.textContent += content.charAt(contentIndex);
+                                contentIndex++;
+                                typewriterTimer = setTimeout(typeNextChar, 80);
+                            } else {
+                                typewriterTimer = null;
+                                quoteContentEl.classList.remove('typing');
+                                var authorIndex = 0;
+                                quoteAuthorEl.classList.add('typing');
+                                
+                                function typeNextAuthorChar() {
+                                    if (authorIndex < author.length) {
+                                        quoteAuthorEl.textContent += author.charAt(authorIndex);
+                                        authorIndex++;
+                                        typewriterAuthorTimer = setTimeout(typeNextAuthorChar, 60);
+                                    } else {
+                                        typewriterAuthorTimer = null;
+                                        quoteAuthorEl.classList.remove('typing');
+                                    }
                                 }
+                                typeNextAuthorChar();
                             }
-                            typeNextAuthorChar();
                         }
+                        typeNextChar();
+                    } else {
+                        quoteContentEl.textContent = content;
+                        quoteAuthorEl.textContent = author;
                     }
-                    typeNextChar();
                 } else {
                     quoteContentEl.textContent = '——';
                     quoteAuthorEl.textContent = '';
@@ -2083,10 +2094,51 @@
                     valueEl.textContent = clockSettings.fontSize + '%';
                 }
                 
+                var timeSlider = document.getElementById('adjustTimeFontSizeSlider');
+                var timeValue = document.getElementById('adjustTimeFontSizeValue');
+                if (timeSlider && timeValue) {
+                    timeSlider.value = clockSettings.timeFontSize;
+                    timeValue.textContent = clockSettings.timeFontSize + '%';
+                }
+                
+                var dateSlider = document.getElementById('adjustDateFontSizeSlider');
+                var dateValue = document.getElementById('adjustDateFontSizeValue');
+                if (dateSlider && dateValue) {
+                    dateSlider.value = clockSettings.dateFontSize;
+                    dateValue.textContent = clockSettings.dateFontSize + '%';
+                }
+                
+                var weatherSlider = document.getElementById('adjustWeatherFontSizeSlider');
+                var weatherValue = document.getElementById('adjustWeatherFontSizeValue');
+                if (weatherSlider && weatherValue) {
+                    weatherSlider.value = clockSettings.weatherFontSize;
+                    weatherValue.textContent = clockSettings.weatherFontSize + '%';
+                }
+                
+                var quoteSlider = document.getElementById('adjustQuoteFontSizeSlider');
+                var quoteValue = document.getElementById('adjustQuoteFontSizeValue');
+                if (quoteSlider && quoteValue) {
+                    quoteSlider.value = clockSettings.quoteFontSize;
+                    quoteValue.textContent = clockSettings.quoteFontSize + '%';
+                }
+                
                 var alignBtns = document.querySelectorAll('.align-btn');
                 alignBtns.forEach(function(btn) {
-                    btn.classList.toggle('active', btn.dataset.align === clockSettings.textAlign);
+                    if (btn.dataset.align) {
+                        btn.classList.toggle('active', btn.dataset.align === clockSettings.textAlign);
+                    } else if (btn.dataset.format) {
+                        btn.classList.toggle('active', btn.dataset.format === clockSettings.timeFormat);
+                    } else if (btn.dataset.font) {
+                        btn.classList.toggle('active', btn.dataset.font === clockSettings.fontStyle);
+                    } else if (btn.dataset.dateFormat) {
+                        btn.classList.toggle('active', btn.dataset.dateFormat === clockSettings.dateFormat);
+                    }
                 });
+                
+                var showSecondsCheckbox = document.getElementById('adjustShowSeconds');
+                if (showSecondsCheckbox) {
+                    showSecondsCheckbox.checked = clockSettings.showSeconds;
+                }
                 
                 initPanelDrag();
             }
@@ -2157,6 +2209,50 @@
                     });
                 }
                 
+                var timeSlider = document.getElementById('adjustTimeFontSizeSlider');
+                var timeValue = document.getElementById('adjustTimeFontSizeValue');
+                if (timeSlider && timeValue) {
+                    timeSlider.addEventListener('input', function() {
+                        clockSettings.timeFontSize = parseInt(this.value);
+                        timeValue.textContent = clockSettings.timeFontSize + '%';
+                        updateElementFontSizes();
+                        saveClockSettings();
+                    });
+                }
+                
+                var dateSlider = document.getElementById('adjustDateFontSizeSlider');
+                var dateValue = document.getElementById('adjustDateFontSizeValue');
+                if (dateSlider && dateValue) {
+                    dateSlider.addEventListener('input', function() {
+                        clockSettings.dateFontSize = parseInt(this.value);
+                        dateValue.textContent = clockSettings.dateFontSize + '%';
+                        updateElementFontSizes();
+                        saveClockSettings();
+                    });
+                }
+                
+                var weatherSlider = document.getElementById('adjustWeatherFontSizeSlider');
+                var weatherValue = document.getElementById('adjustWeatherFontSizeValue');
+                if (weatherSlider && weatherValue) {
+                    weatherSlider.addEventListener('input', function() {
+                        clockSettings.weatherFontSize = parseInt(this.value);
+                        weatherValue.textContent = clockSettings.weatherFontSize + '%';
+                        updateElementFontSizes();
+                        saveClockSettings();
+                    });
+                }
+                
+                var quoteSlider = document.getElementById('adjustQuoteFontSizeSlider');
+                var quoteValue = document.getElementById('adjustQuoteFontSizeValue');
+                if (quoteSlider && quoteValue) {
+                    quoteSlider.addEventListener('input', function() {
+                        clockSettings.quoteFontSize = parseInt(this.value);
+                        quoteValue.textContent = clockSettings.quoteFontSize + '%';
+                        updateElementFontSizes();
+                        saveClockSettings();
+                    });
+                }
+                
                 alignBtns.forEach(function(btn) {
                     btn.addEventListener('click', function() {
                         var attrName = '';
@@ -2185,6 +2281,15 @@
                         saveClockSettings();
                     });
                 });
+                
+                var showSecondsCheckbox = document.getElementById('adjustShowSeconds');
+                if (showSecondsCheckbox) {
+                    showSecondsCheckbox.addEventListener('change', function() {
+                        clockSettings.showSeconds = this.checked;
+                        updateClockDisplay();
+                        saveClockSettings();
+                    });
+                }
                 
                 if (confirmBtn) {
                     confirmBtn.addEventListener('click', function() {
@@ -2626,6 +2731,11 @@
                     showQuoteCheckbox.checked = clockSettings.showQuote;
                 }
                 
+                var quoteTypewriterCheckbox = document.getElementById('clockQuoteTypewriter');
+                if (quoteTypewriterCheckbox) {
+                    quoteTypewriterCheckbox.checked = clockSettings.quoteTypewriter;
+                }
+                
                 var formatBtns = document.querySelectorAll('.format-btn');
                 formatBtns.forEach(function(btn) {
                     btn.classList.toggle('active', btn.dataset.format === clockSettings.timeFormat);
@@ -2683,10 +2793,119 @@
                 updateHideInterfaceButton();
                 
                 initWeatherClickEvent();
+                
+                updateElementFontSizes();
             }
             
             function saveClockSettings() {
                 localStorage.setItem('pageClockSettings', JSON.stringify(clockSettings));
+            }
+            
+            function resetClockSettings() {
+                clockSettings.showDate = true;
+                clockSettings.showWeather = false;
+                clockSettings.showLunar = false;
+                clockSettings.showQuote = false;
+                clockSettings.quoteTypewriter = true;
+                clockSettings.sidebarMode = false;
+                clockSettings.hideIcons = false;
+                clockSettings.weatherClickable = false;
+                clockSettings.weatherClickTarget = 'msn';
+                clockSettings.timeFormat = '24';
+                clockSettings.fontStyle = 'sans';
+                clockSettings.dateFormat = 'yyyy/mm/dd';
+                clockSettings.fontSize = 100;
+                clockSettings.timeFontSize = 120;
+                clockSettings.dateFontSize = 100;
+                clockSettings.weatherFontSize = 100;
+                clockSettings.quoteFontSize = 100;
+                clockSettings.showSeconds = false;
+                clockSettings.textAlign = 'left';
+                clockSettings.position = 'center';
+                clockSettings.quotePosition = 'below-clock';
+                
+                var dateEl = document.getElementById('pageClockDate');
+                if (dateEl) {
+                    dateEl.style.display = clockSettings.showDate ? 'block' : 'none';
+                }
+                
+                var weatherEl = document.getElementById('pageClockWeather');
+                if (weatherEl) {
+                    weatherEl.style.display = clockSettings.showWeather ? 'flex' : 'none';
+                }
+                
+                var lunarEl = document.getElementById('pageClockLunar');
+                if (lunarEl) {
+                    lunarEl.style.display = clockSettings.showLunar ? 'block' : 'none';
+                }
+                
+                var quoteEl = document.getElementById('pageClockQuote');
+                if (quoteEl) {
+                    quoteEl.style.display = clockSettings.showQuote ? 'block' : 'none';
+                }
+                
+                updateContentClass();
+                updateContentAlign();
+                updateClockDisplay();
+                
+                var showDateCheckbox = document.getElementById('clockShowDate');
+                if (showDateCheckbox) showDateCheckbox.checked = clockSettings.showDate;
+                
+                var showWeatherCheckbox = document.getElementById('clockShowWeather');
+                if (showWeatherCheckbox) showWeatherCheckbox.checked = clockSettings.showWeather;
+                
+                var showLunarCheckbox = document.getElementById('clockShowLunar');
+                if (showLunarCheckbox) showLunarCheckbox.checked = clockSettings.showLunar;
+                
+                var showQuoteCheckbox = document.getElementById('clockShowQuote');
+                if (showQuoteCheckbox) showQuoteCheckbox.checked = clockSettings.showQuote;
+                
+                var quoteTypewriterCheckbox = document.getElementById('clockQuoteTypewriter');
+                if (quoteTypewriterCheckbox) quoteTypewriterCheckbox.checked = clockSettings.quoteTypewriter;
+                
+                var sidebarModeCheckbox = document.getElementById('clockSidebarMode');
+                if (sidebarModeCheckbox) sidebarModeCheckbox.checked = clockSettings.sidebarMode;
+                
+                var hideIconsCheckbox = document.getElementById('clockHideIcons');
+                if (hideIconsCheckbox) hideIconsCheckbox.checked = clockSettings.hideIcons;
+                
+                var weatherClickableCheckbox = document.getElementById('clockWeatherClickable');
+                if (weatherClickableCheckbox) weatherClickableCheckbox.checked = clockSettings.weatherClickable;
+                
+                var weatherClickTargetSelect = document.getElementById('weatherClickTargetSelect');
+                if (weatherClickTargetSelect) {
+                    weatherClickTargetSelect.style.display = clockSettings.weatherClickable ? 'block' : 'none';
+                }
+                
+                var selectOptions = document.querySelectorAll('.weather-click-target-select .select-option');
+                selectOptions.forEach(function(option) {
+                    option.classList.toggle('active', option.dataset.target === clockSettings.weatherClickTarget);
+                });
+                
+                var formatBtns = document.querySelectorAll('.format-btn');
+                formatBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.format === clockSettings.timeFormat);
+                });
+                
+                var fontBtns = document.querySelectorAll('.font-btn');
+                fontBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.font === clockSettings.fontStyle);
+                });
+                
+                var dateFormatBtns = document.querySelectorAll('.date-format-btn');
+                dateFormatBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.dateFormat === clockSettings.dateFormat);
+                });
+                
+                var fontSizeSlider = document.getElementById('clockFontSizeSlider');
+                var fontSizeValue = document.getElementById('fontSizeValue');
+                if (fontSizeSlider) fontSizeSlider.value = clockSettings.fontSize;
+                if (fontSizeValue) fontSizeValue.textContent = clockSettings.fontSize + '%';
+                
+                updateIconsVisibility();
+                initWeatherClickEvent();
+                
+                saveClockSettings();
             }
             
             function updateClockDisplay() {
@@ -2694,14 +2913,23 @@
                 
                 var hours = now.getHours();
                 var minutes = now.getMinutes().toString().padStart(2, '0');
+                var seconds = now.getSeconds().toString().padStart(2, '0');
                 
                 var timeStr = '';
                 if (clockSettings.timeFormat === '12') {
                     var period = hours >= 12 ? 'PM' : 'AM';
                     hours = hours % 12 || 12;
-                    timeStr = hours.toString().padStart(2, '0') + ':' + minutes + ' ' + period;
+                    if (clockSettings.showSeconds) {
+                        timeStr = hours.toString().padStart(2, '0') + ':' + minutes + ':' + seconds + ' ' + period;
+                    } else {
+                        timeStr = hours.toString().padStart(2, '0') + ':' + minutes + ' ' + period;
+                    }
                 } else {
-                    timeStr = hours.toString().padStart(2, '0') + ':' + minutes;
+                    if (clockSettings.showSeconds) {
+                        timeStr = hours.toString().padStart(2, '0') + ':' + minutes + ':' + seconds;
+                    } else {
+                        timeStr = hours.toString().padStart(2, '0') + ':' + minutes;
+                    }
                 }
                 
                 var timeEl = document.getElementById('pageClockTime');
@@ -2969,6 +3197,17 @@
                     });
                 }
                 
+                var quoteTypewriterCheckbox = document.getElementById('clockQuoteTypewriter');
+                if (quoteTypewriterCheckbox) {
+                    quoteTypewriterCheckbox.addEventListener('change', function() {
+                        clockSettings.quoteTypewriter = this.checked;
+                        if (clockSettings.showQuote && quoteCache) {
+                            renderQuote(quoteCache);
+                        }
+                        saveClockSettings();
+                    });
+                }
+                
                 var hideIconsCheckbox = document.getElementById('clockHideIcons');
                 if (hideIconsCheckbox) {
                     hideIconsCheckbox.addEventListener('change', function() {
@@ -3038,6 +3277,55 @@
                     });
                 }
                 
+                var resetBtn = document.getElementById('resetClockSettingsBtn');
+                var resetConfirmModal = document.getElementById('resetClockSettingsConfirmModal');
+                var resetCancelBtn = document.getElementById('resetClockSettingsCancel');
+                var resetConfirmBtn = document.getElementById('resetClockSettingsConfirm');
+                
+                if (resetBtn && resetConfirmModal) {
+                    resetBtn.addEventListener('click', function() {
+                        resetConfirmModal.style.display = 'flex';
+                    });
+                }
+                
+                if (resetCancelBtn && resetConfirmModal) {
+                    resetCancelBtn.addEventListener('click', function() {
+                        resetConfirmModal.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(function() {
+                            resetConfirmModal.style.display = 'none';
+                            resetConfirmModal.style.animation = '';
+                        }, 300);
+                    });
+                }
+                
+                if (resetConfirmBtn && resetConfirmModal) {
+                    resetConfirmBtn.addEventListener('click', function() {
+                        resetConfirmModal.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(function() {
+                            resetConfirmModal.style.display = 'none';
+                            resetConfirmModal.style.animation = '';
+                        }, 300);
+                        
+                        resetClockSettings();
+                        
+                        setTimeout(function() {
+                            showAlert('已初始化所有设置');
+                        }, 350);
+                    });
+                }
+                
+                if (resetConfirmModal) {
+                    resetConfirmModal.addEventListener('click', function(e) {
+                        if (e.target === resetConfirmModal) {
+                            resetConfirmModal.style.animation = 'fadeOut 0.3s ease';
+                            setTimeout(function() {
+                                resetConfirmModal.style.display = 'none';
+                                resetConfirmModal.style.animation = '';
+                            }, 300);
+                        }
+                    });
+                }
+                
                 var fontSizeSlider = document.getElementById('clockFontSizeSlider');
                 var fontSizeValue = document.getElementById('fontSizeValue');
                 if (fontSizeSlider) {
@@ -3096,6 +3384,40 @@
                         contentEl.style.left = (clockSettings.customPosition.x / 100 * window.innerWidth) + 'px';
                         contentEl.style.top = (clockSettings.customPosition.y / 100 * window.innerHeight) + 'px';
                         contentEl.style.transform = '';
+                    }
+                }
+                updateElementFontSizes();
+            }
+            
+            function updateElementFontSizes() {
+                var timeEl = document.getElementById('pageClockTime');
+                if (timeEl) {
+                    timeEl.style.fontSize = clockSettings.timeFontSize + 'px';
+                }
+                
+                var dateEl = document.getElementById('pageClockDate');
+                if (dateEl) {
+                    dateEl.style.fontSize = (24 * clockSettings.dateFontSize / 100) + 'px';
+                }
+                
+                var weatherEl = document.getElementById('pageClockWeather');
+                if (weatherEl) {
+                    weatherEl.style.fontSize = (28 * clockSettings.weatherFontSize / 100) + 'px';
+                    var weatherIcon = weatherEl.querySelector('i');
+                    if (weatherIcon) {
+                        weatherIcon.style.fontSize = (32 * clockSettings.weatherFontSize / 100) + 'px';
+                    }
+                }
+                
+                var quoteEl = document.getElementById('pageClockQuote');
+                if (quoteEl) {
+                    var quoteContent = quoteEl.querySelector('.quote-content');
+                    var quoteAuthor = quoteEl.querySelector('.quote-author');
+                    if (quoteContent) {
+                        quoteContent.style.fontSize = (18 * clockSettings.quoteFontSize / 100) + 'px';
+                    }
+                    if (quoteAuthor) {
+                        quoteAuthor.style.fontSize = (14 * clockSettings.quoteFontSize / 100) + 'px';
                     }
                 }
             }
@@ -3927,10 +4249,38 @@
         </div>
         <div class="adjust-panel-body">
             <div class="adjust-section">
-                <h5>文字大小</h5>
+                <h5>整体大小</h5>
                 <input type="range" id="adjustFontSizeSlider" min="60" max="160" value="100">
                 <div class="font-size-display">
                     <span id="adjustFontSizeValue">100%</span>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>时钟数字大小</h5>
+                <input type="range" id="adjustTimeFontSizeSlider" min="60" max="200" value="120">
+                <div class="font-size-display">
+                    <span id="adjustTimeFontSizeValue">120%</span>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>日期大小</h5>
+                <input type="range" id="adjustDateFontSizeSlider" min="60" max="200" value="100">
+                <div class="font-size-display">
+                    <span id="adjustDateFontSizeValue">100%</span>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>天气大小</h5>
+                <input type="range" id="adjustWeatherFontSizeSlider" min="60" max="200" value="100">
+                <div class="font-size-display">
+                    <span id="adjustWeatherFontSizeValue">100%</span>
+                </div>
+            </div>
+            <div class="adjust-section">
+                <h5>名言大小</h5>
+                <input type="range" id="adjustQuoteFontSizeSlider" min="60" max="200" value="100">
+                <div class="font-size-display">
+                    <span id="adjustQuoteFontSizeValue">100%</span>
                 </div>
             </div>
             <div class="adjust-section">
@@ -3955,11 +4305,20 @@
                 </div>
             </div>
             <div class="adjust-section">
+                <label class="adjust-toggle">
+                    <span>显示秒数</span>
+                    <input type="checkbox" id="adjustShowSeconds">
+                </label>
+            </div>
+            <div class="adjust-section">
                 <h5>字体样式</h5>
-                <div class="align-buttons">
+                <div class="align-buttons font-buttons-grid">
                     <button class="align-btn active" data-font="sans">无衬线体</button>
                     <button class="align-btn" data-font="serif">衬线体</button>
                     <button class="align-btn" data-font="mono">等宽体</button>
+                    <button class="align-btn" data-font="bold">粗体</button>
+                    <button class="align-btn" data-font="handwrite">手写体</button>
+                    <button class="align-btn" data-font="light">细体</button>
                 </div>
             </div>
             <div class="adjust-section">
@@ -4085,6 +4444,10 @@
                             <input type="checkbox" id="clockShowQuote" checked>
                         </label>
                         <label class="settings-toggle-reverse">
+                            <span>名言打字机效果</span>
+                            <input type="checkbox" id="clockQuoteTypewriter" checked>
+                        </label>
+                        <label class="settings-toggle-reverse">
                             <span>侧边栏模式</span>
                             <input type="checkbox" id="clockSidebarMode">
                         </label>
@@ -4116,6 +4479,14 @@
                             <span>页面时钟</span>
                             <span class="version-info" id="pageClockVersionNumber"></span>
                             <i class="fas fa-info-circle version-info-icon"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>初始化</h4>
+                        <button class="reset-settings-btn" id="resetClockSettingsBtn">
+                            <i class="fas fa-undo-alt"></i>
+                            <span>组件初始化</span>
                         </button>
                     </div>
                 </div>
@@ -4716,6 +5087,21 @@
         </div>
     </div>
 
+    <div id="resetClockSettingsConfirmModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <h3>确认操作</h3>
+            </div>
+            <div class="confirm-body">
+                <p>您确定要重置天气组件的所有设置吗？</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn" id="resetClockSettingsCancel">取消</button>
+                <button class="confirm-btn confirm-ok" id="resetClockSettingsConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
     <div id="moreActionsModal" class="custom-confirm-modal" style="display: none;">
         <div class="confirm-content more-actions-content">
             <div class="confirm-header">
@@ -4863,61 +5249,69 @@
                 </div>
                 
                 <div class="weather-details-grid">
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardFeelsLike" data-type="feelsLike">
                         <div class="detail-icon"><i class="fas fa-temperature-half"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">体感温度</span>
                             <span class="detail-value" id="weatherFeelsLike">--°</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardHumidity" data-type="humidity">
                         <div class="detail-icon"><i class="fas fa-droplet"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">湿度</span>
                             <span class="detail-value" id="weatherHumidity">--%</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardWind" data-type="wind">
                         <div class="detail-icon"><i class="fas fa-wind"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">风向风力</span>
                             <span class="detail-value" id="weatherWind">--</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardPressure" data-type="pressure">
                         <div class="detail-icon"><i class="fas fa-gauge"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">气压</span>
                             <span class="detail-value" id="weatherPressure">-- hPa</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardVisibility" data-type="visibility">
                         <div class="detail-icon"><i class="fas fa-eye"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">能见度</span>
                             <span class="detail-value" id="weatherVisibility">-- km</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardUv" data-type="uv">
                         <div class="detail-icon"><i class="fas fa-sun"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">紫外线</span>
                             <span class="detail-value" id="weatherUv">--</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardPrecip" data-type="precip">
                         <div class="detail-icon"><i class="fas fa-cloud-rain"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">降水概率</span>
                             <span class="detail-value" id="weatherPrecip">--%</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
-                    <div class="weather-detail-card">
+                    <div class="weather-detail-card" id="weatherCardAqi" data-type="aqi">
                         <div class="detail-icon"><i class="fas fa-wind"></i></div>
                         <div class="detail-info">
                             <span class="detail-label">空气质量</span>
                             <span class="detail-value" id="weatherAqi">--</span>
                         </div>
+                        <div class="detail-card-arrow"><i class="fas fa-chevron-right"></i></div>
                     </div>
                 </div>
                 
@@ -4934,8 +5328,15 @@
                     <div class="section-title">
                         <i class="fas fa-calendar-week"></i>
                         <span>7天预报</span>
+                        <div class="daily-view-toggle" id="dailyViewToggle">
+                            <button class="toggle-btn active" data-view="list">列表</button>
+                            <button class="toggle-btn" data-view="chart">折线</button>
+                        </div>
                     </div>
                     <div class="weather-daily-list" id="weatherDailyList">
+                    </div>
+                    <div class="weather-daily-chart" id="weatherDailyChart" style="display: none;">
+                        <svg id="dailyChartSvg" width="100%" height="200"></svg>
                     </div>
                 </div>
                 
@@ -4965,6 +5366,21 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="weatherDetailModal" class="custom-fullscreen-modal weather-detail-modal" style="display: none;">
+        <div class="weather-detail-container">
+            <div class="weather-detail-header">
+                <div class="weather-detail-header-left">
+                    <h3 class="weather-detail-title" id="weatherDetailTitle">详细信息</h3>
+                </div>
+                <button class="weather-detail-close-btn" id="weatherDetailCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="weather-detail-body" id="weatherDetailBody">
             </div>
         </div>
     </div>
@@ -14400,9 +14816,224 @@
                     dailyList.appendChild(dayItem);
                 });
                 
+                renderDailyChart(data.daily);
+                
                 document.getElementById('weatherSunrise').textContent = formatTime(data.sunrise);
                 document.getElementById('weatherSunset').textContent = formatTime(data.sunset);
                 updateSunProgress(data.sunrise, data.sunset);
+            }
+            
+            var currentDailyView = 'list';
+            
+            function renderDailyChart(dailyData) {
+                var svg = document.getElementById('dailyChartSvg');
+                if (!svg || !dailyData || dailyData.length === 0) return;
+                
+                var width = svg.clientWidth || 400;
+                var height = 200;
+                var padding = { top: 30, right: 20, bottom: 40, left: 30 };
+                var chartWidth = width - padding.left - padding.right;
+                var chartHeight = height - padding.top - padding.bottom;
+                
+                svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+                
+                var maxTemp = Math.max.apply(null, dailyData.map(function(d) { return d.maxTemp; }));
+                var minTemp = Math.min.apply(null, dailyData.map(function(d) { return d.minTemp; }));
+                var tempRange = maxTemp - minTemp;
+                if (tempRange === 0) tempRange = 1;
+                
+                maxTemp += tempRange * 0.2;
+                minTemp -= tempRange * 0.2;
+                tempRange = maxTemp - minTemp;
+                
+                var xStep = chartWidth / (dailyData.length - 1);
+                
+                function getX(index) {
+                    return padding.left + index * xStep;
+                }
+                
+                function getY(temp) {
+                    return padding.top + chartHeight - ((temp - minTemp) / tempRange) * chartHeight;
+                }
+                
+                var svgNS = 'http://www.w3.org/2000/svg';
+                
+                while (svg.firstChild) {
+                    svg.removeChild(svg.firstChild);
+                }
+                
+                for (var i = 0; i <= 4; i++) {
+                    var y = padding.top + (chartHeight / 4) * i;
+                    var line = document.createElementNS(svgNS, 'line');
+                    line.setAttribute('x1', padding.left);
+                    line.setAttribute('y1', y);
+                    line.setAttribute('x2', width - padding.right);
+                    line.setAttribute('y2', y);
+                    line.setAttribute('stroke', 'rgba(255, 255, 255, 0.15)');
+                    line.setAttribute('stroke-width', '1');
+                    svg.appendChild(line);
+                    
+                    var tempValue = Math.round(maxTemp - (tempRange / 4) * i);
+                    var text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', padding.left - 5);
+                    text.setAttribute('y', y + 4);
+                    text.setAttribute('text-anchor', 'end');
+                    text.setAttribute('fill', 'rgba(255, 255, 255, 0.6)');
+                    text.setAttribute('font-size', '11');
+                    text.textContent = formatTemp(tempValue);
+                    svg.appendChild(text);
+                }
+                
+                var maxPoints = dailyData.map(function(day, i) {
+                    return { x: getX(i), y: getY(day.maxTemp) };
+                });
+                
+                var minPoints = dailyData.map(function(day, i) {
+                    return { x: getX(i), y: getY(day.minTemp) };
+                });
+                
+                function createPath(points) {
+                    if (points.length === 0) return '';
+                    var d = 'M ' + points[0].x + ' ' + points[0].y;
+                    for (var i = 1; i < points.length; i++) {
+                        d += ' L ' + points[i].x + ' ' + points[i].y;
+                    }
+                    return d;
+                }
+                
+                var areaPath = createPath(maxPoints) + ' L ' + minPoints[minPoints.length - 1].x + ' ' + minPoints[minPoints.length - 1].y;
+                for (var j = minPoints.length - 2; j >= 0; j--) {
+                    areaPath += ' L ' + minPoints[j].x + ' ' + minPoints[j].y;
+                }
+                areaPath += ' Z';
+                
+                var defs = document.createElementNS(svgNS, 'defs');
+                var gradient = document.createElementNS(svgNS, 'linearGradient');
+                gradient.setAttribute('id', 'tempGradient');
+                gradient.setAttribute('x1', '0%');
+                gradient.setAttribute('y1', '0%');
+                gradient.setAttribute('x2', '0%');
+                gradient.setAttribute('y2', '100%');
+                var stop1 = document.createElementNS(svgNS, 'stop');
+                stop1.setAttribute('offset', '0%');
+                stop1.setAttribute('stop-color', '#ff9a56');
+                var stop2 = document.createElementNS(svgNS, 'stop');
+                stop2.setAttribute('offset', '100%');
+                stop2.setAttribute('stop-color', '#56b8ff');
+                gradient.appendChild(stop1);
+                gradient.appendChild(stop2);
+                defs.appendChild(gradient);
+                svg.appendChild(defs);
+                
+                var area = document.createElementNS(svgNS, 'path');
+                area.setAttribute('d', areaPath);
+                area.setAttribute('fill', 'url(#tempGradient)');
+                area.setAttribute('opacity', '0.3');
+                svg.appendChild(area);
+                
+                var maxLine = document.createElementNS(svgNS, 'path');
+                maxLine.setAttribute('d', createPath(maxPoints));
+                maxLine.setAttribute('fill', 'none');
+                maxLine.setAttribute('stroke', '#ff9a56');
+                maxLine.setAttribute('stroke-width', '2.5');
+                maxLine.setAttribute('stroke-linecap', 'round');
+                maxLine.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(maxLine);
+                
+                var minLine = document.createElementNS(svgNS, 'path');
+                minLine.setAttribute('d', createPath(minPoints));
+                minLine.setAttribute('fill', 'none');
+                minLine.setAttribute('stroke', '#56b8ff');
+                minLine.setAttribute('stroke-width', '2.5');
+                minLine.setAttribute('stroke-linecap', 'round');
+                minLine.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(minLine);
+                
+                dailyData.forEach(function(day, i) {
+                    var maxCircle = document.createElementNS(svgNS, 'circle');
+                    maxCircle.setAttribute('cx', getX(i));
+                    maxCircle.setAttribute('cy', getY(day.maxTemp));
+                    maxCircle.setAttribute('r', '4');
+                    maxCircle.setAttribute('fill', '#ff9a56');
+                    maxCircle.setAttribute('stroke', 'white');
+                    maxCircle.setAttribute('stroke-width', '2');
+                    svg.appendChild(maxCircle);
+                    
+                    var maxTempText = document.createElementNS(svgNS, 'text');
+                    maxTempText.setAttribute('x', getX(i));
+                    maxTempText.setAttribute('y', getY(day.maxTemp) - 10);
+                    maxTempText.setAttribute('text-anchor', 'middle');
+                    maxTempText.setAttribute('fill', '#ff9a56');
+                    maxTempText.setAttribute('font-size', '11');
+                    maxTempText.setAttribute('font-weight', '500');
+                    maxTempText.textContent = formatTemp(day.maxTemp);
+                    svg.appendChild(maxTempText);
+                    
+                    var minCircle = document.createElementNS(svgNS, 'circle');
+                    minCircle.setAttribute('cx', getX(i));
+                    minCircle.setAttribute('cy', getY(day.minTemp));
+                    minCircle.setAttribute('r', '4');
+                    minCircle.setAttribute('fill', '#56b8ff');
+                    minCircle.setAttribute('stroke', 'white');
+                    minCircle.setAttribute('stroke-width', '2');
+                    svg.appendChild(minCircle);
+                    
+                    var minTempText = document.createElementNS(svgNS, 'text');
+                    minTempText.setAttribute('x', getX(i));
+                    minTempText.setAttribute('y', getY(day.minTemp) + 18);
+                    minTempText.setAttribute('text-anchor', 'middle');
+                    minTempText.setAttribute('fill', '#56b8ff');
+                    minTempText.setAttribute('font-size', '11');
+                    minTempText.setAttribute('font-weight', '500');
+                    minTempText.textContent = formatTemp(day.minTemp);
+                    svg.appendChild(minTempText);
+                    
+                    var dayText = document.createElementNS(svgNS, 'text');
+                    dayText.setAttribute('x', getX(i));
+                    dayText.setAttribute('y', height - padding.bottom + 20);
+                    dayText.setAttribute('text-anchor', 'middle');
+                    dayText.setAttribute('fill', 'rgba(255, 255, 255, 0.8)');
+                    dayText.setAttribute('font-size', '11');
+                    dayText.textContent = day.dayName;
+                    svg.appendChild(dayText);
+                    
+                    var dateText = document.createElementNS(svgNS, 'text');
+                    dateText.setAttribute('x', getX(i));
+                    dateText.setAttribute('y', height - padding.bottom + 34);
+                    dateText.setAttribute('text-anchor', 'middle');
+                    dateText.setAttribute('fill', 'rgba(255, 255, 255, 0.5)');
+                    dateText.setAttribute('font-size', '10');
+                    dateText.textContent = day.dateStr;
+                    svg.appendChild(dateText);
+                });
+            }
+            
+            function toggleDailyView(view) {
+                currentDailyView = view;
+                var dailyList = document.getElementById('weatherDailyList');
+                var dailyChart = document.getElementById('weatherDailyChart');
+                var toggleBtns = document.querySelectorAll('#dailyViewToggle .toggle-btn');
+                
+                toggleBtns.forEach(function(btn) {
+                    if (btn.getAttribute('data-view') === view) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                if (view === 'list') {
+                    dailyList.style.display = 'block';
+                    dailyChart.style.display = 'none';
+                } else {
+                    dailyList.style.display = 'none';
+                    dailyChart.style.display = 'block';
+                    if (weatherDataCache && weatherDataCache.daily) {
+                        setTimeout(function() {
+                            renderDailyChart(weatherDataCache.daily);
+                        }, 50);
+                    }
+                }
             }
             
             function fetchWeatherData() {
@@ -14578,6 +15209,589 @@
             
             function closeCityModal() {
                 var modal = document.getElementById('weatherCityModal');
+                if (!modal) return;
+                
+                modal.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                    modal.style.animation = '';
+                }, 300);
+            }
+            
+            var detailContentGenerators = {
+                feelsLike: function(data) {
+                    var current = data.current;
+                    var diff = current.feelsLike - current.temp;
+                    var diffText = diff > 0 ? '比实际温度高 ' + diff + '°' : (diff < 0 ? '比实际温度低 ' + Math.abs(diff) + '°' : '与实际温度相同');
+                    var reason = '';
+                    if (diff > 2) {
+                        reason = '体感温度较高可能是由于湿度大或风力较弱导致的。';
+                    } else if (diff < -2) {
+                        reason = '体感温度较低可能是由于风力较大或湿度较低导致的。';
+                    } else {
+                        reason = '体感温度与实际温度相近，气候较为舒适。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-temperature-half"></i></div>
+                                    <div class="detail-main-number">` + formatTemp(current.feelsLike) + `</div>
+                                    <div class="detail-main-label">体感温度</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>温度对比</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-thermometer-half"></i>实际温度</span>
+                                            <span class="info-value">` + formatTemp(current.temp) + `</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-temperature-high"></i>体感温度</span>
+                                            <span class="info-value">` + formatTemp(current.feelsLike) + `</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-exchange-alt"></i>温差</span>
+                                            <span class="info-value">` + diffText + `</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-wind"></i>影响因素</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-droplet"></i>相对湿度</span>
+                                            <span class="info-value">` + current.humidity + `%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-wind"></i>风力</span>
+                                            <span class="info-value">` + current.windDirection + ' ' + current.windSpeed + `</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>` + reason + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                humidity: function(data) {
+                    var current = data.current;
+                    var humidityLevel = '';
+                    var humidityTip = '';
+                    if (current.humidity < 30) {
+                        humidityLevel = '干燥';
+                        humidityTip = '空气较为干燥，建议多喝水，使用加湿器保持室内湿度。皮肤容易干燥，注意保湿。';
+                    } else if (current.humidity < 60) {
+                        humidityLevel = '舒适';
+                        humidityTip = '湿度适宜，人体感觉舒适。这是最适合户外活动的湿度范围。';
+                    } else if (current.humidity < 80) {
+                        humidityLevel = '偏潮湿';
+                        humidityTip = '空气较为潮湿，体感可能会有些闷热。注意衣物透气，室内注意通风除湿。';
+                    } else {
+                        humidityLevel = '潮湿';
+                        humidityTip = '空气湿度很高，衣物不易晾干，容易滋生霉菌。建议开启除湿设备，保持室内干燥。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-droplet"></i></div>
+                                    <div class="detail-main-number">` + current.humidity + `%</div>
+                                    <div class="detail-main-label">相对湿度 · <span class="level-indicator">` + humidityLevel + `</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-chart-line"></i>湿度参考</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-tint-slash"></i>干燥</span>
+                                            <span class="info-value">＜ 30%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-smile"></i>舒适</span>
+                                            <span class="info-value">30% ~ 60%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-tint"></i>偏潮湿</span>
+                                            <span class="info-value">60% ~ 80%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-rain"></i>潮湿</span>
+                                            <span class="info-value">＞ 80%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>` + humidityTip + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                wind: function(data) {
+                    var current = data.current;
+                    var windLevel = current.windSpeed;
+                    var windTip = '';
+                    if (windLevel.indexOf('1级') >= 0 || windLevel.indexOf('2级') >= 0) {
+                        windTip = '风力较小，适合户外活动。旗帜基本不动或轻微飘动。';
+                    } else if (windLevel.indexOf('3级') >= 0 || windLevel.indexOf('4级') >= 0) {
+                        windTip = '风力适中，感觉凉爽舒适。树叶和小树枝会摇动。';
+                    } else if (windLevel.indexOf('5级') >= 0 || windLevel.indexOf('6级') >= 0) {
+                        windTip = '风力较大，出行请注意防风。大树枝会摇动，电线有呼呼声。';
+                    } else {
+                        windTip = '风力很强，请尽量减少外出。注意关好门窗，加固易被风吹动的物品。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-wind"></i></div>
+                                    <div class="detail-main-number">` + current.windDirection + `<br><span style="font-size: 28px;">` + current.windSpeed + `</span></div>
+                                    <div class="detail-main-label">风向风力</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-compass"></i>风向说明</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-arrow-up"></i>当前风向</span>
+                                            <span class="info-value">` + current.windDirection + `</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-wind"></i>风力等级</span>
+                                            <span class="info-value">` + current.windSpeed + `</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-list-ol"></i>风力等级参考</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-leaf"></i>0-2级</span>
+                                            <span class="info-value">微风，感觉不明显</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-tree"></i>3-4级</span>
+                                            <span class="info-value">和风，树叶摇动</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-umbrella"></i>5-6级</span>
+                                            <span class="info-value">清风，树枝摇动</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-exclamation-triangle"></i>7级以上</span>
+                                            <span class="info-value">强风，注意安全</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>` + windTip + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                pressure: function(data) {
+                    var current = data.current;
+                    var pressureLevel = '';
+                    var pressureTip = '';
+                    if (current.pressure < 1000) {
+                        pressureLevel = '偏低';
+                        pressureTip = '气压偏低，可能会有天气变化。部分人群可能会感到轻微头晕或不适，注意休息。';
+                    } else if (current.pressure < 1020) {
+                        pressureLevel = '正常';
+                        pressureTip = '气压处于正常范围内，人体感觉舒适。适合进行各种户外活动。';
+                    } else {
+                        pressureLevel = '偏高';
+                        pressureTip = '气压偏高，通常预示着晴朗稳定的天气。一般不会对人体造成不适影响。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-gauge"></i></div>
+                                    <div class="detail-main-number">` + current.pressure + ` hPa</div>
+                                    <div class="detail-main-label">大气压强 · <span class="level-indicator">` + pressureLevel + `</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>气压小知识</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-gauge-high"></i>标准大气压</span>
+                                            <span class="info-value">1013.25 hPa</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-mountain"></i>海拔影响</span>
+                                            <span class="info-value">海拔越高气压越低</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-sun"></i>高压天气</span>
+                                            <span class="info-value">通常天气晴朗</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-rain"></i>低压天气</span>
+                                            <span class="info-value">可能有阴雨</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>` + pressureTip + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                visibility: function(data) {
+                    var current = data.current;
+                    var visLevel = '';
+                    var visTip = '';
+                    if (current.visibility < 1) {
+                        visLevel = '极差';
+                        visTip = '能见度非常差，严重影响出行安全。驾车请打开雾灯，保持安全车距，尽量减速慢行。';
+                    } else if (current.visibility < 5) {
+                        visLevel = '较差';
+                        visTip = '能见度较差，出行请注意安全。驾车请开启近光灯，保持安全距离，注意观察路况。';
+                    } else if (current.visibility < 10) {
+                        visLevel = '一般';
+                        visTip = '能见度一般，基本不影响出行。但驾车时仍需保持警惕，注意观察前方路况。';
+                    } else if (current.visibility < 20) {
+                        visLevel = '良好';
+                        visTip = '能见度良好，视线清晰。适合户外活动和远眺，可以清楚看到远处的风景。';
+                    } else {
+                        visLevel = '极佳';
+                        visTip = '能见度非常好，视野开阔。是拍照、观光、户外活动的绝佳天气。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-eye"></i></div>
+                                    <div class="detail-main-number">` + current.visibility + ` km</div>
+                                    <div class="detail-main-label">能见度 · <span class="level-indicator">` + visLevel + `</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-eye"></i>能见度等级</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-eye-slash"></i>极差</span>
+                                            <span class="info-value">＜ 1 km</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-fog"></i>较差</span>
+                                            <span class="info-value">1 ~ 5 km</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud"></i>一般</span>
+                                            <span class="info-value">5 ~ 10 km</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-eye"></i>良好</span>
+                                            <span class="info-value">10 ~ 20 km</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-sun"></i>极佳</span>
+                                            <span class="info-value">＞ 20 km</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>` + visTip + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                uv: function(data) {
+                    var current = data.current;
+                    var uvLevel = current.uv;
+                    var uvIndex = 0;
+                    var uvTip = '';
+                    var uvColor = '';
+                    
+                    if (uvLevel === '弱') {
+                        uvIndex = 2;
+                        uvColor = '#4caf50';
+                        uvTip = '紫外线强度较弱，对人体影响不大。但长时间户外活动仍建议适当防护。';
+                    } else if (uvLevel === '中等') {
+                        uvIndex = 4;
+                        uvColor = '#ffc107';
+                        uvTip = '紫外线强度中等，外出请注意防晒。建议涂抹防晒霜，佩戴太阳镜和遮阳帽。';
+                    } else if (uvLevel === '强') {
+                        uvIndex = 6;
+                        uvColor = '#ff9800';
+                        uvTip = '紫外线较强，对皮肤有一定伤害。外出务必做好防晒措施，避免长时间暴晒。';
+                    } else if (uvLevel === '很强') {
+                        uvIndex = 9;
+                        uvColor = '#f44336';
+                        uvTip = '紫外线很强，容易晒伤皮肤。尽量避免在上午10点到下午4点外出。必须外出时请加强防晒。';
+                    } else {
+                        uvIndex = 11;
+                        uvColor = '#9c27b0';
+                        uvTip = '紫外线极强，严重伤害皮肤和眼睛。尽量不要外出，如需外出必须全副武装防晒。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-sun" style="color: ` + uvColor + `;"></i></div>
+                                    <div class="detail-main-number" style="color: ` + uvColor + `;">` + uvLevel + `</div>
+                                    <div class="detail-main-label">紫外线指数</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-chart-bar"></i>紫外线等级</h4>
+                                    <div class="aqi-level-bar">
+                                        <div class="aqi-level-fill" style="width: ` + (uvIndex / 11 * 100) + `%; background: ` + uvColor + `;"></div>
+                                    </div>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-smile" style="color: #4caf50;"></i>弱 (0-2)</span>
+                                            <span class="info-value">无需特殊防护</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-meh" style="color: #ffc107;"></i>中等 (3-5)</span>
+                                            <span class="info-value">适当防晒</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-frown" style="color: #ff9800;"></i>强 (6-7)</span>
+                                            <span class="info-value">加强防晒</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-exclamation-triangle" style="color: #f44336;"></i>很强 (8-10)</span>
+                                            <span class="info-value">避免外出</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-skull-crossbones" style="color: #9c27b0;"></i>极强 (11+)</span>
+                                            <span class="info-value">严禁暴晒</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>` + uvTip + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                precip: function(data) {
+                    var current = data.current;
+                    var precipLevel = '';
+                    var precipTip = '';
+                    if (current.precipProb < 10) {
+                        precipLevel = '基本无雨';
+                        precipTip = '降水概率很低，基本不会下雨。可以放心安排户外活动，不需要带伞。';
+                    } else if (current.precipProb < 30) {
+                        precipLevel = '概率较低';
+                        precipTip = '降水概率较低，但仍有可能下雨。建议随身携带一把伞以防万一。';
+                    } else if (current.precipProb < 60) {
+                        precipLevel = '可能有雨';
+                        precipTip = '降水概率中等，有可能会下雨。外出建议带好雨具，注意天气变化。';
+                    } else if (current.precipProb < 80) {
+                        precipLevel = '大概率有雨';
+                        precipTip = '降水概率较高，很可能会下雨。外出请务必带好雨具，注意安全。';
+                    } else {
+                        precipLevel = '几乎确定有雨';
+                        precipTip = '降水概率非常高，几乎肯定会下雨。请做好防雨准备，尽量减少不必要的外出。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-cloud-rain"></i></div>
+                                    <div class="detail-main-number">` + current.precipProb + `%</div>
+                                    <div class="detail-main-label">降水概率 · <span class="level-indicator">` + precipLevel + `</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-umbrella"></i>降雨概率参考</h4>
+                                    <div class="aqi-level-bar">
+                                        <div class="aqi-level-fill" style="width: ` + current.precipProb + `%; background: #4fc3f7;"></div>
+                                    </div>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-sun"></i>基本无雨</span>
+                                            <span class="info-value">＜ 10%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-sun"></i>概率较低</span>
+                                            <span class="info-value">10% ~ 30%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud"></i>可能有雨</span>
+                                            <span class="info-value">30% ~ 60%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-rain"></i>大概率有雨</span>
+                                            <span class="info-value">60% ~ 80%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-showers-heavy"></i>几乎确定</span>
+                                            <span class="info-value">＞ 80%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>今日天气</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud"></i>天气状况</span>
+                                            <span class="info-value">` + current.weather.desc + `</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-temperature-high"></i>最高温度</span>
+                                            <span class="info-value">` + formatTemp(data.tempMax) + `</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-temperature-low"></i>最低温度</span>
+                                            <span class="info-value">` + formatTemp(data.tempMin) + `</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>` + precipTip + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                aqi: function(data) {
+                    var current = data.current;
+                    var aqi = current.aqi;
+                    var aqiTip = '';
+                    var aqiPercentage = Math.min(aqi.value / 250 * 100, 100);
+                    
+                    if (aqi.label === '优') {
+                        aqiTip = '空气质量令人满意，基本无空气污染。各类人群可正常活动，尽情享受清新空气。';
+                    } else if (aqi.label === '良') {
+                        aqiTip = '空气质量可接受，某些污染物可能对极少数敏感人群健康有较弱影响。建议极少数异常敏感人群应减少户外活动。';
+                    } else if (aqi.label === '轻度') {
+                        aqiTip = '易感人群症状有轻度加剧，健康人群出现刺激症状。建议儿童、老年人及心脏病、呼吸系统疾病患者应减少长时间、高强度的户外锻炼。';
+                    } else if (aqi.label === '中度') {
+                        aqiTip = '进一步加剧易感人群症状，可能对健康人群心脏、呼吸系统有影响。建议儿童、老年人及心脏病、呼吸系统疾病患者避免长时间、高强度的户外锻炼，一般人群适量减少户外运动。';
+                    } else if (aqi.label === '重度') {
+                        aqiTip = '心脏病和肺病患者症状显著加剧，运动耐受力降低，健康人群普遍出现症状。建议儿童、老年人和心脏病、肺病患者应停留在室内，停止户外运动，一般人群减少户外运动。';
+                    } else {
+                        aqiTip = '健康人群运动耐受力降低，有明显强烈症状，提前出现某些疾病。建议儿童、老年人和病人应停留在室内，避免体力消耗，一般人群应避免户外活动。';
+                    }
+                    
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon" style="color: ` + aqi.color + `;"><i class="fas fa-wind"></i></div>
+                                    <div class="detail-main-number" style="color: ` + aqi.color + `;">` + aqi.value + `</div>
+                                    <div class="detail-main-label">空气质量指数 · <span class="level-indicator" style="background: ` + aqi.color + `30; color: ` + aqi.color + `;">` + aqi.label + `</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-chart-bar"></i>AQI等级参考</h4>
+                                    <div class="aqi-level-bar">
+                                        <div class="aqi-level-fill" style="width: ` + aqiPercentage + `%; background: ` + aqi.color + `;"></div>
+                                    </div>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-smile" style="color: #4caf50;"></i>优 (0-35)</span>
+                                            <span class="info-value">空气质量令人满意</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-meh" style="color: #ffc107;"></i>良 (36-75)</span>
+                                            <span class="info-value">可接受，基本无影响</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-frown" style="color: #ff9800;"></i>轻度 (76-115)</span>
+                                            <span class="info-value">敏感人群注意</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-tired" style="color: #f44336;"></i>中度 (116-150)</span>
+                                            <span class="info-value">减少户外活动</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-procedures" style="color: #9c27b0;"></i>重度 (151-250)</span>
+                                            <span class="info-value">避免外出</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-skull-crossbones" style="color: #790e0e;"></i>严重 (250+)</span>
+                                            <span class="info-value">严禁外出</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-virus"></i>主要污染物</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-smog"></i>PM2.5</span>
+                                            <span class="info-value">` + aqi.value + ` μg/m³</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>健康建议</h4>
+                                    <p>` + aqiTip + `</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+            
+            function showWeatherDetailModal(type) {
+                var modal = document.getElementById('weatherDetailModal');
+                var titleEl = document.getElementById('weatherDetailTitle');
+                var bodyEl = document.getElementById('weatherDetailBody');
+                if (!modal || !titleEl || !bodyEl || !weatherDataCache) return;
+                
+                var titles = {
+                    feelsLike: '体感温度详情',
+                    humidity: '湿度详情',
+                    wind: '风向风力详情',
+                    pressure: '气压详情',
+                    visibility: '能见度详情',
+                    uv: '紫外线详情',
+                    precip: '降水概率详情',
+                    aqi: '空气质量详情'
+                };
+                
+                titleEl.textContent = titles[type] || '详细信息';
+                var generator = detailContentGenerators[type];
+                if (generator) {
+                    bodyEl.innerHTML = generator(weatherDataCache);
+                } else {
+                    bodyEl.innerHTML = '<p>暂无详细信息</p>';
+                }
+                
+                modal.style.display = 'flex';
+                modal.style.animation = 'fadeIn 0.3s ease';
+            }
+            
+            function closeWeatherDetailModal() {
+                var modal = document.getElementById('weatherDetailModal');
                 if (!modal) return;
                 
                 modal.style.animation = 'fadeOut 0.3s ease';
@@ -14801,6 +16015,17 @@
                     refreshBtn.addEventListener('click', fetchWeatherData);
                 }
                 
+                var dailyViewToggle = document.getElementById('dailyViewToggle');
+                if (dailyViewToggle) {
+                    var toggleBtns = dailyViewToggle.querySelectorAll('.toggle-btn');
+                    toggleBtns.forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            var view = this.getAttribute('data-view');
+                            toggleDailyView(view);
+                        });
+                    });
+                }
+                
                 var weatherModal = document.getElementById('weatherModal');
                 if (weatherModal) {
                     weatherModal.addEventListener('click', function(e) {
@@ -14825,6 +16050,30 @@
                     cityModal.addEventListener('click', function(e) {
                         if (e.target === this) {
                             closeCityModal();
+                        }
+                    });
+                }
+                
+                var detailCards = document.querySelectorAll('.weather-detail-card');
+                detailCards.forEach(function(card) {
+                    card.addEventListener('click', function() {
+                        var type = this.getAttribute('data-type');
+                        if (type) {
+                            showWeatherDetailModal(type);
+                        }
+                    });
+                });
+                
+                var detailCloseBtn = document.getElementById('weatherDetailCloseBtn');
+                if (detailCloseBtn) {
+                    detailCloseBtn.addEventListener('click', closeWeatherDetailModal);
+                }
+                
+                var detailModal = document.getElementById('weatherDetailModal');
+                if (detailModal) {
+                    detailModal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeWeatherDetailModal();
                         }
                     });
                 }
