@@ -363,6 +363,35 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260701",
+            title: "RC 2.7.0.0 开发日志",
+            date: "2026-07-01",
+            tag: "update",
+            tagText: "重大更新",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.7.0.0 重大版本更新！本次更新带来了主题系统的全面优化、系统设置页的现代化重构以及多项视觉体验升级，让整个启动器的界面更加精致美观！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 毛玻璃主题正式解禁：更多主题中的毛玻璃主题现在可以正常使用了，柔和的半透明模糊效果为您带来全新的视觉体验",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 透明主题全面优化：修复了透明主题的显示bug，现在透明主题效果与登录页保持一致——通透清晰，无多余模糊，原生壁纸完美呈现",
+                "• 系统设置页现代化重构：优化了系统设置页的整体样式布局，界面风格更加现代简洁，视觉层次更分明",
+                "• 全屏弹窗样式重构：重构了部分全屏显示的弹窗样式，统一了设计语言，视觉效果更加精致统一",
+                "• 全屏弹窗透明主题适配：对重构后的全屏弹窗进行了完整的透明主题适配，确保在各个主题下都能保持一致的美观体验",
+                "• 编辑头像弹窗优化：修复并优化了编辑头像弹窗的按钮排版，以及透明主题下的显示效果，操作更顺手",
+                "• 背景图片显示优化：修复了系统设置页个性化设置中修改背景图片后页面不显示背景的问题，壁纸设置即时生效",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复透明主题选择器不匹配导致样式无法正常生效的问题",
+                "• 修复系统设置页背景图片设置不生效的问题",
+                "[color:#667eea]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！",
+                "如果您有任何想法或建议，欢迎通过Github仓库提交Issue与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260630",
             title: "RC 2.6.4.8 开发日志",
             date: "2026-06-30",
@@ -1983,6 +2012,9 @@ function generateAnnouncementModal() {
                     <i class="fas fa-newspaper"></i>
                 </div>
                 <h3>开发者公告</h3>
+                <button class="about-desktop-close" id="announcementCloseBtn" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="terms-layout">
                 <div class="terms-sidebar" id="announcementSidebar">
@@ -2042,9 +2074,6 @@ function generateAnnouncementModal() {
                     </div>
                 </div>
             </div>
-            <div class="terms-modal-buttons">
-                <button class="alert-confirm" id="closeAnnouncementModal">关闭</button>
-            </div>
             <div class="back-to-top-container">
                 <button class="back-to-top-btn" id="announcementBackToTopBtn" title="返回顶部">
                     <i class="fas fa-arrow-up"></i>
@@ -2056,8 +2085,8 @@ function generateAnnouncementModal() {
     
     document.body.appendChild(modal);
     
-    // 添加关闭按钮事件
-    document.getElementById('closeAnnouncementModal').addEventListener('click', function() {
+    // 添加右上角关闭按钮事件
+    document.getElementById('announcementCloseBtn').addEventListener('click', function() {
         closeAnnouncementModal();
     });
     

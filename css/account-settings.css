@@ -66,11 +66,11 @@ body.page-transition-in {
     pointer-events: auto;
 }
 
-body.transparent-mode .sidebar-backdrop.show {
+body.glass-mode .sidebar-backdrop.show {
     background: rgba(0, 0, 0, 0.6);
 }
 
-body.transparent-mode.dark-mode .sidebar-backdrop.show {
+body.glass-mode.dark-mode .sidebar-backdrop.show {
     background: rgba(0, 0, 0, 0.7);
 }
 
@@ -574,23 +574,46 @@ body.transparent-mode.dark-mode .sidebar-backdrop.show {
     flex: 1;
     display: flex;
     flex-direction: column;
+    background: #f8fafc;
 }
 
 .settings-header {
-    padding: 30px 40px;
+    padding: 20px 40px;
     background: white;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-left::before {
+    content: '';
+    width: 4px;
+    height: 32px;
+    background: linear-gradient(180deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 2px;
 }
 
 .settings-header h1 {
-    font-size: 28px;
+    font-size: 22px;
     color: #333;
-    margin-bottom: 8px;
+    margin-bottom: 3px;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 
 .settings-header p {
-    font-size: 14px;
-    color: #666;
+    font-size: 13px;
+    color: #999;
 }
 
 .settings-content {
@@ -1170,6 +1193,8 @@ textarea:focus {
     overflow: hidden;
     transform: scale(0.9);
     transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .avatar-editor-container.show .avatar-editor-content {
@@ -1217,7 +1242,7 @@ textarea:focus {
     display: flex;
     padding: 20px;
     gap: 20px;
-    height: calc(100% - 140px);
+    flex: 1;
     overflow-y: auto;
 }
 
@@ -1386,24 +1411,29 @@ textarea:focus {
 .avatar-editor-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    padding: 20px;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
     border-top: 1px solid #eee;
     background: #f8f9fa;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .cancel-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     background: white;
     color: #666;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 25px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
     gap: 6px;
     transition: all 0.3s ease;
+    min-width: 80px;
+    justify-content: center;
 }
 
 .cancel-btn:hover {
@@ -1412,31 +1442,24 @@ textarea:focus {
 }
 
 .confirm-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 25px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
     gap: 6px;
     transition: all 0.3s ease;
+    min-width: 80px;
+    justify-content: center;
 }
 
 .confirm-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(212, 93, 121, 0.3);
-}
-
-.cancel-btn:hover {
-    background: #f8f9fa;
-}
-
-.confirm-btn:hover {
-    background: #c04b65;
-    transform: translateY(-1px);
 }
 
 /* 调整大小的手柄样式 */
@@ -6250,156 +6273,170 @@ body.dark-mode .theme-notice-footer {
 }
 
 /* ===================== 透明主题 (transparent-mode) ===================== */
-body.transparent-mode .settings-sidebar {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.25);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+body.glass-mode .settings-sidebar {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
-body.transparent-mode .settings-header {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+body.glass-mode .settings-header {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     color: #fff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-body.transparent-mode .settings-header h1,
-body.transparent-mode .settings-header p {
+body.glass-mode .header-left::before {
+    background: linear-gradient(180deg, rgba(212, 93, 121, 0.8) 0%, rgba(230, 126, 138, 0.8) 100%);
+}
+
+body.glass-mode .settings-header h1,
+body.glass-mode .settings-header p {
     color: #fff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-body.transparent-mode .settings-container {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+body.glass-mode .settings-header p {
+    color: rgba(255, 255, 255, 0.8);
 }
 
-body.transparent-mode .section-card {
+body.glass-mode .settings-container {
+    background: rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+body.glass-mode .settings-main {
+    background: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.glass-mode .section-card {
     background: rgba(255, 255, 255, 0.06) !important;
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
-body.transparent-mode .card-icon {
+body.glass-mode .card-icon {
     background: rgba(255, 255, 255, 0.14) !important;
     border: 1px solid rgba(255, 255, 255, 0.35);
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .card-icon.danger {
+body.glass-mode .card-icon.danger {
     background: rgba(255, 255, 255, 0.14) !important;
     border: 1px solid rgba(255, 255, 255, 0.35);
     color: #fff;
 }
 
-body.transparent-mode .card-header h3 {
+body.glass-mode .card-header h3 {
     color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .card-header p,
-body.transparent-mode .form-group label,
-body.transparent-mode .two-factor-info h4,
-body.transparent-mode .two-factor-info p,
-body.transparent-mode .sidebar-username,
-body.transparent-mode .sidebar-uid,
-body.transparent-mode .sidebar-version,
-body.transparent-mode .menu-item span,
-body.transparent-mode .menu-group-title,
-body.transparent-mode .card-title p {
+body.glass-mode .card-header p,
+body.glass-mode .form-group label,
+body.glass-mode .two-factor-info h4,
+body.glass-mode .two-factor-info p,
+body.glass-mode .sidebar-username,
+body.glass-mode .sidebar-uid,
+body.glass-mode .sidebar-version,
+body.glass-mode .menu-item span,
+body.glass-mode .menu-group-title,
+body.glass-mode .card-title p {
     color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .section-card .card-content .two-factor-item .two-factor-info p {
+body.glass-mode .section-card .card-content .two-factor-item .two-factor-info p {
     color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .section-card .card-content p,
-body.transparent-mode .section-card .card-body p,
-body.transparent-mode .card-content .item-desc,
-body.transparent-mode .card-content .description {
+body.glass-mode .section-card .card-content p,
+body.glass-mode .section-card .card-body p,
+body.glass-mode .card-content .item-desc,
+body.glass-mode .card-content .description {
     color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .menu-item {
+body.glass-mode .menu-item {
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-body.transparent-mode .menu-item:hover {
+body.glass-mode .menu-item:hover {
     background: rgba(255, 255, 255, 0.08);
 }
 
-body.transparent-mode .menu-item.active {
+body.glass-mode .menu-item.active {
     background: rgba(255, 255, 255, 0.14);
     border-left: 3px solid #fff;
 }
 
-body.transparent-mode .menu-item.active i {
+body.glass-mode .menu-item.active i {
     color: #fff;
 }
 
-body.transparent-mode .menu-item i {
+body.glass-mode .menu-item i {
     color: rgba(255, 255, 255, 0.85);
 }
 
-body.transparent-mode .two-factor-item {
+body.glass-mode .two-factor-item {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-body.transparent-mode .two-factor-item:hover {
+body.glass-mode .two-factor-item:hover {
     background: rgba(255, 255, 255, 0.16) !important;
     border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* 透明主题下统一所有输入框样式 */
-body.transparent-mode input,
-body.transparent-mode textarea,
-body.transparent-mode select,
-body.transparent-mode .form-input-group input,
-body.transparent-mode .form-group input,
-body.transparent-mode .form-group select,
-body.transparent-mode .form-group textarea,
-body.transparent-mode .tool-section input[type="text"],
-body.transparent-mode .tool-section input[type="number"],
-body.transparent-mode .avatar-card-header input {
+body.glass-mode input,
+body.glass-mode textarea,
+body.glass-mode select,
+body.glass-mode .form-input-group input,
+body.glass-mode .form-group input,
+body.glass-mode .form-group select,
+body.glass-mode .form-group textarea,
+body.glass-mode .tool-section input[type="text"],
+body.glass-mode .tool-section input[type="number"],
+body.glass-mode .avatar-card-header input {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     color: #fff !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode input::placeholder,
-body.transparent-mode textarea::placeholder {
+body.glass-mode input::placeholder,
+body.glass-mode textarea::placeholder {
     color: rgba(255, 255, 255, 0.55) !important;
 }
 
-body.transparent-mode input:focus,
-body.transparent-mode textarea:focus,
-body.transparent-mode select:focus,
-body.transparent-mode .form-input-group input:focus,
-body.transparent-mode .tool-section input[type="text"]:focus {
+body.glass-mode input:focus,
+body.glass-mode textarea:focus,
+body.glass-mode select:focus,
+body.glass-mode .form-input-group input:focus,
+body.glass-mode .tool-section input[type="text"]:focus {
     outline: none;
     border-color: rgba(255, 255, 255, 0.6) !important;
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 
-body.transparent-mode input[readonly] {
+body.glass-mode input[readonly] {
     background: rgba(255, 255, 255, 0.04) !important;
     cursor: not-allowed;
     color: rgba(255, 255, 255, 0.8) !important;
 }
 
 /* 透明主题下弹窗内的输入框样式（弹窗背景是白色，需要深色边框） */
-body.transparent-mode .alert-content input,
-body.transparent-mode .alert-content textarea,
-body.transparent-mode .alert-content select {
+body.glass-mode .alert-content input,
+body.glass-mode .alert-content textarea,
+body.glass-mode .alert-content select {
     background: rgba(255, 255, 255, 0.95) !important;
     border: 1px solid rgba(212, 93, 121, 0.3) !important;
     color: #333 !important;
@@ -6407,183 +6444,183 @@ body.transparent-mode .alert-content select {
 }
 
 /* 透明主题下头像悬浮卡片内的输入框样式（悬浮卡片背景是白色） */
-body.transparent-mode .avatar-hover-card {
+body.glass-mode .avatar-hover-card {
     background: rgba(255, 255, 255, 0.95) !important;
     border: 1px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-body.transparent-mode .avatar-hover-card .avatar-card-header input {
+body.glass-mode .avatar-hover-card .avatar-card-header input {
     background: rgba(255, 255, 255, 0.95) !important;
     border: 1px solid rgba(212, 93, 121, 0.3) !important;
     color: #333 !important;
     text-shadow: none !important;
 }
 
-body.transparent-mode .avatar-hover-card .avatar-card-header input:focus {
+body.glass-mode .avatar-hover-card .avatar-card-header input:focus {
     border-color: rgba(212, 93, 121, 0.6) !important;
     box-shadow: 0 0 0 2px rgba(212, 93, 121, 0.15);
 }
 
-body.transparent-mode .avatar-hover-card .avatar-card-info {
+body.glass-mode .avatar-hover-card .avatar-card-info {
     color: #666 !important;
 }
 
-body.transparent-mode .alert-content input::placeholder,
-body.transparent-mode .alert-content textarea::placeholder {
+body.glass-mode .alert-content input::placeholder,
+body.glass-mode .alert-content textarea::placeholder {
     color: #999 !important;
 }
 
-body.transparent-mode .alert-content input:focus,
-body.transparent-mode .alert-content textarea:focus,
-body.transparent-mode .alert-content select:focus {
+body.glass-mode .alert-content input:focus,
+body.glass-mode .alert-content textarea:focus,
+body.glass-mode .alert-content select:focus {
     border-color: #d45d79 !important;
     box-shadow: 0 0 0 2px rgba(212, 93, 121, 0.2);
 }
 
 /* 透明主题下下拉菜单选项样式（option需要深色文字） */
-body.transparent-mode select option {
+body.glass-mode select option {
     background: white;
     color: #333;
     text-shadow: none;
 }
 
-body.transparent-mode .char-count {
+body.glass-mode .char-count {
     color: rgba(255, 255, 255, 0.7);
 }
 
-body.transparent-mode .custom-color-input label {
+body.glass-mode .custom-color-input label {
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .adjust-item label {
+body.glass-mode .adjust-item label {
     color: rgba(255, 255, 255, 0.85);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .adjust-item .value {
+body.glass-mode .adjust-item .value {
     color: #fff;
 }
 
-body.transparent-mode .theme-option {
+body.glass-mode .theme-option {
     background: rgba(255, 255, 255, 0.08);
     border: 2px solid rgba(255, 255, 255, 0.3);
     color: #fff;
 }
 
-body.transparent-mode .theme-option span {
+body.glass-mode .theme-option span {
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .theme-option i {
+body.glass-mode .theme-option i {
     color: #fff;
 }
 
-body.transparent-mode .theme-option:hover {
+body.glass-mode .theme-option:hover {
     background: rgba(255, 255, 255, 0.16);
     border-color: #fff;
 }
 
-body.transparent-mode .theme-option.active {
+body.glass-mode .theme-option.active {
     background: rgba(255, 255, 255, 0.2);
     border-color: #fff;
 }
 
 /* 让内容区的文字在透明模式下整体更清晰 */
-body.transparent-mode .settings-content {
+body.glass-mode .settings-content {
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .section-card .card-content {
+body.glass-mode .section-card .card-content {
     color: rgba(255, 255, 255, 0.92);
 }
 
 /* 透明主题下的按钮与操作 */
-body.transparent-mode .action-btn,
-body.transparent-mode .two-factor-btn,
-body.transparent-mode .more-themes-btn,
-body.transparent-mode .preview-button {
+body.glass-mode .action-btn,
+body.glass-mode .two-factor-btn,
+body.glass-mode .more-themes-btn,
+body.glass-mode .preview-button {
     background: rgba(255, 255, 255, 0.14);
     border: 1px solid rgba(255, 255, 255, 0.35);
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .action-btn:hover,
-body.transparent-mode .two-factor-btn:hover,
-body.transparent-mode .more-themes-btn:hover,
-body.transparent-mode .preview-button:hover {
+body.glass-mode .action-btn:hover,
+body.glass-mode .two-factor-btn:hover,
+body.glass-mode .more-themes-btn:hover,
+body.glass-mode .preview-button:hover {
     background: rgba(255, 255, 255, 0.22);
     border-color: #fff;
 }
 
 /* 透明主题 - 小游戏按钮 */
-body.transparent-mode .game-selector-btn {
+body.glass-mode .game-selector-btn {
     background: rgba(255, 255, 255, 0.14) !important;
     border: 1px solid rgba(255, 255, 255, 0.35) !important;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .game-selector-btn:hover {
+body.glass-mode .game-selector-btn:hover {
     background: rgba(255, 255, 255, 0.22) !important;
     border-color: #fff !important;
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
 
-body.transparent-mode .game-selector-btn.active {
+body.glass-mode .game-selector-btn.active {
     background: rgba(255, 255, 255, 0.2) !important;
     border-color: #fff !important;
 }
 
-body.transparent-mode .game-selector-btn.special-btn {
+body.glass-mode .game-selector-btn.special-btn {
     background: rgba(255, 255, 255, 0.14) !important;
     border: 1px solid rgba(255, 255, 255, 0.35) !important;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .game-selector-btn.special-btn:hover {
+body.glass-mode .game-selector-btn.special-btn:hover {
     background: rgba(255, 255, 255, 0.22) !important;
     border-color: #fff !important;
 }
 
-body.transparent-mode .game-selector-btn.special-btn.active {
+body.glass-mode .game-selector-btn.special-btn.active {
     background: rgba(255, 255, 255, 0.2) !important;
     border-color: #fff !important;
 }
 
 /* 透明主题 - 小游戏进度条 */
-body.transparent-mode .game-progress-bar {
+body.glass-mode .game-progress-bar {
     background: rgba(255, 255, 255, 0.1);
 }
 
-body.transparent-mode .game-progress-fill {
+body.glass-mode .game-progress-fill {
     background: rgba(255, 255, 255, 0.6);
 }
 
-body.transparent-mode .game-progress-text {
+body.glass-mode .game-progress-text {
     color: #fff;
 }
 
 /* 透明模式下的弹窗保持可读（不被完全透明化） */
-body.transparent-mode .more-themes-modal-content {
+body.glass-mode .more-themes-modal-content {
     background: rgba(255, 255, 255, 0.92);
     color: #222;
     text-shadow: none;
 }
 
-body.transparent-mode .more-themes-modal-header h3,
-body.transparent-mode .more-theme-info h4,
-body.transparent-mode .more-theme-info p {
+body.glass-mode .more-themes-modal-header h3,
+body.glass-mode .more-theme-info h4,
+body.glass-mode .more-theme-info p {
     color: #222;
     text-shadow: none;
 }
 
-body.transparent-mode .more-themes-btn {
+body.glass-mode .more-themes-btn {
     background: #fff;
     color: #222;
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -6591,7 +6628,7 @@ body.transparent-mode .more-themes-btn {
 }
 
 /* 透明主题 - 返回按钮 */
-body.transparent-mode .back-btn {
+body.glass-mode .back-btn {
     background: rgba(255, 255, 255, 0.14) !important;
     border: 1px solid rgba(255, 255, 255, 0.35);
     color: #fff;
@@ -6599,7 +6636,7 @@ body.transparent-mode .back-btn {
     box-shadow: none;
 }
 
-body.transparent-mode .back-btn:hover {
+body.glass-mode .back-btn:hover {
     background: rgba(255, 255, 255, 0.22) !important;
     border-color: #fff;
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
@@ -6607,113 +6644,113 @@ body.transparent-mode .back-btn:hover {
 }
 
 /* 透明主题 - 侧边栏滚动条 */
-body.transparent-mode .settings-sidebar {
+body.glass-mode .settings-sidebar {
     scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
 }
 
-body.transparent-mode .settings-sidebar::-webkit-scrollbar-track {
+body.glass-mode .settings-sidebar::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
 }
 
-body.transparent-mode .settings-sidebar::-webkit-scrollbar-thumb {
+body.glass-mode .settings-sidebar::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
 }
 
-body.transparent-mode .settings-sidebar::-webkit-scrollbar-thumb:hover {
+body.glass-mode .settings-sidebar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 
 /* 透明主题 - 内容区域滚动条 */
-body.transparent-mode .settings-content {
+body.glass-mode .settings-content {
     scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
 }
 
-body.transparent-mode .settings-content::-webkit-scrollbar-track {
+body.glass-mode .settings-content::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
 }
 
-body.transparent-mode .settings-content::-webkit-scrollbar-thumb {
+body.glass-mode .settings-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
 }
 
-body.transparent-mode .settings-content::-webkit-scrollbar-thumb:hover {
+body.glass-mode .settings-content::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 
 /* 透明主题的暗色模式叠加 */
-body.transparent-mode.dark-mode .settings-sidebar {
+body.glass-mode.dark-mode .settings-sidebar {
     background: rgba(0, 0, 0, 0.15) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-body.transparent-mode.dark-mode .settings-header {
+body.glass-mode.dark-mode .settings-header {
     background: rgba(0, 0, 0, 0.15) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-body.transparent-mode.dark-mode .section-card {
+body.glass-mode.dark-mode .section-card {
     background: rgba(0, 0, 0, 0.18) !important;
     border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
-body.transparent-mode.dark-mode .card-icon {
+body.glass-mode.dark-mode .card-icon {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.25);
     color: rgba(255, 255, 255, 0.92);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode.dark-mode .card-icon.danger {
+body.glass-mode.dark-mode .card-icon.danger {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.25);
     color: rgba(255, 255, 255, 0.92);
 }
 
-body.transparent-mode.dark-mode .two-factor-item {
+body.glass-mode.dark-mode .two-factor-item {
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-body.transparent-mode.dark-mode .two-factor-item:hover {
+body.glass-mode.dark-mode .two-factor-item:hover {
     background: rgba(255, 255, 255, 0.1) !important;
     border-color: rgba(255, 255, 255, 0.3);
 }
 
-body.transparent-mode.dark-mode input,
-body.transparent-mode.dark-mode textarea,
-body.transparent-mode.dark-mode select,
-body.transparent-mode.dark-mode .form-input-group input,
-body.transparent-mode.dark-mode .form-group input,
-body.transparent-mode.dark-mode .form-group textarea,
-body.transparent-mode.dark-mode .tool-section input[type="text"],
-body.transparent-mode.dark-mode .tool-section input[type="number"] {
+body.glass-mode.dark-mode input,
+body.glass-mode.dark-mode textarea,
+body.glass-mode.dark-mode select,
+body.glass-mode.dark-mode .form-input-group input,
+body.glass-mode.dark-mode .form-group input,
+body.glass-mode.dark-mode .form-group textarea,
+body.glass-mode.dark-mode .tool-section input[type="text"],
+body.glass-mode.dark-mode .tool-section input[type="number"] {
     background: rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
     color: #fff !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode.dark-mode input::placeholder,
-body.transparent-mode.dark-mode textarea::placeholder {
+body.glass-mode.dark-mode input::placeholder,
+body.glass-mode.dark-mode textarea::placeholder {
     color: rgba(255, 255, 255, 0.5) !important;
 }
 
-body.transparent-mode.dark-mode input:focus,
-body.transparent-mode.dark-mode textarea:focus,
-body.transparent-mode.dark-mode select:focus {
+body.glass-mode.dark-mode input:focus,
+body.glass-mode.dark-mode textarea:focus,
+body.glass-mode.dark-mode select:focus {
     outline: none;
     border-color: rgba(255, 255, 255, 0.5) !important;
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
-body.transparent-mode.dark-mode input[readonly] {
+body.glass-mode.dark-mode input[readonly] {
     background: rgba(0, 0, 0, 0.12) !important;
     color: rgba(255, 255, 255, 0.75) !important;
 }
 
 /* 透明主题暗色模式 - 返回按钮 */
-body.transparent-mode.dark-mode .back-btn {
+body.glass-mode.dark-mode .back-btn {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.25);
     color: rgba(255, 255, 255, 0.92);
@@ -6721,7 +6758,7 @@ body.transparent-mode.dark-mode .back-btn {
     box-shadow: none;
 }
 
-body.transparent-mode.dark-mode .back-btn:hover {
+body.glass-mode.dark-mode .back-btn:hover {
     background: rgba(255, 255, 255, 0.16) !important;
     border-color: rgba(255, 255, 255, 0.5);
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
@@ -6729,47 +6766,165 @@ body.transparent-mode.dark-mode .back-btn:hover {
 }
 
 /* 透明主题暗色模式 - 侧边栏滚动条 */
-body.transparent-mode.dark-mode .settings-sidebar {
+body.glass-mode.dark-mode .settings-sidebar {
     scrollbar-color: rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.2);
 }
 
-body.transparent-mode.dark-mode .settings-sidebar::-webkit-scrollbar-track {
+body.glass-mode.dark-mode .settings-sidebar::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
 }
 
-body.transparent-mode.dark-mode .settings-sidebar::-webkit-scrollbar-thumb {
+body.glass-mode.dark-mode .settings-sidebar::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.25);
 }
 
-body.transparent-mode.dark-mode .settings-sidebar::-webkit-scrollbar-thumb:hover {
+body.glass-mode.dark-mode .settings-sidebar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
 }
 
 /* 透明主题暗色模式 - 内容区域滚动条 */
-body.transparent-mode.dark-mode .settings-content {
+body.glass-mode.dark-mode .settings-content {
     scrollbar-color: rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.2);
 }
 
-body.transparent-mode.dark-mode .settings-content::-webkit-scrollbar-track {
+body.glass-mode.dark-mode .settings-content::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
 }
 
-body.transparent-mode.dark-mode .settings-content::-webkit-scrollbar-thumb {
+body.glass-mode.dark-mode .settings-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.25);
 }
 
-body.transparent-mode.dark-mode .settings-content::-webkit-scrollbar-thumb:hover {
+body.glass-mode.dark-mode .settings-content::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
 }
 
+/* 透明主题暗色模式 - 头像编辑弹窗样式 */
+body.glass-mode.dark-mode .avatar-editor-overlay {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+body.glass-mode.dark-mode .avatar-editor-content {
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.glass-mode.dark-mode .avatar-editor-header {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.glass-mode.dark-mode .avatar-editor-header h3 {
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+body.glass-mode.dark-mode .close-editor-btn {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body.glass-mode.dark-mode .close-editor-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+body.glass-mode.dark-mode .preview-container {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.glass-mode.dark-mode .image-info {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.glass-mode.dark-mode .tool-section {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.glass-mode.dark-mode .tool-section h4 {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.glass-mode.dark-mode .avatar-editor-footer {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.glass-mode.dark-mode .avatar-editor-footer .cancel-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 25px;
+    padding: 12px 24px;
+}
+
+body.glass-mode.dark-mode .avatar-editor-footer .cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+body.glass-mode.dark-mode .avatar-editor-footer .confirm-btn {
+    background: rgba(212, 93, 121, 0.6);
+    border: 1px solid rgba(212, 93, 121, 0.4);
+    color: rgba(255, 255, 255, 0.95);
+    border-radius: 25px;
+    padding: 12px 24px;
+}
+
+body.glass-mode.dark-mode .avatar-editor-footer .confirm-btn:hover {
+    background: rgba(212, 93, 121, 0.8);
+    border-color: rgba(212, 93, 121, 0.6);
+}
+
+body.glass-mode.dark-mode .crop-btn,
+body.glass-mode.dark-mode .filter-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.glass-mode.dark-mode .crop-btn:hover,
+body.glass-mode.dark-mode .filter-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+body.glass-mode.dark-mode .crop-btn.active,
+body.glass-mode.dark-mode .filter-btn.active {
+    background: rgba(212, 93, 121, 0.6);
+    border-color: rgba(212, 93, 121, 0.4);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+body.glass-mode.dark-mode .adjust-item input[type="range"] {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.glass-mode.dark-mode .adjust-item input[type="range"]::-webkit-slider-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.glass-mode.dark-mode .adjust-item input[type="range"]::-moz-range-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.glass-mode.dark-mode .resize-handle {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(212, 93, 121, 0.7);
+}
+
 /* ===================== 透明主题 - 弹窗样式 ===================== */
-body.transparent-mode .custom-alert {
+body.glass-mode .custom-alert {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
-body.transparent-mode .alert-content {
+body.glass-mode .alert-content {
     background: rgba(255, 255, 255, 0.15) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -6777,17 +6932,158 @@ body.transparent-mode .alert-content {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .alert-content h3 {
+body.glass-mode .alert-content h3 {
     color: #ffffff;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.8);
     font-weight: 600;
+}
+
+/* 透明主题 - 头像编辑弹窗样式 */
+body.glass-mode .avatar-editor-overlay {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+body.glass-mode .avatar-editor-content {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.glass-mode .avatar-editor-header {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.glass-mode .avatar-editor-header h3 {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+body.glass-mode .close-editor-btn {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.glass-mode .close-editor-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+body.glass-mode .avatar-editor-body {
+    background: transparent;
+}
+
+body.glass-mode .preview-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.glass-mode .image-info {
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.glass-mode .editor-tools {
+    color: #ffffff;
+}
+
+body.glass-mode .tool-section {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.glass-mode .tool-section h4 {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body.glass-mode .avatar-editor-footer {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.glass-mode .avatar-editor-footer .cancel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    border-radius: 25px;
+    padding: 12px 24px;
+}
+
+body.glass-mode .avatar-editor-footer .cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+body.glass-mode .avatar-editor-footer .confirm-btn {
+    background: rgba(212, 93, 121, 0.7);
+    border: 1px solid rgba(212, 93, 121, 0.5);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    border-radius: 25px;
+    padding: 12px 24px;
+}
+
+body.glass-mode .avatar-editor-footer .confirm-btn:hover {
+    background: rgba(212, 93, 121, 0.9);
+    border-color: rgba(212, 93, 121, 0.7);
+}
+
+body.glass-mode .crop-btn,
+body.glass-mode .filter-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.glass-mode .crop-btn:hover,
+body.glass-mode .filter-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #ffffff;
+}
+
+body.glass-mode .crop-btn.active,
+body.glass-mode .filter-btn.active {
+    background: rgba(212, 93, 121, 0.7);
+    border-color: rgba(212, 93, 121, 0.5);
+    color: #ffffff;
+}
+
+body.glass-mode .adjust-item input[type="range"] {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+body.glass-mode .adjust-item input[type="range"]::-webkit-slider-thumb {
+    background: rgba(212, 93, 121, 0.8);
+}
+
+body.glass-mode .adjust-item input[type="range"]::-moz-range-thumb {
+    background: rgba(212, 93, 121, 0.8);
+}
+
+body.glass-mode .resize-handle {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(212, 93, 121, 0.8);
+}
+
+body.glass-mode .crop-overlay {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+body.glass-mode.dark-mode .crop-overlay {
+    background: rgba(0, 0, 0, 0.4);
 }
 
 #experimentalWarningModal {
     background: rgba(220, 38, 38, 0.2);
 }
 
-body.transparent-mode #experimentalWarningModal {
+body.glass-mode #experimentalWarningModal {
     background: rgba(220, 38, 38, 0.2);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -6876,22 +7172,22 @@ body.dark-mode .experimental-empty-state .empty-text p {
     color: #999;
 }
 
-body.transparent-mode .alert-message {
+body.glass-mode .alert-message {
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.7);
     font-weight: 500;
 }
 
-body.transparent-mode .alert-content p,
-body.transparent-mode .alert-content span,
-body.transparent-mode .confirm-content p,
-body.transparent-mode .confirm-content span,
-body.transparent-mode .confirm-header .header-desc {
+body.glass-mode .alert-content p,
+body.glass-mode .alert-content span,
+body.glass-mode .confirm-content p,
+body.glass-mode .confirm-content span,
+body.glass-mode .confirm-header .header-desc {
     color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .alert-confirm {
+body.glass-mode .alert-confirm {
     background: rgba(255, 255, 255, 0.22) !important;
     border: 1px solid rgba(255, 255, 255, 0.5);
     color: #ffffff;
@@ -6900,20 +7196,20 @@ body.transparent-mode .alert-confirm {
     font-weight: 600;
 }
 
-body.transparent-mode .alert-confirm:hover {
+body.glass-mode .alert-confirm:hover {
     background: rgba(255, 255, 255, 0.32) !important;
     border-color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .custom-confirm {
+body.glass-mode .custom-confirm {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
-body.transparent-mode .confirm-content {
+body.glass-mode .confirm-content {
     background: rgba(255, 255, 255, 0.15) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -6921,25 +7217,25 @@ body.transparent-mode .confirm-content {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .confirm-content h3 {
+body.glass-mode .confirm-content h3 {
     color: #ffffff;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.8);
     font-weight: 600;
 }
 
-body.transparent-mode .confirm-message {
+body.glass-mode .confirm-message {
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.7);
     font-weight: 500;
 }
 
-body.transparent-mode .confirm-content p,
-body.transparent-mode .confirm-content span {
+body.glass-mode .confirm-content p,
+body.glass-mode .confirm-content span {
     color: #ffffff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-body.transparent-mode .confirm-btn {
+body.glass-mode .confirm-btn {
     background: rgba(255, 255, 255, 0.22) !important;
     border: 1px solid rgba(255, 255, 255, 0.5);
     color: #ffffff;
@@ -6948,95 +7244,95 @@ body.transparent-mode .confirm-btn {
     font-weight: 600;
 }
 
-body.transparent-mode .confirm-btn.cancel {
+body.glass-mode .confirm-btn.cancel {
     background: rgba(255, 255, 255, 0.14) !important;
     border-color: rgba(255, 255, 255, 0.35);
 }
 
-body.transparent-mode .confirm-btn:hover {
+body.glass-mode .confirm-btn:hover {
     background: rgba(255, 255, 255, 0.32) !important;
     border-color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .confirm-btn.cancel:hover {
+body.glass-mode .confirm-btn.cancel:hover {
     background: rgba(255, 255, 255, 0.22) !important;
 }
 
 /* 透明主题 - 弹窗内输入框 */
-body.transparent-mode .alert-content input,
-body.transparent-mode .alert-content textarea,
-body.transparent-mode .confirm-content input,
-body.transparent-mode .confirm-content textarea {
+body.glass-mode .alert-content input,
+body.glass-mode .alert-content textarea,
+body.glass-mode .confirm-content input,
+body.glass-mode .confirm-content textarea {
     background: rgba(255, 255, 255, 0.12) !important;
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
     color: #ffffff !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .alert-content input::placeholder,
-body.transparent-mode .alert-content textarea::placeholder,
-body.transparent-mode .confirm-content input::placeholder,
-body.transparent-mode .confirm-content textarea::placeholder {
+body.glass-mode .alert-content input::placeholder,
+body.glass-mode .alert-content textarea::placeholder,
+body.glass-mode .confirm-content input::placeholder,
+body.glass-mode .confirm-content textarea::placeholder {
     color: rgba(255, 255, 255, 0.6) !important;
 }
 
-body.transparent-mode .alert-content input:focus,
-body.transparent-mode .alert-content textarea:focus,
-body.transparent-mode .confirm-content input:focus,
-body.transparent-mode .confirm-content textarea:focus {
+body.glass-mode .alert-content input:focus,
+body.glass-mode .alert-content textarea:focus,
+body.glass-mode .confirm-content input:focus,
+body.glass-mode .confirm-content textarea:focus {
     border-color: #fff !important;
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
 }
 
 /* 透明主题 - 更多主题弹窗 */
-body.transparent-mode .more-themes-modal-backdrop {
+body.glass-mode .more-themes-modal-backdrop {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
-body.transparent-mode .more-themes-modal-content {
+body.glass-mode .more-themes-modal-content {
     background: rgba(255, 255, 255, 0.15) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-body.transparent-mode .more-themes-modal-header h3 {
+body.glass-mode .more-themes-modal-header h3 {
     color: #ffffff;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.8);
     font-weight: 600;
 }
 
-body.transparent-mode .more-theme-card {
+body.glass-mode .more-theme-card {
     background: rgba(255, 255, 255, 0.1) !important;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-body.transparent-mode .more-theme-card:hover {
+body.glass-mode .more-theme-card:hover {
     background: rgba(255, 255, 255, 0.18) !important;
     border-color: rgba(255, 255, 255, 0.55);
 }
 
-body.transparent-mode .more-theme-card.selected {
+body.glass-mode .more-theme-card.selected {
     background: rgba(255, 255, 255, 0.16) !important;
     border-color: rgba(212, 93, 121, 0.7);
 }
 
-body.transparent-mode .more-theme-info h4 {
+body.glass-mode .more-theme-info h4 {
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.7);
     font-weight: 600;
 }
 
-body.transparent-mode .more-theme-info p {
+body.glass-mode .more-theme-info p {
     color: #ffffff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .more-themes-btn {
+body.glass-mode .more-themes-btn {
     background: rgba(255, 255, 255, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.45);
     color: #ffffff;
@@ -7044,58 +7340,58 @@ body.transparent-mode .more-themes-btn {
     font-weight: 600;
 }
 
-body.transparent-mode .more-themes-btn:hover {
+body.glass-mode .more-themes-btn:hover {
     background: rgba(255, 255, 255, 0.28) !important;
     border-color: #fff;
 }
 
 /* 透明主题 - 主题版本信息弹窗 */
-body.transparent-mode .theme-version-modal-backdrop {
+body.glass-mode .theme-version-modal-backdrop {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
-body.transparent-mode .theme-version-modal-content {
+body.glass-mode .theme-version-modal-content {
     background: rgba(255, 255, 255, 0.15) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-body.transparent-mode .theme-version-modal-header {
+body.glass-mode .theme-version-modal-header {
     background: rgba(255, 255, 255, 0.1) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-body.transparent-mode .theme-version-modal-header h3 {
+body.glass-mode .theme-version-modal-header h3 {
     color: #ffffff;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.8);
     font-weight: 600;
 }
 
-body.transparent-mode .theme-version-item {
+body.glass-mode .theme-version-item {
     background: rgba(255, 255, 255, 0.08) !important;
 }
 
-body.transparent-mode .theme-version-item-label {
+body.glass-mode .theme-version-item-label {
     color: #ffffff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     font-weight: 500;
 }
 
-body.transparent-mode .theme-version-item-value {
+body.glass-mode .theme-version-item-value {
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.7);
     font-weight: 600;
 }
 
-body.transparent-mode .theme-version-modal-footer {
+body.glass-mode .theme-version-modal-footer {
     background: rgba(255, 255, 255, 0.08);
     border-top: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-body.transparent-mode .theme-version-modal-footer button {
+body.glass-mode .theme-version-modal-footer button {
     background: rgba(255, 255, 255, 0.22) !important;
     border: 1px solid rgba(255, 255, 255, 0.5);
     color: #ffffff;
@@ -7103,107 +7399,107 @@ body.transparent-mode .theme-version-modal-footer button {
     font-weight: 600;
 }
 
-body.transparent-mode .theme-version-modal-footer button:hover {
+body.glass-mode .theme-version-modal-footer button:hover {
     background: rgba(255, 255, 255, 0.32) !important;
     border-color: #fff;
 }
 
-body.transparent-mode .theme-notice-content {
+body.glass-mode .theme-notice-content {
     background: rgba(255, 255, 255, 0.92);
 }
 
-body.transparent-mode .theme-notice-header {
+body.glass-mode .theme-notice-header {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-bottom-color: #eee;
 }
 
-body.transparent-mode .theme-notice-header h3 {
+body.glass-mode .theme-notice-header h3 {
     color: #333;
     text-shadow: none;
 }
 
-body.transparent-mode .theme-notice-body p {
+body.glass-mode .theme-notice-body p {
     color: #333;
     text-shadow: none;
 }
 
-body.transparent-mode .theme-notice-footer {
+body.glass-mode .theme-notice-footer {
     background: #fff;
     border-top-color: #eee;
 }
 
 /* 透明主题暗色模式 - 小游戏按钮 */
-body.transparent-mode.dark-mode .game-selector-btn {
+body.glass-mode.dark-mode .game-selector-btn {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
     color: rgba(255, 255, 255, 0.92);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode.dark-mode .game-selector-btn:hover {
+body.glass-mode.dark-mode .game-selector-btn:hover {
     background: rgba(255, 255, 255, 0.16) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
-body.transparent-mode.dark-mode .game-selector-btn.active {
+body.glass-mode.dark-mode .game-selector-btn.active {
     background: rgba(255, 255, 255, 0.14) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
-body.transparent-mode.dark-mode .game-selector-btn.special-btn {
+body.glass-mode.dark-mode .game-selector-btn.special-btn {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
     color: rgba(255, 255, 255, 0.92);
 }
 
-body.transparent-mode.dark-mode .game-selector-btn.special-btn:hover {
+body.glass-mode.dark-mode .game-selector-btn.special-btn:hover {
     background: rgba(255, 255, 255, 0.16) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
-body.transparent-mode.dark-mode .game-selector-btn.special-btn.active {
+body.glass-mode.dark-mode .game-selector-btn.special-btn.active {
     background: rgba(255, 255, 255, 0.14) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 /* 透明主题暗色模式 - 小游戏进度条 */
-body.transparent-mode.dark-mode .game-progress-bar {
+body.glass-mode.dark-mode .game-progress-bar {
     background: rgba(255, 255, 255, 0.08);
 }
 
-body.transparent-mode.dark-mode .game-progress-fill {
+body.glass-mode.dark-mode .game-progress-fill {
     background: rgba(255, 255, 255, 0.5);
 }
 
-body.transparent-mode.dark-mode .game-progress-text {
+body.glass-mode.dark-mode .game-progress-text {
     color: rgba(255, 255, 255, 0.92);
 }
 
 /* 透明主题 - 实验性功能提示弹窗 */
-body.transparent-mode #experimentalWarningModal .alert-content {
+body.glass-mode #experimentalWarningModal .alert-content {
     background: rgba(255, 255, 255, 0.15) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-body.transparent-mode #experimentalWarningModal .alert-content p {
+body.glass-mode #experimentalWarningModal .alert-content p {
     color: #ffffff !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
 
-body.transparent-mode #experimentalWarningModal .alert-content h4 {
+body.glass-mode #experimentalWarningModal .alert-content h4 {
     color: #ffffff !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
 
-body.transparent-mode #experimentalWarningModal .alert-content li {
+body.glass-mode #experimentalWarningModal .alert-content li {
     color: rgba(255, 255, 255, 0.95) !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
 
-body.transparent-mode #experimentalWarningModal .alert-content li strong {
+body.glass-mode #experimentalWarningModal .alert-content li strong {
     color: #ffffff !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
@@ -7286,29 +7582,289 @@ body.dark-mode .timed-start-time-inputs span {
     color: #aaa;
 }
 
-body.transparent-mode .timed-start-item p {
+body.glass-mode .timed-start-item p {
     color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .timed-start-option-row p {
+body.glass-mode .timed-start-option-row p {
     color: rgba(255, 255, 255, 0.85) !important;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode .timed-start-time-inputs input[type='number'] {
+body.glass-mode .timed-start-time-inputs input[type='number'] {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     color: #fff !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-body.transparent-mode .timed-start-time-inputs span {
+body.glass-mode .timed-start-time-inputs span {
     color: rgba(255, 255, 255, 0.85) !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode.dark-mode .timed-start-time-inputs input[type='number'] {
+body.glass-mode.dark-mode .timed-start-time-inputs input[type='number'] {
     background: rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+
+
+
+
+
+/* ===================== 透明主题 (transparent-mode) ===================== */
+/* 透明主题 - 无模糊效果，更低的透明度（与登录页保持一致） */
+body.transparent-mode .settings-sidebar {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .settings-main {
+    background: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .settings-header {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .settings-container {
+    background: rgba(0, 0, 0, 0.05) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .section-card {
+    background: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .card-icon {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .card-icon.danger {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .two-factor-item {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .two-factor-item:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.transparent-mode input,
+body.transparent-mode textarea,
+body.transparent-mode select,
+body.transparent-mode .form-input-group input,
+body.transparent-mode .form-group input,
+body.transparent-mode .form-group select,
+body.transparent-mode .form-group textarea,
+body.transparent-mode .tool-section input[type="text"],
+body.transparent-mode .tool-section input[type="number"],
+body.transparent-mode .avatar-card-header input {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .theme-option {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .action-btn,
+body.transparent-mode .two-factor-btn,
+body.transparent-mode .more-themes-btn,
+body.transparent-mode .preview-button {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .game-selector-btn,
+body.transparent-mode .game-selector-btn.special-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .back-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .avatar-editor-content,
+body.transparent-mode .avatar-editor-header,
+body.transparent-mode .avatar-editor-footer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .alert-content {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .custom-alert,
+body.transparent-mode .avatar-editor-overlay {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .tool-section,
+body.transparent-mode .preview-container {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .glass-theme-panel,
+body.transparent-mode .custom-theme-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .device-item,
+body.transparent-mode .device-item.current {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .test-card,
+body.transparent-mode .test-form,
+body.transparent-mode .test-button {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .test-table table {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .dropdown-menu {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .settings-footer,
+body.transparent-mode .save-all-btn {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .volume-item input[type="range"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .avatar-hover-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .more-themes-modal-content {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .game-progress-bar,
+body.transparent-mode .game-progress-fill {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .menu-item {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .sidebar-backdrop.show {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* 透明主题暗色模式 - 无模糊效果 */
+body.transparent-mode.dark-mode .settings-sidebar {
+    background: rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode.dark-mode .settings-header {
+    background: rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode.dark-mode .section-card {
+    background: rgba(0, 0, 0, 0.12) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode.dark-mode .card-icon,
+body.transparent-mode.dark-mode .card-icon.danger {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode.dark-mode .two-factor-item {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode.dark-mode input,
+body.transparent-mode.dark-mode textarea,
+body.transparent-mode.dark-mode select,
+body.transparent-mode.dark-mode .form-input-group input,
+body.transparent-mode.dark-mode .form-group input,
+body.transparent-mode.dark-mode .form-group select,
+body.transparent-mode.dark-mode .form-group textarea,
+body.transparent-mode.dark-mode .tool-section input[type="text"],
+body.transparent-mode.dark-mode .tool-section input[type="number"] {
+    background: rgba(0, 0, 0, 0.15) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode.dark-mode .back-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode.dark-mode .avatar-editor-content,
+body.transparent-mode.dark-mode .avatar-editor-header,
+body.transparent-mode.dark-mode .avatar-editor-footer,
+body.transparent-mode.dark-mode .tool-section,
+body.transparent-mode.dark-mode .preview-container,
+body.transparent-mode.dark-mode .test-card,
+body.transparent-mode.dark-mode .test-form,
+body.transparent-mode.dark-mode .test-button,
+body.transparent-mode.dark-mode .test-table table,
+body.transparent-mode.dark-mode .dropdown-menu,
+body.transparent-mode.dark-mode .settings-footer,
+body.transparent-mode.dark-mode .save-all-btn {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }

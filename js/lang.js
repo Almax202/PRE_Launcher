@@ -717,7 +717,6 @@ const LangManager = (function() {
         
         // 更新版本更新历史模态框
         document.querySelector('#versionHistoryModal h3').textContent = texts.versionHistoryTitle;
-        document.getElementById('versionHistoryCancel').textContent = texts.close;
         
         // 更新注册模态框
         document.querySelector('#registerModal h3').textContent = texts.regTitle;

@@ -3592,9 +3592,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     applyGlassThemeToPage(glassTheme);
                 }
             } else if (theme === 'transparent') {
-                document.body.classList.add('transparent-mode');
+                document.body.classList.add('glass-mode', 'transparent-mode');
 
-                // 透明主题复用毛玻璃的变量（用户可在面板中微调透明度/模糊）
                 if (users[userIndex].userProfile.glassTheme) {
                     var glassThemeForTransparent = users[userIndex].userProfile.glassTheme;
                     applyGlassThemeToPage(glassThemeForTransparent);
@@ -5182,10 +5181,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        var isDarkMode = document.body.classList.contains('dark-mode');
+        var mainBg = isDarkMode ? 'rgba(20, 20, 30, 0)' : 'rgba(255, 255, 255, 0)';
+        
         if (fit === 'content') {
             style.textContent = `
                 body {
                     background: linear-gradient(135deg, #f0f9ff 0%, #dceeff 100%);
+                }
+                
+                .settings-main {
+                    background: ${mainBg} !important;
                 }
                 
                 .settings-content, .content-container, .main-content {
@@ -5225,10 +5231,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     background-image: url('${imageUrl}');
                     background-size: ${fit};
                     background-position: center;
-                    background-repeat: ${fit === 'repeat' ? 'no-repeat' : 'no-repeat'};
+                    background-repeat: ${fit === 'repeat' ? 'repeat' : 'no-repeat'};
                     opacity: ${opacity};
                     filter: blur(${blur}px);
                     z-index: -1;
+                }
+                
+                .settings-main {
+                    background: ${mainBg} !important;
                 }
             `;
         }

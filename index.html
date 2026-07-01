@@ -5680,6 +5680,9 @@
                     <i class="fas fa-history"></i>
                 </div>
                 <h3>版本更新记录</h3>
+                <button class="about-desktop-close" id="versionHistoryCloseBtn" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="terms-layout">
                 <div class="terms-sidebar">
@@ -5774,9 +5777,6 @@
                         <div class="version-history-content" id="earlyUpdateContent" style="display: none;"></div>
                     </div>
                 </div>
-            </div>
-            <div class="terms-modal-buttons">
-                <button class="alert-confirm" id="versionHistoryCancel">关闭</button>
             </div>
             <div class="back-to-top-container">
                 <button class="back-to-top-btn" id="backToTopBtn" title="返回顶部">
@@ -5888,6 +5888,9 @@
                     <i class="fas fa-user-plus"></i>
                 </div>
                 <h3>注册新账号</h3>
+                <button class="about-desktop-close" id="registerCloseBtn" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
             <!-- 步骤指示器 -->
@@ -7761,6 +7764,15 @@
             // 切换到登录标签
             document.getElementById('loginTab').click();
         });
+        
+        document.getElementById('registerCloseBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('registerModal').classList.remove('show');
+            setTimeout(function() {
+                document.getElementById('registerModal').style.display = 'none';
+            }, 300);
+            document.getElementById('loginTab').click();
+        });
 
         function loadCurrentUser() {
             var currentUser = localStorage.getItem('currentUser');
@@ -8921,7 +8933,7 @@
             }
         });
         
-        document.getElementById('versionHistoryCancel').addEventListener('click', function() {
+        document.getElementById('versionHistoryCloseBtn').addEventListener('click', function() {
             var versionHistoryModal = document.getElementById('versionHistoryModal');
             versionHistoryModal.classList.remove('show');
             setTimeout(function() {
@@ -9102,7 +9114,7 @@
         
         document.getElementById('versionHistoryModal').addEventListener('click', function(e) {
             if (e.target === this) {
-                document.getElementById('versionHistoryCancel').click();
+                document.getElementById('versionHistoryCloseBtn').click();
             }
         });
         
@@ -10245,68 +10257,68 @@
                 `;
             } else {
                 modal.innerHTML = `
-                    <div class="alert-content" style="max-width: 900px; width: 90%; min-width: 800px; height: 600px;">
-                        <div class="alert-header">
-                            <h2>关于启动器</h2>
+                    <div class="alert-content about-fullscreen">
+                        <div class="about-desktop-header">
+                            <div class="about-desktop-title">
+                                <h2>关于启动器</h2>
+                                <p id="aboutVersionNumber" class="version">版本 ${launcherInfo.version}</p>
+                            </div>
+                            <button class="about-desktop-close" onclick="closeAboutLauncherModal()">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                        <div class="user-card-content" style="display: flex; height: calc(100% - 60px);">
-                            <div class="user-card-left" style="flex: 1; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                <div class="about-logo" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #d45d79 0%, #f48fb1 100%); display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
-                                    <i class="fas fa-gamepad" style="font-size: 60px; color: white;"></i>
-                                </div>
-                                <div class="user-card-basic-info" style="text-align: center;">
-                                    <h3 style="font-size: 24px; margin-bottom: 15px;">${launcherInfo.name}</h3>
-                                    <p class="version" id="aboutVersionNumber" style="font-size: 16px; color: #666; margin-bottom: 40px;">版本：${launcherInfo.version}</p>
-                                    <div class="modal-buttons">
-                                        <button class="alert-confirm" onclick="closeAboutLauncherModal()">关闭</button>
+                        <div class="about-desktop-content">
+                            <div class="about-desktop-main">
+                                <div class="about-desktop-info-card">
+                                    <h3 class="info-card-title">启动器信息</h3>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="info-label">启动器名称</span>
+                                            <span class="info-value">${launcherInfo.name}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">版本号</span>
+                                            <span class="info-value">${launcherInfo.version}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">版权所有</span>
+                                            <span class="info-value">${launcherInfo.copyright}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">开发者</span>
+                                            <span class="info-value">${launcherInfo.developer}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="user-card-right" style="flex: 2; padding: 40px 20px; border-left: 1px solid #eee; overflow-y: auto;">
-                                <div class="about-info" style="text-align: left;">
-                                    <p style="margin: 15px 0;"><strong>启动器名称：</strong>${launcherInfo.name}</p>
-                                    <p style="margin: 15px 0;"><strong>版本号：</strong>${launcherInfo.version}</p>
-                                    <p style="margin: 15px 0;"><strong>版权所有：</strong>${launcherInfo.copyright}</p>
-                                    <p style="margin: 15px 0;"><strong>开发者：</strong>${launcherInfo.developer}</p>
-                                    <p style="margin: 15px 0;"><strong>用途：</strong>${launcherInfo.purpose}</p>
-                                    <p style="margin: 15px 0;"><strong>版权声明：</strong></p>
-                                    <div style="text-align: left; margin-left: 20px; margin-top: 10px;">
-                                        <p style="margin: 10px 0;">本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
-                                        <p style="margin: 10px 0;">所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
-                                        <p style="margin: 10px 0;">各独立资源版权、著作权归原作者及版权方所有。</p>
-                                        <p style="margin: 10px 0;">如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
-                                        <div style="margin-top: 15px;">
-                                            <div style="margin-bottom: 15px;">
-                                                <span style="font-weight: bold; color: #666;">1. MIT 开源许可</span>
-                                                <div style="margin-top: 8px; margin-left: 20px;">
-                                                    <button class="alert-confirm" onclick="showMitLicenseModal()" style="padding: 8px 16px; font-size: 14px;">MIT License</button>
-                                                </div>
-                                            </div>
-                                            <div style="margin-bottom: 15px;">
-                                                <span style="font-weight: bold; color: #666;">2. 验证码图片服务</span>
-                                                <div style="margin-top: 8px; margin-left: 20px;">
-                                                    <button class="alert-confirm" onclick="showDummyImageModal()" style="padding: 8px 16px; font-size: 14px;">dummyimage</button>
-                                                </div>
-                                            </div>
-                                            <div style="margin-bottom: 15px;">
-                                                <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
-                                                <div style="margin-top: 8px; margin-left: 20px;">
-                                                    <button class="alert-confirm" onclick="showFontCopyrightModal()" style="padding: 8px 16px; font-size: 14px;">HarmonyOS Sans</button>
-                                                </div>
-                                            </div>
-                                            <div style="margin-bottom: 15px;">
-                                                <span style="font-weight: bold; color: #666;">4. 前端开发框架</span>
-                                                <div style="margin-top: 8px; margin-left: 20px;">
-                                                    <button class="alert-confirm" onclick="showMuiCopyrightModal()" style="padding: 8px 16px; font-size: 14px;">MUI</button>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <span style="font-weight: bold; color: #666;">5. 天气数据服务</span>
-                                                <div style="margin-top: 8px; margin-left: 20px;">
-                                                    <button class="alert-confirm" onclick="showOpenMeteoModal()" style="padding: 8px 16px; font-size: 14px;">Open-Meteo API</button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="about-desktop-copyright-card">
+                                    <h3 class="info-card-title">版权声明</h3>
+                                    <div class="copyright-text">
+                                        <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
+                                        <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
+                                        <p>各独立资源版权、著作权归原作者及版权方所有。</p>
+                                        <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
+                                    </div>
+                                    <div class="copyright-buttons-grid">
+                                        <button class="copyright-btn" onclick="showMitLicenseModal()">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>MIT License</span>
+                                        </button>
+                                        <button class="copyright-btn" onclick="showDummyImageModal()">
+                                            <i class="fas fa-image"></i>
+                                            <span>dummyimage</span>
+                                        </button>
+                                        <button class="copyright-btn" onclick="showFontCopyrightModal()">
+                                            <i class="fas fa-font"></i>
+                                            <span>HarmonyOS Sans</span>
+                                        </button>
+                                        <button class="copyright-btn" onclick="showMuiCopyrightModal()">
+                                            <i class="fas fa-code"></i>
+                                            <span>MUI</span>
+                                        </button>
+                                        <button class="copyright-btn" onclick="showOpenMeteoModal()">
+                                            <i class="fas fa-cloud-sun"></i>
+                                            <span>Open-Meteo API</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
