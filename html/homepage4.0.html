@@ -844,12 +844,12 @@
                         <div class="user-name" id="userName">未登录</div>
                         <div class="user-id" id="userId">ID: ---</div>
                     </div>
-                    <div class="logout-btn-container">
-                        <button class="logout-btn small-logout-btn" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i>
+                    <div class="more-actions-btn-container">
+                        <button class="more-actions-btn" id="moreActionsBtn">
+                            <i class="fas fa-ellipsis-h"></i>
                         </button>
-                        <div class="logout-tooltip">
-                            <span>退出登录</span>
+                        <div class="more-actions-tooltip">
+                            <span>更多操作</span>
                         </div>
                     </div>
                     <div class="user-tooltip" id="userTooltip">
@@ -871,10 +871,6 @@
                                     <span class="tooltip-label">注册时间：</span>
                                     <span class="tooltip-value" id="tooltipRegTime">--</span>
                                 </div>
-                            </div>
-                            <div class="tooltip-footer">
-                                <i class="fas fa-mouse-pointer"></i>
-                                <span>点击进入系统设置</span>
                             </div>
                         </div>
                     </div>
@@ -1235,7 +1231,31 @@
             <p>你确定要继续吗？</p>
             <div class="modal-btn-group">
                 <button class="cancel-btn" id="cancelLogout">取消</button>
-                <button class="confirm-btn" id="confirmLogout">确定</button>
+                <button class="confirm-btn confirm-ok" id="confirmLogout">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 更多操作弹窗 -->
+    <div id="moreActionsModal" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content more-actions-content">
+            <div class="confirm-header">
+                <h3>更多操作</h3>
+            </div>
+            <div class="confirm-body">
+                <div class="more-actions-buttons">
+                    <button class="more-action-btn settings-action" id="goToAccountSettingsBtn">
+                        <i class="fas fa-user-cog"></i>
+                        <span>系统设置</span>
+                    </button>
+                    <button class="more-action-btn logout-action" id="logoutFromActionsBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>退出登录</span>
+                    </button>
+                </div>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn confirm-ok" id="moreActionsClose">关闭</button>
             </div>
         </div>
     </div>
@@ -1246,7 +1266,7 @@
             <h3>主题更新</h3>
             <p>检测到主题更新，三秒后将自动刷新页面以应用新主题</p>
             <div class="modal-btn-group theme-update-btn-group">
-                <button class="confirm-btn" id="themeCountdownBtn" disabled>还剩 <span id="themeCountdown">3</span> 秒</button>
+                <button class="confirm-btn confirm-ok" id="themeCountdownBtn" disabled>还剩 <span id="themeCountdown">3</span> 秒</button>
             </div>
         </div>
     </div>
@@ -1257,7 +1277,7 @@
             <h3>账号未登录</h3>
             <p>即将重定向到登录页面</p>
             <div class="modal-btn-group">
-                <button class="confirm-btn" id="confirmLoginRedirect" disabled>3秒后自动跳转</button>
+                <button class="confirm-btn confirm-ok" id="confirmLoginRedirect" disabled>3秒后自动跳转</button>
             </div>
         </div>
     </div>
@@ -1560,14 +1580,40 @@
                 document.querySelector('.settings-header p').textContent = '选择你想听的游戏BGM，体验游戏的音乐世界';
             });
             
-            document.getElementById('logoutBtn').addEventListener('click', function(e) {
-                e.stopPropagation(); // 阻止事件冒泡，防止触发userCenter的点击事件
+            document.getElementById('moreActionsBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                var moreActionsModal = document.getElementById('moreActionsModal');
+                moreActionsModal.style.display = 'flex';
+                setTimeout(function() {
+                    moreActionsModal.classList.add('active');
+                }, 10);
+            });
+
+            document.getElementById('moreActionsClose').addEventListener('click', function() {
+                var moreActionsModal = document.getElementById('moreActionsModal');
+                moreActionsModal.classList.remove('active');
+                setTimeout(function() {
+                    moreActionsModal.style.display = 'none';
+                }, 300);
+            });
+
+            document.getElementById('goToAccountSettingsBtn').addEventListener('click', function() {
+                localStorage.setItem('previousPage', window.location.href);
+                window.open('account-settings.html', '_blank');
+                var moreActionsModal = document.getElementById('moreActionsModal');
+                moreActionsModal.classList.remove('active');
+                setTimeout(function() {
+                    moreActionsModal.style.display = 'none';
+                }, 300);
+            });
+
+            document.getElementById('logoutFromActionsBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
                 var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
                 if (!currentUser.username) {
                     showLoginRedirectModal();
                     return;
                 }
-                // 检查是否启用了自动登录
                 var autoLogin = localStorage.getItem('autoLogin') === 'true';
                 var logoutModal = document.getElementById('logoutModal');
                 var logoutModalText = logoutModal.querySelector('p');
@@ -1576,6 +1622,11 @@
                 } else {
                     logoutModalText.textContent = '你确定要继续吗？';
                 }
+                var moreActionsModal = document.getElementById('moreActionsModal');
+                moreActionsModal.classList.remove('active');
+                setTimeout(function() {
+                    moreActionsModal.style.display = 'none';
+                }, 300);
                 document.getElementById('logoutModal').classList.add('active');
             });
 
@@ -1615,8 +1666,6 @@
                     showLoginRedirectModal();
                     return;
                 }
-                localStorage.setItem('previousPage', window.location.href);
-                window.open('account-settings.html', '_blank');
             });
         }
 
@@ -3274,9 +3323,9 @@
                         <option value="16bit" selected>标准音质 (16bit)</option>
                     </select>
                 </div>
-                <div class="modal-footer">
-                    <button id="cancelDownload">取消</button>
-                    <button id="confirmDownload">确定</button>
+                <div class="modal-btn-group">
+                    <button class="cancel-btn" id="cancelDownload">取消</button>
+                    <button class="confirm-btn confirm-ok" id="confirmDownload">确定</button>
                 </div>
             </div>
         </div>

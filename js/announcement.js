@@ -303,7 +303,7 @@ const announcementData = {
         },
         {
             id: "normalA-20260618",
-            title: "登录功能逻辑错误与预计修复日期",
+            title: "登录功能错误与预计修复日期",
             date: "2026-06-18",
             tag: "notice",
             tagText: "通知",
@@ -363,11 +363,49 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260702",
+            title: "RC 2.7.0.1 开发日志",
+            date: "2026-07-03",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 2.7.0.1 常规版本更新！本次更新带来了系统设置页卡片折叠功能、游戏大厅更多操作按钮以及弹窗样式统一等多项优化改进，提升了整体使用体验！",
+                "[color:#667eea]【新增功能】[/color]",
+                "• 系统设置页卡片折叠功能：每个条目下的卡片右上角新增了展开/收起按钮，默认展开状态，点击可折叠卡片内容，让设置页面更加整洁",
+                "• 卡片折叠状态持久化：每个卡片的展开/收起状态会保存到本地存储，刷新页面后自动恢复您的偏好设置",
+                "• 全部展开/收起按钮：每个条目顶部导航栏新增\"全部展开/收起\"按钮，可一键操作所有卡片，便捷高效",
+                "• 卡片折叠动画：为卡片展开/收起操作添加了平滑的高度渐变、透明度变化和轻微位移动画效果，交互更加流畅自然",
+                "• 游戏大厅更多操作按钮：个人卡片中的退出登录按钮改为\"更多操作\"按钮，点击弹出包含系统设置和退出登录选项的弹窗，功能更集中",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 游戏大厅弹窗样式统一：将游戏大厅中的默认弹窗样式改为与登录页一致，包括标题居左、按钮右对齐、粉色渐变主按钮等设计元素，视觉风格更加统一",
+                "• 用户信息卡片优化：删除了用户信息卡片中的\"点击进入系统设置\"文本，点击卡片不再跳转到系统设置页，操作逻辑更清晰",
+                "• 卡片折叠功能修复：修复了非当前显示条目下的卡片折叠/展开功能异常问题，确保所有条目下的卡片都能正常展开收起",
+                "[color:#667eea]【后续更新】[/color]",
+                "本次更新后，我们还进行了多项优化改进：",
+                "• 基本信息卡片排版优化：系统设置页基本信息卡片中用户名、用户ID和注册时间改为一行三列布局，竖线分隔并保留间距",
+                "• 联系方式卡片排版优化：联系方式卡片改为与基本信息卡片相同的一行多列排版布局",
+                "• 自定义背景显示逻辑优化：只有选择预设背景或自定义背景图片后才显示背景预览区域及其下方各个条目",
+                "• 开发者公告多级筛选菜单：开发日志中新增多级筛选菜单，支持按月份和版本筛选公告",
+                "• 清除筛选按钮修复：修复了开发者公告中清除筛选按钮点击后无反应的问题",
+                "• 图片查看器组件信息按钮：图片查看器右下角新增\"组件信息\"按钮，替换原展开按钮，点击可查看图片查看器组件版本详情",
+                "• 图片查看器全屏弹窗样式：图片查看器弹窗改为全屏显示样式，包含顶部标题栏、渐变装饰条和圆形关闭按钮，视觉风格更加统一",
+                "• 图片查看器组件版本信息：新增图片查看器组件版本代码，包含详细的功能特性描述",
+                "• 图片查看器弹窗修复：修复了图片查看器中引用已删除元素导致的JavaScript报错问题，现在点击图片可正常弹出查看器",
+                "[color:#667eea]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！",
+                "如果您有任何想法或建议，欢迎通过Github仓库提交Issue与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260701",
             title: "RC 2.7.0.0 开发日志",
             date: "2026-07-01",
             tag: "update",
-            tagText: "重大更新",
+            tagText: "公告",
             author: "GPY Games Studio - PREAlmax",
             category: "launcher",
             images: [],
@@ -1542,19 +1580,149 @@ function showAnnouncementSelection(announcements) {
     
     contentArea.innerHTML = '';
     
-    // 添加提示文本
+    // 添加提示文本和筛选按钮区域
+    var hintContainer = document.createElement('div');
+    hintContainer.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 20px 10px;
+        margin-bottom: 10px;
+    `;
+    
     var hintText = document.createElement('p');
     hintText.className = 'announcement-selection-hint';
     hintText.style.cssText = `
         font-style: normal;
-        text-align: center;
-        padding: 20px 0;
-        margin-bottom: 20px;
         font-size: 16px;
         color: #333;
+        margin: 0;
     `;
     hintText.textContent = '请选择要查看的公告';
-    contentArea.appendChild(hintText);
+    hintContainer.appendChild(hintText);
+    
+    // 添加筛选按钮
+    var filterButton = document.createElement('button');
+    filterButton.className = 'announcement-filter-btn';
+    filterButton.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid rgba(212, 93, 121, 0.3);
+        border-radius: 20px;
+        background: white;
+        color: #d45d79;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    `;
+    filterButton.innerHTML = `<i class="fas fa-filter"></i> <span>筛选</span>`;
+    hintContainer.appendChild(filterButton);
+    contentArea.appendChild(hintContainer);
+    
+    // 添加筛选菜单
+    var filterMenu = document.createElement('div');
+    filterMenu.className = 'announcement-filter-menu';
+    var isDarkMode = document.body.classList.contains('dark-mode');
+    var menuBg = isDarkMode ? 'rgba(50, 50, 70, 0.98)' : 'white';
+    var menuBorder = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(212, 93, 121, 0.2)';
+    var menuShadow = isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)';
+    var menuText = isDarkMode ? '#e0e0e0' : '#333';
+    var menuHover = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(212, 93, 121, 0.05)';
+    
+    filterMenu.style.cssText = `
+        display: none;
+        position: fixed;
+        top: 150px;
+        right: 30px;
+        width: 240px;
+        background: ${menuBg};
+        border-radius: 12px;
+        box-shadow: 0 8px 32px ${menuShadow};
+        border: 1px solid ${menuBorder};
+        z-index: 1000;
+        overflow: hidden;
+    `;
+    
+    // 月份筛选子菜单
+    var monthMenuItem = document.createElement('div');
+    monthMenuItem.className = 'filter-menu-item';
+    monthMenuItem.style.cssText = `
+        padding: 12px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background 0.2s ease;
+        color: ${menuText};
+    `;
+    monthMenuItem.innerHTML = `
+        <span style="font-size: 14px;">仅显示以下月份的所有公告</span>
+        <i class="fas fa-chevron-right" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'};"></i>
+    `;
+    
+    // 版本筛选子菜单
+    var versionMenuItem = document.createElement('div');
+    versionMenuItem.className = 'filter-menu-item';
+    versionMenuItem.style.cssText = `
+        padding: 12px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background 0.2s ease;
+        color: ${menuText};
+        border-top: 1px solid ${menuBorder};
+    `;
+    versionMenuItem.innerHTML = `
+        <span style="font-size: 14px;">仅显示以下版本内的所有公告</span>
+        <i class="fas fa-chevron-right" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'};"></i>
+    `;
+    
+    filterMenu.appendChild(monthMenuItem);
+    filterMenu.appendChild(versionMenuItem);
+    
+    // 月份选择子菜单
+    var monthSubMenu = document.createElement('div');
+    monthSubMenu.className = 'filter-submenu';
+    monthSubMenu.style.cssText = `
+        display: none;
+        position: fixed;
+        top: 150px;
+        right: 270px;
+        width: 240px;
+        background: ${menuBg};
+        border-radius: 12px;
+        box-shadow: 0 8px 32px ${menuShadow};
+        border: 1px solid ${menuBorder};
+        z-index: 1001;
+        overflow-y: auto;
+        max-height: 300px;
+    `;
+    
+    // 版本选择子菜单
+    var versionSubMenu = document.createElement('div');
+    versionSubMenu.className = 'filter-submenu';
+    versionSubMenu.style.cssText = `
+        display: none;
+        position: fixed;
+        top: 150px;
+        right: 270px;
+        width: 240px;
+        background: ${menuBg};
+        border-radius: 12px;
+        box-shadow: 0 8px 32px ${menuShadow};
+        border: 1px solid ${menuBorder};
+        z-index: 1001;
+        overflow-y: auto;
+        max-height: 300px;
+    `;
+    
+    filterMenu.appendChild(monthSubMenu);
+    filterMenu.appendChild(versionSubMenu);
+    
+    contentArea.appendChild(filterMenu);
     
     // 按日期倒序排序公告
     var sortedAnnouncements = [...announcements].sort(function(a, b) {
@@ -1693,6 +1861,358 @@ function showAnnouncementSelection(announcements) {
         });
         
         buttonsContainer.appendChild(button);
+        });
+    });
+    
+    // 动态生成月份列表
+    var months = getUniqueMonths(announcements);
+    months.forEach(function(month) {
+        var monthItem = document.createElement('div');
+        monthItem.className = 'filter-submenu-item';
+        monthItem.style.cssText = `
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: ${menuText};
+            transition: background 0.2s ease;
+        `;
+        monthItem.textContent = month;
+        monthItem.addEventListener('click', function() {
+            filterAnnouncementsByMonth(month, announcements);
+            filterMenu.style.display = 'none';
+        });
+        monthItem.addEventListener('mouseenter', function() {
+            this.style.background = menuHover;
+        });
+        monthItem.addEventListener('mouseleave', function() {
+            this.style.background = 'transparent';
+        });
+        monthSubMenu.appendChild(monthItem);
+    });
+    
+    // 动态生成版本列表
+    var versions = getUniqueVersions(announcements);
+    versions.forEach(function(version) {
+        var versionItem = document.createElement('div');
+        versionItem.className = 'filter-submenu-item';
+        versionItem.style.cssText = `
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: ${menuText};
+            transition: background 0.2s ease;
+        `;
+        versionItem.textContent = 'RC ' + version;
+        versionItem.addEventListener('click', function() {
+            filterAnnouncementsByVersion(version, announcements);
+            filterMenu.style.display = 'none';
+        });
+        versionItem.addEventListener('mouseenter', function() {
+            this.style.background = menuHover;
+        });
+        versionItem.addEventListener('mouseleave', function() {
+            this.style.background = 'transparent';
+        });
+        versionSubMenu.appendChild(versionItem);
+    });
+    
+    // 筛选按钮点击事件
+    filterButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        filterMenu.style.display = filterMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    // 月份菜单项点击事件
+    monthMenuItem.addEventListener('click', function(e) {
+        e.stopPropagation();
+        monthSubMenu.style.display = 'block';
+        versionSubMenu.style.display = 'none';
+    });
+    
+    // 版本菜单项点击事件
+    versionMenuItem.addEventListener('click', function(e) {
+        e.stopPropagation();
+        versionSubMenu.style.display = 'block';
+        monthSubMenu.style.display = 'none';
+    });
+    
+    // 点击其他地方关闭菜单
+    document.addEventListener('click', function(e) {
+        if (!filterButton.contains(e.target) && !filterMenu.contains(e.target)) {
+            filterMenu.style.display = 'none';
+            monthSubMenu.style.display = 'none';
+            versionSubMenu.style.display = 'none';
+        }
+    });
+    
+    // 菜单项悬浮效果
+    var menuItems = filterMenu.querySelectorAll('.filter-menu-item');
+    menuItems.forEach(function(item) {
+        item.addEventListener('mouseenter', function() {
+            this.style.background = menuHover;
+        });
+        item.addEventListener('mouseleave', function() {
+            this.style.background = 'transparent';
+        });
+    });
+}
+
+// 获取所有不重复的月份
+function getUniqueMonths(announcements) {
+    var months = {};
+    announcements.forEach(function(announcement) {
+        var date = new Date(announcement.date);
+        var monthKey = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+        var monthName = date.getFullYear() + '年' + (date.getMonth() + 1) + '月';
+        months[monthKey] = monthName;
+    });
+    return Object.values(months).sort(function(a, b) {
+        return b.localeCompare(a);
+    });
+}
+
+// 获取所有不重复的版本号（RC X.X格式）
+function getUniqueVersions(announcements) {
+    var versions = {};
+    var versionRegex = /RC (\d+\.\d+)/;
+    announcements.forEach(function(announcement) {
+        var match = announcement.title.match(versionRegex);
+        if (match) {
+            var version = match[1];
+            versions[version] = true;
+        }
+    });
+    return Object.keys(versions).sort(function(a, b) {
+        var partsA = a.split('.').map(Number);
+        var partsB = b.split('.').map(Number);
+        for (var i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            if ((partsA[i] || 0) > (partsB[i] || 0)) return -1;
+            if ((partsA[i] || 0) < (partsB[i] || 0)) return 1;
+        }
+        return 0;
+    });
+}
+
+// 按月份筛选公告
+function filterAnnouncementsByMonth(month, allAnnouncements) {
+    var monthRegex = /(\d+)年(\d+)月/;
+    var match = month.match(monthRegex);
+    if (!match) return;
+    
+    var year = parseInt(match[1]);
+    var monthNum = parseInt(match[2]);
+    
+    var filtered = allAnnouncements.filter(function(announcement) {
+        var date = new Date(announcement.date);
+        return date.getFullYear() === year && date.getMonth() + 1 === monthNum;
+    });
+    
+    showFilteredAnnouncements(filtered, month, 'month');
+}
+
+// 按版本筛选公告
+function filterAnnouncementsByVersion(version, allAnnouncements) {
+    var filtered = allAnnouncements.filter(function(announcement) {
+        var versionRegex = new RegExp('RC ' + version.replace('.', '\\.'));
+        return versionRegex.test(announcement.title);
+    });
+    
+    showFilteredAnnouncements(filtered, 'RC ' + version, 'version');
+}
+
+// 显示筛选后的公告
+function showFilteredAnnouncements(filtered, filterName, filterType) {
+    var contentArea = document.querySelector('#announcementModal .terms-content');
+    if (!contentArea) return;
+    
+    contentArea.innerHTML = '';
+    
+    var isDarkMode = document.body.classList.contains('dark-mode');
+    var hintColor = isDarkMode ? '#e0e0e0' : '#333';
+    var btnBg = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
+    var btnBorder = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
+    
+    // 添加提示文本和筛选按钮区域
+    var hintContainer = document.createElement('div');
+    hintContainer.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 20px 10px;
+        margin-bottom: 10px;
+    `;
+    
+    var hintText = document.createElement('p');
+    hintText.className = 'announcement-selection-hint';
+    hintText.style.cssText = `
+        font-style: normal;
+        font-size: 16px;
+        color: ${hintColor};
+        margin: 0;
+    `;
+    hintText.textContent = '已筛选：' + filterName + '（共' + filtered.length + '条）';
+    hintContainer.appendChild(hintText);
+    
+    // 添加清除筛选按钮
+    var clearButton = document.createElement('button');
+    clearButton.className = 'announcement-clear-filter-btn';
+    clearButton.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid ${btnBorder};
+        border-radius: 20px;
+        background: ${btnBg};
+        color: #d45d79;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    `;
+    clearButton.innerHTML = `<i class="fas fa-times"></i> <span>清除筛选</span>`;
+    clearButton.addEventListener('click', function() {
+        loadAnnouncementList(announcementData.devLogs);
+    });
+    hintContainer.appendChild(clearButton);
+    contentArea.appendChild(hintContainer);
+    
+    if (filtered.length === 0) {
+        var emptyMessage = document.createElement('div');
+        emptyMessage.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #999;
+        `;
+        emptyMessage.innerHTML = `
+            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #d45d79;"></i>
+            <p style="margin: 0;">该筛选条件下没有公告</p>
+        `;
+        contentArea.appendChild(emptyMessage);
+        return;
+    }
+    
+    // 按日期倒序排序
+    var sortedAnnouncements = [...filtered].sort(function(a, b) {
+        return new Date(b.date) - new Date(a.date);
+    });
+    
+    // 按月份分组
+    var groupedAnnouncements = groupAnnouncementsByMonth(sortedAnnouncements);
+    
+    // 创建月份分组和公告按钮
+    groupedAnnouncements.forEach(function(group) {
+        var monthHeader = document.createElement('div');
+        monthHeader.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            margin-bottom: 12px;
+        `;
+        
+        var monthLine = document.createElement('div');
+        monthLine.style.cssText = `
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(212, 93, 121, 0.3), transparent);
+        `;
+        
+        var monthTitle = document.createElement('span');
+        monthTitle.style.cssText = `
+            font-size: 14px;
+            font-weight: bold;
+            color: #d45d79;
+            white-space: nowrap;
+        `;
+        monthTitle.textContent = group.monthName + '（共' + group.announcements.length + '条）';
+        
+        monthHeader.appendChild(monthLine);
+        monthHeader.appendChild(monthTitle);
+        monthHeader.appendChild(monthLine.cloneNode(true));
+        contentArea.appendChild(monthHeader);
+        
+        var buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'announcement-buttons-container';
+        buttonsContainer.style.cssText = `
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        `;
+        contentArea.appendChild(buttonsContainer);
+        
+        group.announcements.forEach(function(announcement) {
+            var button = document.createElement('button');
+            button.className = 'announcement-select-button';
+            
+            var isDarkMode = document.body.classList.contains('dark-mode');
+            var bgColor = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
+            var borderColor = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
+            var shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.06)';
+            var titleColor = isDarkMode ? '#e67e8a' : '#d45d79';
+            var textColor1 = isDarkMode ? '#e0e0e0' : '#666';
+            var textColor2 = isDarkMode ? '#ccc' : '#888';
+            
+            button.style.cssText = `
+                position: relative;
+                padding: 20px 16px;
+                border: none;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                background: ${bgColor};
+                border: 2px solid ${borderColor};
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                min-height: 100px;
+                box-shadow: 0 2px 10px ${shadowColor};
+            `;
+            
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+                this.style.boxShadow = '0 8px 20px rgba(212, 93, 121, 0.2)';
+                this.style.borderColor = '#d45d79';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 2px 10px ' + shadowColor;
+                this.style.borderColor = borderColor;
+            });
+            
+            var tagColor = '#999';
+            if (announcement.tag === 'important') {
+                tagColor = '#f44336';
+            } else if (announcement.tag === 'update') {
+                tagColor = '#4CAF50';
+            } else if (announcement.tag === 'notice') {
+                tagColor = '#2196F3';
+            }
+            
+            var isViewed = isAnnouncementViewed(announcement.id);
+            
+            button.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3;">${announcement.title}</span>
+                    ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white;">${announcement.tagText}</span>` : ''}
+                </div>
+                <div style="font-size: 14px; color: ${textColor1};"><i class="fas fa-calendar"></i> ${announcement.date}</div>
+                <div style="font-size: 13px; color: ${textColor2};"><i class="fas fa-user"></i> ${announcement.author}</div>
+                ${!isViewed ? `<span class="notification-dot">1<span class="notification-tooltip">存在未查看的更新</span></span>` : ''}
+            `;
+            
+            button.addEventListener('click', function() {
+                markAnnouncementAsViewed(announcement.id);
+                showAnnouncementDetail(announcement, filtered);
+            });
+            
+            buttonsContainer.appendChild(button);
         });
     });
 }

@@ -1,10 +1,10 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.7.0.0 (b8)",
+    login: "RC 2.7.0.1 (b8)",
 
     // 游戏大厅版本号
-    homepage: "RC 1.1.0.0 (a2)",
+    homepage: "RC 1.1.0.1 (a2)",
 
     // 点击方块游戏版本号
     fkgame: "RC 1.3.1",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260701.2700.b8.102",
+    launcher: "20260703.2701.b8.104",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -41,9 +41,9 @@ const versionInfo = {
             status: "公开正式版"
         },
         transparent: {
-            version: "RC 1.2.9",
+            version: "RC 1.2.10",
             releaseDate: "2026-06-06",
-            updateDate: "2026-07-01",
+            updateDate: "2026-07-03",
             status: "公开正式版"
         }
     },
@@ -111,6 +111,27 @@ const versionInfo = {
                 "摄氏度/华氏度单位切换",
                 "自动刷新，支持多档间隔设置"
             ]
+        },
+        imageViewer: {
+            name: "图片查看器",
+            icon: "fas fa-image",
+            iconBg: "linear-gradient(135deg, #d45d79 0%, #e67e8a 100%)",
+            iconColor: "#ffffff",
+            version: "RC 2.1.0",
+            releaseDate: "2026-04-05",
+            updateDate: "2026-07-03",
+            status: "公开正式版",
+            developer: "PREAlmax",
+            copyright: "© 2014-2026 PREAlmax, All rights reserved.",
+            description: "版本更新记录专用图片查看器，支持图片缩放、旋转、翻转和组件信息查看功能",
+            features: [
+                "支持图片放大缩小，最大可放大至500%",
+                "支持向左向右旋转，每次旋转90度",
+                "支持水平翻转和垂直翻转",
+                "支持鼠标拖拽平移查看大图",
+                "全屏弹窗显示，沉浸式查看体验",
+                "点击组件信息按钮查看版本详情"
+            ]
         }
     }
 };
@@ -119,8 +140,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-07-01",
-    patchDate: "2026-07-01",
+    buildDate: "2026-07-03",
+    patchDate: "2026-07-03",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""

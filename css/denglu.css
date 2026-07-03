@@ -1486,13 +1486,18 @@ body.dark-mode .version-info .version-number {
         height: 60px;
     }
     
-    .image-viewer-content {
-        max-width: 95% !important;
-        width: 95% !important;
+    #imageViewerModal .image-viewer-fullscreen {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
     }
     
-    .image-viewer-container {
-        max-height: 60vh;
+    .image-viewer-header {
+        padding: 15px 20px;
+    }
+    
+    .image-viewer-title span {
+        font-size: 18px;
     }
     
     .terms-modal-buttons {
@@ -2637,47 +2642,94 @@ body.dark-mode .terms-main::-webkit-scrollbar-thumb {
 }
 
 /* 图片查看器样式 */
-.image-viewer-content {
-    max-width: 100% !important;
-    width: 100% !important;
-    height: 100vh;
+/* ===================== 图片查看器全屏弹窗样式 ===================== */
+#imageViewerModal {
+    background: rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+}
+
+#imageViewerModal .image-viewer-fullscreen {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    overflow: visible;
-    transform: scale(0.9);
+    background: white;
+    transform: none;
+    box-shadow: none;
     opacity: 0;
+    transform: scale(0.95);
     transition: all 0.3s ease;
-    border-radius: 0;
-    position: relative;
 }
 
-.image-viewer-content .alert-icon {
-    display: none;
-}
-
-#imageViewerModal.show .image-viewer-content {
-    transform: scale(1);
+#imageViewerModal.show .image-viewer-fullscreen {
     opacity: 1;
+    transform: scale(1);
 }
 
 .image-viewer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-    background: #fff;
+    padding: 20px 40px;
+    background: white;
+    color: #333;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.image-viewer-header h3 {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
+.image-viewer-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.image-viewer-title::before {
+    content: '';
+    width: 4px;
+    height: 32px;
+    background: linear-gradient(180deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 2px;
+}
+
+.image-viewer-title i {
+    font-size: 20px;
+    color: #d45d79;
+}
+
+.image-viewer-title span {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 
 .image-viewer-close {
-    padding: 8px 16px;
-    font-size: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    color: #666;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.image-viewer-close:hover {
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    transform: rotate(90deg);
 }
 
 .image-viewer-main {
@@ -2720,10 +2772,6 @@ body.dark-mode .terms-main::-webkit-scrollbar-thumb {
     overflow: visible;
     position: relative;
     z-index: 10;
-}
-
-.image-viewer-controls.expanded {
-    width: 140px;
 }
 
 .viewer-control-btn {
@@ -2826,21 +2874,31 @@ body.dark-mode .terms-main::-webkit-scrollbar-thumb {
 }
 
 /* 暗色模式下的图片查看器样式 */
-body.dark-mode .image-viewer-content {
-    background: rgba(30, 30, 50, 0.98);
+body.dark-mode .image-viewer-fullscreen {
+    background: #1a1a2e;
 }
 
 body.dark-mode .image-viewer-container {
-    background: rgba(30, 30, 50, 0.98);
+    background: #1a1a2e;
 }
 
 body.dark-mode .image-viewer-header {
-    background: rgba(30, 30, 50, 0.98);
+    background: #1a1a2e;
     border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-body.dark-mode .image-viewer-header h3 {
+body.dark-mode .image-viewer-title span {
     color: #fff;
+}
+
+body.dark-mode .image-viewer-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+}
+
+body.dark-mode .image-viewer-close:hover {
+    background: rgba(212, 93, 121, 0.2);
+    color: #d45d79;
 }
 
 body.dark-mode .image-viewer-controls {

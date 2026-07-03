@@ -143,9 +143,15 @@
                     <h1 id="settingsTitle">账户信息</h1>
                     <p id="settingsDesc">管理您的账户基本信息</p>
                 </div>
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <div class="header-right">
+                    <button class="collapse-all-btn" id="collapseAllBtn" title="收起所有卡片">
+                        <i class="fas fa-chevron-up"></i>
+                        <span>全部收起</span>
+                    </button>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
             </div>
             
             <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -382,55 +388,47 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="two-factor-item">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-user" style="color: #3498db; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;">用户名</h4>
-                                        </div>
+                            <div class="basic-info-row">
+                                <div class="basic-info-item">
+                                    <div class="basic-info-label">
+                                        <i class="fas fa-user"></i>
+                                        <span>用户名</span>
+                                    </div>
+                                    <div class="basic-info-value">
+                                        <input type="text" id="accountUsername" readonly>
+                                        <button class="two-factor-btn" id="editUsernameBtn">
+                                            <i class="fas fa-edit"></i>
+                                            编辑
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="text" id="accountUsername" readonly style="width: 150px;">
-                                    <button class="two-factor-btn" id="editUsernameBtn" style="padding: 6px 12px;">
-                                        <i class="fas fa-edit"></i>
-                                        编辑
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="two-factor-item">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-hashtag" style="color: #3498db; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;">用户ID</h4>
-                                        </div>
+                                <div class="basic-info-divider"></div>
+                                <div class="basic-info-item">
+                                    <div class="basic-info-label">
+                                        <i class="fas fa-hashtag"></i>
+                                        <span>用户ID</span>
+                                    </div>
+                                    <div class="basic-info-value">
+                                        <input type="text" id="accountUid" readonly>
+                                        <button class="two-factor-btn" id="copyUidBtn">
+                                            <i class="fas fa-copy"></i>
+                                            复制
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="text" id="accountUid" readonly style="width: 150px;">
-                                    <button class="two-factor-btn" id="copyUidBtn" style="padding: 6px 12px;">
-                                        <i class="fas fa-copy"></i>
-                                        复制
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="two-factor-item">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-calendar" style="color: #3498db; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;">注册时间</h4>
-                                        </div>
+                                <div class="basic-info-divider"></div>
+                                <div class="basic-info-item">
+                                    <div class="basic-info-label">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>注册时间</span>
                                     </div>
-                                </div>
-                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="text" id="accountRegTime" readonly style="width: 150px;">
-                                    <button class="two-factor-btn" id="copyRegTimeBtn" style="padding: 6px 12px;">
-                                        <i class="fas fa-copy"></i>
-                                        复制
-                                    </button>
+                                    <div class="basic-info-value">
+                                        <input type="text" id="accountRegTime" readonly>
+                                        <button class="two-factor-btn" id="copyRegTimeBtn">
+                                            <i class="fas fa-copy"></i>
+                                            复制
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -556,46 +554,41 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="two-factor-item">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-envelope" style="color: #3498db; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;">邮箱地址</h4>
-                                            <div class="verification-status" id="emailVerificationStatus" style="display: none;">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span>已验证</span>
-                                            </div>
+                            <div class="basic-info-row">
+                                <div class="basic-info-item">
+                                    <div class="basic-info-label">
+                                        <i class="fas fa-envelope"></i>
+                                        <span>邮箱地址</span>
+                                        <div class="verification-status" id="emailVerificationStatus" style="display: none;">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>已验证</span>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="email" id="accountEmail" placeholder="未绑定" readonly style="width: 150px;">
-                                    <button class="two-factor-btn" id="bindEmailBtn" style="padding: 6px 12px;">
-                                        <i class="fas fa-plus"></i>
-                                        <span id="bindEmailBtnText">绑定</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="two-factor-item">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-phone" style="color: #3498db; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;">手机号码</h4>
-                                            <div class="verification-status" id="phoneVerificationStatus" style="display: none;">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span>已验证</span>
-                                            </div>
-                                        </div>
+                                    <div class="basic-info-value">
+                                        <input type="email" id="accountEmail" placeholder="未绑定" readonly>
+                                        <button class="two-factor-btn" id="bindEmailBtn">
+                                            <i class="fas fa-plus"></i>
+                                            <span id="bindEmailBtnText">绑定</span>
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="form-input-group" style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="tel" id="accountPhone" placeholder="未绑定" readonly style="width: 150px;">
-                                    <button class="two-factor-btn" id="bindPhoneBtn" style="padding: 6px 12px;">
-                                        <i class="fas fa-plus"></i>
-                                        <span id="bindPhoneBtnText">绑定</span>
-                                    </button>
+                                <div class="basic-info-divider"></div>
+                                <div class="basic-info-item">
+                                    <div class="basic-info-label">
+                                        <i class="fas fa-phone"></i>
+                                        <span>手机号码</span>
+                                        <div class="verification-status" id="phoneVerificationStatus" style="display: none;">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>已验证</span>
+                                        </div>
+                                    </div>
+                                    <div class="basic-info-value">
+                                        <input type="tel" id="accountPhone" placeholder="未绑定" readonly>
+                                        <button class="two-factor-btn" id="bindPhoneBtn">
+                                            <i class="fas fa-plus"></i>
+                                            <span id="bindPhoneBtnText">绑定</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1460,77 +1453,80 @@
                                         选择图片
                                     </button>
                                 </div>
-                                <div class="background-preview" id="backgroundPreview">
-                                    <div class="preview-placeholder">
-                                        <i class="fas fa-image"></i>
-                                        <span>预览</span>
-                                    </div>
-                                </div>
                                 
-                                <div class="two-factor-item">
-                                    <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
-                                        <i class="fas fa-expand-arrows-alt" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
-                                        <h4 style="margin: 0;">自适应方式</h4>
-                                    </div>
-                                    <select id="backgroundFit" class="two-factor-select">
-                                        <option value="cover">拉伸覆盖</option>
-                                        <option value="contain">等比缩放</option>
-                                        <option value="fill">拉伸填充</option>
-                                        <option value="repeat">平铺</option>
-                                        <option value="center">居中</option>
-                                        <option value="content">内容区域适配</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="two-factor-item">
-                                    <div class="two-factor-info">
-                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                            <i class="fas fa-eye" style="color: #3498db; font-size: 18px;"></i>
-                                            <div>
-                                                <h4 style="margin: 0;">不透明度</h4>
-                                            </div>
+                                <div class="background-details" id="backgroundDetails">
+                                    <div class="background-preview" id="backgroundPreview">
+                                        <div class="preview-placeholder">
+                                            <i class="fas fa-image"></i>
+                                            <span>预览</span>
                                         </div>
                                     </div>
-                                    <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
-                                        <input type="range" id="backgroundOpacity" min="0.1" max="1" step="0.1" value="1">
-                                        <span id="opacityValue">100%</span>
+                                    
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                            <i class="fas fa-expand-arrows-alt" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                            <h4 style="margin: 0;">自适应方式</h4>
+                                        </div>
+                                        <select id="backgroundFit" class="two-factor-select">
+                                            <option value="cover">拉伸覆盖</option>
+                                            <option value="contain">等比缩放</option>
+                                            <option value="fill">拉伸填充</option>
+                                            <option value="repeat">平铺</option>
+                                            <option value="center">居中</option>
+                                            <option value="content">内容区域适配</option>
+                                        </select>
                                     </div>
-                                </div>
-                                
-                                <div class="two-factor-item">
-                                    <div class="two-factor-info">
-                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                            <i class="fas fa-cloud" style="color: #3498db; font-size: 18px;"></i>
-                                            <div>
-                                                <h4 style="margin: 0;">背景模糊</h4>
+                                    
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info">
+                                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                                <i class="fas fa-eye" style="color: #3498db; font-size: 18px;"></i>
+                                                <div>
+                                                    <h4 style="margin: 0;">不透明度</h4>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                            <input type="range" id="backgroundOpacity" min="0.1" max="1" step="0.1" value="1">
+                                            <span id="opacityValue">100%</span>
+                                        </div>
                                     </div>
-                                    <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
-                                        <input type="range" id="backgroundBlur" min="0" max="20" step="1" value="0">
-                                        <span id="blurValue">0px</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="two-factor-item">
-                                    <div class="two-factor-info">
-                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                            <i class="fas fa-paintbrush" style="color: #3498db; font-size: 18px;"></i>
-                                            <div>
-                                                <h4 style="margin: 0;">应用背景</h4>
+                                    
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info">
+                                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                                <i class="fas fa-cloud" style="color: #3498db; font-size: 18px;"></i>
+                                                <div>
+                                                    <h4 style="margin: 0;">背景模糊</h4>
+                                                </div>
                                             </div>
                                         </div>
-                                        <p style="margin: 0; font-size: 13px; color: #666;">保存并应用当前背景设置</p>
+                                        <div class="slider-group" style="display: flex; align-items: center; gap: 10px; width: 200px;">
+                                            <input type="range" id="backgroundBlur" min="0" max="20" step="1" value="0">
+                                            <span id="blurValue">0px</span>
+                                        </div>
                                     </div>
-                                    <div style="display: flex; gap: 10px;">
-                                        <button class="two-factor-btn" id="applyBackground">
-                                            <i class="fas fa-check"></i>
-                                            应用
-                                        </button>
-                                        <button class="two-factor-btn secondary" id="resetBackground">
-                                            <i class="fas fa-undo"></i>
-                                            重置
-                                        </button>
+                                    
+                                    <div class="two-factor-item">
+                                        <div class="two-factor-info">
+                                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                                <i class="fas fa-paintbrush" style="color: #3498db; font-size: 18px;"></i>
+                                                <div>
+                                                    <h4 style="margin: 0;">应用背景</h4>
+                                                </div>
+                                            </div>
+                                            <p style="margin: 0; font-size: 13px; color: #666;">保存并应用当前背景设置</p>
+                                        </div>
+                                        <div style="display: flex; gap: 10px;">
+                                            <button class="two-factor-btn" id="applyBackground">
+                                                <i class="fas fa-check"></i>
+                                                应用
+                                            </button>
+                                            <button class="two-factor-btn secondary" id="resetBackground">
+                                                <i class="fas fa-undo"></i>
+                                                重置
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

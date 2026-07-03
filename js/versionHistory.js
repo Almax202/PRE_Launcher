@@ -283,6 +283,32 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.7.0.1 (b8)",
+            date: "2026-07-03",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2701.png", "./images/2701_2.png", "./images/2701_3.png", ],
+            features: [
+                "新增功能",
+                "- 系统设置页卡片折叠功能：每个条目下的卡片右上角新增展开/收起按钮，默认展开状态，点击可折叠卡片内容",
+                "- 卡片折叠状态持久化：每个卡片的展开/收起状态保存到本地存储，刷新页面后自动恢复",
+                "- 全部展开/收起按钮：每个条目顶部导航栏新增\"全部展开/收起\"按钮，可一键操作所有卡片",
+                "- 卡片折叠动画：为卡片展开/收起操作添加平滑的高度渐变、透明度变化和轻微位移动画效果",
+                "- 开发者公告多级筛选菜单：开发日志中新增多级筛选菜单，支持按月份和版本筛选公告",
+                "- 图片查看器组件信息按钮：版本更新记录中图片查看器右下角新增\"组件信息\"按钮，替换原展开按钮，点击可查看图片查看器组件版本详情",
+                "优化改进",
+                "- 卡片折叠动画优化：修复非当前显示条目下的卡片折叠/展开功能异常问题，确保所有条目下的卡片都能正常展开收起",
+                "- 基本信息卡片排版优化：系统设置页基本信息卡片中用户名、用户ID和注册时间改为一行三列布局，竖线分隔并保留间距",
+                "- 联系方式卡片排版优化：联系方式卡片改为与基本信息卡片相同的一行多列排版布局",
+                "- 自定义背景显示逻辑优化：只有选择预设背景或自定义背景图片后才显示背景预览区域及其下方各个条目",
+                "- 图片查看器全屏弹窗样式：图片查看器弹窗改为全屏显示样式，包含顶部标题栏、渐变装饰条和圆形关闭按钮，视觉风格与关于启动器弹窗保持一致",
+                "- 图片查看器组件版本信息：在versionManager.js中新增图片查看器组件版本代码，包含详细的功能特性描述",
+                "修复问题",
+                "- 清除筛选按钮无反应：修复开发者公告中清除筛选按钮点击后无反应的问题",
+                "- 图片查看器弹窗无法弹出：修复图片查看器中引用已删除的expandBtn元素导致JavaScript报错的问题，现在点击图片可正常弹出查看器"
+            ]
+        },
+        {
             version: "RC 2.7.0.0 (b8)",
             date: "2026-07-01",
             tag: "major",
@@ -1686,6 +1712,20 @@ const versionHistoryData = {
         }
     ],
     homepageUpdateContent: [
+        {
+            version: "RC 1.1.0.1 (a2)",
+            date: "2026-07-03",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/h1101.png"],
+            features: [
+                "新增功能",
+                "- 游戏大厅更多操作按钮：个人卡片中的退出登录按钮改为\"更多操作\"按钮，点击弹出包含系统设置和退出登录选项的弹窗",
+                "优化改进",
+                "- 游戏大厅弹窗样式统一：将游戏大厅中的默认弹窗样式改为与登录页一致，包括标题居左、按钮右对齐、粉色渐变主按钮等设计元素",
+                "- 用户信息卡片优化：删除用户信息卡片中的\"点击进入系统设置\"文本，点击卡片不再跳转到系统设置页",
+            ]
+        },
         {
             version: "RC 1.1.0.0 (a2)",
             date: "2026-05-30",
@@ -3452,13 +3492,14 @@ function initImageViewer() {
     imageViewerModal.className = 'custom-alert';
     imageViewerModal.style.display = 'none';
     imageViewerModal.innerHTML = `
-        <div class="alert-content image-viewer-content">
+        <div class="image-viewer-fullscreen">
             <div class="image-viewer-header">
-                <div class="alert-icon">
-                    <i class="fas fa-image"></i>
+                <div class="image-viewer-title">
+                    <span>图片查看器</span>
                 </div>
-                <h3>图片查看器</h3>
-                <button class="alert-confirm image-viewer-close" id="closeImageViewer">关闭</button>
+                <button class="image-viewer-close" id="closeImageViewer">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="image-viewer-main">
                 <div class="image-viewer-container" id="imageViewerContainer">
@@ -3496,9 +3537,9 @@ function initImageViewer() {
                         <span class="viewer-btn-tooltip">垂直翻转</span>
                     </button>
                     <div class="viewer-control-divider"></div>
-                    <button class="viewer-control-btn viewer-expand-btn" id="expandBtn">
-                        <i class="fas fa-expand"></i>
-                        <span class="viewer-btn-tooltip">展开</span>
+                    <button class="viewer-control-btn" id="componentInfoBtn">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="viewer-btn-tooltip">组件信息</span>
                     </button>
                 </div>
             </div>
@@ -3517,12 +3558,10 @@ function initImageViewer() {
     var flipHorizontal = false;
     var flipVertical = false;
     var isDragging = false;
-    var isExpanded = false;
     var startX = 0;
     var startY = 0;
     var viewerImage = document.getElementById('viewerImage');
     var imageContainer = document.getElementById('imageViewerContainer');
-    var controlsPanel = document.querySelector('.image-viewer-controls');
     
     // 设置图片样式
     viewerImage.style.position = 'relative';
@@ -3577,14 +3616,13 @@ function initImageViewer() {
         updateImagePosition();
     });
     
-    // 展开/收起控制栏
-    document.getElementById('expandBtn').addEventListener('click', function() {
-        isExpanded = !isExpanded;
-        controlsPanel.classList.toggle('expanded', isExpanded);
-        var icon = this.querySelector('i');
-        icon.className = isExpanded ? 'fas fa-compress' : 'fas fa-expand';
-        var tooltip = this.querySelector('.viewer-btn-tooltip');
-        tooltip.textContent = isExpanded ? '收起' : '展开';
+    // 组件信息按钮
+    document.getElementById('componentInfoBtn').addEventListener('click', function() {
+        if (typeof showComponentInfoModal === 'function') {
+            showComponentInfoModal('imageViewer');
+        } else {
+            showAlert('组件信息功能不可用');
+        }
     });
     
     // 鼠标滚轮放大缩小
@@ -3750,9 +3788,6 @@ function initImageViewer() {
         currentRotation = 0;
         flipHorizontal = false;
         flipVertical = false;
-        isExpanded = false;
-        controlsPanel.classList.remove('expanded');
-        document.getElementById('expandBtn').querySelector('i').className = 'fas fa-expand';
         viewerImage.style.transform = 'translate(0, 0) scale(1) rotate(0deg)';
         viewerImage.style.cursor = 'grab';
         document.getElementById('viewerZoomInfo').textContent = '100%';

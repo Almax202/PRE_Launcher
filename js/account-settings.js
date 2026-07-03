@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     SettingsManager.init();
     AccountLangManager.init();
+    SettingsManager.initCardCollapse();
     loadUserInfo();
     initializeEventListeners();
     loadDeviceInfo();
@@ -1134,6 +1135,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (sectionId === 'achievements') {
                 loadGameStats();
             }
+            
+            setTimeout(function() {
+                SettingsManager.updateCardHeights();
+            }, 50);
         }
     }
     
@@ -4958,6 +4963,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     preview.style.backgroundSize = 'cover';
                     preview.style.backgroundPosition = 'center';
                     window.tempBackground = base64;
+                    
+                    // 显示背景详情区域
+                    showBackgroundDetails();
                 };
                 
                 img.src = base64;
@@ -5144,7 +5152,24 @@ document.addEventListener('DOMContentLoaded', function() {
         // 移除背景
         removeBackgroundFromPage();
         
+        // 隐藏背景详情区域
+        hideBackgroundDetails();
+        
         showAlert('背景设置已重置');
+    }
+    
+    function showBackgroundDetails() {
+        var details = document.getElementById('backgroundDetails');
+        if (details) {
+            details.classList.add('show');
+        }
+    }
+    
+    function hideBackgroundDetails() {
+        var details = document.getElementById('backgroundDetails');
+        if (details) {
+            details.classList.remove('show');
+        }
     }
     
     function applyBackgroundToPage(backgroundSettings) {
@@ -5297,6 +5322,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             // 保存设置信息到localStorage供其他页面使用
                             // 不保存图片数据，其他页面会通过IndexedDB读取
                             localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
+                            
+                            // 显示背景详情区域
+                            showBackgroundDetails();
                         } else {
                             // 如果IndexedDB中没有图片，清除背景设置
                             localStorage.removeItem('customBackground');
@@ -5329,6 +5357,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // 同步到localStorage供其他页面使用
                     localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
+                    
+                    // 显示背景详情区域
+                    showBackgroundDetails();
                 }
             } catch (e) {
                 console.error('加载背景设置失败:', e);
@@ -7526,6 +7557,9 @@ document.addEventListener('DOMContentLoaded', function() {
             preview.style.backgroundPosition = 'center';
             preview.style.backgroundRepeat = 'no-repeat';
         }
+        
+        // 显示背景详情区域
+        showBackgroundDetails();
         
         // 保存背景设置
         var fit = document.getElementById('backgroundFit').value;

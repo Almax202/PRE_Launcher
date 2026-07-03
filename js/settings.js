@@ -225,6 +225,168 @@ var SettingsManager = (function() {
                 console.error('Failed to import settings:', e);
                 return false;
             }
+        },
+
+        initCardCollapse: function() {
+            var cards = document.querySelectorAll('.section-card');
+            var collapsedStates = this.loadCardCollapseStates();
+            
+            cards.forEach(function(card, index) {
+                var header = card.querySelector('.card-header');
+                var content = card.querySelector('.card-content');
+                if (!header || !content) return;
+                
+                var cardTitle = header.querySelector('.card-title h3');
+                var cardId = cardTitle ? cardTitle.textContent.trim() : 'card-' + index;
+                
+                var collapseBtn = document.createElement('button');
+                collapseBtn.className = 'card-collapse-btn';
+                collapseBtn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                collapseBtn.setAttribute('aria-label', '收起卡片');
+                
+                var isCollapsed = collapsedStates[cardId] === true;
+                if (isCollapsed) {
+                    card.classList.add('collapsed');
+                    content.style.maxHeight = '0px';
+                    collapseBtn.querySelector('i').className = 'fas fa-chevron-down';
+                    collapseBtn.setAttribute('aria-label', '展开卡片');
+                } else {
+                    var contentHeight = content.scrollHeight;
+                    if (contentHeight > 0) {
+                        content.style.maxHeight = contentHeight + 'px';
+                    } else {
+                        content.style.maxHeight = '2000px';
+                    }
+                }
+                
+                collapseBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    var isCurrentlyCollapsed = card.classList.contains('collapsed');
+                    
+                    if (isCurrentlyCollapsed) {
+                        content.style.maxHeight = 'none';
+                        var currentHeight = content.scrollHeight;
+                        content.style.maxHeight = currentHeight + 'px';
+                        card.classList.remove('collapsed');
+                        collapseBtn.querySelector('i').className = 'fas fa-chevron-up';
+                        collapseBtn.setAttribute('aria-label', '收起卡片');
+                        collapsedStates[cardId] = false;
+                    } else {
+                        content.style.maxHeight = '0px';
+                        card.classList.add('collapsed');
+                        collapseBtn.querySelector('i').className = 'fas fa-chevron-down';
+                        collapseBtn.setAttribute('aria-label', '展开卡片');
+                        collapsedStates[cardId] = true;
+                    }
+                    SettingsManager.saveCardCollapseStates(collapsedStates);
+                });
+                
+                header.appendChild(collapseBtn);
+            });
+            
+            this.bindCollapseAllButton();
+        },
+        
+        loadCardCollapseStates: function() {
+            try {
+                var saved = localStorage.getItem('cardCollapseStates');
+                return saved ? JSON.parse(saved) : {};
+            } catch (e) {
+                console.error('Failed to load card collapse states:', e);
+                return {};
+            }
+        },
+        
+        saveCardCollapseStates: function(states) {
+            try {
+                localStorage.setItem('cardCollapseStates', JSON.stringify(states));
+            } catch (e) {
+                console.error('Failed to save card collapse states:', e);
+            }
+        },
+        
+        updateCardHeights: function() {
+            var cards = document.querySelectorAll('.section-card');
+            var collapsedStates = this.loadCardCollapseStates();
+            
+            cards.forEach(function(card, index) {
+                var header = card.querySelector('.card-header');
+                var content = card.querySelector('.card-content');
+                if (!header || !content) return;
+                
+                var cardTitle = header.querySelector('.card-title h3');
+                var cardId = cardTitle ? cardTitle.textContent.trim() : 'card-' + index;
+                var isCollapsed = collapsedStates[cardId] === true;
+                
+                if (!isCollapsed) {
+                    content.style.maxHeight = 'none';
+                    var height = content.scrollHeight;
+                    content.style.maxHeight = height + 'px';
+                }
+            });
+        },
+        
+        bindCollapseAllButton: function() {
+            var collapseAllBtn = document.getElementById('collapseAllBtn');
+            if (!collapseAllBtn) return;
+            
+            collapseAllBtn.addEventListener('click', function() {
+                var cards = document.querySelectorAll('.section-card');
+                var allCollapsed = true;
+                
+                cards.forEach(function(card) {
+                    if (!card.classList.contains('collapsed')) {
+                        allCollapsed = false;
+                    }
+                });
+                
+                var collapsedStates = {};
+                
+                cards.forEach(function(card, index) {
+                    var header = card.querySelector('.card-header');
+                    var content = card.querySelector('.card-content');
+                    if (!header) return;
+                    
+                    var cardTitle = header.querySelector('.card-title h3');
+                    var cardId = cardTitle ? cardTitle.textContent.trim() : 'card-' + index;
+                    var collapseBtn = header.querySelector('.card-collapse-btn');
+                    var icon = collapseBtn ? collapseBtn.querySelector('i') : null;
+                    
+                    if (allCollapsed) {
+                        if (content) {
+                            var contentHeight = content.scrollHeight;
+                            content.style.maxHeight = contentHeight + 'px';
+                        }
+                        card.classList.remove('collapsed');
+                        if (icon) icon.className = 'fas fa-chevron-up';
+                        if (collapseBtn) collapseBtn.setAttribute('aria-label', '收起卡片');
+                        collapsedStates[cardId] = false;
+                    } else {
+                        if (content) {
+                            content.style.maxHeight = '0px';
+                        }
+                        card.classList.add('collapsed');
+                        if (icon) icon.className = 'fas fa-chevron-down';
+                        if (collapseBtn) collapseBtn.setAttribute('aria-label', '展开卡片');
+                        collapsedStates[cardId] = true;
+                    }
+                });
+                
+                SettingsManager.saveCardCollapseStates(collapsedStates);
+                
+                var btnIcon = collapseAllBtn.querySelector('i');
+                var btnText = collapseAllBtn.querySelector('span');
+                if (allCollapsed) {
+                    btnIcon.className = 'fas fa-chevron-up';
+                    btnText.textContent = '全部收起';
+                    collapseAllBtn.setAttribute('title', '收起所有卡片');
+                } else {
+                    btnIcon.className = 'fas fa-chevron-down';
+                    btnText.textContent = '全部展开';
+                    collapseAllBtn.setAttribute('title', '展开所有卡片');
+                }
+            });
         }
     };
 })();
