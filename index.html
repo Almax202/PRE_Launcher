@@ -5183,6 +5183,9 @@
                             <i class="fas fa-map-marker-alt"></i>
                             <span>切换城市</span>
                         </button>
+                        <button class="weather-add-city-btn" id="addCityBtn" title="添加城市">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
                     <p class="weather-update-time" id="weatherUpdateTime"></p>
                 </div>
@@ -5225,6 +5228,28 @@
                             </div>
                         </div>
                     </div>
+                    <div class="weather-share-wrapper" style="position: relative;">
+                        <button class="weather-share-btn" id="weatherShareBtn" title="分享">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <div class="share-dropdown" id="weatherShareDropdown" style="display: none;">
+                            <div class="share-item" data-share="copy">
+                                <i class="fas fa-copy"></i>
+                                <span>复制天气信息</span>
+                            </div>
+                            <div class="share-item" data-share="text">
+                                <i class="fas fa-comment"></i>
+                                <span>分享文本</span>
+                            </div>
+                            <div class="share-item" data-share="image">
+                                <i class="fas fa-image"></i>
+                                <span>生成截图</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="weather-voice-btn" id="weatherVoiceBtn" title="语音播报">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
                     <button class="weather-refresh-btn" id="weatherRefreshBtn" title="刷新">
                         <i class="fas fa-sync-alt"></i>
                     </button>
@@ -5235,6 +5260,13 @@
             </div>
             
             <div class="weather-content">
+                <div id="weatherOfflineIndicator" class="weather-offline-indicator" style="display: none;">
+                    <i class="fas fa-wifi-slash"></i>
+                    <span>当前处于离线状态，显示缓存数据</span>
+                </div>
+                
+                <div class="weather-city-list" id="weatherCityList"></div>
+                
                 <div class="weather-main-section">
                     <div class="weather-current">
                         <div class="weather-current-icon" id="weatherCurrentIcon">
@@ -5244,6 +5276,103 @@
                             <div class="weather-temp" id="weatherCurrentTemp">--°</div>
                             <div class="weather-desc" id="weatherCurrentDesc">--</div>
                             <div class="weather-temp-range" id="weatherTempRange">最高 --° / 最低 --°</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weather-notification-section" id="weatherNotificationSection" style="display: none;">
+                    <div class="notification-card" id="weatherNotificationCard">
+                        <div class="notification-icon"><i class="fas fa-bell"></i></div>
+                        <div class="notification-content">
+                            <div class="notification-title" id="notificationTitle">天气提醒</div>
+                            <div class="notification-desc" id="notificationDesc">即将下雨，请携带雨具</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weather-clothing-section">
+                    <div class="section-title">
+                        <i class="fas fa-shirt"></i>
+                        <span>穿衣建议</span>
+                    </div>
+                    <div class="clothing-card" id="clothingCard">
+                        <div class="clothing-icon"><i class="fas fa-user"></i></div>
+                        <div class="clothing-info">
+                            <div class="clothing-title" id="clothingTitle">加载中...</div>
+                            <div class="clothing-desc" id="clothingDesc">请稍候，正在分析天气数据...</div>
+                            <div class="clothing-tags" id="clothingTags"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weather-lifestyle-section">
+                    <div class="section-title">
+                        <i class="fas fa-heart"></i>
+                        <span>生活指数</span>
+                    </div>
+                    <div class="lifestyle-grid">
+                        <div class="lifestyle-card" data-type="car">
+                            <div class="lifestyle-icon"><i class="fas fa-car"></i></div>
+                            <span class="lifestyle-label">洗车指数</span>
+                            <span class="lifestyle-value" id="lifestyleCar">--</span>
+                        </div>
+                        <div class="lifestyle-card" data-type="sports">
+                            <div class="lifestyle-icon"><i class="fas fa-running"></i></div>
+                            <span class="lifestyle-label">运动指数</span>
+                            <span class="lifestyle-value" id="lifestyleSports">--</span>
+                        </div>
+                        <div class="lifestyle-card" data-type="fishing">
+                            <div class="lifestyle-icon"><i class="fas fa-fish"></i></div>
+                            <span class="lifestyle-label">钓鱼指数</span>
+                            <span class="lifestyle-value" id="lifestyleFishing">--</span>
+                        </div>
+                        <div class="lifestyle-card" data-type="hair">
+                            <div class="lifestyle-icon"><i class="fas fa-wind"></i></div>
+                            <span class="lifestyle-label">发型指数</span>
+                            <span class="lifestyle-value" id="lifestyleHair">--</span>
+                        </div>
+                        <div class="lifestyle-card" data-type="makeup">
+                            <div class="lifestyle-icon"><i class="fas fa-smile"></i></div>
+                            <span class="lifestyle-label">化妆指数</span>
+                            <span class="lifestyle-value" id="lifestyleMakeup">--</span>
+                        </div>
+                        <div class="lifestyle-card" data-type="travel">
+                            <div class="lifestyle-icon"><i class="fas fa-plane"></i></div>
+                            <span class="lifestyle-label">旅游指数</span>
+                            <span class="lifestyle-value" id="lifestyleTravel">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="aqi-detail-section">
+                    <div class="section-title">
+                        <i class="fas fa-cloud"></i>
+                        <span>空气质量详情</span>
+                    </div>
+                    <div class="aqi-detail-grid" id="aqiDetailGrid">
+                        <div class="aqi-pollutant-card">
+                            <div class="pollutant-icon"><i class="fas fa-smog"></i></div>
+                            <span class="pollutant-name">PM2.5</span>
+                            <div class="pollutant-value" id="aqiPm25">--</div>
+                            <span class="pollutant-unit">μg/m³</span>
+                        </div>
+                        <div class="aqi-pollutant-card">
+                            <div class="pollutant-icon"><i class="fas fa-smoke"></i></div>
+                            <span class="pollutant-name">PM10</span>
+                            <div class="pollutant-value" id="aqiPm10">--</div>
+                            <span class="pollutant-unit">μg/m³</span>
+                        </div>
+                        <div class="aqi-pollutant-card">
+                            <div class="pollutant-icon"><i class="fas fa-wind"></i></div>
+                            <span class="pollutant-name">NO₂</span>
+                            <div class="pollutant-value" id="aqiNo2">--</div>
+                            <span class="pollutant-unit">μg/m³</span>
+                        </div>
+                        <div class="aqi-pollutant-card">
+                            <div class="pollutant-icon"><i class="fas fa-leaf"></i></div>
+                            <span class="pollutant-name">O₃</span>
+                            <div class="pollutant-value" id="aqiO3">--</div>
+                            <span class="pollutant-unit">μg/m³</span>
                         </div>
                     </div>
                 </div>
@@ -12410,13 +12539,19 @@
             {
                 elementId: 'weatherLocation',
                 title: '当前城市',
-                description: '显示当前所在城市名称',
+                description: '显示当前所在城市名称，支持多城市切换',
                 position: 'bottom'
             },
             {
                 elementId: 'weatherChangeCityBtn',
                 title: '切换城市',
                 description: '点击此按钮可手动切换城市查看天气',
+                position: 'bottom'
+            },
+            {
+                elementId: 'addCityBtn',
+                title: '添加城市',
+                description: '点击加号按钮添加新城市到您的城市列表',
                 position: 'bottom'
             },
             {
@@ -12432,34 +12567,78 @@
                 position: 'bottom'
             },
             {
+                elementId: 'weatherShareBtn',
+                title: '分享天气',
+                description: '点击分享当前天气信息给好友',
+                position: 'bottom'
+            },
+            {
+                elementId: 'weatherVoiceBtn',
+                title: '语音播报',
+                description: '点击语音播报当前天气信息',
+                position: 'bottom'
+            },
+            {
                 elementId: 'weatherCurrentTemp',
                 title: '当前温度',
-                description: '显示当前实时温度和天气状况',
+                description: '显示当前实时温度和天气状况，带有动态天气图标',
                 position: 'right'
+            },
+            {
+                elementId: 'weatherCityList',
+                title: '城市列表',
+                description: '管理您关注的多个城市，快速切换查看天气',
+                position: 'top',
+                scrollTo: true
+            },
+            {
+                elementId: 'clothingCard',
+                title: '穿衣建议',
+                description: '根据天气情况智能推荐适合的穿着搭配',
+                position: 'top',
+                scrollTo: true
+            },
+            {
+                elementId: 'lifestyle-grid',
+                title: '生活指数',
+                description: '提供洗车、运动、钓鱼等生活指数参考',
+                position: 'top',
+                scrollTo: true
             },
             {
                 elementId: 'weather-details-grid',
                 title: '天气详情',
                 description: '展示体感温度、湿度、风向风力等详细天气信息',
-                position: 'top'
+                position: 'top',
+                scrollTo: true
             },
             {
                 elementId: 'weatherHourlyScroll',
                 title: '24小时预报',
                 description: '左右滑动查看未来24小时的天气变化趋势',
-                position: 'top'
+                position: 'top',
+                scrollTo: true
             },
             {
                 elementId: 'weatherDailyList',
                 title: '7天预报',
                 description: '查看未来7天的天气预报信息',
-                position: 'top'
+                position: 'top',
+                scrollTo: true
+            },
+            {
+                elementId: 'aqi-detail-section',
+                title: '空气质量',
+                description: '查看PM2.5、PM10等空气质量详细数据',
+                position: 'top',
+                scrollTo: true
             },
             {
                 elementId: 'weatherCloseBtn',
                 title: '关闭组件',
                 description: '点击关闭天气组件',
-                position: 'bottom'
+                position: 'bottom',
+                scrollTo: true
             }
         ];
 
@@ -12578,6 +12757,41 @@
                 return;
             }
 
+            var scrollContainer = document.querySelector('.weather-content');
+            if (!scrollContainer) {
+                scrollContainer = document.querySelector('.weather-container');
+            }
+            if (!scrollContainer) {
+                scrollContainer = document.getElementById('weatherModal');
+            }
+
+            if (step.scrollTo && scrollContainer) {
+                var elementRect = targetElement.getBoundingClientRect();
+                var containerRect = scrollContainer.getBoundingClientRect();
+                
+                var isFullyVisible = elementRect.top >= containerRect.top + 50 && 
+                                    elementRect.bottom <= containerRect.bottom - 50;
+                
+                if (!isFullyVisible) {
+                    var scrollToPosition = targetElement.offsetTop - 120;
+                    
+                    scrollContainer.scrollTo({
+                        top: scrollToPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    setTimeout(function() {
+                        renderWeatherGuideStepContent(step, targetElement);
+                    }, 800);
+                    return;
+                }
+            }
+            
+            renderWeatherGuideStepContent(step, targetElement);
+        }
+
+        function renderWeatherGuideStepContent(step, targetElement) {
+
             var overlay = document.getElementById('guideStepOverlay');
             var highlight = document.getElementById('guideHighlight');
             var tooltip = document.getElementById('guideTooltip');
@@ -12592,6 +12806,7 @@
             footer.style.display = 'flex';
 
             var rect = targetElement.getBoundingClientRect();
+            var isElementVisible = targetElement.offsetParent !== null;
             
             if (isElementVisible) {
                 highlight.style.left = rect.left - 10 + 'px';
@@ -12636,12 +12851,12 @@
             indicators.innerHTML = '';
             for (var i = 0; i < weatherGuideSteps.length; i++) {
                 var indicator = document.createElement('div');
-                indicator.className = 'guide-step-indicator' + (i === stepIndex ? ' active' : '');
+                indicator.className = 'guide-step-indicator' + (i === currentWeatherGuideStep ? ' active' : '');
                 indicators.appendChild(indicator);
             }
 
-            prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
-            nextBtn.textContent = stepIndex === weatherGuideSteps.length - 1 ? '完成' : '下一步';
+            prevBtn.style.display = currentWeatherGuideStep === 0 ? 'none' : 'block';
+            nextBtn.textContent = currentWeatherGuideStep === weatherGuideSteps.length - 1 ? '完成' : '下一步';
 
             var nextBtnEl = document.getElementById('guideNextBtn');
             var prevBtnEl = document.getElementById('guidePrevBtn');
@@ -14668,6 +14883,389 @@
                 };
             }
             
+            function setWeatherAnimation(code) {
+                var iconEl = document.getElementById('weatherCurrentIcon');
+                if (!iconEl) return;
+                
+                iconEl.classList.remove('animate-sun', 'animate-cloud', 'animate-rain', 'animate-snow', 'animate-lightning', 'animate-wind');
+                
+                if (code === 0) {
+                    iconEl.classList.add('animate-sun');
+                } else if (code >= 1 && code <= 3) {
+                    iconEl.classList.add('animate-cloud');
+                } else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+                    iconEl.classList.add('animate-rain');
+                } else if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+                    iconEl.classList.add('animate-snow');
+                } else if (code >= 95 && code <= 99) {
+                    iconEl.classList.add('animate-lightning');
+                } else if (code >= 45 && code <= 48) {
+                    iconEl.classList.add('animate-wind');
+                }
+            }
+            
+            function setDynamicBackground(code) {
+                var container = document.querySelector('.weather-container');
+                if (!container) return;
+                
+                container.classList.remove('bg-sunny', 'bg-cloudy', 'bg-rainy', 'bg-snowy', 'bg-stormy', 'bg-foggy');
+                
+                if (code === 0) {
+                    container.classList.add('bg-sunny');
+                } else if (code >= 1 && code <= 3) {
+                    container.classList.add('bg-cloudy');
+                } else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+                    container.classList.add('bg-rainy');
+                } else if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+                    container.classList.add('bg-snowy');
+                } else if (code >= 95 && code <= 99) {
+                    container.classList.add('bg-stormy');
+                } else if (code >= 45 && code <= 48) {
+                    container.classList.add('bg-foggy');
+                }
+            }
+            
+            function updateOfflineIndicator() {
+                var offlineEl = document.getElementById('weatherOfflineIndicator');
+                if (!offlineEl) return;
+                
+                if (!navigator.onLine) {
+                    offlineEl.style.display = 'flex';
+                } else {
+                    offlineEl.style.display = 'none';
+                }
+            }
+            
+            function renderAqiDetails(airQuality) {
+                if (!airQuality) return;
+                
+                var items = [
+                    { id: 'aqiPm25', value: airQuality.pm25, label: 'PM2.5' },
+                    { id: 'aqiPm10', value: airQuality.pm10, label: 'PM10' },
+                    { id: 'aqiNo2', value: airQuality.no2, label: 'NO₂' },
+                    { id: 'aqiO3', value: airQuality.o3, label: 'O₃' }
+                ];
+                
+                items.forEach(function(item) {
+                    var el = document.getElementById(item.id);
+                    if (el) {
+                        el.textContent = item.value;
+                    }
+                });
+            }
+            
+            function renderClothingSuggestion(data) {
+                var temp = data.current.temp;
+                var humidity = data.current.humidity;
+                var weatherCode = data.current.weather.code;
+                var isRaining = (weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82);
+                
+                var suggestion = {};
+                
+                if (temp < 5) {
+                    suggestion = {
+                        title: '寒冷',
+                        desc: '气温很低，请务必注意保暖！',
+                        tags: ['羽绒服', '厚毛衣', '围巾', '手套'],
+                        icon: 'fa-snowflake'
+                    };
+                } else if (temp < 12) {
+                    suggestion = {
+                        title: '微凉',
+                        desc: '天气偏冷，建议穿着厚外套。',
+                        tags: ['风衣', '夹克', '薄毛衣'],
+                        icon: 'fa-cloud'
+                    };
+                } else if (temp < 20) {
+                    suggestion = {
+                        title: '舒适',
+                        desc: '气温适宜，穿着轻薄外套即可。',
+                        tags: ['衬衫', '针织衫', '牛仔裤'],
+                        icon: 'fa-sun'
+                    };
+                } else if (temp < 28) {
+                    suggestion = {
+                        title: '温暖',
+                        desc: '天气较热，建议穿着清凉。',
+                        tags: ['T恤', '短袖', '短裤'],
+                        icon: 'fa-cloud-sun'
+                    };
+                } else {
+                    suggestion = {
+                        title: '炎热',
+                        desc: '气温很高，请注意防暑降温！',
+                        tags: ['短袖', '短裙', '防晒'],
+                        icon: 'fa-sun'
+                    };
+                }
+                
+                if (isRaining) {
+                    suggestion.tags.push('雨伞');
+                    suggestion.desc = (suggestion.desc || '') + ' 记得带伞！';
+                }
+                
+                var titleEl = document.getElementById('clothingTitle');
+                var descEl = document.getElementById('clothingDesc');
+                var tagsEl = document.getElementById('clothingTags');
+                var iconEl = document.getElementById('clothingIcon');
+                
+                if (titleEl) titleEl.textContent = suggestion.title;
+                if (descEl) descEl.textContent = suggestion.desc;
+                if (iconEl) iconEl.innerHTML = '<i class="fas ' + suggestion.icon + '"></i>';
+                
+                if (tagsEl) {
+                    tagsEl.innerHTML = '';
+                    suggestion.tags.forEach(function(tag) {
+                        var tagEl = document.createElement('span');
+                        tagEl.className = 'clothing-tag';
+                        tagEl.textContent = tag;
+                        tagsEl.appendChild(tagEl);
+                    });
+                }
+            }
+            
+            function renderLifestyleIndices(data) {
+                var temp = data.current.temp;
+                var humidity = data.current.humidity;
+                var uvLevel = data.current.uv;
+                var precipProb = data.current.precipProb;
+                var windSpeed = data.current.windSpeed;
+                
+                var indices = {
+                    car: precipProb > 50 ? '不宜' : '适宜',
+                    sports: getExerciseIndex(temp, humidity, precipProb),
+                    fishing: humidity > 70 ? '较适宜' : '适宜',
+                    hair: humidity > 80 ? '易受损' : '适宜',
+                    makeup: humidity > 75 ? '易脱妆' : '适宜',
+                    travel: precipProb > 50 ? '不宜' : '适宜'
+                };
+                
+                Object.keys(indices).forEach(function(key) {
+                    var el = document.getElementById('lifestyle' + key.charAt(0).toUpperCase() + key.slice(1));
+                    if (el) {
+                        el.textContent = indices[key];
+                    }
+                });
+            }
+            
+            function getUvDescription(level) {
+                var levels = ['低', '低', '中等', '高', '很高', '极高'];
+                var levelNum = parseInt(level) || 3;
+                var idx = Math.min(levelNum, 5);
+                var descs = ['紫外线强度低', '紫外线强度低', '紫外线中等，请注意防护', '紫外线较强，建议涂防晒霜', '紫外线很强，避免外出', '紫外线极强，严禁外出'];
+                return descs[idx];
+            }
+            
+            function getHumidityDescription(humidity) {
+                if (humidity < 40) return '空气干燥，注意补水';
+                if (humidity < 60) return '湿度适宜';
+                if (humidity < 80) return '湿度较高';
+                return '空气潮湿，注意防潮';
+            }
+            
+            function getExerciseIndex(temp, humidity, precip) {
+                if (precip > 50) return '不宜';
+                if (temp < 0 || temp > 35) return '不宜';
+                if (humidity > 85) return '较不宜';
+                return '适宜';
+            }
+            
+            function renderCityList() {
+                var cities = getSavedCities();
+                var container = document.getElementById('cityList');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                cities.forEach(function(city) {
+                    var item = document.createElement('div');
+                    item.className = 'city-item' + (city.name === currentCity.name ? ' active' : '');
+                    item.innerHTML = 
+                        '<div class="city-info">' +
+                            '<div class="city-name">' + city.name + '</div>' +
+                            '<div class="city-temp" id="cityTemp_' + city.name.replace(/\s/g, '_') + '">--°</div>' +
+                        '</div>' +
+                        '<button class="city-remove" onclick="removeCity(\'' + city.name + '\')"><i class="fas fa-times"></i></button>';
+                    item.onclick = function(e) {
+                        if (!e.target.closest('.city-remove')) {
+                            switchCity(city);
+                        }
+                    };
+                    container.appendChild(item);
+                });
+            }
+            
+            function addCity(cityData) {
+                var cities = getSavedCities();
+                var exists = cities.some(function(c) { return c.name === cityData.name; });
+                if (!exists) {
+                    cities.push(cityData);
+                    localStorage.setItem('weatherCities', JSON.stringify(cities));
+                    renderCityList();
+                }
+            }
+            
+            function removeCity(cityName) {
+                var cities = getSavedCities();
+                cities = cities.filter(function(c) { return c.name !== cityName; });
+                
+                if (cities.length === 0) {
+                    cities = [{ name: '北京市', lat: 39.9042, lon: 116.4074 }];
+                }
+                
+                localStorage.setItem('weatherCities', JSON.stringify(cities));
+                
+                if (currentCity.name === cityName) {
+                    currentCity = cities[0];
+                    localStorage.setItem('weatherCity', JSON.stringify(currentCity));
+                    fetchWeatherData();
+                } else {
+                    renderCityList();
+                }
+            }
+            
+            function switchCity(city) {
+                currentCity = city;
+                localStorage.setItem('weatherCity', JSON.stringify(currentCity));
+                fetchWeatherData();
+            }
+            
+            function getSavedCities() {
+                var citiesStr = localStorage.getItem('weatherCities');
+                if (!citiesStr) {
+                    return [{ name: '北京市', lat: 39.9042, lon: 116.4074 }];
+                }
+                return JSON.parse(citiesStr);
+            }
+            
+            function updateCityListTemperature(cityName, temp) {
+                var tempEl = document.getElementById('cityTemp_' + cityName.replace(/\s/g, '_'));
+                if (tempEl) {
+                    tempEl.textContent = temp + '°';
+                }
+            }
+            
+            function saveWeatherCache(cityName, data) {
+                var cache = {};
+                try {
+                    cache = JSON.parse(localStorage.getItem('weatherCache')) || {};
+                } catch(e) {}
+                
+                cache[cityName] = {
+                    data: data,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('weatherCache', JSON.stringify(cache));
+            }
+            
+            function getWeatherCache(cityName) {
+                try {
+                    var cache = JSON.parse(localStorage.getItem('weatherCache')) || {};
+                    var cityCache = cache[cityName];
+                    
+                    if (cityCache && Date.now() - cityCache.timestamp < 30 * 60 * 1000) {
+                        return cityCache.data;
+                    }
+                } catch(e) {}
+                
+                return null;
+            }
+            
+            function checkWeatherAlerts(data) {
+                var alerts = [];
+                var temp = data.current.temp;
+                var precipProb = data.current.precipProb;
+                var uvLevel = parseInt(data.current.uv) || 0;
+                var aqi = parseInt(data.current.aqi.value) || 50;
+                
+                if (temp > 35) alerts.push('高温预警：气温超过35℃，请注意防暑降温！');
+                if (temp < -10) alerts.push('低温预警：气温低于-10℃，请注意防寒保暖！');
+                if (precipProb > 70) alerts.push('降水预警：降水概率较高，建议携带雨具！');
+                if (uvLevel >= 7) alerts.push('紫外线预警：紫外线强度很高，请注意防晒！');
+                if (aqi > 150) alerts.push('空气质量预警：空气质量较差，建议减少外出！');
+                
+                if (alerts.length > 0) {
+                    var container = document.getElementById('weatherAlerts');
+                    if (container) {
+                        container.innerHTML = '<div class="alert-item"><i class="fas fa-exclamation-triangle"></i>' + alerts[0] + '</div>';
+                        container.style.display = 'block';
+                    }
+                }
+            }
+            
+            function shareWeather() {
+                if (!weatherDataCache) return;
+                
+                var data = weatherDataCache;
+                var text = data.location + '天气：' + data.current.weather.desc + '，' + data.current.temp + '°C\n' +
+                           '最高 ' + data.tempMax + '° / 最低 ' + data.tempMin + '°\n' +
+                           '空气质量：' + data.current.aqi.label;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: data.location + '天气',
+                        text: text
+                    });
+                } else {
+                    var textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    var toast = document.createElement('div');
+                    toast.className = 'weather-toast';
+                    toast.textContent = '天气信息已复制到剪贴板';
+                    document.body.appendChild(toast);
+                    setTimeout(function() { toast.remove(); }, 2000);
+                }
+            }
+            
+            function voiceBroadcast() {
+                if (!weatherDataCache) return;
+                
+                var data = weatherDataCache;
+                var text = data.location + '，当前天气' + data.current.weather.desc + '，' + 
+                           data.current.temp + '摄氏度，体感温度' + data.current.feelsLike + '摄氏度。' +
+                           '最高气温' + data.tempMax + '度，最低气温' + data.tempMin + '度。' +
+                           '湿度' + data.current.humidity + '百分比，' +
+                           data.current.windDirection + data.current.windSpeed + '。' +
+                           '空气质量' + data.current.aqi.label + '。';
+                
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    var utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 1;
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    var toast = document.createElement('div');
+                    toast.className = 'weather-toast';
+                    toast.textContent = '您的浏览器不支持语音播报';
+                    document.body.appendChild(toast);
+                    setTimeout(function() { toast.remove(); }, 2000);
+                }
+            }
+            
+            function initWeatherSettings() {
+                var autoLocate = localStorage.getItem('weatherAutoLocate') === 'true';
+                var tempUnit = localStorage.getItem('weatherTempUnit') || 'celsius';
+                
+                var autoLocateBtn = document.getElementById('weatherAutoLocateBtn');
+                if (autoLocateBtn) {
+                    autoLocateBtn.classList.toggle('active', autoLocate);
+                }
+                
+                var tempUnitBtn = document.getElementById('weatherTempUnitBtn');
+                if (tempUnitBtn) {
+                    tempUnitBtn.textContent = tempUnit === 'celsius' ? '℃' : '℉';
+                }
+                
+                window.addEventListener('online', updateOfflineIndicator);
+                window.addEventListener('offline', updateOfflineIndicator);
+            }
+            
             function getWeatherIconClass(code) {
                 var iconMap = {
                     0: 'fa-sun',
@@ -14782,6 +15380,9 @@
                 
                 var currentIcon = document.getElementById('weatherCurrentIcon');
                 currentIcon.innerHTML = '<i class="fas ' + data.current.weather.icon + '"></i>';
+                setWeatherAnimation(data.current.weather.code);
+                setDynamicBackground(data.current.weather.code);
+                
                 document.getElementById('weatherCurrentTemp').textContent = formatTemp(data.current.temp);
                 document.getElementById('weatherCurrentDesc').textContent = data.current.weather.desc;
                 document.getElementById('weatherTempRange').textContent = '最高 ' + formatTemp(data.tempMax) + ' / 最低 ' + formatTemp(data.tempMin);
@@ -14797,6 +15398,10 @@
                 var aqiEl = document.getElementById('weatherAqi');
                 aqiEl.textContent = data.current.aqi.value + ' ' + data.current.aqi.label;
                 aqiEl.style.color = data.current.aqi.color;
+                
+                renderAqiDetails(data.current.airQuality);
+                renderClothingSuggestion(data);
+                renderLifestyleIndices(data);
                 
                 var hourlyScroll = document.getElementById('weatherHourlyScroll');
                 hourlyScroll.innerHTML = '';
@@ -14833,6 +15438,8 @@
                 document.getElementById('weatherSunrise').textContent = formatTime(data.sunrise);
                 document.getElementById('weatherSunset').textContent = formatTime(data.sunset);
                 updateSunProgress(data.sunrise, data.sunset);
+                
+                renderCityList();
             }
             
             var currentDailyView = 'list';
@@ -15054,6 +15661,8 @@
                     refreshBtn.classList.add('spin');
                 }
                 
+                updateOfflineIndicator();
+                
                 if (!currentCity) {
                     currentCity = getSavedCity();
                 }
@@ -15069,7 +15678,7 @@
                     '&timezone=auto&forecast_days=7';
                 
                 var airQualityUrl = 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + lat + '&longitude=' + lon + 
-                    '&current=pm2_5,pm10,european_aqi&timezone=auto';
+                    '&current=pm2_5,pm10,nitrogen_dioxide,ozone,european_aqi&timezone=auto';
                 
                 Promise.all([
                     fetch(weatherUrl).then(function(r) { return r.json(); }),
@@ -15087,9 +15696,12 @@
                         var uvMax = data.daily.uv_index_max ? data.daily.uv_index_max[0] : 5;
                         var uvData = getUvLevel(uvMax);
                         
-                        var pm25 = 50;
-                        if (airQuality && airQuality.current && airQuality.current.pm2_5 !== undefined) {
-                            pm25 = airQuality.current.pm2_5;
+                        var pm25 = 50, pm10 = 50, no2 = 20, o3 = 40;
+                        if (airQuality && airQuality.current) {
+                            if (airQuality.current.pm2_5 !== undefined) pm25 = airQuality.current.pm2_5;
+                            if (airQuality.current.pm10 !== undefined) pm10 = airQuality.current.pm10;
+                            if (airQuality.current.nitrogen_dioxide !== undefined) no2 = airQuality.current.nitrogen_dioxide;
+                            if (airQuality.current.ozone !== undefined) o3 = airQuality.current.ozone;
                         }
                         var aqi = getAqiLevel(pm25);
                         
@@ -15113,7 +15725,13 @@
                                 visibility: data.current.visibility ? Math.round(data.current.visibility / 1000) : 10,
                                 uv: uvData.level,
                                 aqi: aqi,
-                                precipProb: precipProb
+                                precipProb: precipProb,
+                                airQuality: {
+                                    pm25: Math.round(pm25),
+                                    pm10: Math.round(pm10),
+                                    no2: Math.round(no2),
+                                    o3: Math.round(o3)
+                                }
                             },
                             tempMax: Math.round(data.daily.temperature_2m_max[0]),
                             tempMin: Math.round(data.daily.temperature_2m_min[0]),
@@ -15156,13 +15774,21 @@
                         
                         weatherDataCache = weatherData;
                         weatherCacheTime = Date.now();
+                        saveWeatherCache(cityName, weatherData);
                         renderWeatherData(weatherData);
+                        updateCityListTemperature(cityName, weatherData.current.temp);
+                        checkWeatherAlerts(weatherData);
                         if (refreshBtn) {
                             refreshBtn.classList.remove('spin');
                         }
                     })
                     .catch(function() {
-                        weatherDataCache = generateMockWeatherData(cityName);
+                        var cachedData = getWeatherCache(cityName);
+                        if (cachedData) {
+                            weatherDataCache = cachedData;
+                        } else {
+                            weatherDataCache = generateMockWeatherData(cityName);
+                        }
                         weatherCacheTime = Date.now();
                         renderWeatherData(weatherDataCache);
                         if (refreshBtn) {
@@ -15175,12 +15801,16 @@
                 var modal = document.getElementById('weatherModal');
                 if (!modal) return;
                 
+                initWeatherSettings();
+                
                 if (!currentCity) {
                     currentCity = getSavedCity();
                 }
                 
                 modal.style.display = 'flex';
                 modal.style.animation = 'fadeIn 0.3s ease';
+                
+                renderCityList();
                 
                 var autoLocateEnabled = localStorage.getItem('weatherAutoLocate') === 'true';
                 if (autoLocateEnabled && navigator.geolocation) {
@@ -15813,21 +16443,42 @@
                 }, 300);
             }
             
+            var isAddingCity = false;
+
             function selectCity(cityName, lat, lon, isAutoLocate) {
-                currentCity = { name: cityName, lat: lat, lon: lon };
-                saveCity(currentCity);
+                var cityData = { name: cityName, lat: lat, lon: lon };
+                var exists = getSavedCities().some(function(c) { return c.name === cityName; });
                 
-                if (!isAutoLocate) {
-                    localStorage.setItem('weatherAutoLocate', 'false');
-                    var autoLocateToggle = document.getElementById('weatherAutoLocateToggle');
-                    if (autoLocateToggle) {
-                        autoLocateToggle.checked = false;
-                    }
+                if (!exists) {
+                    addCity(cityData);
+                    
+                    var toast = document.createElement('div');
+                    toast.className = 'weather-toast';
+                    toast.textContent = '已添加城市：' + cityName;
+                    document.body.appendChild(toast);
+                    setTimeout(function() { toast.remove(); }, 2000);
                 }
                 
-                closeCityModal();
-                weatherDataCache = null;
-                fetchWeatherData();
+                if (!isAddingCity) {
+                    currentCity = cityData;
+                    saveCity(currentCity);
+                    
+                    if (!isAutoLocate) {
+                        localStorage.setItem('weatherAutoLocate', 'false');
+                        var autoLocateToggle = document.getElementById('weatherAutoLocateToggle');
+                        if (autoLocateToggle) {
+                            autoLocateToggle.checked = false;
+                        }
+                    }
+                    
+                    closeCityModal();
+                    weatherDataCache = null;
+                    fetchWeatherData();
+                } else {
+                    isAddingCity = false;
+                    closeCityModal();
+                    renderCityList();
+                }
             }
             
             function searchCity(query) {
@@ -16027,6 +16678,16 @@
                     refreshBtn.addEventListener('click', fetchWeatherData);
                 }
                 
+                var shareBtn = document.getElementById('weatherShareBtn');
+                if (shareBtn) {
+                    shareBtn.addEventListener('click', shareWeather);
+                }
+                
+                var voiceBtn = document.getElementById('weatherVoiceBtn');
+                if (voiceBtn) {
+                    voiceBtn.addEventListener('click', voiceBroadcast);
+                }
+                
                 var dailyViewToggle = document.getElementById('dailyViewToggle');
                 if (dailyViewToggle) {
                     var toggleBtns = dailyViewToggle.querySelectorAll('.toggle-btn');
@@ -16050,6 +16711,14 @@
                 var changeCityBtn = document.getElementById('weatherChangeCityBtn');
                 if (changeCityBtn) {
                     changeCityBtn.addEventListener('click', showCityModal);
+                }
+                
+                var addCityBtn = document.getElementById('addCityBtn');
+                if (addCityBtn) {
+                    addCityBtn.addEventListener('click', function() {
+                        isAddingCity = true;
+                        showCityModal();
+                    });
                 }
                 
                 var cityCloseBtn = document.getElementById('weatherCityCloseBtn');

@@ -1041,15 +1041,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function disableAllExperimentalFeatures() {
         localStorage.setItem('experimentalFeaturesDisabled', 'true');
-        
-        var weatherCheckbox = document.getElementById('enableWeatherFeature');
-        if (weatherCheckbox) {
-            weatherCheckbox.checked = false;
-            if (typeof toggleWeatherFeature === 'function') {
-                toggleWeatherFeature();
-            }
-        }
-        
         updateExperimentalFeaturesState();
     }
     

@@ -13450,6 +13450,27 @@ body.dark-mode .sun-info {
     font-size: 12px;
 }
 
+.weather-add-city-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.weather-add-city-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
 .weather-city-modal {
     z-index: 10001;
 }
@@ -14004,6 +14025,719 @@ body.transparent-mode .guide-step-tooltip.left::after {
 
 body.transparent-mode .guide-step-tooltip.right::after {
     border-right-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 天气动画效果 */
+@keyframes sunPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes cloudFloat {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes rainFall {
+    0% { transform: translateY(-10px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(50px); opacity: 0; }
+}
+
+@keyframes snowFall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+}
+
+@keyframes lightning {
+    0%, 90%, 100% { opacity: 0; }
+    92%, 94% { opacity: 1; }
+    93%, 95% { opacity: 0.3; }
+}
+
+@keyframes windBlow {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+.weather-current-icon.animate-sun i {
+    animation: sunPulse 3s ease-in-out infinite;
+}
+
+.weather-current-icon.animate-cloud i {
+    animation: cloudFloat 6s ease-in-out infinite;
+}
+
+.weather-current-icon.animate-rain {
+    position: relative;
+}
+
+.weather-current-icon.animate-rain::after {
+    content: '';
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    width: 20px;
+    height: 30px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.6), transparent);
+    animation: rainFall 1s linear infinite;
+}
+
+.weather-current-icon.animate-snow {
+    position: relative;
+}
+
+.weather-current-icon.animate-snow::before,
+.weather-current-icon.animate-snow::after {
+    content: '❄';
+    position: absolute;
+    font-size: 12px;
+    animation: snowFall 3s linear infinite;
+}
+
+.weather-current-icon.animate-snow::before {
+    top: 20%;
+    left: 30%;
+    animation-delay: 0s;
+}
+
+.weather-current-icon.animate-snow::after {
+    top: 30%;
+    left: 70%;
+    animation-delay: 1.5s;
+}
+
+.weather-current-icon.animate-thunder,
+.weather-current-icon.animate-lightning {
+    position: relative;
+}
+
+.weather-current-icon.animate-thunder::before,
+.weather-current-icon.animate-lightning::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.3);
+    animation: lightning 5s infinite;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.weather-current-icon.animate-wind i {
+    animation: windBlow 2s ease-in-out infinite;
+}
+
+.weather-detail-card:hover .detail-icon i {
+    animation: iconBounce 0.5s ease-in-out;
+}
+
+.weather-current-icon.shimmer-effect {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* 动态背景 */
+.weather-container.bg-sunny {
+    background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
+}
+
+.weather-container.bg-cloudy {
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+}
+
+.weather-container.bg-rainy {
+    background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+}
+
+.weather-container.bg-snowy {
+    background: linear-gradient(135deg, #b2bec3 0%, #636e72 100%);
+}
+
+.weather-container.bg-thunder {
+    background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+}
+
+.weather-container.bg-foggy {
+    background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+}
+
+.weather-container.bg-stormy {
+    background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+}
+
+body.dark-mode .weather-container.bg-sunny {
+    background: linear-gradient(135deg, #e17055 0%, #fdcb6e 100%);
+}
+
+body.dark-mode .weather-container.bg-cloudy {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+}
+
+body.dark-mode .weather-container.bg-rainy {
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+}
+
+body.dark-mode .weather-container.bg-snowy {
+    background: linear-gradient(135deg, #636e72 0%, #b2bec3 100%);
+}
+
+body.dark-mode .weather-container.bg-thunder {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+body.dark-mode .weather-container.bg-foggy {
+    background: linear-gradient(135deg, #636e72 0%, #747d8c 100%);
+}
+
+/* 多城市管理样式 */
+.weather-city-list {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 0;
+    scrollbar-width: none;
+}
+
+.weather-city-list::-webkit-scrollbar {
+    display: none;
+}
+
+.weather-city-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.weather-city-chip:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.weather-city-chip.active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.weather-city-chip .city-name {
+    font-weight: 500;
+}
+
+.weather-city-chip .city-temp {
+    opacity: 0.8;
+}
+
+.weather-city-chip .city-remove {
+    opacity: 0;
+    font-size: 12px;
+    transition: opacity 0.2s ease;
+}
+
+.weather-city-chip:hover .city-remove {
+    opacity: 0.8;
+}
+
+.weather-city-chip .city-remove:hover {
+    opacity: 1;
+    color: #ff6b6b;
+}
+
+.add-city-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.add-city-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+}
+
+/* 穿衣建议样式 */
+.weather-clothing-section {
+    margin-bottom: 24px;
+}
+
+.clothing-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+body.dark-mode .clothing-card {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.clothing-icon {
+    font-size: 48px;
+    opacity: 0.9;
+}
+
+.clothing-info {
+    flex: 1;
+}
+
+.clothing-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.clothing-desc {
+    font-size: 14px;
+    opacity: 0.85;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.clothing-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.clothing-tag {
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+/* 生活指数样式 */
+.weather-lifestyle-section {
+    margin-bottom: 24px;
+}
+
+.lifestyle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.lifestyle-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+body.dark-mode .lifestyle-card {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.lifestyle-card:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: translateY(-2px);
+}
+
+body.dark-mode .lifestyle-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.lifestyle-card .lifestyle-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.lifestyle-card .lifestyle-label {
+    font-size: 13px;
+    opacity: 0.8;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.lifestyle-card .lifestyle-value {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* 分享功能样式 */
+.weather-share-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.weather-share-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.share-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    z-index: 100;
+    min-width: 180px;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+body.dark-mode .share-dropdown {
+    background: rgba(40, 40, 60, 0.95);
+}
+
+.share-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    color: #333;
+    font-size: 14px;
+}
+
+body.dark-mode .share-item {
+    color: #e0e0e0;
+}
+
+.share-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.share-item i {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+/* 天气通知样式 */
+.weather-notification-section {
+    margin-bottom: 24px;
+}
+
+.notification-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-left: 4px solid #ffc107;
+}
+
+body.dark-mode .notification-card {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.notification-card.warning {
+    border-left-color: #ff9800;
+}
+
+.notification-card.danger {
+    border-left-color: #f44336;
+}
+
+.notification-card.success {
+    border-left-color: #4caf50;
+}
+
+.notification-icon {
+    font-size: 24px;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+}
+
+.notification-desc {
+    font-size: 13px;
+    opacity: 0.85;
+    margin: 0;
+}
+
+/* 空气质量详情样式 */
+.aqi-detail-section {
+    margin-bottom: 24px;
+}
+
+.aqi-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.aqi-pollutant-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+}
+
+body.dark-mode .aqi-pollutant-card {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.aqi-pollutant-card .pollutant-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.aqi-pollutant-card .pollutant-name {
+    font-size: 12px;
+    opacity: 0.75;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.aqi-pollutant-card .pollutant-value {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.aqi-pollutant-card .pollutant-unit {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+/* 离线模式样式 */
+.weather-offline-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 193, 7, 0.2);
+    border-radius: 20px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.weather-offline-indicator i {
+    font-size: 14px;
+}
+
+/* 语音播报按钮 */
+.weather-voice-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.weather-voice-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.weather-voice-btn.speaking {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .lifestyle-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .aqi-detail-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .clothing-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .lifestyle-card .lifestyle-icon {
+        font-size: 24px;
+    }
+    
+    .lifestyle-card .lifestyle-value {
+        font-size: 16px;
+    }
+}
+
+.weather-alerts {
+    margin-bottom: 16px;
+    display: none;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(255, 193, 7, 0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    border-left: 4px solid #ffc107;
+}
+
+.alert-item i {
+    font-size: 18px;
+    color: #ffc107;
+}
+
+.weather-toast {
+    position: fixed;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 20px;
+    font-size: 14px;
+    z-index: 10000;
+    animation: toastFadeIn 0.3s ease;
+}
+
+body.dark-mode .weather-toast {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes toastFadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.city-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.city-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.city-item.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.city-item.add-city {
+    justify-content: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.city-item.add-city:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.city-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.city-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.city-temp {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.city-remove {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.city-remove:hover {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+@media (max-width: 480px) {
+    .lifestyle-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .aqi-detail-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .weather-city-chip {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
 }
 
 body.transparent-mode.dark-mode .guide-step-tooltip {

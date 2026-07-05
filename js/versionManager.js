@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.7.0.1 (b8)",
+    login: "RC 2.7.0.2 (b8)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.1 (a2)",
@@ -35,15 +35,15 @@ const versionInfo = {
     // - "公开正式版": 主题已正式发布，显示绿色标签
     themes: {
         glass: {
-            version: "RC 2.0.0",
+            version: "RC 2.0.1",
             releaseDate: "2026-04-06",
-            updateDate: "2026-07-01",
+            updateDate: "2026-07-05",
             status: "公开正式版"
         },
         transparent: {
-            version: "RC 1.2.10",
+            version: "RC 1.2.11",
             releaseDate: "2026-06-06",
-            updateDate: "2026-07-03",
+            updateDate: "2026-07-05",
             status: "公开正式版"
         }
     },
@@ -94,10 +94,10 @@ const versionInfo = {
             icon: "fas fa-cloud-sun",
             iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             iconColor: "#ffffff",
-            version: "Public Beta 0.1.1.0",
+            version: "RC 1.2.0",
             releaseDate: "2026-06-27",
-            updateDate: "2026-06-30",
-            status: "公开测试版",
+            updateDate: "2026-07-05",
+            status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
             description: "基于Open-Meteo的天气查询组件，支持实时天气、24小时预报、7天预报等功能",
@@ -140,8 +140,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-07-03",
-    patchDate: "2026-07-03",
+    buildDate: "2026-07-05",
+    patchDate: "2026-07-05",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""
