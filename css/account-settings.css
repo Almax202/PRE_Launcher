@@ -266,6 +266,14 @@ body.glass-mode.dark-mode .sidebar-backdrop.show {
     .achievement-item {
         padding: 15px;
     }
+    
+    .avatar-section-card .card-content {
+        overflow: visible;
+    }
+    
+    .avatar-section-card .two-factor-item {
+        overflow: visible;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1158,6 +1166,14 @@ textarea:focus {
     gap: 15px;
     flex-wrap: wrap;
     justify-content: center;
+}
+
+.avatar-section-card .card-content {
+    overflow: visible;
+}
+
+.avatar-section-card .two-factor-item {
+    overflow: visible;
 }
 
 /* 自定义头像悬浮卡片样式 */

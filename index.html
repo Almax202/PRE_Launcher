@@ -5178,12 +5178,25 @@
             <div class="weather-header">
                 <div class="weather-header-left">
                     <div class="weather-location-row">
-                        <h2 class="weather-location" id="weatherLocation">加载中...</h2>
-                        <button class="weather-change-city-btn" id="weatherChangeCityBtn" title="切换城市">
+                        <div class="weather-location-wrapper" id="weatherLocationWrapper">
+                            <h2 class="weather-location" id="weatherLocation">加载中...</h2>
+                            <i class="fas fa-chevron-down weather-location-arrow"></i>
+                        </div>
+                        <div class="weather-location-menu" id="weatherLocationMenu" style="display: none;">
+                            <div class="dropdown-item" id="weatherLocationChange">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>切换城市</span>
+                            </div>
+                            <div class="dropdown-item" id="weatherLocationAdd">
+                                <i class="fas fa-plus"></i>
+                                <span>添加城市</span>
+                            </div>
+                        </div>
+                        <button class="weather-change-city-btn" id="weatherChangeCityBtn" title="切换城市" style="display: none;">
                             <i class="fas fa-map-marker-alt"></i>
                             <span>切换城市</span>
                         </button>
-                        <button class="weather-add-city-btn" id="addCityBtn" title="添加城市">
+                        <button class="weather-add-city-btn" id="addCityBtn" title="添加城市" style="display: none;">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -5350,25 +5363,25 @@
                         <span>空气质量详情</span>
                     </div>
                     <div class="aqi-detail-grid" id="aqiDetailGrid">
-                        <div class="aqi-pollutant-card">
+                        <div class="aqi-pollutant-card" data-type="pm25">
                             <div class="pollutant-icon"><i class="fas fa-smog"></i></div>
                             <span class="pollutant-name">PM2.5</span>
                             <div class="pollutant-value" id="aqiPm25">--</div>
                             <span class="pollutant-unit">μg/m³</span>
                         </div>
-                        <div class="aqi-pollutant-card">
-                            <div class="pollutant-icon"><i class="fas fa-smoke"></i></div>
+                        <div class="aqi-pollutant-card" data-type="pm10">
+                            <div class="pollutant-icon"><i class="fas fa-cloud-meatball"></i></div>
                             <span class="pollutant-name">PM10</span>
                             <div class="pollutant-value" id="aqiPm10">--</div>
                             <span class="pollutant-unit">μg/m³</span>
                         </div>
-                        <div class="aqi-pollutant-card">
+                        <div class="aqi-pollutant-card" data-type="no2">
                             <div class="pollutant-icon"><i class="fas fa-wind"></i></div>
                             <span class="pollutant-name">NO₂</span>
                             <div class="pollutant-value" id="aqiNo2">--</div>
                             <span class="pollutant-unit">μg/m³</span>
                         </div>
-                        <div class="aqi-pollutant-card">
+                        <div class="aqi-pollutant-card" data-type="o3">
                             <div class="pollutant-icon"><i class="fas fa-leaf"></i></div>
                             <span class="pollutant-name">O₃</span>
                             <div class="pollutant-value" id="aqiO3">--</div>
@@ -5497,6 +5510,27 @@
                 </div>
             </div>
         </div>
+        
+        <div id="cityManagementSidebar" class="city-management-sidebar" style="display: none;">
+            <div class="city-sidebar-content">
+                <div class="city-sidebar-header">
+                    <h3>城市管理</h3>
+                    <button class="city-sidebar-close" id="citySidebarClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="city-sidebar-search">
+                    <input type="text" id="citySidebarSearchInput" placeholder="搜索城市或景点" class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <div class="city-sidebar-content-area">
+                    <div class="city-cards-list" id="cityCardsList"></div>
+                </div>
+                <button class="city-sidebar-add-btn" id="citySidebarAddBtn">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
     </div>
     
     <div id="weatherDetailModal" class="custom-fullscreen-modal weather-detail-modal" style="display: none;">
@@ -5588,14 +5622,6 @@
                         <i class="fas fa-th"></i>
                         <span>列表模式</span>
                     </div>
-                    <div class="menu-item" id="menuComponentInfo">
-                        <i class="fas fa-info-circle"></i>
-                        <span>组件信息</span>
-                    </div>
-                    <div class="menu-item" id="menuNoteGuide">
-                        <i class="fas fa-question-circle"></i>
-                        <span>查看引导</span>
-                    </div>
                     <div class="menu-divider"></div>
                     <div class="menu-item" id="menuExportNote">
                         <i class="fas fa-download"></i>
@@ -5613,6 +5639,15 @@
                     <div class="menu-item" id="menuSortByUpdated">
                         <i class="fas fa-calendar-check-o"></i>
                         <span>按修改时间排序</span>
+                    </div>
+                    <div class="menu-divider"></div>
+                    <div class="menu-item" id="menuComponentInfo">
+                        <i class="fas fa-info-circle"></i>
+                        <span>组件信息</span>
+                    </div>
+                    <div class="menu-item" id="menuNoteGuide">
+                        <i class="fas fa-question-circle"></i>
+                        <span>查看引导</span>
                     </div>
                 </div>
                 <div class="sidebar-search">
@@ -5733,11 +5768,38 @@
                             <i class="fas fa-check-square"></i>
                         </button>
                     </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="btnNoteColor" title="便签颜色">
+                            <i class="fas fa-palette"></i>
+                        </button>
+                        <div class="color-picker-popup" id="noteColorPickerPopup">
+                            <div class="color-option" data-color="#ffffff" style="background: #ffffff; border: 1px solid #ddd;"></div>
+                            <div class="color-option" data-color="#fff3cd" style="background: #fff3cd;"></div>
+                            <div class="color-option" data-color="#d4edda" style="background: #d4edda;"></div>
+                            <div class="color-option" data-color="#d1ecf1" style="background: #d1ecf1;"></div>
+                            <div class="color-option" data-color="#f8d7da" style="background: #f8d7da;"></div>
+                            <div class="color-option" data-color="#e2e3e5" style="background: #e2e3e5;"></div>
+                            <div class="color-option" data-color="#fff5f5" style="background: #fff5f5;"></div>
+                            <div class="color-option" data-color="#f0fff4" style="background: #f0fff4;"></div>
+                            <div class="color-option" data-color="#f0f9ff" style="background: #f0f9ff;"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="main-content">
                     <div id="stickyNoteEditor" contenteditable="true" class="note-editor" placeholder="在这里输入便签内容..."></div>
                 </div>
                 <div class="main-footer">
+                    <div class="footer-left">
+                        <div class="save-status" id="saveStatus">
+                            <span class="status-icon"></span>
+                            <span class="status-text">已保存</span>
+                        </div>
+                        <div class="word-count" id="wordCount">
+                            <i class="fas fa-file-alt"></i>
+                            <span>0</span>
+                        </div>
+                    </div>
                     <button class="save-btn" id="saveStickyNote">
                         <i class="fas fa-save"></i>
                         <span>保存</span>
@@ -12537,21 +12599,9 @@
                 position: 'bottom'
             },
             {
-                elementId: 'weatherLocation',
+                elementId: 'weatherLocationWrapper',
                 title: '当前城市',
-                description: '显示当前所在城市名称，支持多城市切换',
-                position: 'bottom'
-            },
-            {
-                elementId: 'weatherChangeCityBtn',
-                title: '切换城市',
-                description: '点击此按钮可手动切换城市查看天气',
-                position: 'bottom'
-            },
-            {
-                elementId: 'addCityBtn',
-                title: '添加城市',
-                description: '点击加号按钮添加新城市到您的城市列表',
+                description: '显示当前所在城市名称，点击可展开菜单切换或添加城市',
                 position: 'bottom'
             },
             {
@@ -12601,14 +12651,14 @@
             {
                 elementId: 'lifestyle-grid',
                 title: '生活指数',
-                description: '提供洗车、运动、钓鱼等生活指数参考',
+                description: '提供洗车、运动、钓鱼等生活指数参考，点击卡片可查看详情',
                 position: 'top',
                 scrollTo: true
             },
             {
                 elementId: 'weather-details-grid',
                 title: '天气详情',
-                description: '展示体感温度、湿度、风向风力等详细天气信息',
+                description: '展示体感温度、湿度、风向风力等详细天气信息，点击卡片可查看详情',
                 position: 'top',
                 scrollTo: true
             },
@@ -12629,16 +12679,15 @@
             {
                 elementId: 'aqi-detail-section',
                 title: '空气质量',
-                description: '查看PM2.5、PM10等空气质量详细数据',
+                description: '查看PM2.5、PM10等空气质量详细数据，点击卡片可查看详情',
                 position: 'top',
                 scrollTo: true
             },
             {
                 elementId: 'weatherCloseBtn',
-                title: '关闭组件',
-                description: '点击关闭天气组件',
-                position: 'bottom',
-                scrollTo: true
+                title: '关闭按钮',
+                description: '点击关闭天气组件，返回主界面',
+                position: 'top'
             }
         ];
 
@@ -13615,6 +13664,8 @@
             var isGridView = false;
             var sortBy = 'created';
             var selectedNotes = [];
+            var lastSavedTitle = '';
+            var lastSavedContent = '';
 
             function loadStickyNotes() {
                 var saved = localStorage.getItem('stickyNotes');
@@ -13662,11 +13713,30 @@
                 
                 if (filteredNotes.length === 0) {
                     var emptyMsg = document.createElement('div');
-                    emptyMsg.style.padding = '20px';
-                    emptyMsg.style.textAlign = 'center';
-                    emptyMsg.style.color = 'rgba(255,255,255,0.6)';
-                    emptyMsg.style.fontSize = '14px';
-                    emptyMsg.textContent = searchKeyword ? '未找到匹配的便签' : '暂无便签，点击下方按钮创建';
+                    emptyMsg.className = 'empty-notes-state';
+                    
+                    if (searchKeyword && searchKeyword.trim()) {
+                        emptyMsg.innerHTML = `
+                            <div class="empty-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="empty-title">未找到匹配的便签</div>
+                            <div class="empty-desc">尝试使用其他关键词搜索</div>
+                        `;
+                    } else {
+                        emptyMsg.innerHTML = `
+                            <div class="empty-icon">
+                                <i class="fas fa-sticky-note"></i>
+                            </div>
+                            <div class="empty-title">暂无便签</div>
+                            <div class="empty-desc">点击右下角按钮创建您的第一条便签</div>
+                            <button class="empty-action-btn" onclick="createNewNote()">
+                                <i class="fas fa-plus"></i>
+                                <span>创建便签</span>
+                            </button>
+                        `;
+                    }
+                    
                     list.appendChild(emptyMsg);
                     return;
                 }
@@ -13678,6 +13748,9 @@
                     if (isEditMode) itemClass += ' selectable';
                     item.className = itemClass;
                     item.setAttribute('data-note-id', note.id);
+                    if (note.color && note.color !== '#ffffff') {
+                        item.style.borderLeft = '3px solid ' + note.color;
+                    }
                     
                     var title = document.createElement('div');
                     title.className = 'note-item-title';
@@ -14121,7 +14194,19 @@
                     editor.innerHTML = note.content || '';
                     document.getElementById('deleteStickyNote').style.display = 'flex';
                     renderNotesList();
+                    updateNoteColorIndicator(note.color);
+                    updateWordCount();
                 }
+            }
+
+            function updateNoteColorIndicator(color) {
+                var popup = document.getElementById('noteColorPickerPopup');
+                popup.querySelectorAll('.color-option').forEach(function(opt) {
+                    opt.classList.remove('selected');
+                    if (opt.getAttribute('data-color') === (color || '#ffffff')) {
+                        opt.classList.add('selected');
+                    }
+                });
             }
 
             function createNewNote() {
@@ -14131,7 +14216,8 @@
                     content: '',
                     createdAt: Date.now(),
                     updatedAt: Date.now(),
-                    isPinned: false
+                    isPinned: false,
+                    color: '#ffffff'
                 };
                 
                 stickyNotes.push(newNote);
@@ -14154,7 +14240,9 @@
                         title: title || '无标题',
                         content: content,
                         createdAt: Date.now(),
-                        updatedAt: Date.now()
+                        updatedAt: Date.now(),
+                        isPinned: false,
+                        color: '#ffffff'
                     };
                     stickyNotes.unshift(newNote);
                     saveStickyNotes();
@@ -14173,9 +14261,60 @@
                     note.title = title || '无标题';
                     note.content = content;
                     note.updatedAt = Date.now();
+                    if (!note.color) note.color = '#ffffff';
                     saveStickyNotes();
                     renderNotesList();
+                    lastSavedTitle = title;
+                    lastSavedContent = content;
+                    updateSaveStatus('saved');
                     showAlert('便签已保存');
+                }
+            }
+
+            function changeNoteColor(color) {
+                if (!currentNoteId) {
+                    showAlert('请先选择一个便签');
+                    return;
+                }
+                
+                var note = stickyNotes.find(function(n) {
+                    return n.id === currentNoteId;
+                });
+                
+                if (note) {
+                    note.color = color;
+                    note.updatedAt = Date.now();
+                    saveStickyNotes();
+                    renderNotesList();
+                    updateNoteColorIndicator(color);
+                }
+            }
+
+            function updateSaveStatus(status) {
+                var saveStatusEl = document.getElementById('saveStatus');
+                var statusText = saveStatusEl.querySelector('.status-text');
+                
+                saveStatusEl.classList.remove('saved', 'saving', 'unsaved');
+                
+                if (status === 'saved') {
+                    saveStatusEl.classList.add('saved');
+                    statusText.textContent = '已保存';
+                } else if (status === 'saving') {
+                    saveStatusEl.classList.add('saving');
+                    statusText.textContent = '保存中...';
+                } else if (status === 'unsaved') {
+                    saveStatusEl.classList.add('unsaved');
+                    statusText.textContent = '未保存';
+                }
+            }
+
+            function updateWordCount() {
+                var content = editor.innerHTML;
+                var text = content.replace(/<[^>]*>/g, '');
+                var count = text.length;
+                var wordCountEl = document.getElementById('wordCount');
+                if (wordCountEl) {
+                    wordCountEl.querySelector('span').textContent = count;
                 }
             }
 
@@ -14194,6 +14333,7 @@
                     document.getElementById('stickyNoteTitle').value = '';
                     editor.innerHTML = '';
                     document.getElementById('deleteStickyNote').style.display = 'none';
+                    updateWordCount();
                     renderNotesList();
                     showAlert('便签已删除');
                 });
@@ -14413,6 +14553,52 @@
                 
                 document.getElementById('deleteStickyNote').addEventListener('click', deleteCurrentNote);
                 
+                var autoSaveTimer = null;
+                function triggerAutoSave() {
+                    var title = document.getElementById('stickyNoteTitle').value;
+                    var content = editor.innerHTML;
+                    
+                    if (!currentNoteId) {
+                        if (!title && !content.trim()) return;
+                        createNewNote();
+                        title = document.getElementById('stickyNoteTitle').value;
+                        content = editor.innerHTML;
+                    }
+                    
+                    if (title === lastSavedTitle && content === lastSavedContent) return;
+                    
+                    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+                    
+                    autoSaveTimer = setTimeout(function() {
+                        var note = stickyNotes.find(function(n) {
+                            return n.id === currentNoteId;
+                        });
+                        
+                        if (note) {
+                            note.title = title || '无标题';
+                            note.content = content;
+                            note.updatedAt = Date.now();
+                            if (!note.color) note.color = '#ffffff';
+                            saveStickyNotes();
+                            renderNotesList();
+                            lastSavedTitle = title;
+                            lastSavedContent = content;
+                            updateSaveStatus('saved');
+                        }
+                    }, 3000);
+                }
+                
+                editor.addEventListener('input', function() {
+                    updateSaveStatus('unsaved');
+                    triggerAutoSave();
+                    updateWordCount();
+                });
+                
+                document.getElementById('stickyNoteTitle').addEventListener('input', function() {
+                    updateSaveStatus('unsaved');
+                    triggerAutoSave();
+                });
+                
                 editor.addEventListener('keydown', function(e) {
                     if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
                         e.preventDefault();
@@ -14442,7 +14628,58 @@
                         e.preventDefault();
                         applyUnderline();
                     }
+                    if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        createNewNote();
+                    }
+                    if (e.key === 'd' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        deleteCurrentNote();
+                    }
                 });
+                
+                document.getElementById('stickyNotesModal').addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        closeStickyNotesModal();
+                    }
+                });
+                
+                function updateToolbarStates() {
+                    var commands = {
+                        'bold': 'btnBold',
+                        'italic': 'btnItalic',
+                        'underline': 'btnUnderline',
+                        'strikeThrough': 'btnStrikethrough',
+                        'justifyLeft': 'btnAlignLeft',
+                        'justifyCenter': 'btnAlignCenter',
+                        'justifyRight': 'btnAlignRight',
+                        'justifyFull': 'btnAlignJustify',
+                        'insertUnorderedList': 'btnListBullets',
+                        'insertOrderedList': 'btnListNumbered'
+                    };
+                    
+                    for (var cmd in commands) {
+                        var btn = document.getElementById(commands[cmd]);
+                        if (btn) {
+                            if (document.queryCommandState(cmd)) {
+                                btn.classList.add('active');
+                            } else {
+                                btn.classList.remove('active');
+                            }
+                        }
+                    }
+                }
+                
+                editor.addEventListener('input', function() {
+                    updateSaveStatus('unsaved');
+                    triggerAutoSave();
+                    updateWordCount();
+                    updateToolbarStates();
+                });
+                
+                editor.addEventListener('mouseup', updateToolbarStates);
+                editor.addEventListener('keyup', updateToolbarStates);
+                editor.addEventListener('selectionchange', updateToolbarStates);
                 
                 document.getElementById('formatHeading').addEventListener('change', function() {
                     applyHeading(this.value);
@@ -14468,6 +14705,29 @@
                 document.getElementById('btnHr').addEventListener('click', applyHr);
                 document.getElementById('btnQuote').addEventListener('click', applyQuote);
                 document.getElementById('btnTodo').addEventListener('click', applyTodo);
+                
+                document.getElementById('btnNoteColor').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var popup = document.getElementById('noteColorPickerPopup');
+                    popup.classList.toggle('show');
+                });
+                
+                document.getElementById('noteColorPickerPopup').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var colorOption = e.target.closest('.color-option');
+                    if (colorOption) {
+                        var color = colorOption.getAttribute('data-color');
+                        changeNoteColor(color);
+                        this.classList.remove('show');
+                    }
+                });
+                
+                document.addEventListener('click', function(e) {
+                    var popup = document.getElementById('noteColorPickerPopup');
+                    if (popup && !e.target.closest('#btnNoteColor') && !e.target.closest('#noteColorPickerPopup')) {
+                        popup.classList.remove('show');
+                    }
+                });
                 
                 document.getElementById('stickyNotesSearch').addEventListener('input', function() {
                     renderNotesList(this.value);
@@ -15101,6 +15361,7 @@
                     cities.push(cityData);
                     localStorage.setItem('weatherCities', JSON.stringify(cities));
                     renderCityList();
+                    renderCitySidebar();
                 }
             }
             
@@ -15777,6 +16038,11 @@
                         saveWeatherCache(cityName, weatherData);
                         renderWeatherData(weatherData);
                         updateCityListTemperature(cityName, weatherData.current.temp);
+                        saveCitySnapshot(cityName, {
+                            temp: weatherData.current.temp,
+                            weather: weatherData.current.weather.desc,
+                            aqi: weatherData.current.aqi.value
+                        });
                         checkWeatherAlerts(weatherData);
                         if (refreshBtn) {
                             refreshBtn.classList.remove('spin');
@@ -15858,6 +16124,125 @@
                     modal.style.display = 'none';
                     modal.style.animation = '';
                 }, 300);
+            }
+            
+            function saveCitySnapshot(cityName, snapshot) {
+                var snapshots = JSON.parse(localStorage.getItem('weatherCitySnapshots') || '{}');
+                snapshots[cityName] = Object.assign({}, snapshot, {
+                    updatedAt: Date.now()
+                });
+                localStorage.setItem('weatherCitySnapshots', JSON.stringify(snapshots));
+            }
+            
+            function getCitySnapshot(cityName) {
+                var snapshots = JSON.parse(localStorage.getItem('weatherCitySnapshots') || '{}');
+                return snapshots[cityName] || null;
+            }
+            
+            function showCitySidebar() {
+                var sidebar = document.getElementById('cityManagementSidebar');
+                if (!sidebar) return;
+                
+                sidebar.style.display = 'block';
+                setTimeout(function() {
+                    sidebar.classList.add('show');
+                }, 10);
+                
+                renderCitySidebar();
+            }
+            
+            function closeCitySidebar() {
+                var sidebar = document.getElementById('cityManagementSidebar');
+                if (!sidebar) return;
+                
+                sidebar.classList.remove('show');
+                setTimeout(function() {
+                    sidebar.style.display = 'none';
+                }, 300);
+            }
+            
+            function renderCitySidebar() {
+                var cities = getSavedCities();
+                var container = document.getElementById('cityCardsList');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                cities.forEach(function(city) {
+                    var snapshot = getCitySnapshot(city.name);
+                    var card = document.createElement('div');
+                    card.className = 'city-card-preview' + (city.name === currentCity.name ? ' active' : '');
+                    
+                    var weatherIcon = snapshot ? getWeatherDescIconClass(snapshot.weather) : 'fas fa-cloud';
+                    var temp = snapshot ? snapshot.temp + '°C' : '--°C';
+                    var weatherDesc = snapshot ? snapshot.weather : '加载中';
+                    var aqi = snapshot && snapshot.aqi ? snapshot.aqi : '--';
+                    var aqiLabel = getAqiLabel(aqi);
+                    
+                    var timeStr = '--';
+                    if (snapshot && snapshot.updatedAt) {
+                        var diff = Math.floor((Date.now() - snapshot.updatedAt) / 60000);
+                        if (diff < 1) timeStr = '刚刚';
+                        else if (diff < 60) timeStr = diff + '分钟前';
+                        else if (diff < 1440) timeStr = Math.floor(diff / 60) + '小时前';
+                        else timeStr = Math.floor(diff / 1440) + '天前';
+                    }
+                    
+                    card.innerHTML =
+                        '<div class="city-card-header">' +
+                            '<span class="city-card-name">' + city.name + '</span>' +
+                            '<button class="city-card-remove" onclick="removeCityFromSidebar(\'' + city.name + '\')"><i class="fas fa-times"></i></button>' +
+                        '</div>' +
+                        '<div class="city-card-weather">' +
+                            '<i class="' + weatherIcon + ' city-card-icon"></i>' +
+                            '<div>' +
+                                '<div class="city-card-temp">' + temp + '</div>' +
+                                '<div class="city-card-desc">' + weatherDesc + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="city-card-footer">' +
+                            '<span class="city-card-aqi"><i class="fas fa-wind"></i><span class="city-card-aqi-value">' + aqi + '</span> ' + aqiLabel + '</span>' +
+                            '<span class="city-card-time">' + timeStr + '</span>' +
+                        '</div>';
+                    
+                    card.onclick = function(e) {
+                        if (!e.target.closest('.city-card-remove')) {
+                            switchCityFromSidebar(city);
+                        }
+                    };
+                    
+                    container.appendChild(card);
+                });
+            }
+            
+            function switchCityFromSidebar(city) {
+                closeCitySidebar();
+                switchCity(city);
+            }
+            
+            function removeCityFromSidebar(cityName) {
+                removeCity(cityName);
+                renderCitySidebar();
+            }
+            
+            function getAqiLabel(aqi) {
+                if (aqi === '--' || !aqi) return '';
+                if (aqi <= 50) return '优';
+                if (aqi <= 100) return '良';
+                if (aqi <= 150) return '轻度';
+                if (aqi <= 200) return '中度';
+                return '重度';
+            }
+            
+            function getWeatherDescIconClass(weather) {
+                if (!weather) return 'fas fa-cloud';
+                var weatherLower = weather.toLowerCase();
+                if (weatherLower.includes('晴')) return 'fas fa-sun';
+                if (weatherLower.includes('云')) return 'fas fa-cloud';
+                if (weatherLower.includes('雨')) return 'fas fa-cloud-rain';
+                if (weatherLower.includes('雪')) return 'fas fa-snowflake';
+                if (weatherLower.includes('雷')) return 'fas fa-bolt';
+                if (weatherLower.includes('雾') || weatherLower.includes('霾')) return 'fas fa-smog';
+                return 'fas fa-cloud';
             }
             
             var detailContentGenerators = {
@@ -16400,6 +16785,429 @@
                             </div>
                         </div>
                     `;
+                },
+                car: function(data) {
+                    var current = data.current;
+                    var level = current.precipProb > 50 ? '不宜' : (current.precipProb > 20 ? '较适宜' : '适宜');
+                    var tip = '';
+                    if (level === '不宜') {
+                        tip = '当前降水概率较高，不适合洗车。建议等待天气转晴后再进行洗车。';
+                    } else if (level === '较适宜') {
+                        tip = '当前有一定降水概率，洗车需谨慎。建议选择有遮蔽的地方洗车，或等待天气更稳定后再洗。';
+                    } else {
+                        tip = '当前天气适合洗车，洗后车辆能保持较长时间的干净。';
+                    }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-car"></i></div>
+                                    <div class="detail-main-number">${level}</div>
+                                    <div class="detail-main-label">洗车指数</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>影响因素</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-rain"></i>降水概率</span>
+                                            <span class="info-value">${current.precipProb}%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-wind"></i>风力</span>
+                                            <span class="info-value">${current.windDirection}${current.windSpeed}级</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                sports: function(data) {
+                    var current = data.current;
+                    var level = '';
+                    var tip = '';
+                    if (current.temp > 35 || current.temp < -5) {
+                        level = '不宜';
+                        tip = '气温过高或过低，不适合户外运动。建议在室内进行锻炼。';
+                    } else if (current.precipProb > 60) {
+                        level = '不宜';
+                        tip = '降水概率较高，运动可能会受到影响。建议选择室内运动或改期。';
+                    } else if (current.uv > 7) {
+                        level = '较适宜';
+                        tip = '紫外线较强，进行户外运动时请注意防晒，建议避免正午时段。';
+                    } else {
+                        level = '适宜';
+                        tip = '当前天气条件适合户外运动，可以尽情享受运动的乐趣。';
+                    }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-running"></i></div>
+                                    <div class="detail-main-number">${level}</div>
+                                    <div class="detail-main-label">运动指数</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>影响因素</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-temperature-high"></i>当前温度</span>
+                                            <span class="info-value">${current.temp}°C</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-umbrella"></i>降水概率</span>
+                                            <span class="info-value">${current.precipProb}%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-sun"></i>紫外线指数</span>
+                                            <span class="info-value">${current.uv}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                fishing: function(data) {
+                    var current = data.current;
+                    var level = current.precipProb > 60 ? '不宜' : (current.windSpeed > 4 ? '较适宜' : '适宜');
+                    var tip = '';
+                    if (level === '不宜') {
+                        tip = '当前降水概率较高，不适合钓鱼。雨水会影响鱼儿咬钩，建议改期。';
+                    } else if (level === '较适宜') {
+                        tip = '当前风力较大，钓鱼难度有所增加。建议选择避风的钓点。';
+                    } else {
+                        tip = '当前天气条件适合钓鱼，鱼儿活跃度较高，是垂钓的好时机。';
+                    }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-fish"></i></div>
+                                    <div class="detail-main-number">${level}</div>
+                                    <div class="detail-main-label">钓鱼指数</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>影响因素</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-rain"></i>降水概率</span>
+                                            <span class="info-value">${current.precipProb}%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-wind"></i>风力等级</span>
+                                            <span class="info-value">${current.windSpeed}级</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-temperature-half"></i>水温参考</span>
+                                            <span class="info-value">${current.temp}°C</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                hair: function(data) {
+                    var current = data.current;
+                    var level = current.windSpeed > 5 ? '易乱' : (current.humidity > 80 ? '易油' : '适宜');
+                    var tip = '';
+                    if (level === '易乱') {
+                        tip = '当前风力较大，头发容易被吹乱。建议选择束发或使用发胶固定发型。';
+                    } else if (level === '易油') {
+                        tip = '当前湿度较高，头发容易出油。建议使用控油洗发水，并注意保持头发干爽。';
+                    } else {
+                        tip = '当前天气条件适合打理发型，可以尝试各种漂亮的发型。';
+                    }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-wind"></i></div>
+                                    <div class="detail-main-number">${level}</div>
+                                    <div class="detail-main-label">发型指数</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>影响因素</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-wind"></i>风力</span>
+                                            <span class="info-value">${current.windDirection}${current.windSpeed}级</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-droplet"></i>相对湿度</span>
+                                            <span class="info-value">${current.humidity}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                makeup: function(data) {
+                    var current = data.current;
+                    var level = current.humidity > 75 ? '易脱妆' : (current.temp > 30 ? '较适宜' : '适宜');
+                    var tip = '';
+                    if (level === '易脱妆') {
+                        tip = '当前湿度较高，妆容容易脱落。建议使用防水型化妆品，并携带补妆用品。';
+                    } else if (level === '较适宜') {
+                        tip = '当前气温较高，建议选择轻薄透气的妆容，避免厚重底妆。';
+                    } else {
+                        tip = '当前天气条件适合化妆，妆容可以保持较长时间。';
+                    }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-smile"></i></div>
+                                    <div class="detail-main-number">${level}</div>
+                                    <div class="detail-main-label">化妆指数</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>影响因素</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-droplet"></i>相对湿度</span>
+                                            <span class="info-value">${current.humidity}%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-temperature-high"></i>当前温度</span>
+                                            <span class="info-value">${current.temp}°C</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                travel: function(data) {
+                    var current = data.current;
+                    var level = current.precipProb > 50 ? '不宜' : (current.aqi.value > 100 ? '较适宜' : '适宜');
+                    var tip = '';
+                    if (level === '不宜') {
+                        tip = '当前降水概率较高，不适合出行旅游。建议选择室内活动或改期。';
+                    } else if (level === '较适宜') {
+                        tip = '当前空气质量一般，敏感人群请做好防护措施。建议选择空气流通较好的景点。';
+                    } else {
+                        tip = '当前天气条件适合出行旅游，可以尽情享受旅途的乐趣。';
+                    }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-plane"></i></div>
+                                    <div class="detail-main-number">${level}</div>
+                                    <div class="detail-main-label">旅游指数</div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>影响因素</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud-rain"></i>降水概率</span>
+                                            <span class="info-value">${current.precipProb}%</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-wind"></i>空气质量</span>
+                                            <span class="info-value">${current.aqi.value} ${current.aqi.label}</span>
+                                        </div>
+                                        <div class="detail-info-item">
+                                            <span class="info-label"><i class="fas fa-cloud"></i>天气状况</span>
+                                            <span class="info-value">${current.weather.desc}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>温馨提示</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                pm25: function(data) {
+                    var aq = data.current.airQuality;
+                    var val = aq.pm25 || 0;
+                    var level = '';
+                    var tip = '';
+                    if (val <= 35) { level = '优'; tip = 'PM2.5浓度优，空气质量良好，可正常户外活动。'; }
+                    else if (val <= 75) { level = '良'; tip = 'PM2.5浓度良，空气质量可接受，敏感人群减少户外活动。'; }
+                    else if (val <= 115) { level = '轻度污染'; tip = 'PM2.5轻度污染，儿童、老人及心肺疾病患者减少户外活动。'; }
+                    else if (val <= 150) { level = '中度污染'; tip = 'PM2.5中度污染，避免长时间户外活动，敏感人群留在室内。'; }
+                    else if (val <= 250) { level = '重度污染'; tip = 'PM2.5重度污染，所有人减少户外活动，敏感人群避免外出。'; }
+                    else { level = '严重污染'; tip = 'PM2.5严重污染，所有人应留在室内，避免体力消耗。'; }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-smog"></i></div>
+                                    <div class="detail-main-number">${val}</div>
+                                    <div class="detail-main-label">PM2.5 · <span class="level-indicator">${level}</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>PM2.5等级标准</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-smile" style="color:#4caf50;"></i>优</span><span class="info-value">0-35 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-meh" style="color:#ffc107;"></i>良</span><span class="info-value">35-75 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-frown" style="color:#ff9800;"></i>轻度</span><span class="info-value">75-115 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-tired" style="color:#f44336;"></i>中度</span><span class="info-value">115-150 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-procedures" style="color:#9c27b0;"></i>重度</span><span class="info-value">150-250 μg/m³</span></div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>健康建议</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                pm10: function(data) {
+                    var aq = data.current.airQuality;
+                    var val = aq.pm10 || 0;
+                    var level = '';
+                    var tip = '';
+                    if (val <= 50) { level = '优'; tip = 'PM10浓度优，空气质量良好，可正常户外活动。'; }
+                    else if (val <= 150) { level = '良'; tip = 'PM10浓度良，空气质量可接受，敏感人群减少户外活动。'; }
+                    else if (val <= 250) { level = '轻度污染'; tip = 'PM10轻度污染，儿童、老人及心肺疾病患者减少户外活动。'; }
+                    else if (val <= 350) { level = '中度污染'; tip = 'PM10中度污染，避免长时间户外活动，敏感人群留在室内。'; }
+                    else { level = '重度污染'; tip = 'PM10重度污染，所有人应减少户外活动，敏感人群避免外出。'; }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-cloud-meatball"></i></div>
+                                    <div class="detail-main-number">${val}</div>
+                                    <div class="detail-main-label">PM10 · <span class="level-indicator">${level}</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>PM10等级标准</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-smile" style="color:#4caf50;"></i>优</span><span class="info-value">0-50 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-meh" style="color:#ffc107;"></i>良</span><span class="info-value">50-150 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-frown" style="color:#ff9800;"></i>轻度</span><span class="info-value">150-250 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-tired" style="color:#f44336;"></i>中度</span><span class="info-value">250-350 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-procedures" style="color:#9c27b0;"></i>重度</span><span class="info-value">350+ μg/m³</span></div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>健康建议</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                no2: function(data) {
+                    var aq = data.current.airQuality;
+                    var val = aq.no2 || 0;
+                    var level = '';
+                    var tip = '';
+                    if (val <= 40) { level = '优'; tip = '二氧化氮浓度优，空气质量良好。'; }
+                    else if (val <= 80) { level = '良'; tip = '二氧化氮浓度良，空气质量可接受。'; }
+                    else if (val <= 180) { level = '轻度污染'; tip = '二氧化氮轻度污染，敏感人群减少户外活动。'; }
+                    else if (val <= 280) { level = '中度污染'; tip = '二氧化氮中度污染，所有人减少户外活动。'; }
+                    else { level = '重度污染'; tip = '二氧化氮重度污染，所有人应留在室内。'; }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-wind"></i></div>
+                                    <div class="detail-main-number">${val}</div>
+                                    <div class="detail-main-label">NO₂ · <span class="level-indicator">${level}</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>二氧化氮等级标准</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-smile" style="color:#4caf50;"></i>优</span><span class="info-value">0-40 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-meh" style="color:#ffc107;"></i>良</span><span class="info-value">40-80 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-frown" style="color:#ff9800;"></i>轻度</span><span class="info-value">80-180 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-tired" style="color:#f44336;"></i>中度</span><span class="info-value">180-280 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-procedures" style="color:#9c27b0;"></i>重度</span><span class="info-value">280+ μg/m³</span></div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>健康建议</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                o3: function(data) {
+                    var aq = data.current.airQuality;
+                    var val = aq.o3 || 0;
+                    var level = '';
+                    var tip = '';
+                    if (val <= 100) { level = '优'; tip = '臭氧浓度优，空气质量良好，可正常户外活动。'; }
+                    else if (val <= 160) { level = '良'; tip = '臭氧浓度良，空气质量可接受。'; }
+                    else if (val <= 215) { level = '轻度污染'; tip = '臭氧轻度污染，敏感人群减少户外活动。'; }
+                    else if (val <= 265) { level = '中度污染'; tip = '臭氧中度污染，所有人减少户外活动，尤其是午后时段。'; }
+                    else { level = '重度污染'; tip = '臭氧重度污染，所有人应留在室内，避免户外活动。'; }
+                    return `
+                        <div class="detail-content-wrapper">
+                            <div class="detail-left-panel">
+                                <div class="detail-main-value">
+                                    <div class="detail-main-icon"><i class="fas fa-leaf"></i></div>
+                                    <div class="detail-main-number">${val}</div>
+                                    <div class="detail-main-label">O₃ · <span class="level-indicator">${level}</span></div>
+                                </div>
+                            </div>
+                            <div class="detail-right-panel">
+                                <div class="detail-info-section">
+                                    <h4><i class="fas fa-info-circle"></i>臭氧等级标准</h4>
+                                    <div class="detail-info-list">
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-smile" style="color:#4caf50;"></i>优</span><span class="info-value">0-100 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-meh" style="color:#ffc107;"></i>良</span><span class="info-value">100-160 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-frown" style="color:#ff9800;"></i>轻度</span><span class="info-value">160-215 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-tired" style="color:#f44336;"></i>中度</span><span class="info-value">215-265 μg/m³</span></div>
+                                        <div class="detail-info-item"><span class="info-label"><i class="fas fa-procedures" style="color:#9c27b0;"></i>重度</span><span class="info-value">265+ μg/m³</span></div>
+                                    </div>
+                                </div>
+                                <div class="detail-tip-section">
+                                    <h4><i class="fas fa-lightbulb"></i>健康建议</h4>
+                                    <p>${tip}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
             };
             
@@ -16417,7 +17225,17 @@
                     visibility: '能见度详情',
                     uv: '紫外线详情',
                     precip: '降水概率详情',
-                    aqi: '空气质量详情'
+                    aqi: '空气质量详情',
+                    car: '洗车指数详情',
+                    sports: '运动指数详情',
+                    fishing: '钓鱼指数详情',
+                    hair: '发型指数详情',
+                    makeup: '化妆指数详情',
+                    travel: '旅游指数详情',
+                    pm25: 'PM2.5详情',
+                    pm10: 'PM10详情',
+                    no2: '二氧化氮详情',
+                    o3: '臭氧详情'
                 };
                 
                 titleEl.textContent = titles[type] || '详细信息';
@@ -16715,11 +17533,62 @@
                 
                 var addCityBtn = document.getElementById('addCityBtn');
                 if (addCityBtn) {
-                    addCityBtn.addEventListener('click', function() {
-                        isAddingCity = true;
+                    addCityBtn.addEventListener('click', showCitySidebar);
+                }
+                
+                var weatherLocationWrapper = document.getElementById('weatherLocationWrapper');
+                var weatherLocationMenu = document.getElementById('weatherLocationMenu');
+                
+                function toggleLocationMenu() {
+                    if (weatherLocationMenu.style.display === 'block') {
+                        closeLocationMenu();
+                    } else {
+                        openLocationMenu();
+                    }
+                }
+                
+                function openLocationMenu() {
+                    weatherLocationMenu.style.display = 'block';
+                    if (weatherLocationWrapper) {
+                        weatherLocationWrapper.classList.add('active');
+                    }
+                }
+                
+                function closeLocationMenu() {
+                    weatherLocationMenu.style.display = 'none';
+                    if (weatherLocationWrapper) {
+                        weatherLocationWrapper.classList.remove('active');
+                    }
+                }
+                
+                if (weatherLocationWrapper) {
+                    weatherLocationWrapper.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        toggleLocationMenu();
+                    });
+                }
+                
+                var weatherLocationChange = document.getElementById('weatherLocationChange');
+                if (weatherLocationChange) {
+                    weatherLocationChange.addEventListener('click', function() {
+                        closeLocationMenu();
                         showCityModal();
                     });
                 }
+                
+                var weatherLocationAdd = document.getElementById('weatherLocationAdd');
+                if (weatherLocationAdd) {
+                    weatherLocationAdd.addEventListener('click', function() {
+                        closeLocationMenu();
+                        showCitySidebar();
+                    });
+                }
+                
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.weather-location-row')) {
+                        closeLocationMenu();
+                    }
+                });
                 
                 var cityCloseBtn = document.getElementById('weatherCityCloseBtn');
                 if (cityCloseBtn) {
@@ -16735,8 +17604,62 @@
                     });
                 }
                 
+                var citySidebarClose = document.getElementById('citySidebarClose');
+                if (citySidebarClose) {
+                    citySidebarClose.addEventListener('click', closeCitySidebar);
+                }
+                
+                var citySidebarAddBtn = document.getElementById('citySidebarAddBtn');
+                if (citySidebarAddBtn) {
+                    citySidebarAddBtn.addEventListener('click', function() {
+                        isAddingCity = true;
+                        showCityModal();
+                    });
+                }
+                
+                var cityManagementSidebar = document.getElementById('cityManagementSidebar');
+                if (cityManagementSidebar) {
+                    cityManagementSidebar.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeCitySidebar();
+                        }
+                    });
+                }
+                
+                var citySidebarSearch = document.getElementById('citySidebarSearchInput');
+                if (citySidebarSearch) {
+                    citySidebarSearch.addEventListener('input', function(e) {
+                        var keyword = e.target.value.toLowerCase();
+                        var cards = document.querySelectorAll('.city-card-preview');
+                        cards.forEach(function(card) {
+                            var name = card.querySelector('.city-card-name').textContent.toLowerCase();
+                            card.style.display = name.includes(keyword) ? 'block' : 'none';
+                        });
+                    });
+                }
+                
                 var detailCards = document.querySelectorAll('.weather-detail-card');
                 detailCards.forEach(function(card) {
+                    card.addEventListener('click', function() {
+                        var type = this.getAttribute('data-type');
+                        if (type) {
+                            showWeatherDetailModal(type);
+                        }
+                    });
+                });
+                
+                var lifestyleCards = document.querySelectorAll('.lifestyle-card');
+                lifestyleCards.forEach(function(card) {
+                    card.addEventListener('click', function() {
+                        var type = this.getAttribute('data-type');
+                        if (type) {
+                            showWeatherDetailModal(type);
+                        }
+                    });
+                });
+                
+                var pollutantCards = document.querySelectorAll('.aqi-pollutant-card');
+                pollutantCards.forEach(function(card) {
                     card.addEventListener('click', function() {
                         var type = this.getAttribute('data-type');
                         if (type) {

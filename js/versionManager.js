@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.7.0.2 (b8)",
+    login: "RC 2.7.0.3 (b8)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.1 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260703.2701.b8.104",
+    launcher: "20260706.2706.b8.106",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -41,9 +41,9 @@ const versionInfo = {
             status: "公开正式版"
         },
         transparent: {
-            version: "RC 1.2.11",
+            version: "RC 1.2.12",
             releaseDate: "2026-06-06",
-            updateDate: "2026-07-05",
+            updateDate: "2026-07-06",
             status: "公开正式版"
         }
     },
@@ -54,9 +54,9 @@ const versionInfo = {
             icon: "fas fa-sticky-note",
             iconBg: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
             iconColor: "#ff8c42",
-            version: "RC 1.1.5",
+            version: "RC 1.1.6",
             releaseDate: "2026-06-20",
-            updateDate: "2026-06-29",
+            updateDate: "2026-07-06",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -94,9 +94,9 @@ const versionInfo = {
             icon: "fas fa-cloud-sun",
             iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             iconColor: "#ffffff",
-            version: "RC 1.2.0",
+            version: "RC 1.2.1",
             releaseDate: "2026-06-27",
-            updateDate: "2026-07-05",
+            updateDate: "2026-07-06",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -140,8 +140,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-07-05",
-    patchDate: "2026-07-05",
+    buildDate: "2026-07-06",
+    patchDate: "2026-07-06",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""
