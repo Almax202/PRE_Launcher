@@ -8092,6 +8092,12 @@ document.addEventListener('DOMContentLoaded', function() {
         weatherFeatureToggle.checked = isWeatherFeatureEnabled;
     }
     
+    var calendarToggle = document.getElementById('enableCalendar');
+    if (calendarToggle) {
+        var isCalendarEnabled = localStorage.getItem('calendarEnabled') === 'true';
+        calendarToggle.checked = isCalendarEnabled;
+    }
+    
 });
 
 function toggleStickyNotes() {
@@ -8117,6 +8123,21 @@ function toggleWeatherFeature() {
         showAlert('天气功能已启用，在登录页更多功能弹窗中可使用');
     } else {
         showAlert('天气功能已关闭');
+    }
+    
+    if (typeof parent.updateEnhancedFeatureButtons === 'function') {
+        parent.updateEnhancedFeatureButtons();
+    }
+}
+
+function toggleCalendarFeature() {
+    var enabled = document.getElementById('enableCalendar').checked;
+    localStorage.setItem('calendarEnabled', enabled ? 'true' : 'false');
+    
+    if (enabled) {
+        showAlert('日历功能已启用，在登录页更多功能弹窗中可使用');
+    } else {
+        showAlert('日历功能已关闭');
     }
     
     if (typeof parent.updateEnhancedFeatureButtons === 'function') {

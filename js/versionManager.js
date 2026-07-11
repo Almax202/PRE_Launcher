@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.7.0.3 (b8)",
+    login: "RC 2.7.0.4 (b8)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.1 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260706.2706.b8.106",
+    launcher: "20260711.2704.b8.107",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -41,9 +41,9 @@ const versionInfo = {
             status: "公开正式版"
         },
         transparent: {
-            version: "RC 1.2.12",
+            version: "RC 1.2.13",
             releaseDate: "2026-06-06",
-            updateDate: "2026-07-06",
+            updateDate: "2026-07-11",
             status: "公开正式版"
         }
     },
@@ -54,9 +54,9 @@ const versionInfo = {
             icon: "fas fa-sticky-note",
             iconBg: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
             iconColor: "#ff8c42",
-            version: "RC 1.1.6",
+            version: "RC 1.2.0",
             releaseDate: "2026-06-20",
-            updateDate: "2026-07-06",
+            updateDate: "2026-07-11",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -132,6 +132,27 @@ const versionInfo = {
                 "全屏弹窗显示，沉浸式查看体验",
                 "点击组件信息按钮查看版本详情"
             ]
+        },
+        calendar: {
+            name: "日历",
+            icon: "fas fa-calendar-alt",
+            iconBg: "linear-gradient(135deg, #d45d79 0%, #e67e8a 100%)",
+            iconColor: "#ffffff",
+            version: "Public Beta 0.1.0.0",
+            releaseDate: "2026-07-11",
+            updateDate: "2026-07-11",
+            status: "公开测试版",
+            developer: "PREAlmax",
+            copyright: "© 2014-2026 PREAlmax, All rights reserved.",
+            description: "功能完整的日历组件，支持月视图日历、待办事项、日程管理和课程表功能",
+            features: [
+                "月视图日历，支持月份切换和日期选择",
+                "待办事项管理，支持优先级和截止日期",
+                "日程管理，支持时间设置和颜色标签",
+                "课程表管理，按星期分组显示",
+                "数据导入导出，支持JSON格式",
+                "数据本地持久化，自动保存不丢失"
+            ]
         }
     }
 };
@@ -140,8 +161,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-07-06",
-    patchDate: "2026-07-06",
+    buildDate: "2026-07-11",
+    patchDate: "2026-07-11",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: ""
