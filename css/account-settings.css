@@ -732,6 +732,43 @@ body.glass-mode.dark-mode .sidebar-backdrop.show {
     transform: translateY(0);
 }
 
+.card-header .enhanced-features-toggle-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+.card-header .enhanced-features-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.card-header .enhanced-features-toggle-btn:active {
+    transform: translateY(0);
+}
+
+.card-header .enhanced-features-toggle-btn.enabled {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+}
+
+.card-header .enhanced-features-toggle-btn.enabled:hover {
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
 .card-icon {
     width: 50px;
     height: 50px;
@@ -7771,6 +7808,11 @@ body.transparent-mode .settings-sidebar {
     background: rgba(255, 255, 255, 0.05) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+}
+
+body.transparent-mode .settings-sidebar .sidebar-header {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 body.transparent-mode .settings-main {

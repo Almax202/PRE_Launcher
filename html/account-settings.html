@@ -1570,6 +1570,10 @@
                                 <h3>增强功能</h3>
                                 <p>扩展或关闭特定功能</p>
                             </div>
+                            <button class="enhanced-features-toggle-btn" id="enhancedFeaturesToggleBtn">
+                                <i class="fas fa-power-off"></i>
+                                <span>关闭增强功能</span>
+                            </button>
                         </div>
                         <div class="card-content">
                             <div class="two-factor-item">
@@ -2228,6 +2232,20 @@
             <div class="modal-buttons">
                 <button class="alert-confirm" id="resetSettingsCancel">取消</button>
                 <button class="alert-confirm" id="resetSettingsConfirm" style="background-color: #e74c3c;">确认重置</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="disableEnhancedFeaturesConfirmModal" class="custom-alert">
+        <div class="alert-content" style="max-width: 400px;">
+            <div class="alert-icon" style="color: #e74c3c;">
+                <i class="fas fa-power-off"></i>
+            </div>
+            <h3>确认关闭增强功能</h3>
+            <p style="color: #666; margin: 15px 0;">是否要关闭增强功能？关闭后登录页中的更多功能按钮及弹窗将不可见</p>
+            <div class="modal-buttons">
+                <button class="alert-confirm" id="disableEnhancedFeaturesCancel">取消</button>
+                <button class="alert-confirm" id="disableEnhancedFeaturesConfirm" style="background-color: #e74c3c;">确认关闭</button>
             </div>
         </div>
     </div>

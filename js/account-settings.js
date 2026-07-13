@@ -892,6 +892,15 @@ document.addEventListener('DOMContentLoaded', function() {
             hideAlert();
         });
         
+        document.getElementById('disableEnhancedFeaturesConfirm').addEventListener('click', function() {
+            hideDisableEnhancedFeaturesConfirm();
+            doToggleEnhancedFeatures();
+        });
+        
+        document.getElementById('disableEnhancedFeaturesCancel').addEventListener('click', function() {
+            hideDisableEnhancedFeaturesConfirm();
+        });
+        
         document.getElementById('editCancel').addEventListener('click', function() {
             hideEditModal();
         });
@@ -4385,6 +4394,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('customBackground', JSON.stringify(backgroundSettings));
             }
         }
+        
+        updateEnhancedFeaturesToggleState();
     }
     
     function applyGpuAcceleration() {
@@ -8098,6 +8109,11 @@ document.addEventListener('DOMContentLoaded', function() {
         calendarToggle.checked = isCalendarEnabled;
     }
     
+    var enhancedFeaturesToggleBtn = document.getElementById('enhancedFeaturesToggleBtn');
+    if (enhancedFeaturesToggleBtn) {
+        enhancedFeaturesToggleBtn.addEventListener('click', toggleEnhancedFeatures);
+    }
+    
 });
 
 function toggleStickyNotes() {
@@ -8142,5 +8158,105 @@ function toggleCalendarFeature() {
     
     if (typeof parent.updateEnhancedFeatureButtons === 'function') {
         parent.updateEnhancedFeatureButtons();
+    }
+}
+
+function toggleEnhancedFeatures() {
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    var user = users.find(function(u) {
+        return u.username === currentUser.username;
+    });
+    
+    if (!user) return;
+    
+    var currentEnabled = user.userProfile && user.userProfile.enhancedFeaturesEnabled !== undefined ? user.userProfile.enhancedFeaturesEnabled : true;
+    
+    if (currentEnabled) {
+        showDisableEnhancedFeaturesConfirm();
+    } else {
+        doToggleEnhancedFeatures();
+    }
+}
+
+function doToggleEnhancedFeatures() {
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    var user = users.find(function(u) {
+        return u.username === currentUser.username;
+    });
+    
+    if (!user) return;
+    
+    var isEnabled = !(user.userProfile && user.userProfile.enhancedFeaturesEnabled !== undefined ? user.userProfile.enhancedFeaturesEnabled : true);
+    
+    if (!user.userProfile) {
+        user.userProfile = {};
+    }
+    user.userProfile.enhancedFeaturesEnabled = isEnabled;
+    
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+    
+    updateEnhancedFeaturesToggleState();
+    
+    if (typeof parent.updateEnhancedFeatureButtons === 'function') {
+        parent.updateEnhancedFeatureButtons();
+    }
+}
+
+function showDisableEnhancedFeaturesConfirm() {
+    var modal = document.getElementById('disableEnhancedFeaturesConfirmModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(function() {
+            modal.classList.add('show');
+        }, 10);
+    }
+}
+
+function hideDisableEnhancedFeaturesConfirm() {
+    var modal = document.getElementById('disableEnhancedFeaturesConfirmModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(function() {
+            modal.style.display = 'none';
+        }, 300);
+    }
+}
+
+function updateEnhancedFeaturesToggleState() {
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    var user = users.find(function(u) {
+        return u.username === currentUser.username;
+    });
+    
+    var isEnabled = user && user.userProfile && user.userProfile.enhancedFeaturesEnabled !== undefined ? user.userProfile.enhancedFeaturesEnabled : true;
+    
+    var toggleBtn = document.getElementById('enhancedFeaturesToggleBtn');
+    if (toggleBtn) {
+        if (isEnabled) {
+            toggleBtn.classList.add('enabled');
+            toggleBtn.innerHTML = '<i class="fas fa-power-off"></i><span>关闭增强功能</span>';
+        } else {
+            toggleBtn.classList.remove('enabled');
+            toggleBtn.innerHTML = '<i class="fas fa-power-off"></i><span>启用增强功能</span>';
+        }
+    }
+    
+    var cardContent = document.querySelector('#section-enhanced-features .card-content');
+    if (cardContent) {
+        var toggles = cardContent.querySelectorAll('.toggle-switch input[type="checkbox"]');
+        toggles.forEach(function(toggle) {
+            toggle.disabled = !isEnabled;
+            var slider = toggle.nextElementSibling;
+            if (slider) {
+                if (!isEnabled) {
+                    slider.classList.add('disabled');
+                } else {
+                    slider.classList.remove('disabled');
+                }
+            }
+        });
     }
 }

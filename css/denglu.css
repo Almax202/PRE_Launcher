@@ -7458,7 +7458,6 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     height: 100%;
     border-radius: 0;
     padding: 0;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     background: white;
@@ -7624,6 +7623,7 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     flex: 1;
     display: flex;
     overflow: hidden;
+    position: relative;
 }
 
 .calendar-sidebar {
@@ -7662,8 +7662,8 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
 
 .calendar-tab.active {
     background: rgba(212, 93, 121, 0.05);
-    color: #d45d79;
-    border-left-color: #d45d79;
+    color: var(--calendar-theme-color);
+    border-left-color: var(--calendar-theme-color);
 }
 
 .calendar-tab i {
@@ -7674,6 +7674,157 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     flex: 1;
     overflow-y: auto;
     padding: 15px;
+}
+
+.calendar-settings-sidebar {
+    width: 360px;
+    background: white;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
+    position: absolute;
+    right: -360px;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s ease;
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-settings-sidebar.show {
+    right: 0;
+}
+
+.calendar-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: #f8fafc;
+}
+
+.calendar-settings-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.calendar-settings-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    color: #666;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.calendar-settings-close:hover {
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+}
+
+.calendar-settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.settings-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #999;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 15px;
+}
+
+.settings-section-title:first-child {
+    margin-top: 0;
+}
+
+.settings-section-title i {
+    font-size: 12px;
+}
+
+.calendar-setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.calendar-setting-item:last-of-type {
+    border-bottom: none;
+}
+
+.calendar-setting-item .setting-info {
+    flex: 1;
+}
+
+.calendar-setting-item .setting-info h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.calendar-setting-item .setting-info p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #999;
+}
+
+.calendar-setting-item select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    color: #333;
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 140px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.calendar-setting-item select:focus {
+    border-color: #d45d79;
+}
+
+.calendar-settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.calendar-settings-btn.danger-btn {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.calendar-settings-btn.danger-btn:hover {
+    background: rgba(231, 76, 60, 0.15);
 }
 
 .calendar-tab-content {
@@ -7703,7 +7854,7 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    background: linear-gradient(135deg, var(--calendar-theme-color) 0%, var(--calendar-theme-color) 100%);
     border: none;
     border-radius: 8px;
     color: white;
@@ -7852,11 +8003,15 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     font-size: 14px;
 }
 
+:root {
+    --calendar-theme-color: #d45d79;
+}
+
 .event-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #d45d79;
+    background-color: var(--calendar-theme-color);
     position: absolute;
     bottom: 8px;
 }
@@ -7924,9 +8079,54 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     transform: scale(1.1);
 }
 
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #d45d79;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
 .schedule-submit-btn {
     padding: 12px;
-    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    background: linear-gradient(135deg, var(--calendar-theme-color) 0%, var(--calendar-theme-color) 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -8117,7 +8317,9 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
 }
 
 .calendar-day.selected {
-    border: 2px solid #d45d79;
+    border: 2px solid var(--calendar-theme-color);
+    background-color: var(--calendar-theme-color);
+    color: white;
 }
 
 .calendar-day-number {
@@ -8384,6 +8586,72 @@ body.dark-mode .color-option.active {
     border-color: #e0e0e0;
 }
 
+body.dark-mode .calendar-settings-sidebar {
+    background: #1a1a2e;
+    border-left-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .calendar-settings-header {
+    background: #16213e;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .calendar-settings-header h3 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .calendar-settings-close {
+    color: #888;
+}
+
+body.dark-mode .calendar-settings-close:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .settings-section-title {
+    color: #666;
+}
+
+body.dark-mode .calendar-setting-item {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .calendar-setting-item h4 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .calendar-setting-item p {
+    color: #666;
+}
+
+body.dark-mode .toggle-slider {
+    background: #444;
+}
+
+body.dark-mode .toggle-slider:before {
+    background: #888;
+}
+
+body.dark-mode .toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+}
+
+body.dark-mode select {
+    background: #16213e;
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .calendar-settings-btn.danger-btn {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+body.dark-mode .calendar-settings-btn.danger-btn:hover {
+    background: rgba(231, 76, 60, 0.25);
+}
+
 body.dark-mode .classes-week-header {
     background: rgba(255, 255, 255, 0.05);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -8472,7 +8740,9 @@ body.dark-mode .calendar-day.other-month {
 }
 
 body.dark-mode .calendar-day.selected {
-    border-color: #d45d79;
+    border-color: var(--calendar-theme-color);
+    background-color: var(--calendar-theme-color);
+    color: white;
 }
 
 body.dark-mode .calendar-events {
@@ -8747,6 +9017,120 @@ body.transparent-mode .event-title {
 body.transparent-mode .event-time,
 body.transparent-mode .event-note {
     color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .calendar-settings-sidebar {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-left-color: rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .calendar-settings-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .calendar-settings-header h3 {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.transparent-mode .calendar-settings-close {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.transparent-mode .calendar-settings-close:hover {
+    background: rgba(212, 93, 121, 0.3);
+    color: #fff;
+}
+
+body.transparent-mode .settings-section-title {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body.transparent-mode .calendar-setting-item {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .calendar-setting-item .setting-info h4 {
+    color: #ffffff;
+}
+
+body.transparent-mode .calendar-setting-item .setting-info p {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .calendar-setting-item select {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+body.transparent-mode .calendar-setting-item select:focus {
+    border-color: #d45d79;
+}
+
+body.transparent-mode .toggle-slider {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .toggle-slider:before {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+body.transparent-mode .toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.8), rgba(230, 126, 138, 0.8));
+}
+
+body.transparent-mode .color-option.active {
+    border-color: #ffffff;
+}
+
+body.transparent-mode .calendar-settings-btn.danger-btn {
+    background: rgba(231, 76, 60, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+body.transparent-mode .calendar-settings-btn.danger-btn:hover {
+    background: rgba(231, 76, 60, 0.25);
+}
+
+body.transparent-mode .schedule-form input::placeholder,
+body.transparent-mode .schedule-form textarea::placeholder,
+body.transparent-mode .todo-form input::placeholder,
+body.transparent-mode .class-form input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+body.transparent-mode .calendar-sidebar-content {
+    background: transparent;
+}
+
+body.transparent-mode .add-todo-btn,
+body.transparent-mode .add-class-btn {
+    background: rgba(212, 93, 121, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+body.transparent-mode .add-todo-btn:hover,
+body.transparent-mode .add-class-btn:hover {
+    background: rgba(212, 93, 121, 0.4);
+    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.2);
+}
+
+body.transparent-mode .schedule-submit-btn {
+    background: rgba(212, 93, 121, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+body.transparent-mode .schedule-submit-btn:hover {
+    background: rgba(212, 93, 121, 0.4);
+    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.2);
 }
 
 @media (max-width: 768px) {
@@ -9274,6 +9658,10 @@ body.dark-mode .sidebar-copyright p {
     
     body.dark-mode .settings-sidebar.collapsed .mobile-buttons-container {
         background: rgba(30, 30, 50, 0.9);
+    }
+    
+    .mobile-buttons-container.hidden {
+        display: none !important;
     }
 }
 
@@ -12293,29 +12681,56 @@ body.transparent-mode .more-action-btn.logout-action i {
 }
 
 /* 透明主题 - 更多功能弹窗样式 */
-body.transparent-mode .more-features-content {
-    background: rgba(255, 255, 255, 0.15) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+body.transparent-mode #moreFeaturesModal .more-features-fullscreen {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-body.transparent-mode .more-feature-btn {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+body.transparent-mode .more-features-header {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+body.transparent-mode .more-features-title h2 {
     color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+body.transparent-mode .more-features-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.transparent-mode .more-features-close:hover {
+    background: rgba(212, 93, 121, 0.2);
+    color: #fff;
+}
+
+body.transparent-mode .more-features-content {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.transparent-mode .more-feature-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: none;
 }
 
-body.transparent-mode .more-feature-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+body.transparent-mode .more-feature-card:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
 }
 
-body.transparent-mode .more-feature-btn i {
-    color: #fff !important;
+body.transparent-mode .feature-card-title {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.transparent-mode .feature-card-desc {
+    color: rgba(255, 255, 255, 0.6);
 }
 
 /* 透明主题暗色模式 - 更多操作弹窗样式 */
@@ -12345,27 +12760,53 @@ body.transparent-mode.dark-mode .more-action-btn.logout-action i {
 }
 
 /* 透明主题暗色模式 - 更多功能弹窗样式 */
-body.transparent-mode.dark-mode .more-features-content {
+body.transparent-mode.dark-mode #moreFeaturesModal .more-features-fullscreen {
     background: rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-body.transparent-mode.dark-mode .more-feature-btn {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+body.transparent-mode.dark-mode .more-features-header {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode.dark-mode .more-features-title h2 {
     color: rgba(255, 255, 255, 0.92);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-body.transparent-mode.dark-mode .more-feature-btn:hover {
-    background: rgba(255, 255, 255, 0.14) !important;
-    border-color: rgba(255, 255, 255, 0.4);
+body.transparent-mode.dark-mode .more-features-close {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
 }
 
-body.transparent-mode.dark-mode .more-feature-btn i {
-    color: rgba(255, 255, 255, 0.92) !important;
+body.transparent-mode.dark-mode .more-features-close:hover {
+    background: rgba(212, 93, 121, 0.25);
+    color: #e67e8a;
+}
+
+body.transparent-mode.dark-mode .more-features-content {
+    background: rgba(0, 0, 0, 0.15) !important;
+}
+
+body.transparent-mode.dark-mode .more-feature-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode.dark-mode .more-feature-card:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode.dark-mode .feature-card-title {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+body.transparent-mode.dark-mode .feature-card-desc {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 /* 透明主题 - 确认弹窗样式 */
@@ -13352,68 +13793,182 @@ body.dark-mode .more-actions-tooltip::after {
     transform: translateY(-1px) scale(0.98);
 }
 
-/* 更多功能弹窗样式 */
-.more-features-content {
-    max-width: 520px;
+/* 更多功能弹窗样式 - 全屏模式 */
+#moreFeaturesModal {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-.more-features-buttons {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+#moreFeaturesModal .more-features-fullscreen {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    transform: none;
+    box-shadow: none;
+}
+
+.more-features-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    background: white;
+    color: #333;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.more-features-title {
+    display: flex;
+    align-items: center;
     gap: 15px;
 }
 
-.more-feature-btn {
+.more-features-title::before {
+    content: '';
+    width: 4px;
+    height: 32px;
+    background: linear-gradient(180deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 2px;
+}
+
+.more-features-title h2 {
+    font-size: 22px;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.more-features-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    color: #666;
+    font-size: 18px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.more-features-close:hover {
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    transform: rotate(90deg);
+}
+
+.more-features-content {
+    flex: 1;
+    padding: 30px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.more-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
     width: 100%;
-    padding: 24px 20px;
+    max-width: 1200px;
+}
+
+.more-feature-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
     border: none;
     border-radius: 16px;
-    background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
-    color: #4a5568;
-    font-size: 13px;
-    font-weight: 600;
+    background: white;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    text-align: left;
 }
 
-.more-feature-btn i {
-    font-size: 32px;
-    transition: transform 0.3s ease;
+.more-feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
-.more-feature-btn:nth-child(1) i {
-    color: #d45d79;
+.more-feature-card:active {
+    transform: translateY(-2px);
 }
 
-.more-feature-btn:nth-child(2) i {
-    color: #667eea;
+.feature-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
 }
 
-.more-feature-btn:nth-child(3) i {
-    color: #4ecdc4;
+.feature-card-icon.about-icon {
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
 }
 
-.more-feature-btn:nth-child(4) i {
-    color: #a855f7;
+.feature-card-icon.clock-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.more-feature-btn:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+.feature-card-icon.scale-icon {
+    background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
 }
 
-.more-feature-btn:hover i {
-    transform: scale(1.1);
+.feature-card-icon.guide-icon {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
 }
 
-.more-feature-btn:active {
-    transform: translateY(-1px) scale(0.98);
+.feature-card-icon.notes-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.feature-card-icon.weather-icon {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+.feature-card-icon.calendar-icon {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+
+.feature-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.feature-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.feature-card-desc {
+    font-size: 13px;
+    color: #999;
+    margin: 0;
+    line-height: 1.5;
 }
 
 /* 暗色模式下的更多操作按钮样式 */
@@ -13449,32 +14004,47 @@ body.dark-mode .more-action-btn:hover {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 60px 20px;
     text-align: center;
+    max-width: 400px;
+}
+
+.empty-icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(212, 93, 121, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
 .empty-icon {
-    font-size: 48px;
+    font-size: 40px;
     color: #d45d79;
-    margin-bottom: 16px;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 .empty-text {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     color: #4a5568;
-    margin: 0 0 8px 0;
+    margin: 0 0 10px 0;
 }
 
 .empty-hint {
-    font-size: 13px;
+    font-size: 14px;
     color: #999;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 /* 暗色模式下的空状态样式 */
+body.dark-mode .empty-icon-container {
+    background: rgba(212, 93, 121, 0.15);
+}
+
 body.dark-mode .empty-icon {
     color: #e67e8a;
 }
@@ -13487,15 +14057,50 @@ body.dark-mode .empty-hint {
     color: #888;
 }
 
-/* 暗色模式下的更多功能按钮样式 */
-body.dark-mode .more-feature-btn {
-    background: linear-gradient(145deg, #2d2d44 0%, #252538 100%);
-    color: #e0e0e0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+/* 暗色模式下的更多功能弹窗样式 */
+body.dark-mode #moreFeaturesModal .more-features-fullscreen {
+    background: #1a1a2e;
 }
 
-body.dark-mode .more-feature-btn:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+body.dark-mode .more-features-header {
+    background: #1a1a2e;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+body.dark-mode .more-features-title h2 {
+    color: #fff;
+}
+
+body.dark-mode .more-features-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+body.dark-mode .more-features-close:hover {
+    background: rgba(212, 93, 121, 0.2);
+    color: #e67e8a;
+}
+
+body.dark-mode .more-features-content {
+    background: #16213e;
+}
+
+body.dark-mode .more-feature-card {
+    background: #1a1a2e;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .more-feature-card:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .feature-card-title {
+    color: #e0e0e0;
+}
+
+body.dark-mode .feature-card-desc {
+    color: #888;
 }
 
 /* 暗色模式下更多操作按钮禁用状态样式 */
@@ -13510,32 +14115,20 @@ body.dark-mode .more-action-btn.disabled i {
     color: #555 !important;
 }
 
-/* 更多功能按钮禁用状态样式 */
-.more-feature-btn:disabled,
-.more-feature-btn.disabled {
-    background: linear-gradient(145deg, #e8e8e8 0%, #d0d0d0 100%) !important;
-    color: #999 !important;
+/* 更多功能卡片禁用状态样式 */
+.more-feature-card:disabled,
+.more-feature-card.disabled {
+    background: #e8e8e8 !important;
     cursor: not-allowed !important;
     transform: none !important;
     box-shadow: none !important;
+    opacity: 0.6;
 }
 
-.more-feature-btn:disabled i,
-.more-feature-btn.disabled i {
-    color: #999 !important;
-    transform: none !important;
-}
-
-/* 暗色模式下更多功能按钮禁用状态样式 */
-body.dark-mode .more-feature-btn:disabled,
-body.dark-mode .more-feature-btn.disabled {
-    background: linear-gradient(145deg, #3a3a4a 0%, #2d2d3d 100%) !important;
-    color: #555 !important;
-}
-
-body.dark-mode .more-feature-btn:disabled i,
-body.dark-mode .more-feature-btn.disabled i {
-    color: #555 !important;
+body.dark-mode .more-feature-card:disabled,
+body.dark-mode .more-feature-card.disabled {
+    background: #2d2d3d !important;
+    opacity: 0.5;
 }
 
 /* 响应式设计 */
@@ -13564,6 +14157,41 @@ body.dark-mode .more-feature-btn.disabled i {
     
     .login-wrapper .login-container {
         max-width: 100%;
+    }
+
+    .more-features-header {
+        padding: 15px 20px;
+    }
+
+    .more-features-title h2 {
+        font-size: 18px;
+    }
+
+    .more-features-content {
+        padding: 20px;
+    }
+
+    .more-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .more-feature-card {
+        padding: 20px;
+    }
+
+    .feature-card-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .feature-card-title {
+        font-size: 14px;
+    }
+
+    .feature-card-desc {
+        font-size: 12px;
     }
 }
 
@@ -16560,6 +17188,32 @@ body.dark-mode .component-copyright {
     height: 100%;
     background: #fff;
     overflow: hidden;
+    position: relative;
+}
+
+.sticky-notes-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    color: #666;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.sticky-notes-modal-close:hover {
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    transform: rotate(90deg);
 }
 
 /* 工具栏样式 */
@@ -16911,6 +17565,10 @@ body.dark-mode .component-copyright {
 
 .sticky-notes-sidebar.fullscreen-mode .sidebar-header h3 {
     font-size: 24px;
+}
+
+.sticky-notes-sidebar.fullscreen-mode .sidebar-header {
+    padding-right: 80px;
 }
 
 .sticky-notes-sidebar.fullscreen-mode .sidebar-search {
@@ -17580,6 +18238,16 @@ body.dark-mode .sticky-notes-container {
     background: #2d2d3d;
 }
 
+body.dark-mode .sticky-notes-modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+body.dark-mode .sticky-notes-modal-close:hover {
+    background: rgba(212, 93, 121, 0.2);
+    color: #e67e8a;
+}
+
 body.dark-mode .sticky-notes-sidebar {
     background: #2d2d3d;
     border-right-color: rgba(255, 255, 255, 0.08);
@@ -17792,10 +18460,114 @@ body.transparent-mode .sticky-notes-container {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+body.transparent-mode .sticky-notes-modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.transparent-mode .sticky-notes-modal-close:hover {
+    background: rgba(212, 93, 121, 0.2);
+    color: #fff;
+}
+
 body.transparent-mode .sticky-notes-sidebar {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(15px);
-    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-header {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-header h3 {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-header h3::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-search {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-search .search-input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-search .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-search .search-input:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-menu-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-content {
+    background: transparent;
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-menu-panel {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-menu-panel .menu-item {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-menu-panel .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-menu-panel .menu-item i {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .sticky-notes-sidebar .sidebar-menu-panel .menu-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .sticky-notes-sidebar .notes-list {
+    background: transparent;
+}
+
+body.transparent-mode .sticky-notes-sidebar .note-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .sticky-notes-sidebar .note-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.transparent-mode .sticky-notes-sidebar .note-item.active {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode .sticky-notes-sidebar .note-item-title,
+body.transparent-mode .sticky-notes-sidebar .note-item-preview,
+body.transparent-mode .sticky-notes-sidebar .note-item-date {
+    color: rgba(255, 255, 255, 0.85);
 }
 
 body.transparent-mode .sidebar-header {

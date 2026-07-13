@@ -434,6 +434,11 @@
                     -webkit-backdrop-filter: none;
                 }
                 
+                body.transparent-mode .settings-sidebar .sidebar-header {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+                }
+                
                 /* 透明主题 - 设置主容器 */
                 body.transparent-mode .settings-main {
                     background: rgba(255, 255, 255, 0.04) !important;
@@ -3533,6 +3538,20 @@
                 return false;
             }
             
+            function isEnhancedFeaturesEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile && user.userProfile.enhancedFeaturesEnabled !== undefined) {
+                        return user.userProfile.enhancedFeaturesEnabled === true;
+                    }
+                }
+                return true;
+            }
+            
             function isPageClockTimedStartEnabled() {
                 var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
                 var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -3564,6 +3583,30 @@
             }
             
             function updateEnhancedFeatureButtons() {
+                var enhancedFeaturesEnabled = isEnhancedFeaturesEnabled();
+                
+                var toggleButtonsBtn = document.getElementById('toggleButtonsBtn');
+                var toggleButtonsContainer = document.querySelector('.toggle-buttons-container');
+                var mobileButtonsContainer = document.getElementById('mobileButtonsContainer');
+                
+                if (toggleButtonsBtn) {
+                    toggleButtonsBtn.style.display = enhancedFeaturesEnabled ? 'flex' : 'none';
+                }
+                if (toggleButtonsContainer) {
+                    toggleButtonsContainer.style.display = enhancedFeaturesEnabled ? 'flex' : 'none';
+                }
+                if (mobileButtonsContainer) {
+                    if (enhancedFeaturesEnabled) {
+                        mobileButtonsContainer.classList.remove('hidden');
+                    } else {
+                        mobileButtonsContainer.classList.add('hidden');
+                    }
+                }
+                
+                if (!enhancedFeaturesEnabled) {
+                    return;
+                }
+                
                 var guideEnabled = isGuideEnabled();
                 var uiScaleEnabled = isUiScaleEnabled();
                 var hideUiEnabled = isHideUiEnabled();
@@ -4044,8 +4087,10 @@
                 toggleButtonsBtn.addEventListener('click', function() {
                     updateHideInterfaceButton();
                     var modal = document.getElementById('moreFeaturesModal');
-                    modal.style.animation = 'fadeIn 0.3s ease';
                     modal.style.display = 'flex';
+                    setTimeout(function() {
+                        modal.classList.add('show');
+                    }, 10);
                 });
             }
             
@@ -4071,53 +4116,92 @@
             function generateMobileFunctionsModal() {
                 const modal = document.createElement('div');
                 modal.id = 'mobileFunctionsModal';
-                modal.className = 'custom-confirm-modal';
+                modal.className = 'custom-alert';
                 modal.style.display = 'none';
                 
                 modal.innerHTML = `
-                    <div class="confirm-content more-features-content">
-                        <div class="confirm-header">
-                            <h3>更多功能</h3>
+                    <div class="alert-content more-features-fullscreen">
+                        <div class="more-features-header">
+                            <div class="more-features-title">
+                                <h2>更多功能</h2>
+                            </div>
+                            <button class="more-features-close" id="mobileMoreFeaturesClose">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                        <div class="confirm-body">
-                            <div class="more-features-buttons">
-                                <button class="more-feature-btn" id="mobileModalAboutLauncherBtn">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>关于启动器</span>
+                        <div class="more-features-content">
+                            <div class="more-features-grid">
+                                <button class="more-feature-card" id="mobileModalAboutLauncherBtn">
+                                    <div class="feature-card-icon about-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">关于启动器</span>
+                                        <span class="feature-card-desc">查看启动器版本信息与版权声明</span>
+                                    </div>
                                 </button>
-                                <button class="more-feature-btn" id="mobileModalHideInterfaceBtn">
-                                    <i class="fas fa-clock" id="mobileModalHideInterfaceIcon"></i>
-                                    <span id="mobileModalHideInterfaceText">页面时钟</span>
+                                <button class="more-feature-card" id="mobileModalHideInterfaceBtn">
+                                    <div class="feature-card-icon clock-icon">
+                                        <i class="fas fa-clock" id="mobileModalHideInterfaceIcon"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title" id="mobileModalHideInterfaceText">页面时钟</span>
+                                        <span class="feature-card-desc">隐藏界面显示全屏时钟</span>
+                                    </div>
                                 </button>
-                                <button class="more-feature-btn" id="mobileModalUiScaleBtn">
-                                    <i class="fas fa-search"></i>
-                                    <span>调整UI比例</span>
+                                <button class="more-feature-card" id="mobileModalUiScaleBtn">
+                                    <div class="feature-card-icon scale-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">调整UI比例</span>
+                                        <span class="feature-card-desc">自定义界面显示比例</span>
+                                    </div>
                                 </button>
-                                <button class="more-feature-btn" id="mobileModalShowGuideBtn">
-                                    <i class="fas fa-compass"></i>
-                                    <span>查看引导</span>
+                                <button class="more-feature-card" id="mobileModalShowGuideBtn">
+                                    <div class="feature-card-icon guide-icon">
+                                        <i class="fas fa-compass"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">查看引导</span>
+                                        <span class="feature-card-desc">重新浏览启动器功能引导</span>
+                                    </div>
                                 </button>
-                                <button class="more-feature-btn" id="mobileModalStickyNotesBtn" style="display: none;">
-                                    <i class="fas fa-sticky-note"></i>
-                                    <span>便签</span>
+                                <button class="more-feature-card" id="mobileModalStickyNotesBtn" style="display: none;">
+                                    <div class="feature-card-icon notes-icon">
+                                        <i class="fas fa-sticky-note"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">便签</span>
+                                        <span class="feature-card-desc">记录和管理您的便签</span>
+                                    </div>
                                 </button>
-                                <button class="more-feature-btn" id="mobileModalWeatherBtn" style="display: none;">
-                                    <i class="fas fa-cloud-sun"></i>
-                                    <span>天气</span>
+                                <button class="more-feature-card" id="mobileModalWeatherBtn" style="display: none;">
+                                    <div class="feature-card-icon weather-icon">
+                                        <i class="fas fa-cloud-sun"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">天气</span>
+                                        <span class="feature-card-desc">查看实时天气信息</span>
+                                    </div>
                                 </button>
-                                <button class="more-feature-btn" id="mobileModalCalendarBtn" style="display: none;">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span>日历</span>
+                                <button class="more-feature-card" id="mobileModalCalendarBtn" style="display: none;">
+                                    <div class="feature-card-icon calendar-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">日历</span>
+                                        <span class="feature-card-desc">查看日历与日期信息</span>
+                                    </div>
                                 </button>
                             </div>
                             <div class="more-features-empty" id="mobileMoreFeaturesEmpty" style="display: none;">
-                                <i class="fas fa-inbox empty-icon"></i>
+                                <div class="empty-icon-container">
+                                    <i class="fas fa-inbox empty-icon"></i>
+                                </div>
                                 <p class="empty-text">这里空空如也~</p>
                                 <p class="empty-hint">请前往系统设置→增强功能中开启您需要的功能吧</p>
                             </div>
-                        </div>
-                        <div class="confirm-footer">
-                            <button class="confirm-btn confirm-ok" id="mobileMoreFeaturesClose">关闭</button>
                         </div>
                     </div>
                 `;
@@ -4126,79 +4210,56 @@
                 
                 // 添加点击事件
                 document.getElementById('mobileMoreFeaturesClose').addEventListener('click', function() {
-                    var modal = document.getElementById('mobileFunctionsModal');
-                    modal.style.animation = 'fadeOut 0.3s ease';
-                    setTimeout(function() {
-                        modal.style.display = 'none';
-                        modal.style.animation = '';
-                    }, 300);
+                    closeMobileFunctionsModal();
                 });
                 
                 document.getElementById('mobileModalAboutLauncherBtn').addEventListener('click', function() {
-                    var modal = document.getElementById('mobileFunctionsModal');
-                    modal.style.animation = 'fadeOut 0.3s ease';
+                    closeMobileFunctionsModal();
                     setTimeout(function() {
-                        modal.style.display = 'none';
-                        modal.style.animation = '';
+                        document.getElementById('aboutLauncherBtn').click();
                     }, 300);
-                    document.getElementById('aboutLauncherBtn').click();
                 });
                 
                 document.getElementById('mobileModalHideInterfaceBtn').addEventListener('click', function() {
-                    var modal = document.getElementById('mobileFunctionsModal');
-                    modal.style.animation = 'fadeOut 0.3s ease';
+                    closeMobileFunctionsModal();
                     setTimeout(function() {
-                        modal.style.display = 'none';
-                        modal.style.animation = '';
+                        document.getElementById('hideInterfaceBtn').click();
                     }, 300);
-                    document.getElementById('hideInterfaceBtn').click();
                 });
                 
                 document.getElementById('mobileModalUiScaleBtn').addEventListener('click', function() {
-                    var modal = document.getElementById('mobileFunctionsModal');
-                    modal.style.animation = 'fadeOut 0.3s ease';
+                    closeMobileFunctionsModal();
                     setTimeout(function() {
-                        modal.style.display = 'none';
-                        modal.style.animation = '';
+                        document.getElementById('uiScaleBtn').click();
                     }, 300);
-                    document.getElementById('uiScaleBtn').click();
                 });
                 
                 document.getElementById('mobileModalShowGuideBtn').addEventListener('click', function() {
-                    var modal = document.getElementById('mobileFunctionsModal');
-                    modal.style.animation = 'fadeOut 0.3s ease';
+                    closeMobileFunctionsModal();
                     setTimeout(function() {
-                        modal.style.display = 'none';
-                        modal.style.animation = '';
+                        if (typeof showGuide === 'function') {
+                            showGuide();
+                        }
                     }, 300);
-                    if (typeof showGuide === 'function') {
-                        showGuide();
-                    }
                 });
                 
                 document.getElementById('mobileModalCalendarBtn').addEventListener('click', function(e) {
                     e.stopPropagation();
-                    var modal = document.getElementById('mobileFunctionsModal');
-                    modal.style.animation = 'fadeOut 0.3s ease';
+                    closeMobileFunctionsModal();
                     setTimeout(function() {
-                        modal.style.display = 'none';
-                        modal.style.animation = '';
+                        if (typeof showCalendarModal === 'function') {
+                            showCalendarModal();
+                        }
                     }, 300);
-                    if (typeof showCalendarModal === 'function') {
-                        showCalendarModal();
-                    }
                 });
                 
                 document.getElementById('mobileModalStickyNotesBtn').addEventListener('click', function() {
-                    var modal = document.getElementById('mobileFunctionsModal');
-                    modal.style.animation = 'fadeOut 0.3s ease';
+                    closeMobileFunctionsModal();
                     setTimeout(function() {
-                        modal.style.display = 'none';
-                        modal.style.animation = '';
+                        if (typeof toggleStickyNotes === 'function') {
+                            toggleStickyNotes();
+                        }
                     }, 300);
-                    if (typeof toggleStickyNotes === 'function') {
-                        toggleStickyNotes();
-                    }
                 });
             }
             
@@ -4206,8 +4267,10 @@
             function showMobileFunctionsModal() {
                 const modal = document.getElementById('mobileFunctionsModal');
                 if (modal) {
-                    modal.style.animation = 'fadeIn 0.3s ease';
                     modal.style.display = 'flex';
+                    setTimeout(function() {
+                        modal.classList.add('show');
+                    }, 10);
                 }
             }
             
@@ -4215,10 +4278,9 @@
             function closeMobileFunctionsModal() {
                 const modal = document.getElementById('mobileFunctionsModal');
                 if (modal) {
-                    modal.style.animation = 'fadeOut 0.3s ease';
+                    modal.classList.remove('show');
                     setTimeout(function() {
                         modal.style.display = 'none';
-                        modal.style.animation = '';
                     }, 300);
                 }
             }
@@ -5156,50 +5218,89 @@
         </div>
     </div>
 
-    <div id="moreFeaturesModal" class="custom-confirm-modal" style="display: none;">
-        <div class="confirm-content more-features-content">
-            <div class="confirm-header">
-                <h3>更多功能</h3>
+    <div id="moreFeaturesModal" class="custom-alert" style="display: none;">
+        <div class="alert-content more-features-fullscreen">
+            <div class="more-features-header">
+                <div class="more-features-title">
+                    <h2>更多功能</h2>
+                </div>
+                <button class="more-features-close" id="moreFeaturesClose">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="confirm-body">
-                <div class="more-features-buttons">
-                    <button class="more-feature-btn" id="modalAboutLauncherBtn">
-                        <i class="fas fa-info-circle"></i>
-                        <span>关于启动器</span>
+            <div class="more-features-content">
+                <div class="more-features-grid">
+                    <button class="more-feature-card" id="modalAboutLauncherBtn">
+                        <div class="feature-card-icon about-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">关于启动器</span>
+                            <span class="feature-card-desc">查看启动器版本信息与版权声明</span>
+                        </div>
                     </button>
-                    <button class="more-feature-btn" id="modalHideInterfaceBtn">
-                        <i class="fas fa-clock" id="modalHideInterfaceIcon"></i>
-                        <span id="modalHideInterfaceText">页面时钟</span>
+                    <button class="more-feature-card" id="modalHideInterfaceBtn">
+                        <div class="feature-card-icon clock-icon">
+                            <i class="fas fa-clock" id="modalHideInterfaceIcon"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title" id="modalHideInterfaceText">页面时钟</span>
+                            <span class="feature-card-desc">隐藏界面显示全屏时钟</span>
+                        </div>
                     </button>
-                    <button class="more-feature-btn" id="modalUiScaleBtn">
-                        <i class="fas fa-search"></i>
-                        <span>调整UI比例</span>
+                    <button class="more-feature-card" id="modalUiScaleBtn">
+                        <div class="feature-card-icon scale-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">调整UI比例</span>
+                            <span class="feature-card-desc">自定义界面显示比例</span>
+                        </div>
                     </button>
-                    <button class="more-feature-btn" id="modalShowGuideBtn">
-                        <i class="fas fa-compass"></i>
-                        <span>查看引导</span>
+                    <button class="more-feature-card" id="modalShowGuideBtn">
+                        <div class="feature-card-icon guide-icon">
+                            <i class="fas fa-compass"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">查看引导</span>
+                            <span class="feature-card-desc">重新浏览启动器功能引导</span>
+                        </div>
                     </button>
-                    <button class="more-feature-btn" id="modalStickyNotesBtn" style="display: none;">
-                        <i class="fas fa-sticky-note"></i>
-                        <span>便签</span>
+                    <button class="more-feature-card" id="modalStickyNotesBtn" style="display: none;">
+                        <div class="feature-card-icon notes-icon">
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">便签</span>
+                            <span class="feature-card-desc">记录和管理您的便签</span>
+                        </div>
                     </button>
-                    <button class="more-feature-btn" id="modalWeatherBtn" style="display: none;">
-                        <i class="fas fa-cloud-sun"></i>
-                        <span>天气</span>
+                    <button class="more-feature-card" id="modalWeatherBtn" style="display: none;">
+                        <div class="feature-card-icon weather-icon">
+                            <i class="fas fa-cloud-sun"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">天气</span>
+                            <span class="feature-card-desc">查看实时天气信息</span>
+                        </div>
                     </button>
-                    <button class="more-feature-btn" id="modalCalendarBtn" style="display: none;">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>日历</span>
+                    <button class="more-feature-card" id="modalCalendarBtn" style="display: none;">
+                        <div class="feature-card-icon calendar-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">日历</span>
+                            <span class="feature-card-desc">查看日历与日期信息</span>
+                        </div>
                     </button>
                 </div>
                 <div class="more-features-empty" id="moreFeaturesEmpty" style="display: none;">
-                    <i class="fas fa-inbox empty-icon"></i>
+                    <div class="empty-icon-container">
+                        <i class="fas fa-inbox empty-icon"></i>
+                    </div>
                     <p class="empty-text">这里空空如也~</p>
                     <p class="empty-hint">请前往系统设置→增强功能中开启您需要的功能吧</p>
                 </div>
-            </div>
-            <div class="confirm-footer">
-                <button class="confirm-btn confirm-ok" id="moreFeaturesClose">关闭</button>
             </div>
         </div>
     </div>
@@ -5359,6 +5460,142 @@
                     <div class="calendar-events" id="calendarEvents">
                         <h4>今日日程</h4>
                         <div class="events-list" id="eventsList"></div>
+                    </div>
+                </div>
+                
+                <div class="calendar-settings-sidebar" id="calendarSettingsSidebar">
+                    <div class="calendar-settings-header">
+                        <h3>日历设置</h3>
+                        <button class="calendar-settings-close" onclick="closeCalendarSettings()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-settings-content">
+                        <div class="settings-section-title">
+                            <i class="fas fa-eye"></i>
+                            <span>显示设置</span>
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>显示周末</h4>
+                                <p>在日历中显示周六和周日</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="calendarShowWeekend" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>显示事件标记</h4>
+                                <p>在日期上显示有日程的标记点</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="calendarShowEventDots" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>显示今日日程</h4>
+                                <p>在日历下方显示选中日期的日程列表</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="calendarShowEventsList" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="settings-section-title">
+                            <i class="fas fa-bell"></i>
+                            <span>提醒设置</span>
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>日程提醒</h4>
+                                <p>日程开始前发送提醒通知</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="calendarRemindersEnabled">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="calendar-setting-item" id="reminderTimeContainer">
+                            <div class="setting-info">
+                                <h4>提醒时间</h4>
+                                <p>日程开始前多少分钟提醒</p>
+                            </div>
+                            <select id="calendarReminderTime">
+                                <option value="5">5分钟前</option>
+                                <option value="10">10分钟前</option>
+                                <option value="15">15分钟前</option>
+                                <option value="30">30分钟前</option>
+                                <option value="60">1小时前</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-section-title">
+                            <i class="fas fa-palette"></i>
+                            <span>外观设置</span>
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>主题色</h4>
+                                <p>日历的主要颜色</p>
+                            </div>
+                            <div class="color-picker">
+                                <button type="button" class="color-option active" data-color="#d45d79" style="background: #d45d79;"></button>
+                                <button type="button" class="color-option" data-color="#3498db" style="background: #3498db;"></button>
+                                <button type="button" class="color-option" data-color="#2ecc71" style="background: #2ecc71;"></button>
+                                <button type="button" class="color-option" data-color="#f39c12" style="background: #f39c12;"></button>
+                                <button type="button" class="color-option" data-color="#9b59b6" style="background: #9b59b6;"></button>
+                            </div>
+                            <input type="hidden" id="calendarThemeColor" value="#d45d79">
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>高亮选中日期</h4>
+                                <p>使用主题色高亮显示选中的日期</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="calendarHighlightSelected" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="settings-section-title">
+                            <i class="fas fa-clock"></i>
+                            <span>日期格式</span>
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>星期格式</h4>
+                                <p>选择星期的显示方式</p>
+                            </div>
+                            <select id="calendarWeekdayFormat">
+                                <option value="short">短格式 (一, 二)</option>
+                                <option value="full">全格式 (周一, 周二)</option>
+                            </select>
+                        </div>
+                        <div class="calendar-setting-item">
+                            <div class="setting-info">
+                                <h4>日期显示</h4>
+                                <p>选择日期的显示方式</p>
+                            </div>
+                            <select id="calendarDateDisplay">
+                                <option value="day">仅显示日期</option>
+                                <option value="full">显示完整日期</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-section-title">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>数据管理</span>
+                        </div>
+                        <button class="calendar-settings-btn danger-btn" onclick="clearCalendarData()">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>清空所有数据</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -5877,6 +6114,9 @@
     
     <div id="stickyNotesModal" class="custom-fullscreen-modal" style="display: none;">
         <div class="sticky-notes-container">
+            <button class="sticky-notes-modal-close" id="stickyNotesClose">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="sticky-notes-sidebar">
                 <div class="sidebar-header">
                     <h3>便签</h3>
@@ -5886,9 +6126,6 @@
                         </button>
                         <button class="sidebar-menu-btn" id="stickyNotesMenuBtn">
                             <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <button class="sidebar-close" id="stickyNotesClose">
-                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
@@ -8349,49 +8586,44 @@
         // 更多功能弹窗事件
         document.getElementById('moreFeaturesClose').addEventListener('click', function() {
             var modal = document.getElementById('moreFeaturesModal');
-            modal.style.animation = 'fadeOut 0.3s ease';
+            modal.classList.remove('show');
             setTimeout(function() {
                 modal.style.display = 'none';
-                modal.style.animation = '';
             }, 300);
         });
         
         document.getElementById('modalAboutLauncherBtn').addEventListener('click', function() {
             var modal = document.getElementById('moreFeaturesModal');
-            modal.style.animation = 'fadeOut 0.3s ease';
+            modal.classList.remove('show');
             setTimeout(function() {
                 modal.style.display = 'none';
-                modal.style.animation = '';
             }, 300);
             document.getElementById('aboutLauncherBtn').click();
         });
         
         document.getElementById('modalHideInterfaceBtn').addEventListener('click', function() {
             var modal = document.getElementById('moreFeaturesModal');
-            modal.style.animation = 'fadeOut 0.3s ease';
+            modal.classList.remove('show');
             setTimeout(function() {
                 modal.style.display = 'none';
-                modal.style.animation = '';
             }, 300);
             document.getElementById('hideInterfaceBtn').click();
         });
         
         document.getElementById('modalUiScaleBtn').addEventListener('click', function() {
             var modal = document.getElementById('moreFeaturesModal');
-            modal.style.animation = 'fadeOut 0.3s ease';
+            modal.classList.remove('show');
             setTimeout(function() {
                 modal.style.display = 'none';
-                modal.style.animation = '';
             }, 300);
             document.getElementById('uiScaleBtn').click();
         });
         
         document.getElementById('modalShowGuideBtn').addEventListener('click', function() {
             var modal = document.getElementById('moreFeaturesModal');
-            modal.style.animation = 'fadeOut 0.3s ease';
+            modal.classList.remove('show');
             setTimeout(function() {
                 modal.style.display = 'none';
-                modal.style.animation = '';
             }, 300);
             if (typeof showGuide === 'function') {
                 showGuide();
@@ -8401,10 +8633,9 @@
         document.getElementById('modalCalendarBtn').addEventListener('click', function(e) {
             e.stopPropagation();
             var modal = document.getElementById('moreFeaturesModal');
-            modal.style.animation = 'fadeOut 0.3s ease';
+            modal.classList.remove('show');
             setTimeout(function() {
                 modal.style.display = 'none';
-                modal.style.animation = '';
             }, 300);
             if (typeof showCalendarModal === 'function') {
                 showCalendarModal();
@@ -10689,6 +10920,8 @@
                                 <p><strong>版本号：</strong>${launcherInfo.version}</p>
                                 <p><strong>版权所有：</strong>${launcherInfo.copyright}</p>
                                 <p><strong>开发者：</strong>${launcherInfo.developer}</p>
+                                <p><strong>Github源码跳转：</strong><a href="javascript:void(0)" onclick="openGithubRepo()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></p>
+                                <p><strong>开发者Github主页：</strong><a href="javascript:void(0)" onclick="openGithubDeveloper()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></p>
                                 <p><strong>用途：</strong>${launcherInfo.purpose}</p>
                             </div>
                             <div class="about-mobile-copyright">
@@ -10770,6 +11003,14 @@
                                         <div class="info-item">
                                             <span class="info-label">开发者</span>
                                             <span class="info-value">${launcherInfo.developer}</span>
+                                        </div>
+                                        <div class="info-item" style="grid-column: span 2;">
+                                            <span class="info-label">Github源码跳转</span>
+                                            <span class="info-value"><a href="javascript:void(0)" onclick="openGithubRepo()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></span>
+                                        </div>
+                                        <div class="info-item" style="grid-column: span 2;">
+                                            <span class="info-label">开发者Github主页</span>
+                                            <span class="info-value"><a href="javascript:void(0)" onclick="openGithubDeveloper()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></span>
                                         </div>
                                     </div>
                                 </div>
@@ -14807,10 +15048,9 @@
                 if (stickyNotesBtn) {
                     stickyNotesBtn.addEventListener('click', function() {
                         var modal = document.getElementById('moreFeaturesModal');
-                        modal.style.animation = 'fadeOut 0.3s ease';
+                        modal.classList.remove('show');
                         setTimeout(function() {
                             modal.style.display = 'none';
-                            modal.style.animation = '';
                         }, 300);
                         showStickyNotesModal();
                     });
@@ -17753,10 +17993,9 @@
                     weatherBtn.addEventListener('click', function() {
                         var modal = document.getElementById('moreFeaturesModal');
                         if (modal) {
-                            modal.style.animation = 'fadeOut 0.3s ease';
+                            modal.classList.remove('show');
                             setTimeout(function() {
                                 modal.style.display = 'none';
-                                modal.style.animation = '';
                             }, 300);
                         }
                         showWeatherModal();
@@ -17768,10 +18007,9 @@
                     mobileWeatherBtn.addEventListener('click', function() {
                         var modal = document.getElementById('mobileFunctionsModal');
                         if (modal) {
-                            modal.style.animation = 'fadeOut 0.3s ease';
+                            modal.classList.remove('show');
                             setTimeout(function() {
                                 modal.style.display = 'none';
-                                modal.style.animation = '';
                             }, 300);
                         }
                         showWeatherModal();
@@ -18177,7 +18415,7 @@
                         modal.classList.add('show');
                     }, 10);
                     updateCalendarDateDisplay();
-                    renderCalendar();
+                    applyCalendarSettings();
                     renderTodos();
                     renderClasses();
                     renderEvents();
@@ -18239,6 +18477,31 @@
                 calendarDropdownMenu.style.display = 'none';
                 calendarMoreBtn.classList.remove('active');
             });
+            
+            document.getElementById('calendarRemindersEnabled').addEventListener('change', function() {
+                updateReminderTimeVisibility();
+                saveCalendarSettings();
+            });
+            
+            document.querySelectorAll('#calendarSettingsSidebar .color-option').forEach(function(opt) {
+                opt.addEventListener('click', function() {
+                    var color = this.dataset.color;
+                    var colorInput = document.getElementById('calendarThemeColor');
+                    if (colorInput) {
+                        colorInput.value = color;
+                    }
+                    updateColorPickerSelection();
+                    saveCalendarSettings();
+                });
+            });
+            
+            document.getElementById('calendarShowWeekend').addEventListener('change', saveCalendarSettings);
+            document.getElementById('calendarShowEventDots').addEventListener('change', saveCalendarSettings);
+            document.getElementById('calendarShowEventsList').addEventListener('change', saveCalendarSettings);
+            document.getElementById('calendarReminderTime').addEventListener('change', saveCalendarSettings);
+            document.getElementById('calendarHighlightSelected').addEventListener('change', saveCalendarSettings);
+            document.getElementById('calendarWeekdayFormat').addEventListener('change', saveCalendarSettings);
+            document.getElementById('calendarDateDisplay').addEventListener('change', saveCalendarSettings);
             
             document.getElementById('calendarClearDataItem').addEventListener('click', function() {
                 calendarDropdownMenu.style.display = 'none';
@@ -18305,7 +18568,166 @@
             }
             
             function showCalendarSettings() {
-                showAlert('日历设置功能开发中...');
+                var sidebar = document.getElementById('calendarSettingsSidebar');
+                if (sidebar) {
+                    sidebar.classList.add('show');
+                    loadCalendarSettings();
+                }
+            }
+            
+            function closeCalendarSettings() {
+                var sidebar = document.getElementById('calendarSettingsSidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('show');
+                }
+            }
+            
+            function loadCalendarSettings() {
+                var settings = JSON.parse(localStorage.getItem('calendarSettings') || '{}');
+                
+                var showWeekend = document.getElementById('calendarShowWeekend');
+                if (showWeekend) {
+                    showWeekend.checked = settings.showWeekend !== undefined ? settings.showWeekend : true;
+                }
+                
+                var showEventDots = document.getElementById('calendarShowEventDots');
+                if (showEventDots) {
+                    showEventDots.checked = settings.showEventDots !== undefined ? settings.showEventDots : true;
+                }
+                
+                var showEventsList = document.getElementById('calendarShowEventsList');
+                if (showEventsList) {
+                    showEventsList.checked = settings.showEventsList !== undefined ? settings.showEventsList : true;
+                }
+                
+                var remindersEnabled = document.getElementById('calendarRemindersEnabled');
+                if (remindersEnabled) {
+                    remindersEnabled.checked = settings.remindersEnabled || false;
+                }
+                
+                var reminderTime = document.getElementById('calendarReminderTime');
+                if (reminderTime) {
+                    reminderTime.value = settings.reminderTime || '15';
+                }
+                
+                var themeColor = document.getElementById('calendarThemeColor');
+                if (themeColor) {
+                    themeColor.value = settings.themeColor || '#d45d79';
+                }
+                
+                var highlightSelected = document.getElementById('calendarHighlightSelected');
+                if (highlightSelected) {
+                    highlightSelected.checked = settings.highlightSelected !== undefined ? settings.highlightSelected : true;
+                }
+                
+                var weekdayFormat = document.getElementById('calendarWeekdayFormat');
+                if (weekdayFormat) {
+                    weekdayFormat.value = settings.weekdayFormat || 'short';
+                }
+                
+                var dateDisplay = document.getElementById('calendarDateDisplay');
+                if (dateDisplay) {
+                    dateDisplay.value = settings.dateDisplay || 'day';
+                }
+                
+                updateReminderTimeVisibility();
+                updateColorPickerSelection();
+            }
+            
+            function saveCalendarSettings() {
+                var settings = {
+                    showWeekend: document.getElementById('calendarShowWeekend')?.checked ?? true,
+                    showEventDots: document.getElementById('calendarShowEventDots')?.checked ?? true,
+                    showEventsList: document.getElementById('calendarShowEventsList')?.checked ?? true,
+                    remindersEnabled: document.getElementById('calendarRemindersEnabled')?.checked ?? false,
+                    reminderTime: document.getElementById('calendarReminderTime')?.value ?? '15',
+                    themeColor: document.getElementById('calendarThemeColor')?.value ?? '#d45d79',
+                    highlightSelected: document.getElementById('calendarHighlightSelected')?.checked ?? true,
+                    weekdayFormat: document.getElementById('calendarWeekdayFormat')?.value ?? 'short',
+                    dateDisplay: document.getElementById('calendarDateDisplay')?.value ?? 'day'
+                };
+                
+                localStorage.setItem('calendarSettings', JSON.stringify(settings));
+                applyCalendarSettings();
+            }
+            
+            function applyCalendarSettings() {
+                var settings = JSON.parse(localStorage.getItem('calendarSettings') || '{}');
+                
+                if (settings.themeColor) {
+                    document.documentElement.style.setProperty('--calendar-theme-color', settings.themeColor);
+                    var activeTab = document.querySelector('.calendar-tab.active');
+                    if (activeTab) {
+                        activeTab.style.borderLeftColor = settings.themeColor;
+                        activeTab.style.color = settings.themeColor;
+                    }
+                    var addButtons = document.querySelectorAll('.add-todo-btn, .add-class-btn, .schedule-submit-btn');
+                    addButtons.forEach(function(btn) {
+                        btn.style.background = 'linear-gradient(135deg, ' + settings.themeColor + ', ' + settings.themeColor + ')';
+                    });
+                }
+                
+                if (settings.showEventsList !== undefined) {
+                    var eventsEl = document.getElementById('calendarEvents');
+                    if (eventsEl) {
+                        eventsEl.style.display = settings.showEventsList ? 'block' : 'none';
+                    }
+                }
+                
+                if (settings.weekdayFormat) {
+                    updateWeekdayFormat(settings.weekdayFormat);
+                }
+                
+                if (settings.dateDisplay) {
+                    updateDateDisplay(settings.dateDisplay);
+                }
+                
+                renderCalendar();
+            }
+            
+            function updateDateDisplay(display) {
+                var dateEl = document.getElementById('calendarCurrentDate');
+                if (dateEl) {
+                    var now = new Date();
+                    var options = display === 'full' 
+                        ? { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }
+                        : { month: 'short', day: 'numeric', weekday: 'short' };
+                    dateEl.textContent = now.toLocaleDateString('zh-CN', options);
+                }
+            }
+            
+            function updateWeekdayFormat(format) {
+                var weekdays = document.querySelectorAll('.calendar-weekdays .weekday');
+                var fullDays = ['日', '一', '二', '三', '四', '五', '六'];
+                var shortDays = ['日', '一', '二', '三', '四', '五', '六'];
+                
+                weekdays.forEach(function(dayEl, index) {
+                    if (format === 'full') {
+                        dayEl.textContent = '周' + fullDays[index];
+                    } else {
+                        dayEl.textContent = shortDays[index];
+                    }
+                });
+            }
+            
+            function updateReminderTimeVisibility() {
+                var enabled = document.getElementById('calendarRemindersEnabled')?.checked;
+                var container = document.getElementById('reminderTimeContainer');
+                if (container) {
+                    container.style.display = enabled ? 'flex' : 'none';
+                }
+            }
+            
+            function updateColorPickerSelection() {
+                var selectedColor = document.getElementById('calendarThemeColor')?.value || '#d45d79';
+                var colorOptions = document.querySelectorAll('#calendarSettingsSidebar .color-option');
+                colorOptions.forEach(function(opt) {
+                    if (opt.dataset.color === selectedColor) {
+                        opt.classList.add('active');
+                    } else {
+                        opt.classList.remove('active');
+                    }
+                });
             }
             
             function clearCalendarData() {
@@ -18334,6 +18756,8 @@
                 var year = calendarCurrentDate.getFullYear();
                 var month = calendarCurrentDate.getMonth();
                 
+                var settings = JSON.parse(localStorage.getItem('calendarSettings') || '{}');
+                
                 var monthYearEl = document.getElementById('calendarMonthYear');
                 if (monthYearEl) {
                     monthYearEl.textContent = year + '年 ' + (month + 1) + '月';
@@ -18348,33 +18772,56 @@
                 var todayStr = today.toISOString().split('T')[0];
                 
                 var daysHtml = '';
+                var showWeekend = settings.showWeekend !== undefined ? settings.showWeekend : true;
+                var showEventDots = settings.showEventDots !== undefined ? settings.showEventDots : true;
+                var highlightSelected = settings.highlightSelected !== undefined ? settings.highlightSelected : true;
+                var themeColor = settings.themeColor || '#d45d79';
                 
                 for (var i = startDay - 1; i >= 0; i--) {
                     var prevMonthDate = new Date(year, month, -i);
-                    daysHtml += '<div class="calendar-day other-month">' + prevMonthDate.getDate() + '</div>';
+                    var prevDayOfWeek = prevMonthDate.getDay();
+                    if (showWeekend || (prevDayOfWeek !== 0 && prevDayOfWeek !== 6)) {
+                        daysHtml += '<div class="calendar-day other-month">' + prevMonthDate.getDate() + '</div>';
+                    }
                 }
                 
                 for (var day = 1; day <= daysInMonth; day++) {
-                    var currentDateStr = new Date(year, month, day).toISOString().split('T')[0];
+                    var currentDate = new Date(year, month, day);
+                    var dayOfWeek = currentDate.getDay();
+                    
+                    if (!showWeekend && (dayOfWeek === 0 || dayOfWeek === 6)) {
+                        continue;
+                    }
+                    
+                    var currentDateStr = currentDate.toISOString().split('T')[0];
                     var isToday = currentDateStr === todayStr;
                     var isSelected = calendarSelectedDate && currentDateStr === calendarSelectedDate.toISOString().split('T')[0];
                     var hasEvent = hasScheduleEvent(currentDateStr);
                     
                     var classes = 'calendar-day';
                     if (isToday) classes += ' today';
-                    if (isSelected) classes += ' selected';
+                    if (isSelected && highlightSelected) classes += ' selected';
                     
-                    daysHtml += '<div class="' + classes + '" onclick="selectDate(' + year + ', ' + month + ', ' + day + ')">';
+                    var inlineStyle = '';
+                    if (isSelected && highlightSelected && themeColor) {
+                        inlineStyle = ' style="background-color: ' + themeColor + '; border-color: ' + themeColor + '"';
+                    }
+                    
+                    daysHtml += '<div class="' + classes + '"' + inlineStyle + ' onclick="selectDate(' + year + ', ' + month + ', ' + day + ')">';
                     daysHtml += '<span>' + day + '</span>';
-                    if (hasEvent) {
-                        daysHtml += '<span class="event-dot"></span>';
+                    if (hasEvent && showEventDots) {
+                        daysHtml += '<span class="event-dot" style="background-color: ' + themeColor + '"></span>';
                     }
                     daysHtml += '</div>';
                 }
                 
                 var remainingCells = 42 - (startDay + daysInMonth);
                 for (var i = 1; i <= remainingCells; i++) {
-                    daysHtml += '<div class="calendar-day other-month">' + i + '</div>';
+                    var nextMonthDate = new Date(year, month + 1, i);
+                    var nextDayOfWeek = nextMonthDate.getDay();
+                    if (showWeekend || (nextDayOfWeek !== 0 && nextDayOfWeek !== 6)) {
+                        daysHtml += '<div class="calendar-day other-month">' + i + '</div>';
+                    }
                 }
                 
                 var calendarDaysEl = document.getElementById('calendarDays');

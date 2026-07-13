@@ -1107,13 +1107,12 @@ const LangManager = (function() {
         // 更新更多功能模态框
         var moreFeaturesModal = document.getElementById('moreFeaturesModal');
         if (moreFeaturesModal) {
-            var moreFeaturesTitle = moreFeaturesModal.querySelector('h3');
+            var moreFeaturesTitle = moreFeaturesModal.querySelector('h2');
             if (moreFeaturesTitle) moreFeaturesTitle.textContent = texts.moreFeatures;
-            var moreFeaturesButtons = moreFeaturesModal.querySelectorAll('.more-feature-btn span');
+            var moreFeaturesButtons = moreFeaturesModal.querySelectorAll('.more-feature-card .feature-card-title');
             if (moreFeaturesButtons[0]) moreFeaturesButtons[0].textContent = texts.aboutLauncher;
             if (moreFeaturesButtons[1]) moreFeaturesButtons[1].textContent = texts.hideUI;
             if (moreFeaturesButtons[2]) moreFeaturesButtons[2].textContent = texts.adjustUiScaleSimple;
-            document.getElementById('moreFeaturesClose').textContent = texts.close;
         }
         
         // 更新全局设置模态框中的服务器选项
