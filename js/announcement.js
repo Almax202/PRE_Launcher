@@ -150,7 +150,48 @@ function updateAnnouncementNotificationDot() {
 const announcementData = {
     // 重要公告
     importantAnnouncements: [
-        
+        {
+            id: "importantA-20260713",
+            title: "RC 3.0.0 版本规划与开发方式调整说明",
+            date: "2026-07-13",
+            tag: "important",
+            tagText: "重要",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "大家好，这里是 PREAlmax。",
+                "",
+                "[color:#667eea]【RC 3.0.0 版本规划】[/color]",
+                "我们正在不断完善并更新启动器的多项功能，致力于为用户提供更优质的使用体验。",
+                "目前预计启动器的 RC 3.0.0 版本将在 2026 年 Q4 季度初发布。",
+                "",
+                "[color:#ff6b6b]【开发方式调整】[/color]",
+                "经过慎重考虑，我们决定调整开发策略：在发布 3.0.0 版本后，可能不会再有很多或大型的更新及改动。",
+                "",
+                "[color:#4ecdc4]【调整原因】[/color]",
+                "目前我们的工作重心在于通过每个小版本或中型更新来逐步添加并完善功能。",
+                "这种开发模式使得短期内难以集中资源支撑一个大版本更新所需要的完整内容。",
+                "",
+                "[color:#ffd93d]【新版本路线】[/color]",
+                "因此，我们计划在 2.0 版本框架内持续进行完善和优化。",
+                "当达到 2.0 版本的最终设计目标后，版本号将正式更新至 RC 3.0.0。",
+                "",
+                "[color:#ff6b6b]【关于当前更新节奏】[/color]",
+                "现阶段我们采用快速更新的节奏，以便更快地响应用户反馈并修复问题。",
+                "对于由此可能带来的频繁更新，我们深表歉意，希望能得到各位用户的谅解。",
+                "",
+                "[color:#4ecdc4]【性能优化与代码重构】[/color]",
+                "与此同时，我们也在持续推进启动器的性能优化工作，提升代码的可维护性和质量。",
+                "在当前的 RC 2.7.0.0 版本中，我们已对早期的历史遗留代码模块及老旧 UI 进行了相当一部分的更新迭代。",
+                "",
+                "[color:#667eea]【感谢支持】[/color]",
+                "我们会尽最大努力继续完成开发工作，也衷心感谢每位用户的持续关注和支持！",
+                "您的每一条建议都是我们前进的动力。",
+                "如果您有任何想法或建议，欢迎通过 Github 仓库提交 Issue 与我们进行沟通。",
+                "",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
         {
             id: "importantA-20260603",
             title: "RC 3.0 版本开发预告与计划调整",
@@ -1989,9 +2030,9 @@ function showAnnouncementSelection(announcements) {
         
         // 设置按钮内容
         button.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3;">${announcement.title}</span>
-                ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white;">${announcement.tagText}</span>` : ''}
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3; flex: 1; min-width: 0; word-break: break-word; overflow-wrap: anywhere;">${announcement.title}</span>
+                ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white; flex-shrink: 0;">${announcement.tagText}</span>` : ''}
             </div>
             <div style="font-size: 14px; color: ${textColor1};"><i class="fas fa-calendar"></i> ${announcement.date}</div>
             <div style="font-size: 13px; color: ${textColor2};"><i class="fas fa-user"></i> ${announcement.author}</div>
@@ -2343,9 +2384,9 @@ function showFilteredAnnouncements(filtered, filterName, filterType) {
             var isViewed = isAnnouncementViewed(announcement.id);
             
             button.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3;">${announcement.title}</span>
-                    ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white;">${announcement.tagText}</span>` : ''}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3; flex: 1; min-width: 0; word-break: break-word; overflow-wrap: anywhere;">${announcement.title}</span>
+                    ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white; flex-shrink: 0;">${announcement.tagText}</span>` : ''}
                 </div>
                 <div style="font-size: 14px; color: ${textColor1};"><i class="fas fa-calendar"></i> ${announcement.date}</div>
                 <div style="font-size: 13px; color: ${textColor2};"><i class="fas fa-user"></i> ${announcement.author}</div>
