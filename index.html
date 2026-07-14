@@ -8239,25 +8239,39 @@
             
             if (userId) {
                 document.getElementById('userName').textContent = username;
-                document.getElementById('userId').textContent = 'UID: ' + userId;
                 
-                // 更新用户信息卡片
-                document.getElementById('tooltipUserName').textContent = username;
-                document.getElementById('tooltipUserId').textContent = userId;
-                
-                // 尝试获取注册时间
                 var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
                 var user = users.find(function(u) {
                     return u.username === username;
                 });
-                if (user && user.createdAt) {
-                    var date = new Date(user.createdAt);
-                    var year = date.getFullYear();
-                    var month = String(date.getMonth() + 1).padStart(2, '0');
-                    var day = String(date.getDate()).padStart(2, '0');
-                    document.getElementById('tooltipRegTime').textContent = year + '/' + month + '/' + day;
+                
+                var regValidity = { valid: true, message: '' };
+                if (user && user.createdAt && typeof checkRegistrationValidity === 'function') {
+                    regValidity = checkRegistrationValidity(user.createdAt);
+                }
+                
+                if (!regValidity.valid) {
+                    document.getElementById('userId').textContent = 'UID: ' + regValidity.message;
+                    document.getElementById('tooltipUserName').textContent = username;
+                    document.getElementById('tooltipUserId').textContent = regValidity.message;
+                    document.getElementById('tooltipRegTime').textContent = regValidity.message;
+                    
+                    document.getElementById('tooltipCopyUserIdBtn').style.display = 'none';
+                    document.getElementById('tooltipCopyRegTimeBtn').style.display = 'none';
                 } else {
-                    document.getElementById('tooltipRegTime').textContent = '--';
+                    document.getElementById('userId').textContent = 'UID: ' + userId;
+                    document.getElementById('tooltipUserName').textContent = username;
+                    document.getElementById('tooltipUserId').textContent = userId;
+                    
+                    if (user && user.createdAt) {
+                        var date = new Date(user.createdAt);
+                        var year = date.getFullYear();
+                        var month = String(date.getMonth() + 1).padStart(2, '0');
+                        var day = String(date.getDate()).padStart(2, '0');
+                        document.getElementById('tooltipRegTime').textContent = year + '/' + month + '/' + day;
+                    } else {
+                        document.getElementById('tooltipRegTime').textContent = '--';
+                    }
                 }
                 
                 initCopyButtons();

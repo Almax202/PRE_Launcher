@@ -31,12 +31,27 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (user) {
             document.getElementById('sidebarUsername').textContent = user.username;
-            document.getElementById('sidebarUid').textContent = 'UID: ' + (user.userId || '---');
             document.getElementById('accountUsername').value = user.username;
-            document.getElementById('accountUid').value = user.userId || '---';
             
-            if (user.createdAt) {
-                document.getElementById('accountRegTime').value = formatDate(user.createdAt);
+            var regValidity = { valid: true, message: '' };
+            if (user.createdAt && typeof checkRegistrationValidity === 'function') {
+                regValidity = checkRegistrationValidity(user.createdAt);
+            }
+            
+            if (!regValidity.valid) {
+                document.getElementById('sidebarUid').textContent = 'UID: ' + regValidity.message;
+                document.getElementById('accountUid').value = regValidity.message;
+                document.getElementById('accountRegTime').value = regValidity.message;
+                
+                document.getElementById('copyUidBtn').style.display = 'none';
+                document.getElementById('copyRegTimeBtn').style.display = 'none';
+            } else {
+                document.getElementById('sidebarUid').textContent = 'UID: ' + (user.userId || '---');
+                document.getElementById('accountUid').value = user.userId || '---';
+                
+                if (user.createdAt) {
+                    document.getElementById('accountRegTime').value = formatDate(user.createdAt);
+                }
             }
             
             if (user.email) {

@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.7.0.6 (b8)",
+    login: "RC 2.7.0.6 (b9)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.1 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260714.2706.b8.109",
+    launcher: "20260714.2706.b9.110",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -452,6 +452,34 @@ function openGithubDeveloper() {
     } else {
         window.open(launcherInfo.githubDeveloperUrl, '_blank');
     }
+}
+
+function checkRegistrationValidity(registrationDate) {
+    const buildDate = launcherInfo.buildDate;
+    const buildDateObj = new Date(buildDate);
+    const regDateObj = new Date(registrationDate);
+    
+    if (isNaN(regDateObj.getTime())) {
+        return {
+            valid: true,
+            message: ''
+        };
+    }
+    
+    buildDateObj.setHours(0, 0, 0, 0);
+    regDateObj.setHours(0, 0, 0, 0);
+    
+    if (regDateObj > buildDateObj) {
+        return {
+            valid: false,
+            message: '校验失败，该用户注册时间晚于该版本构建日期'
+        };
+    }
+    
+    return {
+        valid: true,
+        message: ''
+    };
 }
 
 // 页面加载完成后添加事件监听

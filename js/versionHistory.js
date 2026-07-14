@@ -283,6 +283,19 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.7.0.6 (b9)",
+            date: "2026-07-14",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 新增注册时间校验功能，确保用户注册时间早于该版本构建日期",
+                "修复问题",
+                "- 修复注册时间校验功能在注册时间为空时的校验问题"
+            ]
+        },
+        {
             version: "RC 2.7.0.6 (b8)",
             date: "2026-07-14",
             tag: "normal",
