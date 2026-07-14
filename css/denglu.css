@@ -7876,50 +7876,69 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
 
 .todo-item {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .todo-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.todo-item.completed {
+    background: #f8fafc;
 }
 
 .todo-checkbox {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
     border: 2px solid #ddd;
     cursor: pointer;
     flex-shrink: 0;
-    margin-top: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    background: white;
+}
+
+.todo-checkbox:hover {
+    border-color: #d45d79;
 }
 
 .todo-checkbox.checked {
-    background: #d45d79;
+    background: linear-gradient(135deg, #d45d79, #e67e8a);
     border-color: #d45d79;
+    box-shadow: 0 2px 8px rgba(212, 93, 121, 0.3);
 }
 
 .todo-checkbox.checked i {
     color: white;
     font-size: 12px;
+    font-weight: 600;
 }
 
 .todo-content {
     flex: 1;
-    font-size: 14px;
-    color: #333;
+    min-width: 0;
 }
 
-.todo-item.completed .todo-content {
+.todo-text {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    display: block;
+    word-break: break-all;
+}
+
+.todo-item.completed .todo-text {
     text-decoration: line-through;
     color: #999;
 }
@@ -7928,72 +7947,61 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     font-size: 12px;
     color: #999;
     margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.todo-priority {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    margin-left: 8px;
-}
-
-.todo-priority.high {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
-}
-
-.todo-priority.medium {
-    background: rgba(243, 156, 18, 0.1);
-    color: #f39c12;
-}
-
-.todo-priority.low {
-    background: rgba(46, 204, 113, 0.1);
-    color: #2ecc71;
-}
-
-.todo-delete {
-    color: #999;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
+.todo-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     flex-shrink: 0;
 }
 
+.todo-delete {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .todo-delete:hover {
+    background: rgba(231, 76, 60, 0.1);
     color: #e74c3c;
 }
 
 .priority-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 12px;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     flex-shrink: 0;
 }
 
-.priority-badge.high {
+.priority-badge.priority-high {
     background: rgba(231, 76, 60, 0.1);
     color: #e74c3c;
 }
 
-.priority-badge.medium {
+.priority-badge.priority-medium {
     background: rgba(243, 156, 18, 0.1);
     color: #f39c12;
 }
 
-.priority-badge.low {
+.priority-badge.priority-low {
     background: rgba(46, 204, 113, 0.1);
     color: #2ecc71;
-}
-
-.todo-date {
-    font-size: 12px;
-    color: #999;
-    margin-top: 4px;
-    display: block;
 }
 
 .empty-todos, .empty-classes, .no-events {
@@ -8178,45 +8186,89 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
 }
 
 .class-item {
-    padding: 12px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border-left: 4px solid #3498db;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    overflow: hidden;
 }
 
 .class-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.class-color-bar {
+    width: 4px;
+    flex-shrink: 0;
+    border-radius: 12px 0 0 12px;
+}
+
+.class-content {
+    flex: 1;
+    padding: 14px 16px;
+    min-width: 0;
+}
+
+.class-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .class-name {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: #333;
+    flex: 1;
+    word-break: break-all;
 }
 
 .class-time {
     font-size: 12px;
     color: #999;
-    margin-top: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .class-room {
     font-size: 12px;
     color: #666;
-    margin-top: 2px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.class-room i {
+    color: #d45d79;
 }
 
 .class-delete {
-    float: right;
-    color: #999;
+    width: 40px;
+    border: none;
+    background: transparent;
+    color: #ccc;
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .class-delete:hover {
+    background: rgba(231, 76, 60, 0.08);
     color: #e74c3c;
 }
 
@@ -8346,13 +8398,39 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
+.calendar-events-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(212, 93, 121, 0.2);
+}
+
 .calendar-events h4 {
     font-size: 16px;
     font-weight: 600;
     color: #333;
-    margin: 0 0 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid rgba(212, 93, 121, 0.2);
+    margin: 0;
+}
+
+.calendar-events-delete-all {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #999;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.calendar-events-delete-all:hover {
+    background: rgba(231, 76, 60, 0.08);
+    color: #e74c3c;
 }
 
 .events-list {
@@ -8363,43 +8441,79 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
 
 .event-item {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
     background: #f8fafc;
     border-radius: 10px;
-    border-left: 4px solid #d45d79;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.event-item:hover {
+    background: #f1f5f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.event-color-bar {
+    width: 4px;
+    flex-shrink: 0;
+    border-radius: 10px 0 0 10px;
+}
+
+.event-content-wrapper {
+    flex: 1;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
 }
 
 .event-time {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     color: #999;
     flex-shrink: 0;
+    min-width: 60px;
+}
+
+.event-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .event-title {
     font-size: 14px;
     font-weight: 500;
     color: #333;
-    flex: 1;
+    display: block;
+    word-break: break-all;
 }
 
 .event-note {
     font-size: 12px;
     color: #666;
     margin-top: 4px;
+    display: block;
 }
 
 .event-delete {
-    color: #999;
+    width: 36px;
+    border: none;
+    background: transparent;
+    color: #ccc;
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
 }
 
 .event-delete:hover {
+    background: rgba(231, 76, 60, 0.08);
     color: #e74c3c;
 }
 
@@ -8502,18 +8616,32 @@ body.dark-mode .classes-header h4 {
 
 body.dark-mode .todo-item {
     background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.04);
 }
 
 body.dark-mode .todo-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-body.dark-mode .todo-content {
+body.dark-mode .todo-item.completed {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.dark-mode .todo-checkbox {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #444;
+}
+
+body.dark-mode .todo-checkbox:hover {
+    border-color: #d45d79;
+}
+
+body.dark-mode .todo-text {
     color: #e0e0e0;
 }
 
-body.dark-mode .todo-item.completed .todo-content {
+body.dark-mode .todo-item.completed .todo-text {
     color: #666;
 }
 
@@ -8526,20 +8654,21 @@ body.dark-mode .todo-delete {
 }
 
 body.dark-mode .todo-delete:hover {
+    background: rgba(231, 76, 60, 0.15);
     color: #e74c3c;
 }
 
-body.dark-mode .priority-badge.high {
+body.dark-mode .priority-badge.priority-high {
     background: rgba(231, 76, 60, 0.2);
     color: #e74c3c;
 }
 
-body.dark-mode .priority-badge.medium {
+body.dark-mode .priority-badge.priority-medium {
     background: rgba(243, 156, 18, 0.2);
     color: #f39c12;
 }
 
-body.dark-mode .priority-badge.low {
+body.dark-mode .priority-badge.priority-low {
     background: rgba(46, 204, 113, 0.2);
     color: #2ecc71;
 }
@@ -8672,11 +8801,12 @@ body.dark-mode .week-day.active {
 
 body.dark-mode .class-item {
     background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.04);
 }
 
 body.dark-mode .class-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 body.dark-mode .class-name {
@@ -8691,11 +8821,16 @@ body.dark-mode .class-room {
     color: #888;
 }
 
+body.dark-mode .class-room i {
+    color: #d45d79;
+}
+
 body.dark-mode .class-delete {
     color: #666;
 }
 
 body.dark-mode .class-delete:hover {
+    background: rgba(231, 76, 60, 0.15);
     color: #e74c3c;
 }
 
@@ -8752,11 +8887,27 @@ body.dark-mode .calendar-events {
 
 body.dark-mode .calendar-events h4 {
     color: #e0e0e0;
+}
+
+body.dark-mode .calendar-events-header {
     border-bottom-color: rgba(212, 93, 121, 0.3);
+}
+
+body.dark-mode .calendar-events-delete-all {
+    color: #666;
+}
+
+body.dark-mode .calendar-events-delete-all:hover {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
 }
 
 body.dark-mode .event-item {
     background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .event-item:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 body.dark-mode .event-time {
@@ -8776,6 +8927,7 @@ body.dark-mode .event-delete {
 }
 
 body.dark-mode .event-delete:hover {
+    background: rgba(231, 76, 60, 0.15);
     color: #e74c3c;
 }
 
@@ -8891,16 +9043,34 @@ body.transparent-mode .todo-item {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-body.transparent-mode .todo-content {
+body.transparent-mode .todo-item.completed {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.transparent-mode .todo-checkbox {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+body.transparent-mode .todo-text {
     color: #ffffff;
 }
 
-body.transparent-mode .todo-item.completed .todo-content {
+body.transparent-mode .todo-item.completed .todo-text {
     color: rgba(255, 255, 255, 0.6);
 }
 
 body.transparent-mode .todo-meta {
     color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .todo-delete {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body.transparent-mode .todo-delete:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
 }
 
 body.transparent-mode .schedule-form input,
@@ -8954,9 +9124,25 @@ body.transparent-mode .class-name {
     color: #ffffff;
 }
 
-body.transparent-mode .class-time,
+body.transparent-mode .class-time {
+    color: rgba(255, 255, 255, 0.7);
+}
+
 body.transparent-mode .class-room {
     color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .class-room i {
+    color: #d45d79;
+}
+
+body.transparent-mode .class-delete {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body.transparent-mode .class-delete:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
 }
 
 body.transparent-mode .calendar-main {
@@ -9003,11 +9189,27 @@ body.transparent-mode .calendar-events {
 
 body.transparent-mode .calendar-events h4 {
     color: #ffffff;
+}
+
+body.transparent-mode .calendar-events-header {
     border-bottom-color: rgba(212, 93, 121, 0.4);
+}
+
+body.transparent-mode .calendar-events-delete-all {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .calendar-events-delete-all:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
 }
 
 body.transparent-mode .event-item {
     background: rgba(255, 255, 255, 0.1);
+}
+
+body.transparent-mode .event-item:hover {
+    background: rgba(255, 255, 255, 0.15);
 }
 
 body.transparent-mode .event-title {
@@ -9017,6 +9219,15 @@ body.transparent-mode .event-title {
 body.transparent-mode .event-time,
 body.transparent-mode .event-note {
     color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .event-delete {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body.transparent-mode .event-delete:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
 }
 
 body.transparent-mode .calendar-settings-sidebar {
@@ -9923,6 +10134,17 @@ body.dark-mode .sidebar-copyright p {
 
 .confirm-btn.confirm-ok:hover {
     background: linear-gradient(135deg, #e67e8a 0%, #d45d79 100%);
+}
+
+.confirm-btn.confirm-cancel {
+    background: white;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.confirm-btn.confirm-cancel:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
 }
 
 #loginPinModal .confirm-header {
@@ -12733,6 +12955,18 @@ body.transparent-mode .feature-card-desc {
     color: rgba(255, 255, 255, 0.6);
 }
 
+body.transparent-mode .feature-card-info-btn {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body.transparent-mode .feature-card-info-btn:hover {
+    background: transparent !important;
+    border: none !important;
+    color: #fff;
+}
+
 /* 透明主题暗色模式 - 更多操作弹窗样式 */
 body.transparent-mode.dark-mode .more-actions-content {
     background: rgba(0, 0, 0, 0.3) !important;
@@ -12809,6 +13043,18 @@ body.transparent-mode.dark-mode .feature-card-desc {
     color: rgba(255, 255, 255, 0.5);
 }
 
+body.transparent-mode.dark-mode .feature-card-info-btn {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+body.transparent-mode.dark-mode .feature-card-info-btn:hover {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.95);
+}
+
 /* 透明主题 - 确认弹窗样式 */
 body.transparent-mode .confirm-content {
     background: rgba(255, 255, 255, 0.15) !important;
@@ -12865,6 +13111,17 @@ body.transparent-mode .confirm-btn.confirm-ok {
 body.transparent-mode .confirm-btn.confirm-ok:hover {
     background: rgba(255, 255, 255, 0.22) !important;
     border-color: #fff !important;
+}
+
+body.transparent-mode .confirm-btn.confirm-cancel {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+body.transparent-mode .confirm-btn.confirm-cancel:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 /* 透明主题暗色模式 - 确认弹窗样式 */
@@ -13656,6 +13913,17 @@ body.dark-mode .confirm-btn:hover {
     background: rgba(70, 70, 90, 0.8);
 }
 
+body.dark-mode .confirm-btn.confirm-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #888;
+}
+
+body.dark-mode .confirm-btn.confirm-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
 /* 更多操作按钮样式 */
 .more-actions-btn-container {
     position: relative;
@@ -13900,6 +14168,42 @@ body.dark-mode .more-actions-tooltip::after {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     text-align: left;
+    position: relative;
+}
+
+.feature-card-info-btn {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    height: auto !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: #999 !important;
+    font-size: 18px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    z-index: 100 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    line-height: 1 !important;
+    padding: 4px !important;
+    margin: 0 !important;
+}
+
+.feature-card-info-btn:hover {
+    background: transparent !important;
+    color: #d45d79 !important;
+    border: none !important;
+    transform: scale(1.15) !important;
+}
+
+.feature-card-info-btn.info-btn-hidden {
+    display: none !important;
 }
 
 .more-feature-card:hover {
@@ -14101,6 +14405,18 @@ body.dark-mode .feature-card-title {
 
 body.dark-mode .feature-card-desc {
     color: #888;
+}
+
+body.dark-mode .feature-card-info-btn {
+    background: transparent !important;
+    border: none !important;
+    color: #666;
+}
+
+body.dark-mode .feature-card-info-btn:hover {
+    background: transparent !important;
+    border: none !important;
+    color: #d45d79;
 }
 
 /* 暗色模式下更多操作按钮禁用状态样式 */
@@ -15218,6 +15534,14 @@ body.dark-mode .weather-daily-chart {
 
 .weather-sun-section {
     margin-bottom: 24px;
+}
+
+.weather-modal-copyright {
+    text-align: center;
+    padding: 16px 24px;
+    font-size: 12px;
+    color: #fff;
+    opacity: 0.7;
 }
 
 .sun-info {

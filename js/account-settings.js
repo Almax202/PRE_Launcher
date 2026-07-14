@@ -4362,6 +4362,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('uiScaleEnabled').checked = userProfile.uiScaleEnabled;
         }
         
+        if (userProfile.showComponentInfo !== undefined) {
+            document.getElementById('showComponentInfo').checked = userProfile.showComponentInfo;
+        }
+        
         updatePageClockToggleState();
         updatePageClockSubFeaturesVisibility();
         

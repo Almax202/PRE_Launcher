@@ -3538,6 +3538,20 @@
                 return false;
             }
             
+            function isShowComponentInfoEnabled() {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.username) {
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userProfile) {
+                        return user.userProfile.showComponentInfo === true;
+                    }
+                }
+                return false;
+            }
+            
             function isEnhancedFeaturesEnabled() {
                 var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
                 var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -3690,6 +3704,16 @@
                 if (mobileMoreFeaturesEmpty) {
                     mobileMoreFeaturesEmpty.style.display = hasAnyFeature ? 'none' : 'flex';
                 }
+                
+                var showComponentInfo = isShowComponentInfoEnabled();
+                var infoButtons = document.querySelectorAll('.feature-card-info-btn');
+                infoButtons.forEach(function(btn) {
+                    if (showComponentInfo) {
+                        btn.classList.remove('info-btn-hidden');
+                    } else {
+                        btn.classList.add('info-btn-hidden');
+                    }
+                });
             }
             
             // 加载用户头像
@@ -4148,6 +4172,9 @@
                                         <span class="feature-card-title" id="mobileModalHideInterfaceText">页面时钟</span>
                                         <span class="feature-card-desc">隐藏界面显示全屏时钟</span>
                                     </div>
+                                    <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('pageClock');">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
                                 </button>
                                 <button class="more-feature-card" id="mobileModalUiScaleBtn">
                                     <div class="feature-card-icon scale-icon">
@@ -4175,6 +4202,9 @@
                                         <span class="feature-card-title">便签</span>
                                         <span class="feature-card-desc">记录和管理您的便签</span>
                                     </div>
+                                    <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('stickyNotes');">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
                                 </button>
                                 <button class="more-feature-card" id="mobileModalWeatherBtn" style="display: none;">
                                     <div class="feature-card-icon weather-icon">
@@ -4184,6 +4214,9 @@
                                         <span class="feature-card-title">天气</span>
                                         <span class="feature-card-desc">查看实时天气信息</span>
                                     </div>
+                                    <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('weather');">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
                                 </button>
                                 <button class="more-feature-card" id="mobileModalCalendarBtn" style="display: none;">
                                     <div class="feature-card-icon calendar-icon">
@@ -4192,6 +4225,9 @@
                                     <div class="feature-card-info">
                                         <span class="feature-card-title">日历</span>
                                         <span class="feature-card-desc">查看日历与日期信息</span>
+                                    </div>
+                                    <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('calendar');">
+                                        <i class="fas fa-info-circle"></i>
                                     </div>
                                 </button>
                             </div>
@@ -4973,6 +5009,21 @@
         </div>
     </div>
 
+    <div id="customConfirm" class="custom-confirm-modal" style="display: none;">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <h3 id="confirmTitle">确认</h3>
+            </div>
+            <div class="confirm-body">
+                <p id="confirmMessage">确认信息</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn confirm-cancel" id="confirmCancel">取消</button>
+                <button class="confirm-btn confirm-ok" id="confirmOk">确定</button>
+            </div>
+        </div>
+    </div>
+
     <div id="loginPinModal" class="custom-confirm-modal" style="display: none;">
         <div class="confirm-content">
             <div class="confirm-header">
@@ -5247,6 +5298,9 @@
                             <span class="feature-card-title" id="modalHideInterfaceText">页面时钟</span>
                             <span class="feature-card-desc">隐藏界面显示全屏时钟</span>
                         </div>
+                        <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('pageClock');">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
                     </button>
                     <button class="more-feature-card" id="modalUiScaleBtn">
                         <div class="feature-card-icon scale-icon">
@@ -5274,6 +5328,9 @@
                             <span class="feature-card-title">便签</span>
                             <span class="feature-card-desc">记录和管理您的便签</span>
                         </div>
+                        <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('stickyNotes');">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
                     </button>
                     <button class="more-feature-card" id="modalWeatherBtn" style="display: none;">
                         <div class="feature-card-icon weather-icon">
@@ -5283,6 +5340,9 @@
                             <span class="feature-card-title">天气</span>
                             <span class="feature-card-desc">查看实时天气信息</span>
                         </div>
+                        <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('weather');">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
                     </button>
                     <button class="more-feature-card" id="modalCalendarBtn" style="display: none;">
                         <div class="feature-card-icon calendar-icon">
@@ -5291,6 +5351,9 @@
                         <div class="feature-card-info">
                             <span class="feature-card-title">日历</span>
                             <span class="feature-card-desc">查看日历与日期信息</span>
+                        </div>
+                        <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('calendar');">
+                            <i class="fas fa-info-circle"></i>
                         </div>
                     </button>
                 </div>
@@ -5332,11 +5395,6 @@
                                 <i class="fas fa-cog"></i>
                                 <span>日历设置</span>
                                 <i class="fas fa-chevron-right dropdown-arrow"></i>
-                            </div>
-                            <div class="dropdown-divider"></div>
-                            <div class="dropdown-item" id="calendarClearDataItem">
-                                <i class="fas fa-trash-alt"></i>
-                                <span>清空所有数据</span>
                             </div>
                             <div class="dropdown-divider"></div>
                             <div class="dropdown-item" id="calendarHelpItem">
@@ -5458,7 +5516,13 @@
                     </div>
                     <div class="calendar-days" id="calendarDays"></div>
                     <div class="calendar-events" id="calendarEvents">
-                        <h4>今日日程</h4>
+                        <div class="calendar-events-header">
+                            <h4>今日日程</h4>
+                            <button class="calendar-events-delete-all" onclick="deleteAllEvents()">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>删除全部</span>
+                            </button>
+                        </div>
                         <div class="events-list" id="eventsList"></div>
                     </div>
                 </div>
@@ -6024,6 +6088,8 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="weather-modal-copyright">天气数据由 Open-Meteo API 提供支持</div>
             </div>
         </div>
         
@@ -7609,6 +7675,50 @@
         document.getElementById('customAlert').addEventListener('click', function(e) {
             if (e.target === this) {
                 document.getElementById('alertConfirm').click();
+            }
+        });
+        
+        var confirmCallback = null;
+        
+        function showConfirm(title, message, callback) {
+            var confirmBox = document.getElementById('customConfirm');
+            var titleEl = document.getElementById('confirmTitle');
+            var messageEl = document.getElementById('confirmMessage');
+            
+            titleEl.textContent = title || '确认';
+            messageEl.textContent = message || '';
+            confirmCallback = callback;
+            
+            confirmBox.style.display = 'flex';
+            confirmBox.style.animation = 'fadeIn 0.3s ease';
+            confirmBox.classList.add('show');
+        }
+        
+        function closeConfirm() {
+            var confirmBox = document.getElementById('customConfirm');
+            confirmBox.style.animation = 'fadeOut 0.3s ease';
+            confirmBox.classList.remove('show');
+            
+            setTimeout(function() {
+                confirmBox.style.display = 'none';
+                confirmCallback = null;
+            }, 300);
+        }
+        
+        document.getElementById('confirmCancel').addEventListener('click', function() {
+            closeConfirm();
+        });
+        
+        document.getElementById('confirmOk').addEventListener('click', function() {
+            if (confirmCallback) {
+                confirmCallback();
+            }
+            closeConfirm();
+        });
+        
+        document.getElementById('customConfirm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConfirm();
             }
         });
         
@@ -18503,14 +18613,6 @@
             document.getElementById('calendarWeekdayFormat').addEventListener('change', saveCalendarSettings);
             document.getElementById('calendarDateDisplay').addEventListener('change', saveCalendarSettings);
             
-            document.getElementById('calendarClearDataItem').addEventListener('click', function() {
-                calendarDropdownMenu.style.display = 'none';
-                calendarMoreBtn.classList.remove('active');
-                showConfirmModal('确定要清空所有日历数据吗？此操作不可恢复！', function() {
-                    clearCalendarData();
-                });
-            });
-            
             document.getElementById('calendarHelpItem').addEventListener('click', function() {
                 if (typeof showComponentInfoModal === 'function') {
                     showComponentInfoModal('calendar');
@@ -18731,16 +18833,18 @@
             }
             
             function clearCalendarData() {
-                localStorage.removeItem('calendarTodos');
-                localStorage.removeItem('calendarSchedules');
-                localStorage.removeItem('calendarClasses');
-                
-                renderCalendar();
-                renderTodos();
-                renderClasses();
-                renderEvents();
-                
-                showAlert('所有日历数据已清空！');
+                showConfirm('确认清空', '确定要清空所有日历数据吗？此操作不可恢复！', function() {
+                    localStorage.removeItem('calendarTodos');
+                    localStorage.removeItem('calendarSchedules');
+                    localStorage.removeItem('calendarClasses');
+                    
+                    renderCalendar();
+                    renderTodos();
+                    renderClasses();
+                    renderEvents();
+                    
+                    showAlert('所有日历数据已清空！');
+                });
             }
             
             function updateCalendarDateDisplay() {
@@ -18854,6 +18958,8 @@
                 
                 tabs.forEach(function(tab) {
                     tab.classList.remove('active');
+                    tab.style.borderLeftColor = '';
+                    tab.style.color = '';
                     if (tab.dataset.tab === tabName) {
                         tab.classList.add('active');
                     }
@@ -18870,7 +18976,13 @@
             }
             
             function getTodos() {
-                return JSON.parse(localStorage.getItem('calendarTodos') || '[]');
+                var todos = JSON.parse(localStorage.getItem('calendarTodos') || '[]');
+                return todos.map(function(todo, index) {
+                    if (!todo.id) {
+                        todo.id = Date.now() + index;
+                    }
+                    return todo;
+                });
             }
             
             function saveTodos(todos) {
@@ -18889,20 +19001,24 @@
                 }
                 
                 var html = '';
-                todos.forEach(function(todo, index) {
+                todos.forEach(function(todo) {
                     var isCompleted = todo.completed ? 'completed' : '';
                     var priorityClass = 'priority-' + todo.priority;
                     
-                    html += '<div class="todo-item ' + isCompleted + '" data-index="' + index + '">';
-                    html += '<input type="checkbox" ' + (todo.completed ? 'checked' : '') + ' onchange="toggleTodo(' + index + ')">';
+                    html += '<div class="todo-item ' + isCompleted + '" data-id="' + todo.id + '">';
+                    html += '<div class="todo-checkbox ' + (todo.completed ? 'checked' : '') + '" onclick="toggleTodo(\'' + todo.id + '\')">';
+                    html += '<i class="fas fa-check"></i>';
+                    html += '</div>';
                     html += '<div class="todo-content">';
-                    html += '<span class="todo-text">' + todo.content + '</span>';
+                    html += '<div class="todo-text">' + todo.content + '</div>';
                     if (todo.date) {
-                        html += '<span class="todo-date">' + todo.date + '</span>';
+                        html += '<div class="todo-meta"><i class="fas fa-calendar"></i> ' + todo.date + '</div>';
                     }
                     html += '</div>';
+                    html += '<div class="todo-actions">';
                     html += '<span class="priority-badge ' + priorityClass + '">' + getPriorityLabel(todo.priority) + '</span>';
-                    html += '<button class="todo-delete" onclick="deleteTodo(' + index + ')"><i class="fas fa-trash"></i></button>';
+                    html += '<button class="todo-delete" onclick="deleteTodo(\'' + todo.id + '\')"><i class="fas fa-trash"></i></button>';
+                    html += '</div>';
                     html += '</div>';
                 });
                 
@@ -18950,22 +19066,31 @@
                 closeAddTodoModal();
             }
             
-            function toggleTodo(index) {
+            function toggleTodo(id) {
                 var todos = getTodos();
-                todos[index].completed = !todos[index].completed;
-                saveTodos(todos);
-                renderTodos();
+                var todo = todos.find(function(t) { return t.id == id; });
+                if (todo) {
+                    todo.completed = !todo.completed;
+                    saveTodos(todos);
+                    renderTodos();
+                }
             }
             
-            function deleteTodo(index) {
+            function deleteTodo(id) {
                 var todos = getTodos();
-                todos.splice(index, 1);
+                todos = todos.filter(function(t) { return t.id != id; });
                 saveTodos(todos);
                 renderTodos();
             }
             
             function getSchedules() {
-                return JSON.parse(localStorage.getItem('calendarSchedules') || '[]');
+                var schedules = JSON.parse(localStorage.getItem('calendarSchedules') || '[]');
+                return schedules.map(function(schedule, index) {
+                    if (!schedule.id) {
+                        schedule.id = Date.now() + index;
+                    }
+                    return schedule;
+                });
             }
             
             function saveSchedules(schedules) {
@@ -18994,6 +19119,7 @@
                 if (dayEvents.length === 0) {
                     eventsListEl.innerHTML = '<div class="no-events">当日暂无日程</div>';
                     calendarEventsEl.style.display = 'block';
+                    calendarEventsEl.dataset.date = selectedDateStr;
                     return;
                 }
                 
@@ -19003,7 +19129,9 @@
                 
                 var html = '';
                 dayEvents.forEach(function(event) {
-                    html += '<div class="event-item" style="border-left-color: ' + event.color + '">';
+                    html += '<div class="event-item" data-id="' + event.id + '">';
+                    html += '<div class="event-color-bar" style="background: ' + event.color + '"></div>';
+                    html += '<div class="event-content-wrapper">';
                     html += '<div class="event-time">' + event.time + '</div>';
                     html += '<div class="event-content">';
                     html += '<div class="event-title">' + event.title + '</div>';
@@ -19012,10 +19140,35 @@
                     }
                     html += '</div>';
                     html += '</div>';
+                    html += '<button class="event-delete" onclick="deleteEvent(' + event.id + ')"><i class="fas fa-trash"></i></button>';
+                    html += '</div>';
                 });
                 
                 eventsListEl.innerHTML = html;
                 calendarEventsEl.style.display = 'block';
+                calendarEventsEl.dataset.date = selectedDateStr;
+            }
+            
+            function deleteEvent(id) {
+                var schedules = getSchedules();
+                schedules = schedules.filter(function(s) { return s.id != id; });
+                saveSchedules(schedules);
+                renderEvents();
+                renderCalendar();
+            }
+            
+            function deleteAllEvents() {
+                var calendarEventsEl = document.getElementById('calendarEvents');
+                var dateStr = calendarEventsEl ? calendarEventsEl.dataset.date : '';
+                if (!dateStr) return;
+                
+                showConfirm('删除确认', '确定要删除当日所有日程吗？', function() {
+                    var schedules = getSchedules();
+                    schedules = schedules.filter(function(s) { return s.date !== dateStr; });
+                    saveSchedules(schedules);
+                    renderEvents();
+                    renderCalendar();
+                });
             }
             
             document.getElementById('scheduleForm').addEventListener('submit', function(e) {
@@ -19055,7 +19208,13 @@
             });
             
             function getClasses() {
-                return JSON.parse(localStorage.getItem('calendarClasses') || '[]');
+                var classes = JSON.parse(localStorage.getItem('calendarClasses') || '[]');
+                return classes.map(function(cls, index) {
+                    if (!cls.id) {
+                        cls.id = Date.now() + index;
+                    }
+                    return cls;
+                });
             }
             
             function saveClasses(classes) {
@@ -19085,16 +19244,19 @@
                         dayClasses.sort(function(a, b) {
                             return a.startTime.localeCompare(b.startTime);
                         });
-                        dayClasses.forEach(function(cls, index) {
-                            html += '<div class="class-item" style="border-left-color: ' + cls.color + '">';
-                            html += '<div class="class-time">' + cls.startTime + ' - ' + cls.endTime + '</div>';
-                            html += '<div class="class-info">';
+                        dayClasses.forEach(function(cls) {
+                            html += '<div class="class-item" style="border-left-color: ' + cls.color + '" data-id="' + cls.id + '">';
+                            html += '<div class="class-color-bar" style="background: ' + cls.color + '"></div>';
+                            html += '<div class="class-content">';
+                            html += '<div class="class-header">';
                             html += '<div class="class-name">' + cls.name + '</div>';
+                            html += '<div class="class-time">' + cls.startTime + ' - ' + cls.endTime + '</div>';
+                            html += '</div>';
                             if (cls.room) {
                                 html += '<div class="class-room"><i class="fas fa-map-marker-alt"></i> ' + cls.room + '</div>';
                             }
                             html += '</div>';
-                            html += '<button class="class-delete" onclick="deleteClass(\'' + day + '\', ' + index + ')"><i class="fas fa-trash"></i></button>';
+                            html += '<button class="class-delete" onclick="deleteClass(' + cls.id + ')"><i class="fas fa-trash"></i></button>';
                             html += '</div>';
                         });
                         html += '</div>';
@@ -19149,15 +19311,11 @@
                 closeAddClassModal();
             }
             
-            function deleteClass(day, index) {
+            function deleteClass(id) {
                 var classes = getClasses();
-                var dayClasses = classes.filter(function(c) { return c.day === day; });
-                var actualIndex = classes.indexOf(dayClasses[index]);
-                if (actualIndex !== -1) {
-                    classes.splice(actualIndex, 1);
-                    saveClasses(classes);
-                    renderClasses();
-                }
+                classes = classes.filter(function(c) { return c.id != id; });
+                saveClasses(classes);
+                renderClasses();
             }
             
             var classColorBtns = document.querySelectorAll('#classForm .color-option');
