@@ -6539,6 +6539,11 @@ body.dark-mode .reset-btn:hover {
     color: white;
 }
 
+.version-tag.patch {
+    background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+    color: white;
+}
+
 .view-log-btn {
     padding: 4px 12px;
     border: none;

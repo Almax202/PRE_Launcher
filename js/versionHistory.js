@@ -258,7 +258,7 @@ function updateVersionNotificationDot() {
         // {
         //     version: "版本号",
         //     date: "日期",
-        //     tag: "标签",                 /tag标签使用:   major 重大更新; important 重要更新; normal 常规更新
+        //     tag: "标签",                 /tag标签使用:   major 重大更新; important 重要更新; normal 常规更新; patch 补丁更新
         //     tagText: "标签文本",
         //     images: ["图片路径1", "图片路径2"],
         //     features: ["功能描述1", "功能描述2", ...]
@@ -283,10 +283,23 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.7.0.6 (b10)",
+            date: "2026-07-15",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 新增在版本更新记录中使用补丁批次的tag标签，用于标识该版本为补丁更新，并优化之前的补丁更新中的tag标签显示，使用户更方便地识别和管理补丁更新",
+                "修复问题",
+                "- 回退了在RC 2.7.0.6 (b9)版本更新中新增的注册时间校验功能，因为该功能存在逻辑错误，导致用户在较新的时间点中注册时，校验功能会认为用户注册时间晚于该版本构建日期",
+            ]
+        },
+        {
             version: "RC 2.7.0.6 (b9)",
             date: "2026-07-14",
-            tag: "normal",
-            tagText: "常规更新",
+            tag: "patch",
+            tagText: "补丁更新",
             images: [],
             features: [
                 "新增功能",
@@ -595,8 +608,8 @@ const versionHistoryData = {
         {
             version: "RC 2.6.4.3 (b8)",
             date: "2026-06-24",
-            tag: "normal",
-            tagText: "常规更新",
+            tag: "patch",
+            tagText: "补丁更新",
             images: [],
             features: [
                 "优化改进",
@@ -657,8 +670,8 @@ const versionHistoryData = {
         {
             version: "RC 2.6.4.1 (b7)",
             date: "2026-06-21",
-            tag: "normal",
-            tagText: "常规更新",
+            tag: "patch",
+            tagText: "补丁更新",
             images: [],
             features: [
                 "修复问题",
@@ -943,8 +956,8 @@ const versionHistoryData = {
         {
             version: "RC 2.6.3.3 (b6)",
             date: "2026-06-07",
-            tag: "important",
-            tagText: "重要更新",
+            tag: "patch",
+            tagText: "补丁更新",
             images: [],
             features: [
                 "新增功能",
@@ -1054,8 +1067,8 @@ const versionHistoryData = {
         {
             version: "RC 2.6.2.5 (b5)",
             date: "2026-05-27",
-            tag: "normal",
-            tagText: "常规更新",
+            tag: "patch",
+            tagText: "补丁更新",
             images: [],
             features: [
                 "修复问题",
@@ -1382,8 +1395,8 @@ const versionHistoryData = {
         {
             version: "RC 2.6.0.6 (b4)",
             date: "2026-04-27",
-            tag: "normal",
-            tagText: "常规更新",
+            tag: "patch",
+            tagText: "补丁更新",
             images: ["./images/2606.png"],
             features: [
                 "优化改进",
@@ -1588,8 +1601,8 @@ const versionHistoryData = {
         {
             version: "RC 2.5.3.0 (b3)",
             date: "2026-04-22",
-            tag: "major",
-            tagText: "重大更新",
+            tag: "patch",
+            tagText: "补丁更新",
             images: [],
             features: [
                 "修复问题",
