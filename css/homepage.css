@@ -5,6 +5,14 @@
             font-style: normal;
         }
 
+        :root {
+            --global-theme-primary: #d45d79;
+            --global-theme-secondary: #e67e8a;
+            --global-theme-gradient: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+            --global-theme-primary-rgb: 212, 93, 121;
+            --global-theme-secondary-rgb: 230, 126, 138;
+        }
+
         .collapse-sidebar-btn {
             background: none;
             border: none;
@@ -162,7 +170,11 @@
         }
 
         body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #dceeff 100%);
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(212, 93, 121, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(102, 126, 234, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(230, 126, 138, 0.08) 0%, transparent 60%),
+                linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%);
             color: #333;
             min-height: 100vh;
             display: block;
@@ -4344,7 +4356,7 @@
 
         .more-actions-buttons {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
         }
 
@@ -4380,6 +4392,10 @@
             color: #ff6b6b;
         }
 
+        .more-action-btn.back-login-action i {
+            color: #4ecdc4;
+        }
+
         .more-action-btn:hover {
             transform: translateY(-3px) scale(1.02);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
@@ -4391,6 +4407,28 @@
 
         .more-action-btn:active {
             transform: translateY(-1px) scale(0.98);
+        }
+
+        @media (max-width: 480px) {
+            .more-actions-content {
+                max-width: 90%;
+            }
+            
+            .more-actions-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .more-action-btn {
+                padding: 20px 15px;
+                flex-direction: row;
+                gap: 15px;
+                justify-content: flex-start;
+            }
+            
+            .more-action-btn i {
+                font-size: 24px;
+            }
         }
 
         /* 暗色模式下的更多操作按钮样式 */

@@ -144,19 +144,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 移动端菜单按钮点击事件
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const settingsSidebar = document.querySelector('.settings-sidebar');
+        const mobileNavMenu = document.getElementById('mobileNavMenu');
         const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-        const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
         
-        function toggleSidebar(show) {
+        function toggleMobileNav(show) {
             if (show) {
-                settingsSidebar.classList.add('show');
+                mobileNavMenu.classList.add('show');
                 if (sidebarBackdrop) {
                     sidebarBackdrop.classList.add('show');
                 }
                 document.body.style.overflow = 'hidden';
+                generateMobileNavMenu();
             } else {
-                settingsSidebar.classList.remove('show');
+                mobileNavMenu.classList.remove('show');
                 if (sidebarBackdrop) {
                     sidebarBackdrop.classList.remove('show');
                 }
@@ -164,44 +164,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        if (mobileMenuBtn && settingsSidebar) {
-            // 点击菜单按钮切换侧边栏显示/隐藏
+        if (mobileMenuBtn && mobileNavMenu) {
+            // 点击菜单按钮切换移动端多级菜单显示/隐藏
             mobileMenuBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const isShowing = settingsSidebar.classList.contains('show');
-                toggleSidebar(!isShowing);
+                const isShowing = mobileNavMenu.classList.contains('show');
+                toggleMobileNav(!isShowing);
             });
             
-            // 点击菜单项后关闭侧边栏
-            menuItems.forEach(function(item) {
-                item.addEventListener('click', function() {
-                    toggleSidebar(false);
-                });
-            });
-            
-            // 点击遮罩层关闭侧边栏
+            // 点击遮罩层关闭菜单
             if (sidebarBackdrop) {
                 sidebarBackdrop.addEventListener('click', function() {
-                    toggleSidebar(false);
+                    toggleMobileNav(false);
                 });
             }
             
-            // 点击侧边栏外部关闭侧边栏
+            // 点击菜单外部关闭菜单
             document.addEventListener('click', function(e) {
-                if (!settingsSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target) && settingsSidebar.classList.contains('show')) {
-                    toggleSidebar(false);
+                if (!mobileNavMenu.contains(e.target) && !mobileMenuBtn.contains(e.target) && mobileNavMenu.classList.contains('show')) {
+                    toggleMobileNav(false);
                 }
             });
             
             // 阻止touchmove事件冒泡，防止mui.js阻止滚动
-            settingsSidebar.addEventListener('touchmove', function(e) {
+            mobileNavMenu.addEventListener('touchmove', function(e) {
                 e.stopPropagation();
             }, { passive: true });
             
-            // 确保侧边栏显示时可以正常滚动
-            settingsSidebar.addEventListener('touchstart', function(e) {
+            // 确保菜单显示时可以正常滚动
+            mobileNavMenu.addEventListener('touchstart', function(e) {
                 e.stopPropagation();
             }, { passive: true });
+            
+            // 返回按钮点击事件
+            var mobileNavBackBtn = document.getElementById('mobileNavBackBtn');
+            if (mobileNavBackBtn) {
+                mobileNavBackBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleMobileNav(false);
+                });
+            }
         }
         
         document.querySelectorAll('.menu-item').forEach(function(item) {
@@ -664,6 +666,28 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelPresetBackground();
         });
         
+        document.getElementById('changeDefaultBgBtn').addEventListener('click', function() {
+            openDefaultBackgroundModal();
+        });
+        
+        document.getElementById('closeDefaultBgModal').addEventListener('click', function() {
+            closeDefaultBackgroundModal();
+        });
+        
+        document.getElementById('defaultBackgroundModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDefaultBackgroundModal();
+            }
+        });
+        
+        document.getElementById('confirmDefaultBgBtn').addEventListener('click', function() {
+            confirmDefaultBackground();
+        });
+        
+        document.getElementById('cancelDefaultBgBtn').addEventListener('click', function() {
+            closeDefaultBackgroundModal();
+        });
+        
         initPresetBackgroundTouchSupport();
         
         document.getElementById('exportDataBtn').addEventListener('click', function() {
@@ -1010,6 +1034,257 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+        
+        initQuickNavMenu();
+    }
+    
+    function initQuickNavMenu() {
+        var quickNavBtn = document.getElementById('quickNavBtn');
+        var quickNavDropdown = document.getElementById('quickNavDropdown');
+        
+        if (!quickNavBtn || !quickNavDropdown) return;
+        
+        quickNavBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            quickNavDropdown.classList.toggle('show');
+            quickNavBtn.classList.toggle('active');
+            
+            if (quickNavDropdown.classList.contains('show')) {
+                generateQuickNavMenu();
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!quickNavBtn.contains(e.target) && !quickNavDropdown.contains(e.target)) {
+                quickNavDropdown.classList.remove('show');
+                quickNavBtn.classList.remove('active');
+            }
+        });
+        
+        quickNavDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    
+    function generateQuickNavMenu() {
+        var quickNavDropdown = document.getElementById('quickNavDropdown');
+        if (!quickNavDropdown) return;
+        
+        quickNavDropdown.innerHTML = '';
+        
+        var sections = document.querySelectorAll('.settings-section');
+        var sectionNames = {
+            'section-test': '测试页面',
+            'section-experimental': '实验性功能',
+            'section-account': '账户信息',
+            'section-security': '安全设置',
+            'section-privacy': '隐私设置',
+            'section-game-stats': '统计数据',
+            'section-achievements': '成就系统',
+            'section-notifications': '通知设置',
+            'section-devices': '设备管理',
+            'section-advanced': '个性化',
+            'section-enhanced-features': '增强功能',
+            'section-account-management': '账户管理',
+            'section-terms': '用户协议',
+            'section-privacy-policy': '隐私政策'
+        };
+        
+        var normalSections = [];
+        var experimentalSection = null;
+        
+        sections.forEach(function(section) {
+            var sectionId = section.id;
+            
+            if (sectionId === 'section-experimental') {
+                experimentalSection = section;
+            } else {
+                normalSections.push(section);
+            }
+        });
+        
+        var allSections = normalSections;
+        if (experimentalSection) {
+            allSections.push(experimentalSection);
+        }
+        
+        allSections.forEach(function(section) {
+            var sectionId = section.id;
+            var sectionName = sectionNames[sectionId] || sectionId.replace('section-', '');
+            
+            var cards = section.querySelectorAll('.section-card');
+            if (cards.length === 0) return;
+            
+            var sectionDiv = document.createElement('div');
+            sectionDiv.className = 'quick-nav-section';
+            
+            var titleDiv = document.createElement('div');
+            titleDiv.className = 'quick-nav-section-title';
+            titleDiv.textContent = sectionName + ' (' + cards.length + ')';
+            sectionDiv.appendChild(titleDiv);
+            
+            cards.forEach(function(card, cardIndex) {
+                var cardHeader = card.querySelector('.card-header');
+                if (!cardHeader) return;
+                
+                var cardTitle = cardHeader.querySelector('.card-title h3');
+                var cardIcon = cardHeader.querySelector('.card-icon i');
+                
+                var cardName = cardTitle ? cardTitle.textContent : '卡片 ' + (cardIndex + 1);
+                var iconClass = cardIcon ? cardIcon.className : 'fas fa-circle';
+                
+                var cardDiv = document.createElement('div');
+                cardDiv.className = 'quick-nav-card';
+                cardDiv.setAttribute('data-section-id', sectionId);
+                cardDiv.setAttribute('data-card-index', cardIndex);
+                
+                var iconSpan = document.createElement('i');
+                iconSpan.className = iconClass;
+                cardDiv.appendChild(iconSpan);
+                
+                var nameSpan = document.createElement('span');
+                nameSpan.textContent = cardName;
+                cardDiv.appendChild(nameSpan);
+                
+                cardDiv.addEventListener('click', function() {
+                    scrollToCard(sectionId, cardIndex);
+                    document.getElementById('quickNavDropdown').classList.remove('show');
+                    document.getElementById('quickNavBtn').classList.remove('active');
+                });
+                
+                sectionDiv.appendChild(cardDiv);
+            });
+            
+            quickNavDropdown.appendChild(sectionDiv);
+        });
+    }
+    
+    function scrollToCard(sectionId, cardIndex) {
+        var section = document.getElementById(sectionId);
+        if (!section) return;
+        
+        switchSection(sectionId.replace('section-', ''));
+        
+        setTimeout(function() {
+            var cards = section.querySelectorAll('.section-card');
+            if (cards[cardIndex]) {
+                var settingsContent = document.querySelector('.settings-content');
+                var card = cards[cardIndex];
+                
+                if (settingsContent) {
+                    var cardTop = card.offsetTop;
+                    var contentTop = settingsContent.offsetTop;
+                    var scrollPosition = cardTop - contentTop - 20;
+                    
+                    settingsContent.scrollTo({
+                        top: scrollPosition,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    card.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                
+                card.style.border = '2px solid #d45d79';
+                setTimeout(function() {
+                    card.style.border = '';
+                }, 1500);
+            }
+        }, 300);
+    }
+    
+    function generateMobileNavMenu() {
+        var mobileNavContent = document.getElementById('mobileNavContent');
+        if (!mobileNavContent) return;
+        
+        mobileNavContent.innerHTML = '';
+        
+        var sections = document.querySelectorAll('.settings-section');
+        var sectionNames = {
+            'section-test': '测试页面',
+            'section-experimental': '实验性功能',
+            'section-account': '账户信息',
+            'section-security': '安全设置',
+            'section-privacy': '隐私设置',
+            'section-game-stats': '统计数据',
+            'section-achievements': '成就系统',
+            'section-notifications': '通知设置',
+            'section-devices': '设备管理',
+            'section-advanced': '个性化',
+            'section-enhanced-features': '增强功能',
+            'section-account-management': '账户管理',
+            'section-terms': '用户协议',
+            'section-privacy-policy': '隐私政策'
+        };
+        
+        var normalSections = [];
+        var experimentalSection = null;
+        
+        sections.forEach(function(section) {
+            var sectionId = section.id;
+            
+            if (sectionId === 'section-experimental') {
+                experimentalSection = section;
+            } else {
+                normalSections.push(section);
+            }
+        });
+        
+        var allSections = normalSections;
+        if (experimentalSection) {
+            allSections.push(experimentalSection);
+        }
+        
+        allSections.forEach(function(section) {
+            var sectionId = section.id;
+            var sectionName = sectionNames[sectionId] || sectionId.replace('section-', '');
+            
+            var cards = section.querySelectorAll('.section-card');
+            if (cards.length === 0) return;
+            
+            var sectionDiv = document.createElement('div');
+            sectionDiv.className = 'quick-nav-section';
+            
+            var titleDiv = document.createElement('div');
+            titleDiv.className = 'quick-nav-section-title';
+            titleDiv.textContent = sectionName + ' (' + cards.length + ')';
+            sectionDiv.appendChild(titleDiv);
+            
+            cards.forEach(function(card, cardIndex) {
+                var cardHeader = card.querySelector('.card-header');
+                if (!cardHeader) return;
+                
+                var cardTitle = cardHeader.querySelector('.card-title h3');
+                var cardIcon = cardHeader.querySelector('.card-icon i');
+                
+                var cardName = cardTitle ? cardTitle.textContent : '卡片 ' + (cardIndex + 1);
+                var iconClass = cardIcon ? cardIcon.className : 'fas fa-circle';
+                
+                var cardDiv = document.createElement('div');
+                cardDiv.className = 'quick-nav-card';
+                cardDiv.setAttribute('data-section-id', sectionId);
+                cardDiv.setAttribute('data-card-index', cardIndex);
+                
+                var iconSpan = document.createElement('i');
+                iconSpan.className = iconClass;
+                cardDiv.appendChild(iconSpan);
+                
+                var nameSpan = document.createElement('span');
+                nameSpan.textContent = cardName;
+                cardDiv.appendChild(nameSpan);
+                
+                cardDiv.addEventListener('click', function() {
+                    scrollToCard(sectionId, cardIndex);
+                    toggleMobileNav(false);
+                });
+                
+                sectionDiv.appendChild(cardDiv);
+            });
+            
+            mobileNavContent.appendChild(sectionDiv);
+        });
     }
     
     function showExperimentalWarningModal() {
@@ -5182,8 +5457,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 移除现有的背景样式
         removeBackgroundFromPage();
         
-        // 如果没有背景设置，直接返回
+        // 如果没有背景设置，确保显示默认背景并返回
         if (!backgroundSettings) {
+            resetToDefaultBackground();
             return;
         }
         
@@ -5207,7 +5483,6 @@ document.addEventListener('DOMContentLoaded', function() {
             !backgroundImage.startsWith('/') && 
             !backgroundImage.startsWith('data:')) {
             if (currentPath.includes('/html/')) {
-                // 在 html 目录下，需要添加 ../
                 imageUrl = '../' + backgroundImage;
             }
         }
@@ -5217,14 +5492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (fit === 'content') {
             style.textContent = `
-                body {
-                    background: linear-gradient(135deg, #f0f9ff 0%, #dceeff 100%);
-                }
-                
-                .settings-main {
-                    background: ${mainBg} !important;
-                }
-                
                 .settings-content, .content-container, .main-content {
                     position: relative;
                 }
@@ -5244,14 +5511,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     filter: blur(${blur}px);
                     z-index: -1;
                 }
+                
+                .settings-main {
+                    background: ${mainBg} !important;
+                }
             `;
         } else {
             style.textContent = `
-                body {
-                    background: linear-gradient(135deg, #f0f9ff 0%, #dceeff 100%);
-                    position: relative;
-                }
-                
                 body::before {
                     content: '';
                     position: fixed;
@@ -5277,10 +5543,52 @@ document.addEventListener('DOMContentLoaded', function() {
         document.head.appendChild(style);
     }
     
+    function resetToDefaultBackground() {
+        var userDefaultBg = localStorage.getItem('defaultBackgroundGradient');
+        var gradient = 'radial-gradient(ellipse at 10% 10%, rgba(212, 93, 121, 0.12) 0%, transparent 40%), radial-gradient(ellipse at 90% 90%, rgba(102, 126, 234, 0.1) 0%, transparent 40%), radial-gradient(ellipse at 50% 80%, rgba(230, 126, 138, 0.06) 0%, transparent 50%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)';
+        
+        if (userDefaultBg) {
+            try {
+                var parsedDefaultBg = JSON.parse(userDefaultBg);
+                if (parsedDefaultBg && parsedDefaultBg.gradient) {
+                    gradient = parsedDefaultBg.gradient;
+                }
+            } catch (e) {
+                console.warn('解析用户默认背景失败:', e);
+            }
+        }
+        
+        var style = document.createElement('style');
+        style.id = 'custom-background-style';
+        style.textContent = `
+            body {
+                background: ${gradient} !important;
+            }
+            
+            body::before {
+                display: none !important;
+            }
+            
+            .settings-content::before, .content-container::before, .main-content::before {
+                display: none !important;
+            }
+            
+            .settings-main {
+                background: transparent !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
     function removeBackgroundFromPage() {
         var existingStyle = document.getElementById('custom-background-style');
         if (existingStyle) {
             existingStyle.remove();
+        }
+        
+        var defaultGradientStyle = document.getElementById('default-gradient-style');
+        if (defaultGradientStyle) {
+            defaultGradientStyle.remove();
         }
     }
     
@@ -7616,6 +7924,171 @@ document.addEventListener('DOMContentLoaded', function() {
         closePresetBackgroundModal();
     }
     
+    var defaultBackgrounds = [
+        {
+            id: 'default-bg-1',
+            name: '梦幻粉紫',
+            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(212, 93, 121, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(102, 126, 234, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(230, 126, 138, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)'
+        },
+        {
+            id: 'default-bg-2',
+            name: '深海幽蓝',
+            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(30, 58, 138, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.1) 0%, transparent 60%), linear-gradient(135deg, #e0f2fe 0%, #e0e7ff 33%, #f3e8ff 66%, #ecfeff 100%)'
+        },
+        {
+            id: 'default-bg-3',
+            name: '晨曦暖阳',
+            gradient: 'radial-gradient(ellipse at 20% 80%, rgba(251, 146, 60, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(253, 224, 71, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(251, 191, 36, 0.1) 0%, transparent 60%), linear-gradient(135deg, #fffbeb 0%, #fef3c7 25%, #fde68a 50%, #fcd34d 75%, #fbbf24 100%)'
+        },
+        {
+            id: 'default-bg-4',
+            name: '森林绿意',
+            gradient: 'radial-gradient(ellipse at 30% 30%, rgba(21, 128, 61, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(16, 185, 129, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(52, 211, 153, 0.08) 0%, transparent 60%), linear-gradient(135deg, #f0fdf4 0%, #dcfce7 25%, #bbf7d0 50%, #86efac 75%, #4ade80 100%)'
+        },
+        {
+            id: 'default-bg-5',
+            name: '晚霞橙红',
+            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(220, 38, 38, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(249, 115, 22, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(239, 68, 68, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fef2f2 0%, #fee2e2 25%, #fecaca 50%, #fca5a5 75%, #f87171 100%)'
+        },
+        {
+            id: 'default-bg-6',
+            name: '极光幻境',
+            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(126, 34, 206, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(34, 197, 94, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #f3e8ff 33%, #dcfce7 66%, #ecfeff 100%)'
+        },
+        {
+            id: 'default-bg-7',
+            name: '星空夜曲',
+            gradient: 'radial-gradient(ellipse at 20% 30%, rgba(30, 27, 75, 0.4) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(67, 56, 202, 0.2) 0%, transparent 60%), linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #6366f1 75%, #8b5cf6 100%)'
+        },
+        {
+            id: 'default-bg-8',
+            name: '纯净白蓝',
+            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.06) 0%, transparent 60%), linear-gradient(135deg, #ffffff 0%, #eff6ff 25%, #dbeafe 50%, #bfdbfe 75%, #93c5fd 100%)'
+        },
+        {
+            id: 'default-bg-9',
+            name: '玫瑰金粉',
+            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(244, 114, 182, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(219, 39, 119, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fff1f2 0%, #ffe4e6 25%, #fecdd3 50%, #fda4af 75%, #fb7185 100%)'
+        }
+    ];
+    
+    var selectedDefaultBackground = null;
+    
+    function openDefaultBackgroundModal() {
+        var modal = document.getElementById('defaultBackgroundModal');
+        if (modal) {
+            modal.classList.add('show');
+            selectedDefaultBackground = null;
+            renderDefaultBackgrounds();
+            updateDefaultBgConfirmButtonState();
+        }
+    }
+    
+    function closeDefaultBackgroundModal() {
+        var modal = document.getElementById('defaultBackgroundModal');
+        if (modal) {
+            modal.classList.remove('show');
+            selectedDefaultBackground = null;
+        }
+    }
+    
+    function renderDefaultBackgrounds() {
+        var grid = document.getElementById('defaultBackgroundGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        defaultBackgrounds.forEach(function(background) {
+            var item = document.createElement('div');
+            item.className = 'preset-background-item' + (selectedDefaultBackground && selectedDefaultBackground.id === background.id ? ' selected' : '');
+            item.setAttribute('data-id', background.id);
+            item.setAttribute('data-name', background.name);
+            item.setAttribute('data-gradient', background.gradient);
+            
+            item.innerHTML = `
+                <div class="default-bg-gradient" style="background: ${background.gradient};"></div>
+                <div class="preset-background-name">${background.name}</div>
+                ${selectedDefaultBackground && selectedDefaultBackground.id === background.id ? '<div class="preset-background-check"><i class="fas fa-check"></i></div>' : ''}
+            `;
+            
+            item.addEventListener('click', function() {
+                toggleDefaultBackgroundSelection(background);
+            });
+            
+            grid.appendChild(item);
+        });
+    }
+    
+    function toggleDefaultBackgroundSelection(background) {
+        var previousSelected = document.querySelector('#defaultBackgroundGrid .preset-background-item.selected');
+        if (previousSelected) {
+            previousSelected.classList.remove('selected');
+            var checkIcon = previousSelected.querySelector('.preset-background-check');
+            if (checkIcon) {
+                checkIcon.remove();
+            }
+        }
+        
+        if (selectedDefaultBackground && selectedDefaultBackground.id === background.id) {
+            selectedDefaultBackground = null;
+        } else {
+            selectedDefaultBackground = background;
+            var currentItem = document.querySelector('#defaultBackgroundGrid .preset-background-item[data-id="' + background.id + '"]');
+            if (currentItem) {
+                currentItem.classList.add('selected');
+                var checkDiv = document.createElement('div');
+                checkDiv.className = 'preset-background-check';
+                checkDiv.innerHTML = '<i class="fas fa-check"></i>';
+                currentItem.appendChild(checkDiv);
+            }
+        }
+        
+        updateDefaultBgConfirmButtonState();
+    }
+    
+    function updateDefaultBgConfirmButtonState() {
+        var confirmBtn = document.getElementById('confirmDefaultBgBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = !selectedDefaultBackground;
+        }
+    }
+    
+    function confirmDefaultBackground() {
+        if (!selectedDefaultBackground) return;
+        
+        var gradient = selectedDefaultBackground.gradient;
+        var name = selectedDefaultBackground.name;
+        
+        var defaultBgSettings = {
+            type: 'gradient',
+            gradient: gradient,
+            name: name
+        };
+        
+        localStorage.setItem('defaultBackgroundGradient', JSON.stringify(defaultBgSettings));
+        
+        localStorage.removeItem('customBackground');
+        
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        var userIndex = users.findIndex(function(u) {
+            return u.username === currentUser.username;
+        });
+        
+        if (userIndex !== -1) {
+            if (users[userIndex].userProfile && users[userIndex].userProfile.background) {
+                delete users[userIndex].userProfile.background;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+            }
+        }
+        
+        resetToDefaultBackground();
+        
+        closeDefaultBackgroundModal();
+        
+        showAlert('默认背景已更新为 "' + name + '"');
+    }
+    
     function checkOfflineModeAndDisableFeatures() {
         var isOfflineMode = localStorage.getItem('offlineMode') === 'true';
         
@@ -8113,9 +8586,47 @@ document.addEventListener('DOMContentLoaded', function() {
         calendarToggle.checked = isCalendarEnabled;
     }
     
+    var globalThemeColorToggle = document.getElementById('enableGlobalThemeColor');
+    if (globalThemeColorToggle) {
+        var isGlobalThemeColorEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
+        globalThemeColorToggle.checked = isGlobalThemeColorEnabled;
+        
+        var globalThemeColorCard = document.getElementById('globalThemeColorCard');
+        if (globalThemeColorCard) {
+            globalThemeColorCard.style.display = isGlobalThemeColorEnabled ? 'block' : 'none';
+        }
+    }
+    
+    var globalThemeColorPicker = document.getElementById('globalThemeColorPicker');
+    if (globalThemeColorPicker) {
+        var savedColor = localStorage.getItem('globalThemeColor');
+        if (savedColor) {
+            globalThemeColorPicker.value = savedColor;
+        }
+        globalThemeColorPicker.addEventListener('input', updateGlobalThemeColorPreview);
+    }
+    
+    var applyGlobalThemeColorBtn = document.getElementById('applyGlobalThemeColor');
+    if (applyGlobalThemeColorBtn) {
+        applyGlobalThemeColorBtn.addEventListener('click', applyGlobalThemeColor);
+    }
+    
+    var resetGlobalThemeColorBtn = document.getElementById('resetGlobalThemeColor');
+    if (resetGlobalThemeColorBtn) {
+        resetGlobalThemeColorBtn.addEventListener('click', resetGlobalThemeColor);
+    }
+    
     var enhancedFeaturesToggleBtn = document.getElementById('enhancedFeaturesToggleBtn');
     if (enhancedFeaturesToggleBtn) {
         enhancedFeaturesToggleBtn.addEventListener('click', toggleEnhancedFeatures);
+    }
+    
+    updateGlobalThemeColorPreview();
+    
+    var savedGlobalThemeColor = localStorage.getItem('globalThemeColor');
+    var isGlobalThemeColorEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
+    if (isGlobalThemeColorEnabled && savedGlobalThemeColor) {
+        applyGlobalThemeColorToPage(savedGlobalThemeColor);
     }
     
 });
@@ -8163,6 +8674,291 @@ function toggleCalendarFeature() {
     if (typeof parent.updateEnhancedFeatureButtons === 'function') {
         parent.updateEnhancedFeatureButtons();
     }
+}
+
+function toggleGlobalThemeColorFeature() {
+    var enabled = document.getElementById('enableGlobalThemeColor').checked;
+    localStorage.setItem('globalThemeColorEnabled', enabled ? 'true' : 'false');
+    
+    var globalThemeColorCard = document.getElementById('globalThemeColorCard');
+    if (globalThemeColorCard) {
+        globalThemeColorCard.style.display = enabled ? 'block' : 'none';
+    }
+    
+    if (enabled) {
+        showAlert('全局主题颜色功能已启用，在个性化设置中可设置主题颜色');
+        applyGlobalThemeColor();
+    } else {
+        showAlert('全局主题颜色功能已关闭，将恢复默认主题颜色');
+        resetGlobalThemeColor();
+    }
+    
+    if (typeof parent.applyGlobalThemeColor === 'function') {
+        parent.applyGlobalThemeColor();
+    }
+}
+
+function applyGlobalThemeColor() {
+    var color = document.getElementById('globalThemeColorPicker').value;
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    var userIndex = users.findIndex(function(user) {
+        return user.username === currentUser.username;
+    });
+    
+    if (userIndex !== -1) {
+        if (!users[userIndex].userProfile) {
+            users[userIndex].userProfile = {};
+        }
+        users[userIndex].userProfile.globalThemeColor = color;
+        localStorage.setItem('registeredUsers', JSON.stringify(users));
+    }
+    
+    localStorage.setItem('globalThemeColor', color);
+    updateGlobalThemeColorPreview();
+    applyGlobalThemeColorToPage(color);
+    
+    showAlert('全局主题颜色已应用');
+    
+    if (typeof parent.applyGlobalThemeColor === 'function') {
+        parent.applyGlobalThemeColor();
+    }
+}
+
+function resetGlobalThemeColor() {
+    var defaultColor = '#d45d79';
+    document.getElementById('globalThemeColorPicker').value = defaultColor;
+    
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    var userIndex = users.findIndex(function(user) {
+        return user.username === currentUser.username;
+    });
+    
+    if (userIndex !== -1) {
+        if (!users[userIndex].userProfile) {
+            users[userIndex].userProfile = {};
+        }
+        users[userIndex].userProfile.globalThemeColor = defaultColor;
+        localStorage.setItem('registeredUsers', JSON.stringify(users));
+    }
+    
+    localStorage.setItem('globalThemeColor', defaultColor);
+    updateGlobalThemeColorPreview();
+    applyGlobalThemeColorToPage(defaultColor);
+    
+    showAlert('全局主题颜色已重置为默认值');
+    
+    if (typeof parent.applyGlobalThemeColor === 'function') {
+        parent.applyGlobalThemeColor();
+    }
+}
+
+function updateGlobalThemeColorPreview() {
+    var color = document.getElementById('globalThemeColorPicker').value;
+    var preview = document.getElementById('globalThemeColorPreview');
+    if (preview) {
+        var colorBar = preview.querySelector('.preview-color-bar');
+        var previewText = preview.querySelector('.preview-text');
+        if (colorBar) {
+            colorBar.style.background = 'linear-gradient(135deg, ' + color + ' 0%, ' + adjustColorBrightness(color, 20) + ' 100%)';
+        }
+        if (previewText) {
+            previewText.style.color = color;
+        }
+    }
+}
+
+function adjustColorBrightness(color, percent) {
+    var num = parseInt(color.replace('#', ''), 16);
+    var amt = Math.round(2.55 * percent);
+    var R = (num >> 16) + amt;
+    var G = (num >> 8 & 0x00FF) + amt;
+    var B = (num & 0x0000FF) + amt;
+    return '#' + (0x1000000 +
+        (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
+
+function applyGlobalThemeColorToPage(color) {
+    var style = document.createElement('style');
+    style.id = 'global-theme-color-style';
+    var existingStyle = document.getElementById('global-theme-color-style');
+    if (existingStyle) {
+        existingStyle.remove();
+    }
+    
+    var lighterColor = adjustColorBrightness(color, 20);
+    
+    style.textContent = `
+        :root {
+            --global-theme-primary: ${color};
+            --global-theme-secondary: ${lighterColor};
+            --global-theme-gradient: linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%);
+        }
+        .sidebar-avatar {
+            background: var(--global-theme-gradient) !important;
+        }
+        .menu-item:hover {
+            background: rgba(${hexToRgb(color)}, 0.1) !important;
+            border-left-color: ${color} !important;
+        }
+        .menu-item.active {
+            background: linear-gradient(135deg, rgba(${hexToRgb(color)}, 0.1) 0%, rgba(${hexToRgb(lighterColor)}, 0.1) 100%) !important;
+            border-left-color: ${color} !important;
+            color: ${color} !important;
+        }
+        .back-btn {
+            background: var(--global-theme-gradient) !important;
+        }
+        .back-btn:hover {
+            box-shadow: 0 5px 15px rgba(${hexToRgb(color)}, 0.4) !important;
+        }
+        .collapse-all-btn {
+            background: rgba(${hexToRgb(color)}, 0.1) !important;
+            color: ${color} !important;
+        }
+        .collapse-all-btn:hover {
+            background: rgba(${hexToRgb(color)}, 0.2) !important;
+        }
+        .header-left::before {
+            background: var(--global-theme-gradient) !important;
+        }
+        .card-icon {
+            background: var(--global-theme-gradient) !important;
+        }
+        .card-collapse-btn {
+            background: rgba(${hexToRgb(color)}, 0.1) !important;
+            color: ${color} !important;
+        }
+        .card-collapse-btn:hover {
+            background: rgba(${hexToRgb(color)}, 0.2) !important;
+        }
+        .two-factor-item {
+            background: rgba(${hexToRgb(color)}, 0.05) !important;
+            border-color: rgba(${hexToRgb(color)}, 0.1) !important;
+        }
+        .two-factor-item:hover {
+            background: rgba(${hexToRgb(color)}, 0.1) !important;
+            border-color: rgba(${hexToRgb(color)}, 0.2) !important;
+        }
+        .two-factor-btn {
+            background: var(--global-theme-gradient) !important;
+        }
+        .two-factor-btn:hover {
+            box-shadow: 0 5px 15px rgba(${hexToRgb(color)}, 0.4) !important;
+        }
+        .form-input-group input {
+            border-color: rgba(${hexToRgb(color)}, 0.3) !important;
+        }
+        .form-input-group input:focus {
+            border-color: ${color} !important;
+            box-shadow: 0 0 0 2px rgba(${hexToRgb(color)}, 0.2) !important;
+        }
+        textarea {
+            border-color: rgba(${hexToRgb(color)}, 0.3) !important;
+        }
+        textarea:focus {
+            border-color: ${color} !important;
+            box-shadow: 0 0 0 2px rgba(${hexToRgb(color)}, 0.2) !important;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: ${color} !important;
+        }
+        body.dark-mode .toggle-switch input:checked + .toggle-slider {
+            background: var(--global-theme-gradient) !important;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(${hexToRgb(color)}, 0.1) 0%, rgba(${hexToRgb(lighterColor)}, 0.1) 100%) !important;
+        }
+        .stat-card:hover {
+            box-shadow: 0 10px 25px rgba(${hexToRgb(color)}, 0.2) !important;
+        }
+        .stat-icon {
+            background: var(--global-theme-gradient) !important;
+        }
+        .avatar-option {
+            background: var(--global-theme-gradient) !important;
+        }
+        .avatar-option:hover {
+            box-shadow: 0 5px 15px rgba(${hexToRgb(color)}, 0.3) !important;
+        }
+        .avatar-option.selected {
+            border-color: ${color} !important;
+            box-shadow: 0 0 0 4px rgba(${hexToRgb(color)}, 0.3) !important;
+        }
+        .upload-avatar-btn {
+            background: var(--global-theme-gradient) !important;
+        }
+        .upload-avatar-btn:hover {
+            box-shadow: 0 5px 15px rgba(${hexToRgb(color)}, 0.4) !important;
+        }
+        .selecting-indicator {
+            background: var(--global-theme-gradient) !important;
+        }
+        .selecting-indicator::after {
+            border-top-color: ${lighterColor} !important;
+        }
+        .preview-button {
+            background: var(--global-theme-gradient) !important;
+        }
+        .submit-btn {
+            background: var(--global-theme-gradient) !important;
+        }
+        .submit-btn:hover {
+            box-shadow: 0 5px 15px rgba(${hexToRgb(color)}, 0.4) !important;
+        }
+        .edit-btn, .copy-btn, .action-btn {
+            background: var(--global-theme-gradient) !important;
+        }
+        .edit-btn:hover, .copy-btn:hover, .action-btn:hover {
+            box-shadow: 0 3px 10px rgba(${hexToRgb(color)}, 0.3) !important;
+        }
+        .confirm-btn {
+            background: var(--global-theme-gradient) !important;
+        }
+        .confirm-btn:hover {
+            box-shadow: 0 4px 12px rgba(${hexToRgb(color)}, 0.3) !important;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, ${color} 0%, ${lighterColor} 100%) !important;
+        }
+        .game-progress-fill {
+            background: linear-gradient(90deg, ${color} 0%, ${lighterColor} 100%) !important;
+        }
+        .achievement-item.unlocked .achievement-icon {
+            background: var(--global-theme-gradient) !important;
+        }
+        .achievement-game-tag {
+            background: rgba(${hexToRgb(color)}, 0.1) !important;
+            color: ${color} !important;
+        }
+        .game-selector-btn {
+            border-color: ${color} !important;
+            background: linear-gradient(135deg, rgba(${hexToRgb(color)}, 0.1) 0%, rgba(${hexToRgb(lighterColor)}, 0.1) 100%) !important;
+            color: ${color} !important;
+        }
+        .game-selector-btn:hover {
+            border-color: ${color} !important;
+            box-shadow: 0 4px 12px rgba(${hexToRgb(color)}, 0.3) !important;
+        }
+        .game-selector-btn.active {
+            border-color: ${color} !important;
+            background: linear-gradient(135deg, rgba(${hexToRgb(color)}, 0.15) 0%, rgba(${hexToRgb(lighterColor)}, 0.15) 100%) !important;
+            color: ${color} !important;
+        }
+        .game-progress-percent {
+            color: ${color} !important;
+        }
+    `;
+    
+    document.head.appendChild(style);
+}
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? parseInt(result[1], 16) + ', ' + parseInt(result[2], 16) + ', ' + parseInt(result[3], 16) : '212, 93, 121';
 }
 
 function toggleEnhancedFeatures() {

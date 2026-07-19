@@ -122,6 +122,46 @@
                 existingStyle.remove();
             }
             
+            // 如果没有背景设置，确保显示默认背景
+            if (!backgroundSettings || !backgroundSettings.image) {
+                // 检查用户选择的默认背景渐变
+                var userDefaultBg = localStorage.getItem('defaultBackgroundGradient');
+                var gradient = 'radial-gradient(ellipse at 20% 20%, rgba(212, 93, 121, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(102, 126, 234, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(230, 126, 138, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)';
+                
+                if (userDefaultBg) {
+                    try {
+                        var parsedDefaultBg = JSON.parse(userDefaultBg);
+                        if (parsedDefaultBg && parsedDefaultBg.gradient) {
+                            gradient = parsedDefaultBg.gradient;
+                        }
+                    } catch (e) {
+                        console.warn('解析用户默认背景失败:', e);
+                    }
+                }
+                
+                var defaultStyle = document.createElement('style');
+                defaultStyle.id = 'custom-background-style';
+                defaultStyle.textContent = `
+                    body {
+                        background: ${gradient} !important;
+                    }
+                    
+                    body::before {
+                        display: none !important;
+                    }
+                    
+                    .community-bg {
+                        display: block !important;
+                    }
+                    
+                    .settings-container::before {
+                        display: none !important;
+                    }
+                `;
+                document.head.appendChild(defaultStyle);
+                return;
+            }
+            
             // 创建新的背景样式
             var style = document.createElement('style');
             style.id = 'custom-background-style';
@@ -207,7 +247,9 @@
         function loadCustomBackground() {
             try {
                 var backgroundSettings = localStorage.getItem('customBackground');
+                
                 if (!backgroundSettings) {
+                    applyBackgroundStyle(null);
                     return;
                 }
                 
@@ -215,6 +257,7 @@
                 
                 if (!backgroundSettings || typeof backgroundSettings !== 'object') {
                     console.warn('背景设置数据无效');
+                    applyBackgroundStyle(null);
                     return;
                 }
                 
@@ -234,9 +277,14 @@
                                     });
                                 } catch (e) {
                                     console.error('应用背景样式失败:', e);
+                                    applyBackgroundStyle(null);
                                 }
+                            } else {
+                                applyBackgroundStyle(null);
                             }
                         });
+                    } else {
+                        applyBackgroundStyle(null);
                     }
                 } else if (backgroundSettings.image) {
                     try {
@@ -249,9 +297,12 @@
                     } catch (e) {
                         console.error('应用背景样式失败:', e);
                     }
+                } else {
+                    applyBackgroundStyle(null);
                 }
             } catch (e) {
                 console.error('加载背景设置失败:', e);
+                applyBackgroundStyle(null);
             }
         }
         
@@ -318,6 +369,147 @@
             if (transparentMode) {
                 applyTransparentThemeToPage();
             }
+        }
+        
+        function loadGlobalThemeColor() {
+            var isEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
+            if (!isEnabled) return;
+            
+            var savedColor = localStorage.getItem('globalThemeColor');
+            if (!savedColor) savedColor = '#d45d79';
+            
+            applyGlobalThemeColorToLoginPage(savedColor);
+        }
+        
+        function applyGlobalThemeColorToLoginPage(color) {
+            var lighterColor = adjustColorBrightness(color, 20);
+            
+            var style = document.createElement('style');
+            style.id = 'global-theme-color-style';
+            var existingStyle = document.getElementById('global-theme-color-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            var rgb = hexToRgb(color);
+            
+            style.textContent = `
+                :root {
+                    --global-theme-primary: ${color};
+                    --global-theme-secondary: ${lighterColor};
+                    --global-theme-gradient: linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%);
+                    --global-theme-primary-rgb: ${rgb};
+                }
+                .building {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .login-container::before {
+                    background: linear-gradient(90deg, ${color}, ${lighterColor}, ${color}) !important;
+                }
+                .logo h1 {
+                    background: linear-gradient(90deg, ${color}, ${lighterColor}) !important;
+                }
+                .logo p {
+                    color: ${lighterColor} !important;
+                }
+                .input-group input {
+                    border-color: rgba(${rgb}, 0.2) !important;
+                }
+                .input-group input:focus {
+                    border-color: ${color} !important;
+                    box-shadow: 0 0 0 2px rgba(${rgb}, 0.2) !important;
+                }
+                .input-group i {
+                    color: ${lighterColor} !important;
+                }
+                .toggle-password:hover {
+                    color: ${color} !important;
+                    background: rgba(${rgb}, 0.1) !important;
+                }
+                .captcha-img {
+                    border-color: rgba(${rgb}, 0.2) !important;
+                    color: ${color} !important;
+                }
+                .captcha-img:hover {
+                    box-shadow: 0 3px 10px rgba(${rgb}, 0.2) !important;
+                }
+                .captcha-text {
+                    color: ${color} !important;
+                }
+                .remember input, .auto-login input {
+                    accent-color: ${color} !important;
+                }
+                .forgot {
+                    color: ${lighterColor} !important;
+                }
+                .forgot:hover {
+                    color: ${color} !important;
+                }
+                .forgot-password a {
+                    color: ${lighterColor} !important;
+                }
+                .forgot-password a:hover {
+                    color: ${color} !important;
+                }
+                .recovery-option:hover {
+                    border-color: ${lighterColor} !important;
+                }
+                .recovery-icon {
+                    background: linear-gradient(135deg, ${lighterColor} 0%, ${color} 100%) !important;
+                }
+                .login-btn {
+                    background: linear-gradient(90deg, ${color}, ${lighterColor}) !important;
+                }
+                .login-btn:hover {
+                    box-shadow: 0 5px 15px rgba(${rgb}, 0.4) !important;
+                }
+                .login-btn.quick-login {
+                    background: linear-gradient(90deg, ${color}, ${lighterColor}) !important;
+                }
+                .login-btn.quick-login:hover {
+                    box-shadow: 0 5px 15px rgba(${rgb}, 0.4) !important;
+                }
+                .divider {
+                    color: ${lighterColor} !important;
+                }
+                .divider::before, .divider::after {
+                    background: rgba(${rgb}, 0.3) !important;
+                }
+                .signup {
+                    color: ${lighterColor} !important;
+                }
+                .signup a {
+                    color: ${color} !important;
+                }
+                .device {
+                    color: rgba(${rgb}, 0.5) !important;
+                }
+                body.dark-mode .login-btn {
+                    background: linear-gradient(90deg, ${color}, ${lighterColor}) !important;
+                }
+                body.dark-mode .login-btn:hover {
+                    box-shadow: 0 5px 15px rgba(${rgb}, 0.4) !important;
+                }
+            `;
+            
+            document.head.appendChild(style);
+        }
+        
+        function adjustColorBrightness(color, percent) {
+            var num = parseInt(color.replace('#', ''), 16);
+            var amt = Math.round(2.55 * percent);
+            var R = (num >> 16) + amt;
+            var G = (num >> 8 & 0x00FF) + amt;
+            var B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 +
+                (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+        
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? parseInt(result[1], 16) + ', ' + parseInt(result[2], 16) + ', ' + parseInt(result[3], 16) : '212, 93, 121';
         }
         
         // 应用毛玻璃主题到页面
@@ -3725,6 +3917,9 @@
             // 加载毛玻璃主题设置
             loadThemeSettings();
             
+            // 加载全局主题颜色设置
+            loadGlobalThemeColor();
+            
             // 加载天气设置（包括温度单位）
             loadWeatherSettings();
             
@@ -4714,13 +4909,9 @@
     </div>
     
     <div class="community-bg">
-        <div class="building building-1"></div>
-        <div class="building building-2"></div>
-        <div class="building building-3"></div>
-        <div class="building building-4"></div>
-        <div class="building building-5"></div>
-        <div class="building building-6"></div>
-        <div class="building building-7"></div>
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+        <div class="bg-shape bg-shape-3"></div>
     </div>
 
 
@@ -7465,8 +7656,11 @@
             const savedUsername = localStorage.getItem('savedUsername');
             const savedPassword = localStorage.getItem('savedPassword');
             const currentUser = localStorage.getItem('currentUser');
+            const skipAutoLogin = sessionStorage.getItem('skipAutoLogin') === 'true';
             
-            if (autoLogin && rememberMe && savedUsername && savedPassword) {
+            if (skipAutoLogin) {
+                sessionStorage.removeItem('skipAutoLogin');
+            } else if (autoLogin && rememberMe && savedUsername && savedPassword) {
                 // 检查是否已经登录
                 if (!currentUser) {
                     // 显示自动登录成功弹窗

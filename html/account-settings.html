@@ -144,6 +144,14 @@
                     <p id="settingsDesc">管理您的账户基本信息</p>
                 </div>
                 <div class="header-right">
+                    <div class="quick-nav-menu">
+                        <button class="quick-nav-btn" id="quickNavBtn" title="快速导航">
+                            <i class="fas fa-list-ul"></i>
+                            <span>导航</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="quick-nav-dropdown" id="quickNavDropdown"></div>
+                    </div>
                     <button class="collapse-all-btn" id="collapseAllBtn" title="收起所有卡片">
                         <i class="fas fa-chevron-up"></i>
                         <span>全部收起</span>
@@ -155,6 +163,25 @@
             </div>
             
             <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+            
+            <div class="mobile-nav-menu" id="mobileNavMenu">
+                <div class="mobile-nav-header">
+                    <div class="mobile-nav-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="mobile-nav-user">
+                        <span class="mobile-nav-username" id="mobileNavUsername">PREAlmax</span>
+                        <span class="mobile-nav-version" id="mobileNavVersion">RC 2.7.0.6 (b10)</span>
+                    </div>
+                </div>
+                <div class="mobile-nav-content" id="mobileNavContent"></div>
+                <div class="mobile-nav-footer">
+                    <button class="mobile-nav-back-btn" id="mobileNavBackBtn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>返回</span>
+                    </button>
+                </div>
+            </div>
             
             <div class="settings-content">
                 <div class="settings-section" id="section-test">
@@ -335,6 +362,19 @@
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="enableCalendar" onchange="toggleCalendarFeature()">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-palette" style="color: #667eea; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">全局主题颜色</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在个性化设置中显示"全局主题颜色"卡片，可自定义启动器主题颜色</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableGlobalThemeColor" onchange="toggleGlobalThemeColorFeature()">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -1201,13 +1241,13 @@
                                     <i class="fas fa-moon"></i>
                                     <span>暗色主题</span>
                                 </div>
-                                <div class="theme-option" data-theme="custom">
-                                    <i class="fas fa-paint-brush"></i>
-                                    <span>自定义主题</span>
-                                </div>
                                 <div class="theme-option theme-option-more" id="moreThemesBtn">
                                     <i class="fas fa-palette"></i>
-                                    <span>更多主题</span>
+                                    <span>更换更多主题</span>
+                                </div>
+                                <div class="theme-option theme-option-more" id="changeDefaultBgBtn">
+                                    <i class="fas fa-image"></i>
+                                    <span>更换默认背景</span>
                                 </div>
                             </div>
                             
@@ -1528,6 +1568,52 @@
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-card" id="globalThemeColorCard" style="display: none;">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <div class="card-title">
+                                <h3>全局主题颜色</h3>
+                                <p>设置启动器的主题颜色，应用到所有页面</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-paint-brush" style="color: #3498db; font-size: 18px; flex-shrink: 0;"></i>
+                                    <h4 style="margin: 0;">设置全局主题颜色</h4>
+                                </div>
+                                <div class="global-theme-color-controls">
+                                    <input type="color" id="globalThemeColorPicker" value="#d45d79" class="theme-color-picker">
+                                    <button class="two-factor-btn" id="applyGlobalThemeColor">
+                                        <i class="fas fa-check"></i>
+                                        应用
+                                    </button>
+                                    <button class="two-factor-btn secondary" id="resetGlobalThemeColor">
+                                        <i class="fas fa-undo"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                        <i class="fas fa-eye" style="color: #3498db; font-size: 18px;"></i>
+                                        <div>
+                                            <h4 style="margin: 0;">主题预览</h4>
+                                        </div>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">当前选择的主题颜色效果预览</p>
+                                </div>
+                                <div class="theme-color-preview" id="globalThemeColorPreview">
+                                    <div class="preview-color-bar"></div>
+                                    <div class="preview-text">主题颜色预览</div>
                                 </div>
                             </div>
                         </div>
@@ -2845,6 +2931,27 @@
             <div class="preset-background-footer">
                 <button class="preset-btn preset-btn-cancel" id="cancelPresetBtn">取消</button>
                 <button class="preset-btn preset-btn-confirm" id="confirmPresetBtn">确认应用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 更换默认背景弹窗 -->
+    <div id="defaultBackgroundModal" class="preset-background-modal">
+        <div class="preset-background-container">
+            <div class="preset-background-header">
+                <h3>更换默认背景</h3>
+                <div class="preset-header-actions">
+                    <button class="close-preset-modal" id="closeDefaultBgModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="preset-background-grid" id="defaultBackgroundGrid">
+                <!-- 默认背景将通过JS动态添加 -->
+            </div>
+            <div class="preset-background-footer">
+                <button class="preset-btn preset-btn-cancel" id="cancelDefaultBgBtn">取消</button>
+                <button class="preset-btn preset-btn-confirm" id="confirmDefaultBgBtn">确认应用</button>
             </div>
         </div>
     </div>

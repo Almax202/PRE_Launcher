@@ -232,6 +232,37 @@
                 existingStyle.remove();
             }
             
+            // 如果没有背景设置，确保显示默认背景
+            if (!backgroundSettings || !backgroundSettings.image) {
+                var userDefaultBg = localStorage.getItem('defaultBackgroundGradient');
+                var gradient = 'radial-gradient(ellipse at 20% 20%, rgba(212, 93, 121, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(102, 126, 234, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(230, 126, 138, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)';
+                
+                if (userDefaultBg) {
+                    try {
+                        var parsedDefaultBg = JSON.parse(userDefaultBg);
+                        if (parsedDefaultBg && parsedDefaultBg.gradient) {
+                            gradient = parsedDefaultBg.gradient;
+                        }
+                    } catch (e) {
+                        console.warn('解析用户默认背景失败:', e);
+                    }
+                }
+                
+                var defaultStyle = document.createElement('style');
+                defaultStyle.id = 'custom-background-style';
+                defaultStyle.textContent = `
+                    body {
+                        background: ${gradient} !important;
+                    }
+                    
+                    body::before {
+                        display: none !important;
+                    }
+                `;
+                document.head.appendChild(defaultStyle);
+                return;
+            }
+            
             // 创建新的背景样式
             var style = document.createElement('style');
             style.id = 'custom-background-style';
@@ -307,7 +338,9 @@
         function loadCustomBackground() {
             try {
                 var backgroundSettings = localStorage.getItem('customBackground');
+                
                 if (!backgroundSettings) {
+                    applyBackgroundStyle(null);
                     return;
                 }
                 
@@ -315,6 +348,7 @@
                 
                 if (!backgroundSettings || typeof backgroundSettings !== 'object') {
                     console.warn('背景设置数据无效');
+                    applyBackgroundStyle(null);
                     return;
                 }
                 
@@ -334,9 +368,14 @@
                                     });
                                 } catch (e) {
                                     console.error('应用背景样式失败:', e);
+                                    applyBackgroundStyle(null);
                                 }
+                            } else {
+                                applyBackgroundStyle(null);
                             }
                         });
+                    } else {
+                        applyBackgroundStyle(null);
                     }
                 } else if (backgroundSettings.image) {
                     try {
@@ -348,10 +387,14 @@
                         });
                     } catch (e) {
                         console.error('应用背景样式失败:', e);
+                        applyBackgroundStyle(null);
                     }
+                } else {
+                    applyBackgroundStyle(null);
                 }
             } catch (e) {
                 console.error('加载背景设置失败:', e);
+                applyBackgroundStyle(null);
             }
         }
         
@@ -715,6 +758,144 @@
             document.body.classList.add('transparent-mode');
         }
         
+        function loadGlobalThemeColor() {
+            var isEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
+            if (!isEnabled) return;
+            
+            var savedColor = localStorage.getItem('globalThemeColor');
+            if (!savedColor) savedColor = '#d45d79';
+            
+            applyGlobalThemeColorToHomePage(savedColor);
+        }
+        
+        function applyGlobalThemeColorToHomePage(color) {
+            var lighterColor = adjustColorBrightness(color, 20);
+            
+            var style = document.createElement('style');
+            style.id = 'global-theme-color-style';
+            var existingStyle = document.getElementById('global-theme-color-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            var rgb = hexToRgb(color);
+            
+            style.textContent = `
+                :root {
+                    --global-theme-primary: ${color};
+                    --global-theme-secondary: ${lighterColor};
+                    --global-theme-gradient: linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%);
+                    --global-theme-primary-rgb: ${rgb};
+                }
+                .sidebar-avatar {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .menu-item:hover {
+                    background: rgba(${rgb}, 0.1) !important;
+                    border-left-color: ${color} !important;
+                }
+                .menu-item.active {
+                    background: linear-gradient(135deg, rgba(${rgb}, 0.1) 0%, rgba(${hexToRgb(lighterColor)}, 0.1) 100%) !important;
+                    border-left-color: ${color} !important;
+                    color: ${color} !important;
+                }
+                .header-left::before {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .card-icon {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .toggle-switch input:checked + .toggle-slider {
+                    background-color: ${color} !important;
+                }
+                body.dark-mode .toggle-switch input:checked + .toggle-slider {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .stat-card {
+                    background: linear-gradient(135deg, rgba(${rgb}, 0.1) 0%, rgba(${hexToRgb(lighterColor)}, 0.1) 100%) !important;
+                }
+                .stat-card:hover {
+                    box-shadow: 0 10px 25px rgba(${rgb}, 0.2) !important;
+                }
+                .stat-icon {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .preview-button {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .preview-button:hover {
+                    box-shadow: 0 4px 12px rgba(${rgb}, 0.3) !important;
+                }
+                .submit-btn {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .submit-btn:hover {
+                    box-shadow: 0 5px 15px rgba(${rgb}, 0.4) !important;
+                }
+                .edit-btn, .copy-btn, .action-btn {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .edit-btn:hover, .copy-btn:hover, .action-btn:hover {
+                    box-shadow: 0 3px 10px rgba(${rgb}, 0.3) !important;
+                }
+                .confirm-btn {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .confirm-btn:hover {
+                    box-shadow: 0 4px 12px rgba(${rgb}, 0.3) !important;
+                }
+                .progress-fill {
+                    background: linear-gradient(90deg, ${color} 0%, ${lighterColor} 100%) !important;
+                }
+                .game-progress-fill {
+                    background: linear-gradient(90deg, ${color} 0%, ${lighterColor} 100%) !important;
+                }
+                .achievement-item.unlocked .achievement-icon {
+                    background: var(--global-theme-gradient) !important;
+                }
+                .achievement-game-tag {
+                    background: rgba(${rgb}, 0.1) !important;
+                    color: ${color} !important;
+                }
+                .game-selector-btn {
+                    border-color: ${color} !important;
+                    background: linear-gradient(135deg, rgba(${rgb}, 0.1) 0%, rgba(${hexToRgb(lighterColor)}, 0.1) 100%) !important;
+                    color: ${color} !important;
+                }
+                .game-selector-btn:hover {
+                    border-color: ${color} !important;
+                    box-shadow: 0 4px 12px rgba(${rgb}, 0.3) !important;
+                }
+                .game-selector-btn.active {
+                    border-color: ${color} !important;
+                    background: linear-gradient(135deg, rgba(${rgb}, 0.15) 0%, rgba(${hexToRgb(lighterColor)}, 0.15) 100%) !important;
+                    color: ${color} !important;
+                }
+                .game-progress-percent {
+                    color: ${color} !important;
+                }
+            `;
+            
+            document.head.appendChild(style);
+        }
+        
+        function adjustColorBrightness(color, percent) {
+            var num = parseInt(color.replace('#', ''), 16);
+            var amt = Math.round(2.55 * percent);
+            var R = (num >> 16) + amt;
+            var G = (num >> 8 & 0x00FF) + amt;
+            var B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 +
+                (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+        
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? parseInt(result[1], 16) + ', ' + parseInt(result[2], 16) + ', ' + parseInt(result[3], 16) : '212, 93, 121';
+        }
+        
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
             // 加载用户头像
@@ -725,6 +906,9 @@
             
             // 加载毛玻璃主题设置
             loadGlassThemeSettings();
+            
+            // 加载全局主题颜色设置
+            loadGlobalThemeColor();
             
             // 更新版本号显示
             updateVersionDisplay('homepage');
@@ -1252,6 +1436,10 @@
                         <i class="fas fa-sign-out-alt"></i>
                         <span>退出登录</span>
                     </button>
+                    <button class="more-action-btn back-login-action" id="backToLoginBtn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>退回至登录页</span>
+                    </button>
                 </div>
             </div>
             <div class="confirm-footer">
@@ -1628,6 +1816,17 @@
                     moreActionsModal.style.display = 'none';
                 }, 300);
                 document.getElementById('logoutModal').classList.add('active');
+            });
+
+            document.getElementById('backToLoginBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                var moreActionsModal = document.getElementById('moreActionsModal');
+                moreActionsModal.classList.remove('active');
+                setTimeout(function() {
+                    moreActionsModal.style.display = 'none';
+                }, 300);
+                sessionStorage.setItem('skipAutoLogin', 'true');
+                window.location.href = '../index.html';
             });
 
             document.getElementById('cancelLogout').addEventListener('click', function() {
