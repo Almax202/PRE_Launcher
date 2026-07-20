@@ -378,6 +378,22 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-gift" style="color: #d45d79; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">兑换码</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"兑换码"按钮，可使用兑换码兑换动态背景等福利</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <button class="test-redeem-code-btn" onclick="showTestRedeemCode()" style="padding: 6px 12px; font-size: 12px; background: rgba(212, 93, 121, 0.1); color: #d45d79; border: 1px solid rgba(212, 93, 121, 0.3); border-radius: 4px; cursor: pointer; transition: all 0.2s;">获取测试用兑换码</button>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="enableRedeemCode" onchange="toggleRedeemCodeFeature()">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     

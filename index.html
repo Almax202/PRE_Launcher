@@ -127,12 +127,24 @@
                 // 检查用户选择的默认背景渐变
                 var userDefaultBg = localStorage.getItem('defaultBackgroundGradient');
                 var gradient = 'radial-gradient(ellipse at 20% 20%, rgba(212, 93, 121, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(102, 126, 234, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(230, 126, 138, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)';
+                var backgroundSize = '';
+                var animation = '';
+                var isDynamic = false;
                 
                 if (userDefaultBg) {
                     try {
                         var parsedDefaultBg = JSON.parse(userDefaultBg);
                         if (parsedDefaultBg && parsedDefaultBg.gradient) {
                             gradient = parsedDefaultBg.gradient;
+                        }
+                        if (parsedDefaultBg && parsedDefaultBg.isDynamic) {
+                            isDynamic = true;
+                            if (parsedDefaultBg.backgroundSize) {
+                                backgroundSize = parsedDefaultBg.backgroundSize;
+                            }
+                            if (parsedDefaultBg.animation) {
+                                animation = parsedDefaultBg.animation;
+                            }
                         }
                     } catch (e) {
                         console.warn('解析用户默认背景失败:', e);
@@ -141,9 +153,14 @@
                 
                 var defaultStyle = document.createElement('style');
                 defaultStyle.id = 'custom-background-style';
+                var bodyStyle = `background: ${gradient} !important;`;
+                if (isDynamic) {
+                    if (backgroundSize) bodyStyle += ` background-size: ${backgroundSize} !important;`;
+                    if (animation) bodyStyle += ` animation: ${animation} !important;`;
+                }
                 defaultStyle.textContent = `
                     body {
-                        background: ${gradient} !important;
+                        ${bodyStyle}
                     }
                     
                     body::before {
@@ -3820,6 +3837,7 @@
                 var isStickyNotesEnabled = localStorage.getItem('stickyNotesEnabled') === 'true';
                 var isWeatherFeatureEnabled = localStorage.getItem('weatherFeatureEnabled') === 'true';
                 var isCalendarEnabled = localStorage.getItem('calendarEnabled') === 'true';
+                var isRedeemCodeEnabled = localStorage.getItem('redeemCodeEnabled') === 'true';
                 
                 var guideBtn = document.getElementById('modalShowGuideBtn');
                 var uiScaleBtn = document.getElementById('modalUiScaleBtn');
@@ -3828,6 +3846,7 @@
                 var stickyNotesBtn = document.getElementById('modalStickyNotesBtn');
                 var weatherBtn = document.getElementById('modalWeatherBtn');
                 var calendarBtn = document.getElementById('modalCalendarBtn');
+                var redeemCodeBtn = document.getElementById('modalRedeemCodeBtn');
                 var moreFeaturesButtons = document.querySelector('.more-features-buttons');
                 var moreFeaturesEmpty = document.getElementById('moreFeaturesEmpty');
                 var mobileGuideBtn = document.getElementById('mobileModalShowGuideBtn');
@@ -3837,6 +3856,7 @@
                 var mobileStickyNotesBtn = document.getElementById('mobileModalStickyNotesBtn');
                 var mobileWeatherBtn = document.getElementById('mobileModalWeatherBtn');
                 var mobileCalendarBtn = document.getElementById('mobileModalCalendarBtn');
+                var mobileRedeemCodeBtn = document.getElementById('mobileModalRedeemCodeBtn');
                 var mobileMoreFeaturesEmpty = document.getElementById('mobileMoreFeaturesEmpty');
                 
                 if (guideBtn) {
@@ -3864,7 +3884,11 @@
                     calendarBtn.style.display = isCalendarEnabled ? 'flex' : 'none';
                 }
                 
-                var hasAnyFeature = guideEnabled || uiScaleEnabled || hideUiEnabled || aboutLauncherEnabled || isStickyNotesEnabled || isWeatherFeatureEnabled || isCalendarEnabled;
+                if (redeemCodeBtn) {
+                    redeemCodeBtn.style.display = isRedeemCodeEnabled ? 'flex' : 'none';
+                }
+                
+                var hasAnyFeature = guideEnabled || uiScaleEnabled || hideUiEnabled || aboutLauncherEnabled || isStickyNotesEnabled || isWeatherFeatureEnabled || isCalendarEnabled || isRedeemCodeEnabled;
                 if (moreFeaturesButtons) {
                     moreFeaturesButtons.style.display = hasAnyFeature ? 'grid' : 'none';
                 }
@@ -3892,6 +3916,9 @@
                 }
                 if (mobileCalendarBtn) {
                     mobileCalendarBtn.style.display = isCalendarEnabled ? 'flex' : 'none';
+                }
+                if (mobileRedeemCodeBtn) {
+                    mobileRedeemCodeBtn.style.display = isRedeemCodeEnabled ? 'flex' : 'none';
                 }
                 if (mobileMoreFeaturesEmpty) {
                     mobileMoreFeaturesEmpty.style.display = hasAnyFeature ? 'none' : 'flex';
@@ -4425,6 +4452,15 @@
                                         <i class="fas fa-info-circle"></i>
                                     </div>
                                 </button>
+                                <button class="more-feature-card" id="mobileModalRedeemCodeBtn" style="display: none;">
+                                    <div class="feature-card-icon redeem-code-icon">
+                                        <i class="fas fa-gift"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">兑换码</span>
+                                        <span class="feature-card-desc">使用兑换码兑换更多物品</span>
+                                    </div>
+                                </button>
                             </div>
                             <div class="more-features-empty" id="mobileMoreFeaturesEmpty" style="display: none;">
                                 <div class="empty-icon-container">
@@ -4458,40 +4494,68 @@
                     }, 300);
                 });
                 
-                document.getElementById('mobileModalUiScaleBtn').addEventListener('click', function() {
-                    closeMobileFunctionsModal();
-                    setTimeout(function() {
-                        document.getElementById('uiScaleBtn').click();
-                    }, 300);
-                });
+                var mobileModalUiScaleBtn = document.getElementById('mobileModalUiScaleBtn');
+                if (mobileModalUiScaleBtn) {
+                    mobileModalUiScaleBtn.addEventListener('click', function() {
+                        closeMobileFunctionsModal();
+                        setTimeout(function() {
+                            var uiScaleBtn = document.getElementById('uiScaleBtn');
+                            if (uiScaleBtn) {
+                                uiScaleBtn.click();
+                            }
+                        }, 300);
+                    });
+                }
                 
-                document.getElementById('mobileModalShowGuideBtn').addEventListener('click', function() {
-                    closeMobileFunctionsModal();
-                    setTimeout(function() {
-                        if (typeof showGuide === 'function') {
-                            showGuide();
-                        }
-                    }, 300);
-                });
+                var mobileModalShowGuideBtn = document.getElementById('mobileModalShowGuideBtn');
+                if (mobileModalShowGuideBtn) {
+                    mobileModalShowGuideBtn.addEventListener('click', function() {
+                        closeMobileFunctionsModal();
+                        setTimeout(function() {
+                            if (typeof showGuide === 'function') {
+                                showGuide();
+                            }
+                        }, 300);
+                    });
+                }
                 
-                document.getElementById('mobileModalCalendarBtn').addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    closeMobileFunctionsModal();
-                    setTimeout(function() {
-                        if (typeof showCalendarModal === 'function') {
-                            showCalendarModal();
-                        }
-                    }, 300);
-                });
+                var mobileModalCalendarBtn = document.getElementById('mobileModalCalendarBtn');
+                if (mobileModalCalendarBtn) {
+                    mobileModalCalendarBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        closeMobileFunctionsModal();
+                        setTimeout(function() {
+                            if (typeof showCalendarModal === 'function') {
+                                showCalendarModal();
+                            }
+                        }, 300);
+                    });
+                }
                 
-                document.getElementById('mobileModalStickyNotesBtn').addEventListener('click', function() {
-                    closeMobileFunctionsModal();
-                    setTimeout(function() {
-                        if (typeof toggleStickyNotes === 'function') {
-                            toggleStickyNotes();
-                        }
-                    }, 300);
-                });
+                var mobileModalRedeemCodeBtn = document.getElementById('mobileModalRedeemCodeBtn');
+                if (mobileModalRedeemCodeBtn) {
+                    mobileModalRedeemCodeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        closeMobileFunctionsModal();
+                        setTimeout(function() {
+                            if (typeof showRedeemCodeModal === 'function') {
+                                showRedeemCodeModal();
+                            }
+                        }, 300);
+                    });
+                }
+                
+                var mobileModalStickyNotesBtn = document.getElementById('mobileModalStickyNotesBtn');
+                if (mobileModalStickyNotesBtn) {
+                    mobileModalStickyNotesBtn.addEventListener('click', function() {
+                        closeMobileFunctionsModal();
+                        setTimeout(function() {
+                            if (typeof toggleStickyNotes === 'function') {
+                                toggleStickyNotes();
+                            }
+                        }, 300);
+                    });
+                }
             }
             
             // 显示移动端功能选择弹窗
@@ -5545,6 +5609,15 @@
                         </div>
                         <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('calendar');">
                             <i class="fas fa-info-circle"></i>
+                        </div>
+                    </button>
+                    <button class="more-feature-card" id="modalRedeemCodeBtn" style="display: none;">
+                        <div class="feature-card-icon redeem-code-icon">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">兑换码</span>
+                            <span class="feature-card-desc">使用兑换码兑换更多物品</span>
                         </div>
                     </button>
                 </div>
@@ -8896,55 +8969,117 @@
             }, 300);
         });
         
-        document.getElementById('modalAboutLauncherBtn').addEventListener('click', function() {
-            var modal = document.getElementById('moreFeaturesModal');
-            modal.classList.remove('show');
-            setTimeout(function() {
-                modal.style.display = 'none';
-            }, 300);
-            document.getElementById('aboutLauncherBtn').click();
-        });
+        var modalAboutLauncherBtn = document.getElementById('modalAboutLauncherBtn');
+        if (modalAboutLauncherBtn) {
+            modalAboutLauncherBtn.addEventListener('click', function() {
+                var modal = document.getElementById('moreFeaturesModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                    }, 300);
+                }
+                var aboutLauncherBtn = document.getElementById('aboutLauncherBtn');
+                if (aboutLauncherBtn) {
+                    aboutLauncherBtn.click();
+                }
+            });
+        }
         
-        document.getElementById('modalHideInterfaceBtn').addEventListener('click', function() {
-            var modal = document.getElementById('moreFeaturesModal');
-            modal.classList.remove('show');
-            setTimeout(function() {
-                modal.style.display = 'none';
-            }, 300);
-            document.getElementById('hideInterfaceBtn').click();
-        });
+        var modalHideInterfaceBtn = document.getElementById('modalHideInterfaceBtn');
+        if (modalHideInterfaceBtn) {
+            modalHideInterfaceBtn.addEventListener('click', function() {
+                var modal = document.getElementById('moreFeaturesModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                    }, 300);
+                }
+                var hideInterfaceBtn = document.getElementById('hideInterfaceBtn');
+                if (hideInterfaceBtn) {
+                    hideInterfaceBtn.click();
+                }
+            });
+        }
         
-        document.getElementById('modalUiScaleBtn').addEventListener('click', function() {
-            var modal = document.getElementById('moreFeaturesModal');
-            modal.classList.remove('show');
-            setTimeout(function() {
-                modal.style.display = 'none';
-            }, 300);
-            document.getElementById('uiScaleBtn').click();
-        });
+        var modalUiScaleBtn = document.getElementById('modalUiScaleBtn');
+        if (modalUiScaleBtn) {
+            modalUiScaleBtn.addEventListener('click', function() {
+                var modal = document.getElementById('moreFeaturesModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                    }, 300);
+                }
+                var uiScaleBtn = document.getElementById('uiScaleBtn');
+                if (uiScaleBtn) {
+                    uiScaleBtn.click();
+                }
+            });
+        }
         
-        document.getElementById('modalShowGuideBtn').addEventListener('click', function() {
-            var modal = document.getElementById('moreFeaturesModal');
-            modal.classList.remove('show');
-            setTimeout(function() {
-                modal.style.display = 'none';
-            }, 300);
-            if (typeof showGuide === 'function') {
-                showGuide();
-            }
-        });
+        var modalShowGuideBtn = document.getElementById('modalShowGuideBtn');
+        if (modalShowGuideBtn) {
+            modalShowGuideBtn.addEventListener('click', function() {
+                var modal = document.getElementById('moreFeaturesModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                    }, 300);
+                }
+                if (typeof showGuide === 'function') {
+                    showGuide();
+                }
+            });
+        }
         
-        document.getElementById('modalCalendarBtn').addEventListener('click', function(e) {
-            e.stopPropagation();
-            var modal = document.getElementById('moreFeaturesModal');
-            modal.classList.remove('show');
-            setTimeout(function() {
-                modal.style.display = 'none';
-            }, 300);
-            if (typeof showCalendarModal === 'function') {
-                showCalendarModal();
-            }
-        });
+        var modalCalendarBtn = document.getElementById('modalCalendarBtn');
+        if (modalCalendarBtn) {
+            modalCalendarBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var modal = document.getElementById('moreFeaturesModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                    }, 300);
+                }
+                if (typeof showCalendarModal === 'function') {
+                    showCalendarModal();
+                }
+            });
+        }
+        
+        var modalRedeemCodeBtn = document.getElementById('modalRedeemCodeBtn');
+        if (modalRedeemCodeBtn) {
+            modalRedeemCodeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var modal = document.getElementById('moreFeaturesModal');
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                }, 300);
+                if (typeof showRedeemCodeModal === 'function') {
+                    showRedeemCodeModal();
+                }
+            });
+        }
+        
+        var mobileModalRedeemCodeBtn = document.getElementById('mobileModalRedeemCodeBtn');
+        if (mobileModalRedeemCodeBtn) {
+            mobileModalRedeemCodeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeMobileFunctionsModal();
+                setTimeout(function() {
+                    if (typeof showRedeemCodeModal === 'function') {
+                        showRedeemCodeModal();
+                    }
+                }, 300);
+            });
+        }
         
         // 更新名片按钮状态
         function updateCardBtnStatus() {
@@ -11203,6 +11338,21 @@
             
             var isMobile = isMobileDevice();
             
+            var info;
+            try {
+                info = launcherInfo;
+            } catch(e) {
+                info = {
+                    name: "PRE Launcher",
+                    version: "2.6.2.5",
+                    copyright: "© 2014-2026 PREAlmax, All rights reserved.",
+                    developer: "PREAlmax",
+                    purpose: "游戏启动器",
+                    githubRepoUrl: "https://github.com/Almax202/PRE_Launcher",
+                    githubDeveloperUrl: "https://github.com/Almax202"
+                };
+            }
+            
             if (isMobile) {
                 modal.innerHTML = `
                     <div class="alert-content about-mobile-fullscreen">
@@ -11212,7 +11362,7 @@
                             </div>
                             <div class="about-mobile-title">
                                 <h2>关于启动器</h2>
-                                <p id="aboutVersionNumber" class="version">版本：${launcherInfo.version}</p>
+                                <p id="aboutVersionNumber" class="version">版本：${info.version}</p>
                             </div>
                             <button class="about-mobile-close" onclick="closeAboutLauncherModal()">
                                 <i class="fas fa-times"></i>
@@ -11220,13 +11370,13 @@
                         </div>
                         <div class="about-mobile-content">
                             <div class="about-mobile-info">
-                                <p><strong>启动器名称：</strong>${launcherInfo.name}</p>
-                                <p><strong>版本号：</strong>${launcherInfo.version}</p>
-                                <p><strong>版权所有：</strong>${launcherInfo.copyright}</p>
-                                <p><strong>开发者：</strong>${launcherInfo.developer}</p>
+                                <p><strong>启动器名称：</strong>${info.name}</p>
+                                <p><strong>版本号：</strong>${info.version}</p>
+                                <p><strong>版权所有：</strong>${info.copyright}</p>
+                                <p><strong>开发者：</strong>${info.developer}</p>
                                 <p><strong>Github源码跳转：</strong><a href="javascript:void(0)" onclick="openGithubRepo()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></p>
                                 <p><strong>开发者Github主页：</strong><a href="javascript:void(0)" onclick="openGithubDeveloper()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></p>
-                                <p><strong>用途：</strong>${launcherInfo.purpose}</p>
+                                <p><strong>用途：</strong>${info.purpose}</p>
                             </div>
                             <div class="about-mobile-copyright">
                                 <p><strong>版权声明：</strong></p>
@@ -11281,7 +11431,7 @@
                         <div class="about-desktop-header">
                             <div class="about-desktop-title">
                                 <h2>关于启动器</h2>
-                                <p id="aboutVersionNumber" class="version">版本 ${launcherInfo.version}</p>
+                                <p id="aboutVersionNumber" class="version">版本 ${info.version}</p>
                             </div>
                             <button class="about-desktop-close" onclick="closeAboutLauncherModal()">
                                 <i class="fas fa-times"></i>
@@ -11294,19 +11444,19 @@
                                     <div class="info-grid">
                                         <div class="info-item">
                                             <span class="info-label">启动器名称</span>
-                                            <span class="info-value">${launcherInfo.name}</span>
+                                            <span class="info-value">${info.name}</span>
                                         </div>
                                         <div class="info-item">
                                             <span class="info-label">版本号</span>
-                                            <span class="info-value">${launcherInfo.version}</span>
+                                            <span class="info-value">${info.version}</span>
                                         </div>
                                         <div class="info-item">
                                             <span class="info-label">版权所有</span>
-                                            <span class="info-value">${launcherInfo.copyright}</span>
+                                            <span class="info-value">${info.copyright}</span>
                                         </div>
                                         <div class="info-item">
                                             <span class="info-label">开发者</span>
-                                            <span class="info-value">${launcherInfo.developer}</span>
+                                            <span class="info-value">${info.developer}</span>
                                         </div>
                                         <div class="info-item" style="grid-column: span 2;">
                                             <span class="info-label">Github源码跳转</span>
@@ -11358,6 +11508,234 @@
             document.body.appendChild(modal);
         }
         
+        function generateRedeemCodeModal() {
+            var existingModal = document.getElementById('redeemCodeModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            var modal = document.createElement('div');
+            modal.id = 'redeemCodeModal';
+            modal.className = 'custom-alert';
+            
+            var isMobile = isMobileDevice();
+            
+            if (isMobile) {
+                modal.innerHTML = `
+                    <div class="alert-content about-mobile-fullscreen">
+                        <div class="about-mobile-header">
+                            <div class="about-logo-mobile">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="about-mobile-title">
+                                <h2>兑换码</h2>
+                            </div>
+                            <button class="about-mobile-close" onclick="closeRedeemCodeModal()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="about-mobile-content">
+                            <div class="redeem-code-container">
+                                <div class="redeem-code-card">
+                                    <div class="redeem-card-title">
+                                        <span class="title-line"></span>
+                                        <span>输入兑换码</span>
+                                    </div>
+                                    <div class="redeem-code-input-box">
+                                        <input type="text" id="redeemCodeInput" placeholder="请输入兑换码">
+                                    </div>
+                                    <button class="redeem-confirm-btn" onclick="redeemCode()">确认兑换</button>
+                                </div>
+                                
+                                <div class="redeem-code-card">
+                                    <div class="redeem-card-title">
+                                        <span class="title-line"></span>
+                                        <span>兑换历史记录</span>
+                                        <button class="clear-history-btn" onclick="clearRedeemHistory()">清空兑换记录</button>
+                                    </div>
+                                    <div id="redeemHistoryList" class="redeem-history-list">
+                                        <div class="empty-history">暂无兑换记录</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="redeem-code-card redeem-code-card-full">
+                                    <div class="redeem-card-title">
+                                        <span class="title-line"></span>
+                                        <span>兑换规则</span>
+                                    </div>
+                                    <div class="redeem-rules-box">
+                                        <ul>
+                                            <li><strong>唯一性：</strong>每个兑换码只能使用一次，不可重复兑换</li>
+                                            <li><strong>账户绑定：</strong>兑换码兑换的内容将绑定到当前登录账户</li>
+                                            <li><strong>测试有效期：</strong>测试兑换码可能会在未来版本更新中失效</li>
+                                            <li><strong>问题反馈：</strong>如有问题请联系开发者反馈</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                modal.innerHTML = `
+                    <div class="alert-content about-fullscreen">
+                        <div class="about-desktop-header">
+                            <div class="about-desktop-title">
+                                <h2>兑换码</h2>
+                            </div>
+                            <button class="about-desktop-close" onclick="closeRedeemCodeModal()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="about-desktop-content">
+                            <div class="redeem-code-container">
+                                <div class="redeem-code-card">
+                                    <div class="redeem-card-title">
+                                        <span class="title-line"></span>
+                                        <span>输入兑换码</span>
+                                    </div>
+                                    <div class="redeem-code-input-box">
+                                        <input type="text" id="redeemCodeInput" placeholder="请输入兑换码">
+                                    </div>
+                                    <button class="redeem-confirm-btn" onclick="redeemCode()">确认兑换</button>
+                                </div>
+                                
+                                <div class="redeem-code-card">
+                                    <div class="redeem-card-title">
+                                        <span class="title-line"></span>
+                                        <span>兑换历史记录</span>
+                                        <button class="clear-history-btn" onclick="clearRedeemHistory()">清空兑换记录</button>
+                                    </div>
+                                    <div id="redeemHistoryList" class="redeem-history-list">
+                                        <div class="empty-history">暂无兑换记录</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="redeem-code-card redeem-code-card-full">
+                                    <div class="redeem-card-title">
+                                        <span class="title-line"></span>
+                                        <span>兑换规则</span>
+                                    </div>
+                                    <div class="redeem-rules-box">
+                                        <ul>
+                                            <li><strong>唯一性：</strong>每个兑换码只能使用一次，不可重复兑换</li>
+                                            <li><strong>账户绑定：</strong>兑换码兑换的内容将绑定到当前登录账户</li>
+                                            <li><strong>测试有效期：</strong>测试兑换码可能会在未来版本更新中失效</li>
+                                            <li><strong>问题反馈：</strong>如有问题请联系开发者反馈</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.body.appendChild(modal);
+        }
+        
+        function showRedeemCodeModal() {
+            var redeemCodeModal = document.getElementById('redeemCodeModal');
+            if (!redeemCodeModal) {
+                generateRedeemCodeModal();
+                redeemCodeModal = document.getElementById('redeemCodeModal');
+            }
+            redeemCodeModal.style.display = 'flex';
+            setTimeout(function() {
+                redeemCodeModal.classList.add('show');
+            }, 10);
+            loadRedeemHistory();
+        }
+        
+        function closeRedeemCodeModal() {
+            var redeemCodeModal = document.getElementById('redeemCodeModal');
+            if (redeemCodeModal) {
+                redeemCodeModal.classList.remove('show');
+                setTimeout(function() {
+                    redeemCodeModal.style.display = 'none';
+                }, 300);
+            }
+        }
+        
+        function redeemCode() {
+            var code = document.getElementById('redeemCodeInput').value.trim();
+            if (!code) {
+                showAlert('请输入兑换码');
+                return;
+            }
+            
+            if (code === 'PRELAUNCHER2026071901') {
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                var history = JSON.parse(localStorage.getItem('redeemHistory') || '[]');
+                
+                var existingRecord = history.find(function(item) {
+                    return item.code === code;
+                });
+                
+                if (existingRecord) {
+                    showAlert('该兑换码已被使用');
+                    return;
+                }
+                
+                var newRecord = {
+                    code: code,
+                    account: currentUser.username || '未登录用户',
+                    time: new Date().toLocaleString('zh-CN'),
+                    reward: '动态流光背景'
+                };
+                
+                history.unshift(newRecord);
+                localStorage.setItem('redeemHistory', JSON.stringify(history));
+                
+                localStorage.setItem('dynamicBackgroundEnabled', 'true');
+                localStorage.setItem('unlockedBackgrounds', 'true');
+                
+                showAlert('兑换成功！已获得动态流光背景奖励');
+                document.getElementById('redeemCodeInput').value = '';
+                loadRedeemHistory();
+            } else {
+                showAlert('无效的兑换码');
+            }
+        }
+        
+        function loadRedeemHistory() {
+            var history = JSON.parse(localStorage.getItem('redeemHistory') || '[]');
+            var list = document.getElementById('redeemHistoryList');
+            
+            if (!list) return;
+            
+            if (history.length === 0) {
+                list.innerHTML = '<div class="empty-history">暂无兑换记录</div>';
+                return;
+            }
+            
+            var html = '<div class="history-list-container">';
+            history.forEach(function(item) {
+                html += `
+                    <div class="history-item">
+                        <div class="history-item-header">
+                            <span class="history-code">${item.code}</span>
+                            <span class="history-time">${item.time}</span>
+                        </div>
+                        <div class="history-item-content">
+                            <span class="history-account">兑换账户：${item.account}</span>
+                            <span class="history-reward">获得奖励：${item.reward}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            list.innerHTML = html;
+        }
+        
+        function clearRedeemHistory() {
+            showConfirm('清空兑换记录', '确定要全部清空吗？清空后不可恢复', function() {
+                localStorage.removeItem('redeemHistory');
+                loadRedeemHistory();
+                showAlert('兑换记录已清空');
+            });
+        }
+        
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             initializePrivacyNavigation();
@@ -11369,6 +11747,8 @@
             
             // 生成关于启动器模态框
             generateAboutLauncherModal();
+            // 生成兑换码模态框
+            generateRedeemCodeModal();
             
             // 关于启动器按钮点击事件
             var aboutLauncherBtn = document.getElementById('aboutLauncherBtn');
@@ -11382,6 +11762,10 @@
         // 显示关于启动器模态框
         function showAboutLauncherModal() {
             var aboutLauncherModal = document.getElementById('aboutLauncherModal');
+            if (!aboutLauncherModal) {
+                generateAboutLauncherModal();
+                aboutLauncherModal = document.getElementById('aboutLauncherModal');
+            }
             aboutLauncherModal.style.display = 'flex';
             setTimeout(function() {
                 aboutLauncherModal.classList.add('show');
@@ -11391,6 +11775,7 @@
         // 关闭关于启动器模态框
         function closeAboutLauncherModal() {
             var aboutLauncherModal = document.getElementById('aboutLauncherModal');
+            if (!aboutLauncherModal) return;
             aboutLauncherModal.classList.remove('show');
             setTimeout(function() {
                 aboutLauncherModal.style.display = 'none';

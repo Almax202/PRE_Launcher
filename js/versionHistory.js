@@ -170,6 +170,75 @@ function hasNewVersionUpdates() {
     return new Date(latestDate) > new Date(lastViewedDate);
 }
 
+function scrollVersionImages(btn, direction) {
+    var container = btn.parentElement;
+    var scrollContainer = container.querySelector('.version-images');
+    if (!scrollContainer) return;
+    
+    var scrollAmount = scrollContainer.offsetWidth * 0.85;
+    scrollContainer.scrollBy({
+        left: scrollAmount * direction,
+        behavior: 'smooth'
+    });
+    
+    setTimeout(function() {
+        updateVersionScrollButtons(scrollContainer);
+    }, 300);
+}
+
+function updateVersionScrollButtons(scrollContainer) {
+    if (!scrollContainer) return;
+    
+    var container = scrollContainer.parentElement;
+    var leftBtn = container.querySelector('.version-scroll-btn.left');
+    var rightBtn = container.querySelector('.version-scroll-btn.right');
+    
+    if (!leftBtn || !rightBtn) return;
+    
+    if (scrollContainer.classList.contains('single-image')) {
+        leftBtn.classList.remove('show');
+        rightBtn.classList.remove('show');
+        return;
+    }
+    
+    var isAtStart = scrollContainer.scrollLeft < 10;
+    var isAtEnd = scrollContainer.scrollLeft >= scrollContainer.scrollWidth - scrollContainer.clientWidth - 10;
+    
+    if (isAtStart) {
+        leftBtn.classList.remove('show');
+    } else {
+        leftBtn.classList.add('show');
+    }
+    
+    if (isAtEnd) {
+        rightBtn.classList.remove('show');
+    } else {
+        rightBtn.classList.add('show');
+    }
+}
+
+function initVersionScrollButtons() {
+    var allScrollContainers = document.querySelectorAll('.version-images');
+    allScrollContainers.forEach(function(container) {
+        if (container.dataset.scrollButtonsInitialized === 'true') {
+            updateVersionScrollButtons(container);
+            return;
+        }
+        
+        container.dataset.scrollButtonsInitialized = 'true';
+        
+        updateVersionScrollButtons(container);
+        
+        container.addEventListener('scroll', function() {
+            updateVersionScrollButtons(container);
+        });
+        
+        container.addEventListener('mouseenter', function() {
+            updateVersionScrollButtons(container);
+        });
+    });
+}
+
 // 更新最后查看版本日期
 function updateLastViewedVersionDate() {
     const latestDate = getLatestVersionDate();
@@ -282,6 +351,33 @@ function updateVersionNotificationDot() {
 // 版本更新公告数据
 const versionHistoryData = {
     launcherUpdateContent: [
+        {
+            version: "RC 2.7.1.1 (b10)",
+            date: "2026-07-20",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2711.png", "./images/2711_2.png", ],
+            features: [
+                "(以下的更新内容包含部分为\"兑换码\"的新实验性功能，不建议在生产环境中使用)",
+                "新增功能",
+                "- 兑换码功能：系统设置页实验性功能中新增\"兑换码\"功能，开启后在登录页更多功能中显示\"兑换码\"按钮",
+                "- 获取测试兑换码：兑换码开关左侧新增\"获取测试用兑换码\"按钮，点击弹出包含测试兑换码的弹窗",
+                "- 兑换码弹窗：全屏弹窗包含输入框、确认兑换按钮、兑换历史记录和兑换规则",
+                "- 动态流光背景：更换默认背景弹窗中新增\"特殊获取\"类别，包含通过兑换码或其他来源解锁的动态渐变背景",
+                "- 背景分类：默认背景分为\"系统默认\"（9个原有渐变）和\"特殊获取\"（兑换码或其他来源解锁背景）两大类",
+                "- 清空兑换记录：兑换历史记录标题旁新增\"清空兑换记录\"按钮，点击弹出确认弹窗后执行清空",
+                "优化改进",
+                "- 版本更新图片滚动：版本更新记录弹窗图片区添加左右滚动按钮，移除原生滚动条",
+                "- 兑换码弹窗UI：卡片式布局，粉色竖线标题，渐变色确认按钮，响应式设计",
+                "- 兑换码弹窗放大：各区块内容放大，贴近边框显示",
+                "- 背景预览放大：背景预览图片高度从280px增加到350px，弹窗支持上下滚动",
+                "- 自定义滚动条：兑换历史记录使用粉色主题色自定义滚动条样式",
+                "- 透明主题适配：兑换码弹窗、清空按钮、滚动条等适配透明主题样式",
+                "修复问题",
+                "- 修复关于启动器按钮点击后不弹窗的问题",
+                "- 修复兑换码弹窗标题跑到右侧的问题"
+            ]
+        },
         {
             version: "RC 2.7.1.0 (b10)",
             date: "2026-07-19",
@@ -2736,7 +2832,11 @@ function loadVersionHistory() {
                 if (versionItem.images && versionItem.images.length > 0) {
                     var isSingleImage = versionItem.images.length === 1;
                     versionHTML += `
-                        <div class="version-images ${isSingleImage ? 'single-image' : ''}">
+                        <div class="version-images-container">
+                            <div class="version-scroll-btn left" onclick="scrollVersionImages(this, -1)">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </div>
+                            <div class="version-images ${isSingleImage ? 'single-image' : ''}">
                     `;
                     versionItem.images.forEach(function(image) {
                         var imageUrl = getVersionImageUrl(image);
@@ -2748,6 +2848,10 @@ function loadVersionHistory() {
                         `;
                     });
                     versionHTML += `
+                            </div>
+                            <div class="version-scroll-btn right" onclick="scrollVersionImages(this, 1)">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
                         </div>
                     `;
                 }
@@ -2776,6 +2880,7 @@ function loadVersionHistory() {
                 versionElement.innerHTML = versionHTML;
                 section.appendChild(versionElement);
             });
+            initVersionScrollButtons();
         }
     });
     
@@ -3417,7 +3522,11 @@ function loadVersionHistory() {
                                         if (versionItem.images && versionItem.images.length > 0) {
                                             var isSingleImage = versionItem.images.length === 1;
                                             versionHTML += `
-                                                <div class="version-images ${isSingleImage ? 'single-image' : ''}">
+                                                <div class="version-images-container">
+                                                    <div class="version-scroll-btn left" onclick="scrollVersionImages(this, -1)">
+                                                        <i class="fa-solid fa-chevron-left"></i>
+                                                    </div>
+                                                    <div class="version-images ${isSingleImage ? 'single-image' : ''}">
                                             `;
                                             versionItem.images.forEach(function(image) {
                                                 var imageUrl = getVersionImageUrl(image);
@@ -3429,6 +3538,10 @@ function loadVersionHistory() {
                                                 `;
                                             });
                                             versionHTML += `
+                                                    </div>
+                                                    <div class="version-scroll-btn right" onclick="scrollVersionImages(this, 1)">
+                                                        <i class="fa-solid fa-chevron-right"></i>
+                                                    </div>
                                                 </div>
                                             `;
                                         }
@@ -3457,6 +3570,7 @@ function loadVersionHistory() {
                                         versionElement.innerHTML = versionHTML;
                                         contentArea.appendChild(versionElement);
                                     });
+                                    initVersionScrollButtons();
                                 }
                                 
                                 // 排序按钮点击事件
@@ -3597,7 +3711,11 @@ function loadVersionHistory() {
                                     if (versionItem.images && versionItem.images.length > 0) {
                                         var isSingleImage = versionItem.images.length === 1;
                                         versionHTML += `
-                                            <div class="version-images ${isSingleImage ? 'single-image' : ''}">
+                                            <div class="version-images-container">
+                                                <div class="version-scroll-btn left" onclick="scrollVersionImages(this, -1)">
+                                                    <i class="fa-solid fa-chevron-left"></i>
+                                                </div>
+                                                <div class="version-images ${isSingleImage ? 'single-image' : ''}">
                                         `;
                                         versionItem.images.forEach(function(image) {
                                             var imageUrl = getVersionImageUrl(image);
@@ -3609,6 +3727,10 @@ function loadVersionHistory() {
                                             `;
                                         });
                                         versionHTML += `
+                                                </div>
+                                                <div class="version-scroll-btn right" onclick="scrollVersionImages(this, 1)">
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                </div>
                                             </div>
                                         `;
                                     }
@@ -3637,6 +3759,7 @@ function loadVersionHistory() {
                                     versionElement.innerHTML = versionHTML;
                                     contentArea.appendChild(versionElement);
                                 });
+                                initVersionScrollButtons();
                             });
                             
                             gridContainer.appendChild(groupButton);

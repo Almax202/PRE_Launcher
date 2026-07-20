@@ -7928,47 +7928,67 @@ document.addEventListener('DOMContentLoaded', function() {
         {
             id: 'default-bg-1',
             name: '梦幻粉紫',
-            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(212, 93, 121, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(102, 126, 234, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(230, 126, 138, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)'
+            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(212, 93, 121, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(102, 126, 234, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(230, 126, 138, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-2',
             name: '深海幽蓝',
-            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(30, 58, 138, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.1) 0%, transparent 60%), linear-gradient(135deg, #e0f2fe 0%, #e0e7ff 33%, #f3e8ff 66%, #ecfeff 100%)'
+            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(30, 58, 138, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.1) 0%, transparent 60%), linear-gradient(135deg, #e0f2fe 0%, #e0e7ff 33%, #f3e8ff 66%, #ecfeff 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-3',
             name: '晨曦暖阳',
-            gradient: 'radial-gradient(ellipse at 20% 80%, rgba(251, 146, 60, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(253, 224, 71, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(251, 191, 36, 0.1) 0%, transparent 60%), linear-gradient(135deg, #fffbeb 0%, #fef3c7 25%, #fde68a 50%, #fcd34d 75%, #fbbf24 100%)'
+            gradient: 'radial-gradient(ellipse at 20% 80%, rgba(251, 146, 60, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(253, 224, 71, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(251, 191, 36, 0.1) 0%, transparent 60%), linear-gradient(135deg, #fffbeb 0%, #fef3c7 25%, #fde68a 50%, #fcd34d 75%, #fbbf24 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-4',
             name: '森林绿意',
-            gradient: 'radial-gradient(ellipse at 30% 30%, rgba(21, 128, 61, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(16, 185, 129, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(52, 211, 153, 0.08) 0%, transparent 60%), linear-gradient(135deg, #f0fdf4 0%, #dcfce7 25%, #bbf7d0 50%, #86efac 75%, #4ade80 100%)'
+            gradient: 'radial-gradient(ellipse at 30% 30%, rgba(21, 128, 61, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(16, 185, 129, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(52, 211, 153, 0.08) 0%, transparent 60%), linear-gradient(135deg, #f0fdf4 0%, #dcfce7 25%, #bbf7d0 50%, #86efac 75%, #4ade80 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-5',
             name: '晚霞橙红',
-            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(220, 38, 38, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(249, 115, 22, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(239, 68, 68, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fef2f2 0%, #fee2e2 25%, #fecaca 50%, #fca5a5 75%, #f87171 100%)'
+            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(220, 38, 38, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(249, 115, 22, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(239, 68, 68, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fef2f2 0%, #fee2e2 25%, #fecaca 50%, #fca5a5 75%, #f87171 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-6',
             name: '极光幻境',
-            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(126, 34, 206, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(34, 197, 94, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #f3e8ff 33%, #dcfce7 66%, #ecfeff 100%)'
+            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(126, 34, 206, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(34, 197, 94, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #f3e8ff 33%, #dcfce7 66%, #ecfeff 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-7',
             name: '星空夜曲',
-            gradient: 'radial-gradient(ellipse at 20% 30%, rgba(30, 27, 75, 0.4) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(67, 56, 202, 0.2) 0%, transparent 60%), linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #6366f1 75%, #8b5cf6 100%)'
+            gradient: 'radial-gradient(ellipse at 20% 30%, rgba(30, 27, 75, 0.4) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(67, 56, 202, 0.2) 0%, transparent 60%), linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #6366f1 75%, #8b5cf6 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-8',
             name: '纯净白蓝',
-            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.06) 0%, transparent 60%), linear-gradient(135deg, #ffffff 0%, #eff6ff 25%, #dbeafe 50%, #bfdbfe 75%, #93c5fd 100%)'
+            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.06) 0%, transparent 60%), linear-gradient(135deg, #ffffff 0%, #eff6ff 25%, #dbeafe 50%, #bfdbfe 75%, #93c5fd 100%)',
+            category: 'system'
         },
         {
             id: 'default-bg-9',
             name: '玫瑰金粉',
-            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(244, 114, 182, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(219, 39, 119, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fff1f2 0%, #ffe4e6 25%, #fecdd3 50%, #fda4af 75%, #fb7185 100%)'
+            gradient: 'radial-gradient(ellipse at 20% 20%, rgba(244, 114, 182, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(219, 39, 119, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.08) 0%, transparent 60%), linear-gradient(135deg, #fff1f2 0%, #ffe4e6 25%, #fecdd3 50%, #fda4af 75%, #fb7185 100%)',
+            category: 'system'
+        },
+        {
+            id: 'dynamic-bg-1',
+            name: '动态流光',
+            gradient: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
+            backgroundSize: '400% 400%',
+            animation: 'gradientShift 15s ease infinite',
+            isDynamic: true,
+            category: 'special',
+            locked: true,
+            unlockCode: 'PRELAUNCHER2026071901'
         }
     ];
     
@@ -7998,16 +8018,47 @@ document.addEventListener('DOMContentLoaded', function() {
         
         grid.innerHTML = '';
         
-        defaultBackgrounds.forEach(function(background) {
+        var systemBackgrounds = defaultBackgrounds.filter(function(bg) { return bg.category === 'system'; });
+        var specialBackgrounds = defaultBackgrounds.filter(function(bg) { return bg.category === 'special'; });
+        
+        if (systemBackgrounds.length > 0) {
+            var systemTitle = document.createElement('div');
+            systemTitle.className = 'background-category-title';
+            systemTitle.innerHTML = '<span class="category-icon"><i class="fas fa-star"></i></span><span>系统默认</span>';
+            grid.appendChild(systemTitle);
+            
+            systemBackgrounds.forEach(function(background) {
+                createBackgroundItem(background);
+            });
+        }
+        
+        if (specialBackgrounds.length > 0) {
+            var specialTitle = document.createElement('div');
+            specialTitle.className = 'background-category-title';
+            specialTitle.innerHTML = '<span class="category-icon"><i class="fas fa-gift"></i></span><span>特殊获取</span>';
+            grid.appendChild(specialTitle);
+            
+            specialBackgrounds.forEach(function(background) {
+                createBackgroundItem(background);
+            });
+        }
+        
+        function createBackgroundItem(background) {
+            var isUnlocked = !background.locked || localStorage.getItem('unlockedBackgrounds') === 'true';
             var item = document.createElement('div');
-            item.className = 'preset-background-item' + (selectedDefaultBackground && selectedDefaultBackground.id === background.id ? ' selected' : '');
+            item.className = 'preset-background-item' + (selectedDefaultBackground && selectedDefaultBackground.id === background.id ? ' selected' : '') + (!isUnlocked ? ' locked' : '');
             item.setAttribute('data-id', background.id);
             item.setAttribute('data-name', background.name);
             item.setAttribute('data-gradient', background.gradient);
             
+            var gradientStyle = background.isDynamic 
+                ? 'background: ' + background.gradient + '; background-size: ' + background.backgroundSize + '; animation: ' + background.animation + ';' 
+                : 'background: ' + background.gradient + ';';
+            
             item.innerHTML = `
-                <div class="default-bg-gradient" style="background: ${background.gradient};"></div>
+                <div class="default-bg-gradient" style="${gradientStyle}"></div>
                 <div class="preset-background-name">${background.name}</div>
+                ${!isUnlocked ? '<div class="background-lock-overlay"><i class="fas fa-lock"></i></div>' : ''}
                 ${selectedDefaultBackground && selectedDefaultBackground.id === background.id ? '<div class="preset-background-check"><i class="fas fa-check"></i></div>' : ''}
             `;
             
@@ -8016,10 +8067,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             grid.appendChild(item);
-        });
+        }
     }
     
     function toggleDefaultBackgroundSelection(background) {
+        var isUnlocked = !background.locked || localStorage.getItem('unlockedBackgrounds') === 'true';
+        
+        if (!isUnlocked) {
+            showConfirm('背景未解锁', '该背景需要通过兑换码获取，请在登录页的"兑换码"功能中输入兑换码解锁', function() {
+                closeDefaultBackgroundModal();
+                if (typeof showRedeemCodeModal === 'function') {
+                    showRedeemCodeModal();
+                }
+            });
+            return;
+        }
+        
         var previousSelected = document.querySelector('#defaultBackgroundGrid .preset-background-item.selected');
         if (previousSelected) {
             previousSelected.classList.remove('selected');
@@ -8064,6 +8127,16 @@ document.addEventListener('DOMContentLoaded', function() {
             gradient: gradient,
             name: name
         };
+        
+        if (selectedDefaultBackground.isDynamic) {
+            defaultBgSettings.isDynamic = true;
+            if (selectedDefaultBackground.backgroundSize) {
+                defaultBgSettings.backgroundSize = selectedDefaultBackground.backgroundSize;
+            }
+            if (selectedDefaultBackground.animation) {
+                defaultBgSettings.animation = selectedDefaultBackground.animation;
+            }
+        }
         
         localStorage.setItem('defaultBackgroundGradient', JSON.stringify(defaultBgSettings));
         
@@ -8597,6 +8670,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    var redeemCodeToggle = document.getElementById('enableRedeemCode');
+    if (redeemCodeToggle) {
+        var isRedeemCodeEnabled = localStorage.getItem('redeemCodeEnabled') === 'true';
+        redeemCodeToggle.checked = isRedeemCodeEnabled;
+    }
+    
     var globalThemeColorPicker = document.getElementById('globalThemeColorPicker');
     if (globalThemeColorPicker) {
         var savedColor = localStorage.getItem('globalThemeColor');
@@ -8695,6 +8774,65 @@ function toggleGlobalThemeColorFeature() {
     
     if (typeof parent.applyGlobalThemeColor === 'function') {
         parent.applyGlobalThemeColor();
+    }
+}
+
+function toggleRedeemCodeFeature() {
+    var enabled = document.getElementById('enableRedeemCode').checked;
+    localStorage.setItem('redeemCodeEnabled', enabled ? 'true' : 'false');
+    
+    if (enabled) {
+        showAlert('兑换码功能已启用，在登录页更多功能中可使用');
+    } else {
+        showAlert('兑换码功能已关闭');
+    }
+    
+    if (typeof parent.updateEnhancedFeatureButtons === 'function') {
+        parent.updateEnhancedFeatureButtons();
+    }
+}
+
+function showTestRedeemCode() {
+    var modal = document.createElement('div');
+    modal.id = 'testRedeemCodeModal';
+    modal.className = 'custom-alert';
+    
+    modal.innerHTML = `
+        <div class="alert-content" style="max-width: 450px;">
+            <div class="alert-header">
+                <h2>测试兑换码</h2>
+            </div>
+            <div class="about-content" style="text-align: center; padding: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <i class="fas fa-gift" style="font-size: 48px; color: #d45d79;"></i>
+                </div>
+                <p style="margin: 10px 0; font-size: 16px; color: #333;">您已获得兑换码！</p>
+                <div style="margin: 20px 0; padding: 15px; background: rgba(212, 93, 121, 0.1); border-radius: 8px; border: 1px solid rgba(212, 93, 121, 0.2);">
+                    <p style="margin: 0; font-size: 18px; font-weight: 600; color: #d45d79; letter-spacing: 2px;">PRELAUNCHER2026071901</p>
+                </div>
+                <p style="margin: 10px 0; font-size: 14px; color: #666; line-height: 1.6;">该兑换码仅用于测试，未来可能会随着兑换码功能的正式更新而失效</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="alert-confirm" onclick="closeTestRedeemCodeModal()">确定</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.style.display = 'flex';
+    setTimeout(function() {
+        modal.classList.add('show');
+    }, 10);
+}
+
+function closeTestRedeemCodeModal() {
+    var modal = document.getElementById('testRedeemCodeModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(function() {
+            modal.remove();
+        }, 300);
     }
 }
 

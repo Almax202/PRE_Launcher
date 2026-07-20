@@ -1316,6 +1316,22 @@ body.dark-mode .mobile-nav-footer {
     border-color: rgba(212, 93, 121, 0.2);
 }
 
+.test-redeem-code-btn:hover {
+    background: rgba(212, 93, 121, 0.2) !important;
+    border-color: rgba(212, 93, 121, 0.5) !important;
+}
+
+body.dark-mode .test-redeem-code-btn {
+    background: rgba(212, 93, 121, 0.15) !important;
+    color: #e67e8a !important;
+    border-color: rgba(212, 93, 121, 0.4) !important;
+}
+
+body.dark-mode .test-redeem-code-btn:hover {
+    background: rgba(212, 93, 121, 0.25) !important;
+    border-color: rgba(212, 93, 121, 0.6) !important;
+}
+
 .two-factor-info h4 {
     margin: 0 0 5px 0;
     font-size: 15px;
@@ -5795,12 +5811,13 @@ body.dark-mode .verification-status {
     background: #ffffff;
     border-radius: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh;
     max-width: none;
     max-height: none;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
 }
 
 .dark-mode .preset-background-container {
@@ -5969,15 +5986,47 @@ input:checked + .toggle-slider:before {
 .preset-background-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
+    gap: 30px;
     padding: 40px;
     overflow-y: auto;
     flex: 1;
     background: #ffffff;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.background-category-title {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 10px;
+}
+
+.category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #d45d79 0%, #c04664 100%);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
 }
 
 .dark-mode .preset-background-grid {
     background: #1a1a1a;
+}
+
+.dark-mode .background-category-title {
+    color: #e0e0e0;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .preset-background-item {
@@ -5988,6 +6037,7 @@ input:checked + .toggle-slider:before {
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     border: 2px solid transparent;
+    min-height: 350px;
 }
 
 .preset-background-item:hover {
@@ -6026,6 +6076,35 @@ input:checked + .toggle-slider:before {
 .preset-background-item.selected {
     border-color: #d45d79;
     box-shadow: 0 0 0 3px rgba(212, 93, 121, 0.3), 0 8px 20px rgba(212, 93, 121, 0.2);
+}
+
+.preset-background-item.locked {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.preset-background-item.locked:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: transparent;
+}
+
+.background-lock-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 24px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 .preset-background-check {
@@ -6173,6 +6252,7 @@ input:checked + .toggle-slider:before {
     .preset-background-item {
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        min-height: 250px;
     }
     
     .preset-background-item img {
@@ -6252,20 +6332,20 @@ input:checked + .toggle-slider:before {
 /* ===================== 默认渐变背景样式 ===================== */
 .default-bg-gradient {
     width: 100%;
-    height: 280px;
+    height: 350px;
     display: block;
     border-radius: 16px;
 }
 
 @media (max-width: 768px) {
     .default-bg-gradient {
-        height: 200px;
+        height: 280px;
     }
 }
 
 @media (max-width: 600px) {
     .default-bg-gradient {
-        height: 200px;
+        height: 250px;
     }
 }
 
@@ -6299,6 +6379,12 @@ input:checked + .toggle-slider:before {
 @keyframes moreThemesFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .more-themes-modal-backdrop {
