@@ -7989,6 +7989,15 @@ document.addEventListener('DOMContentLoaded', function() {
             category: 'special',
             locked: true,
             unlockCode: 'PRELAUNCHER2026071901'
+        },
+        {
+            id: 'mail-bg-1',
+            name: '鎏金幻彩',
+            gradient: 'radial-gradient(circle at 10% 20%, rgba(255, 223, 0, 0.2) 0%, transparent 35%), radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.18) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.15) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 45%), radial-gradient(circle at 70% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 40%), linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 20%, #16213e 40%, #0f3460 60%, #533483 80%, #e94560 100%)',
+            category: 'special',
+            locked: true,
+            unlockType: 'mail',
+            unlockSource: 'test_mail_001'
         }
     ];
     
@@ -8010,6 +8019,26 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.classList.remove('show');
             selectedDefaultBackground = null;
         }
+    }
+    
+    function isBackgroundUnlocked(background) {
+        if (!background.locked) return true;
+        
+        var unlockedIds = JSON.parse(localStorage.getItem('unlockedBackgroundIds') || '[]');
+        if (unlockedIds.includes(background.id)) return true;
+        
+        if (background.unlockType === 'mail') {
+            var history = JSON.parse(localStorage.getItem('mailHistory') || '[]');
+            return history.some(function(item) {
+                return item.id === background.unlockSource;
+            });
+        }
+        
+        if (background.unlockCode) {
+            if (localStorage.getItem('unlockedBackgrounds') === 'true') return true;
+        }
+        
+        return false;
     }
     
     function renderDefaultBackgrounds() {
@@ -8044,7 +8073,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         function createBackgroundItem(background) {
-            var isUnlocked = !background.locked || localStorage.getItem('unlockedBackgrounds') === 'true';
+            var isUnlocked = isBackgroundUnlocked(background);
             var item = document.createElement('div');
             item.className = 'preset-background-item' + (selectedDefaultBackground && selectedDefaultBackground.id === background.id ? ' selected' : '') + (!isUnlocked ? ' locked' : '');
             item.setAttribute('data-id', background.id);
@@ -8071,14 +8100,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function toggleDefaultBackgroundSelection(background) {
-        var isUnlocked = !background.locked || localStorage.getItem('unlockedBackgrounds') === 'true';
+        var isUnlocked = isBackgroundUnlocked(background);
         
         if (!isUnlocked) {
-            showConfirm('背景未解锁', '该背景需要通过兑换码获取，请在登录页的"兑换码"功能中输入兑换码解锁', function() {
+            var unlockMessage = '';
+            if (background.unlockType === 'mail') {
+                unlockMessage = '「' + background.name + '」背景需要通过邮件领取后获取\n\n请前往登录页侧边栏，点击"邮件"图标，领取奖励后即可解锁';
+            } else {
+                unlockMessage = '「' + background.name + '」背景需要通过输入兑换码后获取\n\n请在登录页的"兑换码"功能中输入兑换码后即可解锁';
+            }
+            showConfirm('背景未解锁', unlockMessage, function() {
                 closeDefaultBackgroundModal();
-                if (typeof showRedeemCodeModal === 'function') {
-                    showRedeemCodeModal();
-                }
             });
             return;
         }
