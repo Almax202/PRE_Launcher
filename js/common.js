@@ -74,10 +74,12 @@ var CommonUtils = (function() {
     }
 
     function loadCustomBackground() {
-        var backgroundSettings = localStorage.getItem('customBackground');
-        if (backgroundSettings) {
+        var customBackground = localStorage.getItem('customBackground');
+        var defaultBgGradient = localStorage.getItem('defaultBackgroundGradient');
+        
+        if (customBackground) {
             try {
-                backgroundSettings = JSON.parse(backgroundSettings);
+                var backgroundSettings = JSON.parse(customBackground);
 
                 if (backgroundSettings.useIndexedDB && !backgroundSettings.image) {
                     var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -95,6 +97,7 @@ var CommonUtils = (function() {
                             }
                         }).catch(function(error) {
                             console.error('从IndexedDB读取背景图片失败:', error);
+                            applyDefaultGradientBackground();
                         });
                     }
                 } else {
@@ -102,7 +105,187 @@ var CommonUtils = (function() {
                 }
             } catch (e) {
                 console.error('加载背景设置失败:', e);
+                applyDefaultGradientBackground();
             }
+        } else if (defaultBgGradient) {
+            applyDefaultGradientBackground();
+        }
+    }
+    
+    function applyDefaultGradientBackground() {
+        var defaultBgGradient = localStorage.getItem('defaultBackgroundGradient');
+        if (!defaultBgGradient) return;
+        
+        try {
+            var parsedDefaultBg = JSON.parse(defaultBgGradient);
+            if (!parsedDefaultBg || !parsedDefaultBg.gradient) return;
+            
+            var gradient = parsedDefaultBg.gradient;
+            var isDynamic = parsedDefaultBg.isDynamic || false;
+            var backgroundSize = parsedDefaultBg.backgroundSize || '100% 100%';
+            var animation = parsedDefaultBg.animation || '';
+            var hasParticles = parsedDefaultBg.particles || false;
+            
+            console.log('DEBUG - common.js applyDefaultGradientBackground:', {
+                hasParticles: hasParticles,
+                isDynamic: isDynamic,
+                animation: animation,
+                gradient: gradient ? 'set' : 'not set',
+                rawData: localStorage.getItem('defaultBackgroundGradient')
+            });
+            
+            var existingStyle = document.getElementById('custom-background-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            var existingParticles = document.getElementById('global-particles-container');
+            if (existingParticles) {
+                existingParticles.remove();
+            }
+            
+            document.body.style.background = gradient;
+            document.body.style.backgroundSize = isDynamic ? backgroundSize : '100% 100%';
+            document.body.style.backgroundPosition = isDynamic ? '0% 50%' : 'center';
+            document.body.style.backgroundRepeat = 'no-repeat';
+            document.body.style.backgroundAttachment = 'fixed';
+            
+            if (isDynamic && animation) {
+                document.body.style.animation = animation;
+            } else {
+                document.body.style.animation = '';
+            }
+            
+            if (hasParticles) {
+                var particlesContainer = document.createElement('div');
+                particlesContainer.id = 'global-particles-container';
+                particlesContainer.innerHTML = '<div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div><div class="particle p4"></div><div class="particle p5"></div><div class="particle p6"></div>';
+                document.body.appendChild(particlesContainer);
+            }
+            
+            var style = document.createElement('style');
+            style.id = 'custom-background-style';
+            
+            style.textContent = `
+                body::before {
+                    display: none !important;
+                }
+                
+                body.dark-mode {
+                    background: ${gradient} !important;
+                    background-size: ${isDynamic ? backgroundSize : '100% 100%'} !important;
+                    background-position: ${isDynamic ? '0% 50%' : 'center'} !important;
+                    background-repeat: no-repeat !important;
+                    background-attachment: fixed !important;
+                    ${isDynamic && animation ? 'animation: ' + animation + ' !important;' : ''}
+                }
+                
+                #global-particles-container {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    pointer-events: none;
+                    overflow: hidden;
+                    z-index: 9998;
+                }
+                
+                #global-particles-container .particle {
+                    position: absolute;
+                    background: rgba(255, 255, 255, 0.8);
+                    border-radius: 50%;
+                    animation: particleFloat linear infinite;
+                    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.4);
+                }
+                
+                #global-particles-container .particle.p1 {
+                    width: 6px;
+                    height: 6px;
+                    left: 20%;
+                    top: 30%;
+                    animation-duration: 4s;
+                    animation-delay: 0s;
+                }
+                
+                #global-particles-container .particle.p2 {
+                    width: 8px;
+                    height: 8px;
+                    left: 60%;
+                    top: 20%;
+                    animation-duration: 5s;
+                    animation-delay: 1s;
+                }
+                
+                #global-particles-container .particle.p3 {
+                    width: 5px;
+                    height: 5px;
+                    left: 80%;
+                    top: 50%;
+                    animation-duration: 3.5s;
+                    animation-delay: 0.5s;
+                }
+                
+                #global-particles-container .particle.p4 {
+                    width: 6px;
+                    height: 6px;
+                    left: 10%;
+                    top: 70%;
+                    animation-duration: 4.5s;
+                    animation-delay: 1.5s;
+                }
+                
+                #global-particles-container .particle.p5 {
+                    width: 6px;
+                    height: 6px;
+                    left: 40%;
+                    top: 80%;
+                    animation-duration: 3s;
+                    animation-delay: 0.8s;
+                }
+                
+                #global-particles-container .particle.p6 {
+                    width: 5px;
+                    height: 5px;
+                    left: 70%;
+                    top: 60%;
+                    animation-duration: 5.5s;
+                    animation-delay: 2s;
+                }
+                
+                @keyframes monthlyShift {
+                    0% {
+                        background-position: 0% 50%;
+                    }
+                    50% {
+                        background-position: 100% 50%;
+                    }
+                    100% {
+                        background-position: 0% 50%;
+                    }
+                }
+                
+                @keyframes particleFloat {
+                    0% {
+                        transform: translateY(0) translateX(0) scale(1);
+                        opacity: 0;
+                    }
+                    10% {
+                        opacity: 1;
+                    }
+                    90% {
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(-60px) translateX(15px) scale(0.5);
+                        opacity: 0;
+                    }
+                }
+            `;
+            
+            document.head.appendChild(style);
+        } catch (e) {
+            console.error('加载默认渐变背景失败:', e);
         }
     }
 

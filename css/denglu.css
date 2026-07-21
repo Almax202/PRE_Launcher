@@ -7764,6 +7764,133 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 .mail-attachment-background .mail-attachment-preview {
     background-size: cover;
     background-position: center;
+    position: relative;
+}
+
+.mail-attachment-date {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+    font-family: 'HarmonyOS Sans', 'Segoe UI', sans-serif;
+    pointer-events: none;
+}
+
+.mail-attachment-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.mail-attachment-particles .particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: particleFloat linear infinite;
+}
+
+.mail-attachment-particles .particle.p1 {
+    width: 3px;
+    height: 3px;
+    left: 20%;
+    top: 30%;
+    animation-duration: 4s;
+    animation-delay: 0s;
+}
+
+.mail-attachment-particles .particle.p2 {
+    width: 4px;
+    height: 4px;
+    left: 60%;
+    top: 20%;
+    animation-duration: 5s;
+    animation-delay: 1s;
+}
+
+.mail-attachment-particles .particle.p3 {
+    width: 2px;
+    height: 2px;
+    left: 80%;
+    top: 50%;
+    animation-duration: 3.5s;
+    animation-delay: 0.5s;
+}
+
+.mail-attachment-particles .particle.p4 {
+    width: 3px;
+    height: 3px;
+    left: 10%;
+    top: 70%;
+    animation-duration: 4.5s;
+    animation-delay: 1.5s;
+}
+
+.mail-attachment-particles .particle.p5 {
+    width: 3px;
+    height: 3px;
+    left: 40%;
+    top: 80%;
+    animation-duration: 3s;
+    animation-delay: 0.8s;
+}
+
+.mail-attachment-particles .particle.p6 {
+    width: 2px;
+    height: 2px;
+    left: 70%;
+    top: 60%;
+    animation-duration: 5.5s;
+    animation-delay: 2s;
+}
+
+.mail-attachment-dynamic {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(100, 100, 100, 0.6);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 10px;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-60px) translateX(15px) scale(0.5);
+        opacity: 0;
+    }
+}
+
+@keyframes monthlyShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .mail-attachment-preview .preview-placeholder {

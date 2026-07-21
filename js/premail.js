@@ -186,12 +186,39 @@ var mailSystem = {
                     id: 'test_mail_001',
                     title: '欢迎使用邮件系统',
                     sender: 'PRE Launcher',
-                    content: '感谢您使用PRE Launcher！这是一封测试奖励邮件，您可以点击 "领取" 按钮以获得测试的背景奖励。\n\n该邮件的领取有效期截止至 2026-08-01 09:00:00 (UTC)，过期后将无法领取，请注意领取时间。\n\n祝您使用愉快！',
+                    content: '感谢您使用PRE Launcher！这是一封测试奖励邮件，您可以点击 "领取" 按钮以获得测试的「鎏金幻彩」背景奖励。\n\n该邮件的领取有效期已延长至 2026-08-31 23:59:59 (UTC+8)，过期后将无法领取，请注意领取时间。\n\n祝您使用愉快！',
                     attachments: [
                         { name: '鎏金幻彩', type: 'background', gradient: 'radial-gradient(circle at 10% 20%, rgba(255, 223, 0, 0.2) 0%, transparent 35%), radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.18) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.15) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 45%), radial-gradient(circle at 70% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 40%), linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 20%, #16213e 40%, #0f3460 60%, #533483 80%, #e94560 100%)' }
                     ],
                     startTime: "2026-07-20 09:00:00",
-                    endTime: "2026-08-01 09:00:00"
+                    endTime: "2026-08-31 23:59:59"
+                }
+            ]
+        },
+        {
+            version: 2,
+            date: "2026-07-21",
+            mails: [
+                {
+                    id: 'monthly_mail_july',
+                    title: '七月限定动态背景',
+                    sender: 'PRE Launcher',
+                    content: '七月限定动态背景「七月流火」已发放！点击"领取"按钮即可获得这一专属背景。\n\n该背景采用暖色调渐变设计，象征着七月的热情与活力，右下角带有年月数字显示和动态星光效果。\n\n同时我们也一并延长了上一封邮件中「鎏金幻彩」背景的领取有效期，现已延长至 2026-08-31 23:59:59 (UTC+8)，以防用户忘记领取。\n\n该动态背景领取有效期截止至 2026-08-31 23:59:59 (UTC+8)，请及时领取！\n\n祝您使用愉快！',
+                    attachments: [
+                        { 
+                            name: '七月流火', 
+                            type: 'background', 
+                            gradient: 'radial-gradient(circle at 15% 15%, rgba(255, 200, 50, 0.3) 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(255, 100, 50, 0.25) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(255, 150, 0, 0.2) 0%, transparent 55%), radial-gradient(circle at 30% 70%, rgba(255, 230, 100, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(255, 80, 80, 0.15) 0%, transparent 50%), linear-gradient(135deg, #fff7ed 0%, #ffedd5 15%, #fed7aa 30%, #fdba74 45%, #fb923c 60%, #f97316 75%, #ea580c 90%, #c2410c 100%)',
+                            isDynamic: true,
+                            backgroundSize: '200% 200%',
+                            animation: 'monthlyShift 20s ease infinite',
+                            particles: true,
+                            showDate: true,
+                            dateText: '2026.07'
+                        }
+                    ],
+                    startTime: "2026-07-21 19:20:00",
+                    endTime: "2026-08-31 23:59:59"
                 }
             ]
         }
@@ -569,12 +596,33 @@ function selectMail(mailId) {
         mail.attachments.forEach(function(att) {
             if (att.type === 'background') {
                 if (att.gradient) {
+                    var isDynamic = att.isDynamic || false;
+                    var gradientStyle = isDynamic 
+                        ? 'background: ' + att.gradient + '; background-size: ' + (att.backgroundSize || '200% 200%') + '; animation: ' + (att.animation || 'monthlyShift 20s ease infinite') + ';' 
+                        : 'background: ' + att.gradient + ';';
+                    
+                    var dateHtml = att.showDate && att.dateText 
+                        ? '<div class="mail-attachment-date">' + att.dateText + '</div>' 
+                        : '';
+                    
+                    var particlesHtml = att.particles 
+                        ? '<div class="mail-attachment-particles"><div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div><div class="particle p4"></div><div class="particle p5"></div><div class="particle p6"></div></div>' 
+                        : '';
+                    
+                    var dynamicBadge = isDynamic 
+                        ? '<div class="mail-attachment-dynamic">动态背景</div>' 
+                        : '';
+                    
                     html += `
                         <div class="mail-attachment-item mail-attachment-background">
-                            <div class="mail-attachment-preview" style="background: ${att.gradient};"></div>
+                            <div class="mail-attachment-preview" style="${gradientStyle}">
+                                ${dateHtml}
+                                ${particlesHtml}
+                                ${dynamicBadge}
+                            </div>
                             <div class="mail-attachment-info">
                                 <div class="mail-attachment-name">${escapeHtml(att.name)}</div>
-                                <div class="mail-attachment-desc">静态背景</div>
+                                <div class="mail-attachment-desc">${isDynamic ? '动态背景' : '静态背景'}</div>
                             </div>
                         </div>
                     `;

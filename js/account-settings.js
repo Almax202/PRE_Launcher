@@ -5546,6 +5546,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetToDefaultBackground() {
         var userDefaultBg = localStorage.getItem('defaultBackgroundGradient');
         var gradient = 'radial-gradient(ellipse at 10% 10%, rgba(212, 93, 121, 0.12) 0%, transparent 40%), radial-gradient(ellipse at 90% 90%, rgba(102, 126, 234, 0.1) 0%, transparent 40%), radial-gradient(ellipse at 50% 80%, rgba(230, 126, 138, 0.06) 0%, transparent 50%), linear-gradient(135deg, #fdf2f8 0%, #fae8ff 25%, #f5f3ff 50%, #eff6ff 75%, #f0fdfa 100%)';
+        var isDynamic = false;
+        var backgroundSize = '100% 100%';
+        var animation = '';
+        var hasParticles = false;
         
         if (userDefaultBg) {
             try {
@@ -5553,20 +5557,70 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (parsedDefaultBg && parsedDefaultBg.gradient) {
                     gradient = parsedDefaultBg.gradient;
                 }
+                if (parsedDefaultBg && parsedDefaultBg.isDynamic) {
+                isDynamic = true;
+                if (parsedDefaultBg.backgroundSize) {
+                    backgroundSize = parsedDefaultBg.backgroundSize;
+                }
+                if (parsedDefaultBg.animation) {
+                    animation = parsedDefaultBg.animation;
+                }
+            }
+            if (parsedDefaultBg && parsedDefaultBg.particles) {
+                hasParticles = true;
+            }
             } catch (e) {
                 console.warn('解析用户默认背景失败:', e);
             }
         }
         
+        removeBackgroundFromPage();
+        
+        var defaultBgGradientRaw = localStorage.getItem('defaultBackgroundGradient');
+        console.log('DEBUG - defaultBackgroundGradient raw:', defaultBgGradientRaw);
+        console.log('DEBUG - resetToDefaultBackground:', {
+            hasParticles: hasParticles,
+            isDynamic: isDynamic,
+            animation: animation,
+            gradient: gradient ? 'set' : 'not set'
+        });
+        
+        if (hasParticles) {
+            var particlesContainer = document.createElement('div');
+            particlesContainer.id = 'global-particles-container';
+            particlesContainer.innerHTML = '<div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div><div class="particle p4"></div><div class="particle p5"></div><div class="particle p6"></div>';
+            document.body.appendChild(particlesContainer);
+            console.log('DEBUG - particles container added to DOM');
+        }
+        
+        document.body.style.background = gradient;
+        document.body.style.backgroundSize = isDynamic ? backgroundSize : '100% 100%';
+        document.body.style.backgroundPosition = isDynamic ? '0% 50%' : 'center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.backgroundAttachment = 'fixed';
+        
+        if (isDynamic && animation) {
+            document.body.style.animation = animation;
+        } else {
+            document.body.style.animation = '';
+        }
+        
         var style = document.createElement('style');
         style.id = 'custom-background-style';
+        style.setAttribute('data-dynamic', isDynamic ? 'true' : 'false');
+        
         style.textContent = `
-            body {
-                background: ${gradient} !important;
-            }
-            
             body::before {
                 display: none !important;
+            }
+            
+            body.dark-mode {
+                background: ${gradient} !important;
+                background-size: ${isDynamic ? backgroundSize : '100% 100%'} !important;
+                background-position: ${isDynamic ? '0% 50%' : 'center'} !important;
+                background-repeat: no-repeat !important;
+                background-attachment: fixed !important;
+                ${isDynamic && animation ? 'animation: ' + animation + ' !important;' : ''}
             }
             
             .settings-content::before, .content-container::before, .main-content::before {
@@ -5576,7 +5630,110 @@ document.addEventListener('DOMContentLoaded', function() {
             .settings-main {
                 background: transparent !important;
             }
+            
+            #global-particles-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                pointer-events: none;
+                overflow: hidden;
+                z-index: 9998;
+            }
+            
+            #global-particles-container .particle {
+                position: absolute;
+                background: rgba(255, 255, 255, 0.8);
+                border-radius: 50%;
+                animation: particleFloat linear infinite;
+                box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.4);
+            }
+            
+            #global-particles-container .particle.p1 {
+                width: 6px;
+                height: 6px;
+                left: 20%;
+                top: 30%;
+                animation-duration: 4s;
+                animation-delay: 0s;
+            }
+            
+            #global-particles-container .particle.p2 {
+                width: 8px;
+                height: 8px;
+                left: 60%;
+                top: 20%;
+                animation-duration: 5s;
+                animation-delay: 1s;
+            }
+            
+            #global-particles-container .particle.p3 {
+                width: 5px;
+                height: 5px;
+                left: 80%;
+                top: 50%;
+                animation-duration: 3.5s;
+                animation-delay: 0.5s;
+            }
+            
+            #global-particles-container .particle.p4 {
+                width: 6px;
+                height: 6px;
+                left: 10%;
+                top: 70%;
+                animation-duration: 4.5s;
+                animation-delay: 1.5s;
+            }
+            
+            #global-particles-container .particle.p5 {
+                width: 6px;
+                height: 6px;
+                left: 40%;
+                top: 80%;
+                animation-duration: 3s;
+                animation-delay: 0.8s;
+            }
+            
+            #global-particles-container .particle.p6 {
+                width: 5px;
+                height: 5px;
+                left: 70%;
+                top: 60%;
+                animation-duration: 5.5s;
+                animation-delay: 2s;
+            }
+            
+            @keyframes monthlyShift {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            
+            @keyframes particleFloat {
+                0% {
+                    transform: translateY(0) translateX(0) scale(1);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-60px) translateX(15px) scale(0.5);
+                    opacity: 0;
+                }
+            }
         `;
+        
         document.head.appendChild(style);
     }
     
@@ -5590,6 +5747,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (defaultGradientStyle) {
             defaultGradientStyle.remove();
         }
+        
+        var existingParticles = document.getElementById('global-particles-container');
+        if (existingParticles) {
+            existingParticles.remove();
+        }
+        
+        document.body.style.background = '';
+        document.body.style.backgroundSize = '';
+        document.body.style.backgroundPosition = '';
+        document.body.style.backgroundRepeat = '';
+        document.body.style.backgroundAttachment = '';
+        document.body.style.animation = '';
     }
     
     function loadBackgroundSettings() {
@@ -7998,6 +8167,21 @@ document.addEventListener('DOMContentLoaded', function() {
             locked: true,
             unlockType: 'mail',
             unlockSource: 'test_mail_001'
+        },
+        {
+            id: 'monthly-bg-july',
+            name: '七月流火',
+            gradient: 'radial-gradient(circle at 15% 15%, rgba(255, 200, 50, 0.3) 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(255, 100, 50, 0.25) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(255, 150, 0, 0.2) 0%, transparent 55%), radial-gradient(circle at 30% 70%, rgba(255, 230, 100, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(255, 80, 80, 0.15) 0%, transparent 50%), linear-gradient(135deg, #fff7ed 0%, #ffedd5 15%, #fed7aa 30%, #fdba74 45%, #fb923c 60%, #f97316 75%, #ea580c 90%, #c2410c 100%)',
+            backgroundSize: '200% 200%',
+            animation: 'monthlyShift 20s ease infinite',
+            isDynamic: true,
+            category: 'special',
+            locked: true,
+            unlockType: 'mail',
+            unlockSource: 'monthly_mail_july',
+            showDate: true,
+            dateText: '2026.07',
+            particles: true
         }
     ];
     
@@ -8050,32 +8234,62 @@ document.addEventListener('DOMContentLoaded', function() {
         var systemBackgrounds = defaultBackgrounds.filter(function(bg) { return bg.category === 'system'; });
         var specialBackgrounds = defaultBackgrounds.filter(function(bg) { return bg.category === 'special'; });
         
-        if (systemBackgrounds.length > 0) {
-            var systemTitle = document.createElement('div');
-            systemTitle.className = 'background-category-title';
-            systemTitle.innerHTML = '<span class="category-icon"><i class="fas fa-star"></i></span><span>系统默认</span>';
-            grid.appendChild(systemTitle);
-            
-            systemBackgrounds.forEach(function(background) {
-                createBackgroundItem(background);
-            });
-        }
+        var savedCollapsedState = JSON.parse(localStorage.getItem('backgroundCategoryCollapsed') || '{}');
         
-        if (specialBackgrounds.length > 0) {
-            var specialTitle = document.createElement('div');
-            specialTitle.className = 'background-category-title';
-            specialTitle.innerHTML = '<span class="category-icon"><i class="fas fa-gift"></i></span><span>特殊获取</span>';
-            grid.appendChild(specialTitle);
+        function createCategorySection(title, icon, category, backgrounds) {
+            if (backgrounds.length === 0) return;
             
-            specialBackgrounds.forEach(function(background) {
-                createBackgroundItem(background);
+            var isCollapsed = savedCollapsedState[category] === true;
+            
+            var sectionTitle = document.createElement('div');
+            sectionTitle.className = 'background-category-title' + (isCollapsed ? ' collapsed' : '');
+            sectionTitle.setAttribute('data-category', category);
+            
+            var infoIcon = category === 'special' 
+                ? '<span class="background-info-icon"><i class="fas fa-info-circle"></i><span class="background-info-tooltip">该类别是通过邮件、兑换码或其他来源获取的背景</span></span>' 
+                : '';
+            
+            sectionTitle.innerHTML = '<span class="category-icon"><i class="fas fa-' + icon + '"></i></span><span>' + title + '</span>' + infoIcon + '<button class="background-category-toggle"><i class="fas fa-chevron-down"></i></button>';
+            
+            var contentContainer = document.createElement('div');
+            contentContainer.className = 'background-category-content';
+            
+            backgrounds.forEach(function(background) {
+                var item = createBackgroundItem(background);
+                contentContainer.appendChild(item);
             });
+            
+            sectionTitle.addEventListener('click', function() {
+                var isCurrentlyCollapsed = sectionTitle.classList.contains('collapsed');
+                
+                if (isCurrentlyCollapsed) {
+                    contentContainer.style.maxHeight = contentContainer.scrollHeight + 'px';
+                    sectionTitle.classList.remove('collapsed');
+                    
+                    setTimeout(function() {
+                        contentContainer.style.maxHeight = '';
+                    }, 300);
+                } else {
+                    contentContainer.style.maxHeight = contentContainer.scrollHeight + 'px';
+                    
+                    setTimeout(function() {
+                        sectionTitle.classList.add('collapsed');
+                        contentContainer.style.maxHeight = '';
+                    }, 50);
+                }
+                
+                savedCollapsedState[category] = !isCurrentlyCollapsed;
+                localStorage.setItem('backgroundCategoryCollapsed', JSON.stringify(savedCollapsedState));
+            });
+            
+            grid.appendChild(sectionTitle);
+            grid.appendChild(contentContainer);
         }
         
         function createBackgroundItem(background) {
             var isUnlocked = isBackgroundUnlocked(background);
             var item = document.createElement('div');
-            item.className = 'preset-background-item' + (selectedDefaultBackground && selectedDefaultBackground.id === background.id ? ' selected' : '') + (!isUnlocked ? ' locked' : '');
+            item.className = 'preset-background-item' + (selectedDefaultBackground && selectedDefaultBackground.id === background.id ? ' selected' : '') + (!isUnlocked ? ' locked' : '') + (background.particles ? ' has-particles' : '');
             item.setAttribute('data-id', background.id);
             item.setAttribute('data-name', background.name);
             item.setAttribute('data-gradient', background.gradient);
@@ -8084,8 +8298,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? 'background: ' + background.gradient + '; background-size: ' + background.backgroundSize + '; animation: ' + background.animation + ';' 
                 : 'background: ' + background.gradient + ';';
             
+            var dateHtml = background.showDate && background.dateText 
+                ? '<div class="background-date-display">' + background.dateText + '</div>' 
+                : '';
+            
+            var particlesHtml = background.particles 
+                ? '<div class="background-particles"><div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div><div class="particle p4"></div><div class="particle p5"></div><div class="particle p6"></div></div>' 
+                : '';
+            
+            var dynamicBadge = background.isDynamic 
+                ? '<div class="background-dynamic-badge">动态背景</div>' 
+                : '';
+            
             item.innerHTML = `
                 <div class="default-bg-gradient" style="${gradientStyle}"></div>
+                ${dateHtml}
+                ${particlesHtml}
+                ${dynamicBadge}
                 <div class="preset-background-name">${background.name}</div>
                 ${!isUnlocked ? '<div class="background-lock-overlay"><i class="fas fa-lock"></i></div>' : ''}
                 ${selectedDefaultBackground && selectedDefaultBackground.id === background.id ? '<div class="preset-background-check"><i class="fas fa-check"></i></div>' : ''}
@@ -8095,8 +8324,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleDefaultBackgroundSelection(background);
             });
             
-            grid.appendChild(item);
+            return item;
         }
+        
+        createCategorySection('系统默认', 'star', 'system', systemBackgrounds);
+        createCategorySection('特殊获取', 'gift', 'special', specialBackgrounds);
     }
     
     function toggleDefaultBackgroundSelection(background) {
@@ -8167,6 +8399,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (selectedDefaultBackground.animation) {
                 defaultBgSettings.animation = selectedDefaultBackground.animation;
+            }
+            if (selectedDefaultBackground.particles) {
+                defaultBgSettings.particles = true;
             }
         }
         
