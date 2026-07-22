@@ -462,9 +462,6 @@
         }
         
         function loadGlobalThemeColor() {
-            var isEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
-            if (!isEnabled) return;
-            
             var savedColor = localStorage.getItem('globalThemeColor');
             if (!savedColor) savedColor = '#d45d79';
             
@@ -579,6 +576,57 @@
                 }
                 body.dark-mode .login-btn:hover {
                     box-shadow: 0 5px 15px rgba(${rgb}, 0.4) !important;
+                }
+                .sidebar-avatar {
+                    background: linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%) !important;
+                }
+                .sidebar-menu .menu-item:hover {
+                    border-left-color: ${color} !important;
+                    background-color: rgba(${rgb}, 0.1) !important;
+                }
+                .sidebar-menu .menu-item.active {
+                    border-left-color: ${color} !important;
+                    background-color: rgba(${rgb}, 0.1) !important;
+                }
+                @media (max-width: 768px) {
+                    .sidebar-menu .menu-item:hover {
+                        border-left-color: ${color} !important;
+                        background-color: rgba(${rgb}, 0.1) !important;
+                    }
+                    .sidebar-menu .menu-item.active {
+                        border-left-color: ${color} !important;
+                        background-color: rgba(${rgb}, 0.1) !important;
+                    }
+                }
+                .user-center:hover {
+                    border-color: ${color} !important;
+                }
+                .about-launcher-btn {
+                    background: ${color} !important;
+                }
+                .about-launcher-btn:hover {
+                    background: ${lighterColor} !important;
+                }
+                .header-right .about-launcher-btn {
+                    background: linear-gradient(135deg, ${lighterColor} 0%, ${color} 100%) !important;
+                }
+                .header-right .about-launcher-btn:hover {
+                    box-shadow: 0 4px 12px rgba(${rgb}, 0.3) !important;
+                }
+                .back-to-top-btn {
+                    background: linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%) !important;
+                }
+                .alert-content::before {
+                    background: linear-gradient(90deg, ${color}, ${lighterColor}) !important;
+                }
+                .alert-icon {
+                    color: ${lighterColor} !important;
+                }
+                .alert-confirm {
+                    background: linear-gradient(90deg, ${color}, ${lighterColor}) !important;
+                }
+                .alert-confirm:hover {
+                    box-shadow: 0 5px 10px rgba(${rgb}, 0.3) !important;
                 }
             `;
             
@@ -5746,6 +5794,11 @@
                                 <i class="fas fa-info-circle"></i>
                                 <span>组件信息</span>
                             </div>
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-item" id="calendarGuideItem">
+                                <i class="fas fa-question-circle"></i>
+                                <span>查看引导</span>
+                            </div>
                         </div>
                     </div>
                     <button class="calendar-desktop-close" onclick="closeCalendarModal()">
@@ -6006,6 +6059,23 @@
                             <span>清空所有数据</span>
                         </button>
                     </div>
+                </div>
+            </div>
+            
+            <div id="calendarGuideStepOverlay" class="guide-step-overlay">
+                <div class="guide-highlight" id="calendarGuideHighlight"></div>
+                <div class="guide-step-tooltip" id="calendarGuideTooltip">
+                    <div class="step-title" id="calendarStepTitle"></div>
+                    <div class="step-desc" id="calendarStepDesc"></div>
+                </div>
+            </div>
+            
+            <div id="calendarGuideStepFooter" class="guide-step-footer" style="display: none;">
+                <div class="guide-step-indicators" id="calendarGuideStepIndicators"></div>
+                <div class="guide-step-buttons">
+                    <button class="guide-step-btn prev" id="calendarGuidePrevBtn" style="display: none;">上一步</button>
+                    <button class="guide-step-btn next" id="calendarGuideNextBtn">下一步</button>
+                    <button class="guide-step-btn skip" id="calendarGuideSkipBtn">跳过引导</button>
                 </div>
             </div>
         </div>
@@ -6525,9 +6595,15 @@
     
     <div id="stickyNotesModal" class="custom-fullscreen-modal" style="display: none;">
         <div class="sticky-notes-container">
-            <button class="sticky-notes-modal-close" id="stickyNotesClose">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="sticky-notes-modal-actions">
+                <button class="action-btn delete-note-btn" id="deleteStickyNote" style="display: none;">
+                    <i class="fas fa-trash"></i>
+                    <span>删除</span>
+                </button>
+                <button class="sticky-notes-modal-close" id="stickyNotesClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             <div class="sticky-notes-sidebar">
                 <div class="sidebar-header">
                     <h3>便签</h3>
@@ -6591,12 +6667,6 @@
             <div class="sticky-notes-main">
                 <div class="main-header">
                     <input type="text" id="stickyNoteTitle" placeholder="便签标题" class="note-title-input">
-                    <div class="main-actions">
-                        <button class="action-btn" id="deleteStickyNote" style="display: none;">
-                            <i class="fas fa-trash"></i>
-                            <span>删除</span>
-                        </button>
-                    </div>
                 </div>
                 <div class="toolbar">
                     <div class="toolbar-group">
@@ -8519,6 +8589,7 @@
                 
                 loadCustomBackground();
                 updateUserCenter(username, validUser.userId);
+                updateMailDisabledState();
                 
                 showAlert(getLanguageText('loginSuccess'));
                 
@@ -8617,6 +8688,20 @@
                 document.getElementById('tooltipUserName').textContent = '--';
                 document.getElementById('tooltipUserId').textContent = '--';
                 document.getElementById('tooltipRegTime').textContent = '--';
+            }
+        }
+
+        function updateMailDisabledState() {
+            var sidebarMail = document.getElementById('sidebarMail');
+            if (!sidebarMail) return;
+            
+            var currentUser = localStorage.getItem('currentUser');
+            var isLoggedIn = currentUser && currentUser !== '';
+            
+            if (isLoggedIn) {
+                sidebarMail.classList.remove('disabled-mail');
+            } else {
+                sidebarMail.classList.add('disabled-mail');
             }
         }
 
@@ -8866,6 +8951,16 @@
             localStorage.removeItem('skipSecurityVerifyExpire');
             localStorage.removeItem('customBackground');
             
+            // 清除所有功能启用状态
+            localStorage.removeItem('guideEnabled');
+            localStorage.removeItem('uiScaleEnabled');
+            localStorage.removeItem('hideUiEnabled');
+            localStorage.removeItem('aboutLauncherEnabled');
+            localStorage.removeItem('stickyNotesEnabled');
+            localStorage.removeItem('weatherFeatureEnabled');
+            localStorage.removeItem('calendarEnabled');
+            localStorage.removeItem('redeemCodeEnabled');
+            
             var existingStyle = document.getElementById('custom-background-style');
             if (existingStyle) {
                 existingStyle.remove();
@@ -8939,6 +9034,17 @@
             document.getElementById('loginTab').click();
         });
 
+        function clearAllFeatureFlags() {
+            localStorage.removeItem('guideEnabled');
+            localStorage.removeItem('uiScaleEnabled');
+            localStorage.removeItem('hideUiEnabled');
+            localStorage.removeItem('aboutLauncherEnabled');
+            localStorage.removeItem('stickyNotesEnabled');
+            localStorage.removeItem('weatherFeatureEnabled');
+            localStorage.removeItem('calendarEnabled');
+            localStorage.removeItem('redeemCodeEnabled');
+        }
+        
         function loadCurrentUser() {
             var currentUser = localStorage.getItem('currentUser');
             if (currentUser) {
@@ -8958,7 +9064,12 @@
                 updateUserCenter(userData.username, userId);
             } else {
                 updateUserCenter('未登录');
+                // 未登录时清除所有功能启用状态
+                clearAllFeatureFlags();
             }
+            
+            // 更新邮件按钮禁用状态
+            updateMailDisabledState();
         }
 
         loadCurrentUser();
@@ -9573,6 +9684,7 @@
                         localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
                         
                         updateUserCenter(username, validUser ? validUser.userId : null);
+                        updateMailDisabledState();
                         
                         showAlert(getLanguageText('loginSuccess'));
                         
@@ -9892,6 +10004,7 @@
                 }
                 
                 updateUserCenter(username, validUser ? validUser.userId : null);
+                updateMailDisabledState();
                 
                 showAlert(getLanguageText('loginSuccess'));
                 
@@ -11460,43 +11573,69 @@
                                 <p><strong>用途：</strong>${info.purpose}</p>
                             </div>
                             <div class="about-mobile-copyright">
-                                <p><strong>版权声明：</strong></p>
-                                <div class="copyright-text">
-                                    <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
-                                    <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
-                                    <p>各独立资源版权、著作权归原作者及版权方所有。</p>
-                                    <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
+                                <div class="info-card-header">
+                                    <h3 class="info-card-title" id="mobileAboutTabTitle">版权声明</h3>
+                                    <div class="tab-toggle-buttons">
+                                        <button class="tab-toggle-btn active" id="mobileTabBtnCopyright" onclick="toggleAboutTab('copyright')">版权声明</button>
+                                        <button class="tab-toggle-btn" id="mobileTabBtnDisclaimer" onclick="toggleAboutTab('disclaimer')">免责声明</button>
+                                    </div>
                                 </div>
-                                <div class="copyright-buttons">
-                                    <div style="margin-bottom: 15px;">
-                                        <span style="font-weight: bold; color: #666;">1. MIT 开源许可</span>
-                                        <div style="margin-top: 8px; margin-left: 20px;">
-                                            <button class="copyright-btn" onclick="showMitLicenseModal()">MIT License</button>
+                                <div class="copyright-content" id="mobileCopyrightContent">
+                                    <div class="copyright-text">
+                                        <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
+                                        <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
+                                        <p>各独立资源版权、著作权归原作者及版权方所有。</p>
+                                        <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
+                                    </div>
+                                    <div class="copyright-buttons">
+                                        <div style="margin-bottom: 15px;">
+                                            <span style="font-weight: bold; color: #666;">1. MIT 开源许可</span>
+                                            <div style="margin-top: 8px; margin-left: 20px;">
+                                                <button class="copyright-btn" onclick="showMitLicenseModal()">MIT License</button>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 15px;">
+                                            <span style="font-weight: bold; color: #666;">2. 验证码图片服务</span>
+                                            <div style="margin-top: 8px; margin-left: 20px;">
+                                                <button class="copyright-btn" onclick="showDummyImageModal()">dummyimage</button>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 15px;">
+                                            <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
+                                            <div style="margin-top: 8px; margin-left: 20px;">
+                                                <button class="copyright-btn" onclick="showFontCopyrightModal()">HarmonyOS Sans</button>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 15px;">
+                                            <span style="font-weight: bold; color: #666;">4. 前端开发框架</span>
+                                            <div style="margin-top: 8px; margin-left: 20px;">
+                                                <button class="copyright-btn" onclick="showMuiCopyrightModal()">MUI</button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span style="font-weight: bold; color: #666;">5. 天气API</span>
+                                            <div style="margin-top: 8px; margin-left: 20px;">
+                                                <button class="copyright-btn" onclick="showOpenMeteoModal()">Open-Meteo API</button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div style="margin-bottom: 15px;">
-                                        <span style="font-weight: bold; color: #666;">2. 验证码图片服务</span>
-                                        <div style="margin-top: 8px; margin-left: 20px;">
-                                            <button class="copyright-btn" onclick="showDummyImageModal()">dummyimage</button>
-                                        </div>
-                                    </div>
-                                    <div style="margin-bottom: 15px;">
-                                        <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
-                                        <div style="margin-top: 8px; margin-left: 20px;">
-                                            <button class="copyright-btn" onclick="showFontCopyrightModal()">HarmonyOS Sans</button>
-                                        </div>
-                                    </div>
-                                    <div style="margin-bottom: 15px;">
-                                        <span style="font-weight: bold; color: #666;">4. 前端开发框架</span>
-                                        <div style="margin-top: 8px; margin-left: 20px;">
-                                            <button class="copyright-btn" onclick="showMuiCopyrightModal()">MUI</button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <span style="font-weight: bold; color: #666;">5. 天气API</span>
-                                        <div style="margin-top: 8px; margin-left: 20px;">
-                                            <button class="copyright-btn" onclick="showOpenMeteoModal()">Open-Meteo API</button>
-                                        </div>
+                                </div>
+                                <div class="disclaimer-content" id="mobileDisclaimerContent" style="display: none;">
+                                    <div class="disclaimer-text">
+                                        <p><strong>1. 服务性质声明</strong></p>
+                                        <p>PRE Launcher 是一款免费的游戏启动器工具，旨在为用户提供便捷的游戏管理和启动体验。本软件不提供任何游戏内容，也不与任何游戏开发商或发行商有官方合作关系。</p>
+                                        <br>
+                                        <p><strong>2. 数据安全声明</strong></p>
+                                        <p>本启动器仅在本地存储用户的设置偏好、主题配置、日历数据、便签内容等信息，所有数据均保存在用户设备上，不会上传至任何服务器。用户需自行负责数据备份，开发者不对数据丢失承担责任。</p>
+                                        <br>
+                                        <p><strong>3. 第三方服务声明</strong></p>
+                                        <p>启动器集成的天气数据、日历功能等第三方服务由相应服务商提供，服务可用性和准确性受限于第三方。开发者不对第三方服务的故障或数据错误承担责任。</p>
+                                        <br>
+                                        <p><strong>4. 使用风险声明</strong></p>
+                                        <p>用户使用本启动器需自行承担风险。开发者已尽合理努力确保软件的稳定性，但不保证软件在任何情况下都不会出现错误或中断。因使用本软件导致的任何直接或间接损失，开发者不承担赔偿责任。</p>
+                                        <br>
+                                        <p><strong>5. 修改与更新声明</strong></p>
+                                        <p>开发者保留随时修改、更新或终止本软件服务的权利，无需提前通知用户。软件更新可能会改变部分功能或界面，用户可选择是否安装更新。</p>
                                     </div>
                                 </div>
                             </div>
@@ -11550,34 +11689,60 @@
                                     </div>
                                 </div>
                                 <div class="about-desktop-copyright-card">
-                                    <h3 class="info-card-title">版权声明</h3>
-                                    <div class="copyright-text">
-                                        <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
-                                        <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
-                                        <p>各独立资源版权、著作权归原作者及版权方所有。</p>
-                                        <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
+                                    <div class="info-card-header">
+                                        <h3 class="info-card-title" id="aboutTabTitle">版权声明</h3>
+                                        <div class="tab-toggle-buttons">
+                                            <button class="tab-toggle-btn active" id="tabBtnCopyright" onclick="toggleAboutTab('copyright')">版权声明</button>
+                                            <button class="tab-toggle-btn" id="tabBtnDisclaimer" onclick="toggleAboutTab('disclaimer')">免责声明</button>
+                                        </div>
                                     </div>
-                                    <div class="copyright-buttons-grid">
-                                        <button class="copyright-btn" onclick="showMitLicenseModal()">
-                                            <i class="fas fa-file-alt"></i>
-                                            <span>MIT License</span>
-                                        </button>
-                                        <button class="copyright-btn" onclick="showDummyImageModal()">
-                                            <i class="fas fa-image"></i>
-                                            <span>dummyimage</span>
-                                        </button>
-                                        <button class="copyright-btn" onclick="showFontCopyrightModal()">
-                                            <i class="fas fa-font"></i>
-                                            <span>HarmonyOS Sans</span>
-                                        </button>
-                                        <button class="copyright-btn" onclick="showMuiCopyrightModal()">
-                                            <i class="fas fa-code"></i>
-                                            <span>MUI</span>
-                                        </button>
-                                        <button class="copyright-btn" onclick="showOpenMeteoModal()">
-                                            <i class="fas fa-cloud-sun"></i>
-                                            <span>Open-Meteo API</span>
-                                        </button>
+                                    <div class="copyright-content" id="copyrightContent">
+                                        <div class="copyright-text">
+                                            <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
+                                            <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
+                                            <p>各独立资源版权、著作权归原作者及版权方所有。</p>
+                                            <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
+                                        </div>
+                                        <div class="copyright-buttons-grid">
+                                            <button class="copyright-btn" onclick="showMitLicenseModal()">
+                                                <i class="fas fa-file-alt"></i>
+                                                <span>MIT License</span>
+                                            </button>
+                                            <button class="copyright-btn" onclick="showDummyImageModal()">
+                                                <i class="fas fa-image"></i>
+                                                <span>dummyimage</span>
+                                            </button>
+                                            <button class="copyright-btn" onclick="showFontCopyrightModal()">
+                                                <i class="fas fa-font"></i>
+                                                <span>HarmonyOS Sans</span>
+                                            </button>
+                                            <button class="copyright-btn" onclick="showMuiCopyrightModal()">
+                                                <i class="fas fa-code"></i>
+                                                <span>MUI</span>
+                                            </button>
+                                            <button class="copyright-btn" onclick="showOpenMeteoModal()">
+                                                <i class="fas fa-cloud-sun"></i>
+                                                <span>Open-Meteo API</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="disclaimer-content" id="disclaimerContent" style="display: none;">
+                                        <div class="disclaimer-text">
+                                            <p><strong>1. 服务性质声明</strong></p>
+                                            <p>PRE Launcher 是一款免费的启动器工具，旨在为用户提供便捷的工具管理和启动体验。本软件不提供任何他人额外开发的工具内容，也不与任何工具开发商或发行商有官方合作关系。</p>
+                                            <br>
+                                            <p><strong>2. 数据安全声明</strong></p>
+                                            <p>本启动器仅在本地存储用户的设置偏好、主题配置、日历数据、便签内容等信息，所有数据均保存在用户设备上，不会上传至任何服务器。用户需自行负责数据备份，开发者不对数据丢失承担责任。</p>
+                                            <br>
+                                            <p><strong>3. 第三方服务声明</strong></p>
+                                            <p>启动器集成的天气数据、日历功能等第三方服务由相应服务商提供，服务可用性和准确性受限于第三方。开发者不对第三方服务的故障或数据错误承担责任。</p>
+                                            <br>
+                                            <p><strong>4. 使用风险声明</strong></p>
+                                            <p>用户使用本启动器需自行承担风险。开发者已尽合理努力确保软件的稳定性，但不保证软件在任何情况下都不会出现错误或中断。因使用本软件导致的任何直接或间接损失，开发者不承担赔偿责任。</p>
+                                            <br>
+                                            <p><strong>5. 修改与更新声明</strong></p>
+                                            <p>开发者保留随时修改、更新或终止本软件服务的权利，无需提前通知用户。软件更新可能会改变部分功能或界面。</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -12025,6 +12190,59 @@
                 setTimeout(function() {
                     fontCopyrightModal.remove();
                 }, 300);
+            }
+        }
+        
+        // 切换关于启动器弹窗的标签页
+        function toggleAboutTab(tab) {
+            // 桌面端元素
+            var desktopCopyrightContent = document.getElementById('copyrightContent');
+            var desktopDisclaimerContent = document.getElementById('disclaimerContent');
+            var desktopTabBtnCopyright = document.getElementById('tabBtnCopyright');
+            var desktopTabBtnDisclaimer = document.getElementById('tabBtnDisclaimer');
+            var desktopAboutTabTitle = document.getElementById('aboutTabTitle');
+            
+            // 移动端元素
+            var mobileCopyrightContent = document.getElementById('mobileCopyrightContent');
+            var mobileDisclaimerContent = document.getElementById('mobileDisclaimerContent');
+            var mobileTabBtnCopyright = document.getElementById('mobileTabBtnCopyright');
+            var mobileTabBtnDisclaimer = document.getElementById('mobileTabBtnDisclaimer');
+            var mobileAboutTabTitle = document.getElementById('mobileAboutTabTitle');
+            
+            if (tab === 'copyright') {
+                // 更新桌面端
+                if (desktopCopyrightContent) {
+                    desktopCopyrightContent.style.display = 'block';
+                    desktopDisclaimerContent.style.display = 'none';
+                    desktopTabBtnCopyright.classList.add('active');
+                    desktopTabBtnDisclaimer.classList.remove('active');
+                    desktopAboutTabTitle.textContent = '版权声明';
+                }
+                // 更新移动端
+                if (mobileCopyrightContent) {
+                    mobileCopyrightContent.style.display = 'block';
+                    mobileDisclaimerContent.style.display = 'none';
+                    mobileTabBtnCopyright.classList.add('active');
+                    mobileTabBtnDisclaimer.classList.remove('active');
+                    mobileAboutTabTitle.textContent = '版权声明';
+                }
+            } else if (tab === 'disclaimer') {
+                // 更新桌面端
+                if (desktopCopyrightContent) {
+                    desktopCopyrightContent.style.display = 'none';
+                    desktopDisclaimerContent.style.display = 'block';
+                    desktopTabBtnCopyright.classList.remove('active');
+                    desktopTabBtnDisclaimer.classList.add('active');
+                    desktopAboutTabTitle.textContent = '免责声明';
+                }
+                // 更新移动端
+                if (mobileCopyrightContent) {
+                    mobileCopyrightContent.style.display = 'none';
+                    mobileDisclaimerContent.style.display = 'block';
+                    mobileTabBtnCopyright.classList.remove('active');
+                    mobileTabBtnDisclaimer.classList.add('active');
+                    mobileAboutTabTitle.textContent = '免责声明';
+                }
             }
         }
         
@@ -19388,6 +19606,310 @@
                 calendarDropdownMenu.style.display = 'none';
                 calendarMoreBtn.classList.remove('active');
             });
+            
+            document.getElementById('calendarGuideItem').addEventListener('click', function() {
+                if (typeof showCalendarGuide === 'function') {
+                    showCalendarGuide();
+                } else {
+                    showAlert('无法启动引导');
+                }
+                calendarDropdownMenu.style.display = 'none';
+                calendarMoreBtn.classList.remove('active');
+            });
+            
+            var calendarGuideSteps = [
+                {
+                    elementId: 'calendarMonthYear',
+                    title: '月份导航',
+                    description: '显示当前月份，点击可快速切换月份',
+                    position: 'bottom'
+                },
+                {
+                    elementId: 'calendarToday',
+                    title: '回到今天',
+                    description: '快速跳转到今天的日期',
+                    position: 'bottom'
+                },
+                {
+                    elementId: 'calendar-sidebar-tabs',
+                    title: '功能标签',
+                    description: '切换待办事项、日程和课程表',
+                    position: 'right'
+                },
+                {
+                    elementId: 'todoList',
+                    title: '待办事项',
+                    description: '管理您的待办任务列表',
+                    position: 'right'
+                },
+                {
+                    elementId: 'scheduleForm',
+                    title: '添加日程',
+                    description: '创建新的日程安排',
+                    position: 'right'
+                },
+                {
+                    elementId: 'classesList',
+                    title: '课程表',
+                    description: '管理您的课程安排',
+                    position: 'right'
+                }
+            ];
+            
+            var currentCalendarGuideStep = 0;
+            var isCalendarGuideActive = false;
+            var savedCalendarGuideSteps = null;
+            var savedCalendarCurrentGuideStep = 0;
+            var savedCalendarIsGuideActive = false;
+            
+            function showCalendarGuide() {
+                savedCalendarGuideSteps = guideSteps;
+                savedCalendarCurrentGuideStep = currentGuideStep;
+                savedCalendarIsGuideActive = isGuideActive;
+                
+                guideSteps = calendarGuideSteps;
+                currentCalendarGuideStep = 0;
+                isCalendarGuideActive = true;
+                
+                showCalendarGuideWelcome();
+            }
+            
+            function showCalendarGuideWelcome() {
+                var modal = document.getElementById('calendarGuideWelcomeModal');
+                if (!modal) {
+                    createCalendarGuideModals();
+                    modal = document.getElementById('calendarGuideWelcomeModal');
+                }
+                modal.classList.remove('hidden');
+            }
+            
+            function createCalendarGuideModals() {
+                var calendarModal = document.getElementById('calendarModal');
+                var alertContent = calendarModal.querySelector('.alert-content');
+                
+                var welcomeModal = document.createElement('div');
+                welcomeModal.id = 'calendarGuideWelcomeModal';
+                welcomeModal.className = 'guide-overlay hidden calendar-guide-modal';
+                welcomeModal.innerHTML = '\
+                    <div class="guide-content">\
+                        <div class="guide-icon">\
+                            <i class="fas fa-calendar-alt"></i>\
+                        </div>\
+                        <h2>日历组件引导</h2>\
+                        <p>欢迎使用日历组件！让我们带您了解日历组件的各项功能。</p>\
+                        <div class="guide-buttons">\
+                            <button class="guide-btn guide-btn-primary" id="startCalendarGuideBtn">开始引导</button>\
+                            <button class="guide-btn guide-btn-secondary" id="skipCalendarGuideBtn">跳过引导</button>\
+                        </div>\
+                    </div>\
+                ';
+                alertContent.appendChild(welcomeModal);
+                
+                var endModal = document.createElement('div');
+                endModal.id = 'calendarGuideEndModal';
+                endModal.className = 'guide-overlay hidden calendar-guide-modal';
+                endModal.innerHTML = '\
+                    <div class="guide-content">\
+                        <div class="guide-icon">\
+                            <i class="fas fa-check-circle"></i>\
+                        </div>\
+                        <h2>引导已结束</h2>\
+                        <p>您已完成日历组件的功能引导。是否结束引导或重新开始？</p>\
+                        <div class="guide-buttons">\
+                            <button class="guide-btn guide-btn-secondary" id="calendarGuideRestartBtn">重新开始</button>\
+                            <button class="guide-btn guide-btn-primary" id="calendarGuideFinishBtn">结束引导</button>\
+                        </div>\
+                    </div>\
+                ';
+                alertContent.appendChild(endModal);
+                
+                document.getElementById('startCalendarGuideBtn').addEventListener('click', startCalendarGuide);
+                document.getElementById('skipCalendarGuideBtn').addEventListener('click', skipCalendarGuide);
+                document.getElementById('calendarGuideRestartBtn').addEventListener('click', restartCalendarGuide);
+                document.getElementById('calendarGuideFinishBtn').addEventListener('click', finishCalendarGuide);
+            }
+            
+            function startCalendarGuide() {
+                document.getElementById('calendarGuideWelcomeModal').classList.add('hidden');
+                document.body.classList.add('calendar-guide-active');
+                currentCalendarGuideStep = 0;
+                isCalendarGuideActive = true;
+                showCalendarGuideStep(0);
+            }
+            
+            function skipCalendarGuide() {
+                document.getElementById('calendarGuideWelcomeModal').classList.add('hidden');
+                document.body.classList.remove('calendar-guide-active');
+                restoreCalendarGlobalGuide();
+            }
+            
+            function showCalendarGuideStep(stepIndex) {
+                if (stepIndex < 0 || stepIndex >= calendarGuideSteps.length) {
+                    endCalendarGuide();
+                    return;
+                }
+                
+                currentCalendarGuideStep = stepIndex;
+                var step = calendarGuideSteps[stepIndex];
+                
+                if (step.elementId === 'todoList') {
+                    switchCalendarTab('todos');
+                } else if (step.elementId === 'scheduleForm') {
+                    switchCalendarTab('schedule');
+                } else if (step.elementId === 'classesList') {
+                    switchCalendarTab('classes');
+                }
+                
+                setTimeout(function() {
+                    var targetElement = document.getElementById(step.elementId);
+                    
+                    if (!targetElement) {
+                        targetElement = document.querySelector('.' + step.elementId);
+                    }
+                    
+                    var highlight = document.getElementById('calendarGuideHighlight');
+                    var tooltip = document.getElementById('calendarGuideTooltip');
+                    if (highlight) highlight.style.display = 'none';
+                    if (tooltip) tooltip.style.display = 'none';
+                    
+                    if (!targetElement) {
+                        nextCalendarGuideStep();
+                        return;
+                    }
+                    
+                    var isElementVisible = targetElement.offsetParent !== null;
+                    
+                    if (!isElementVisible) {
+                        nextCalendarGuideStep();
+                        return;
+                    }
+                    
+                    var overlay = document.getElementById('calendarGuideStepOverlay');
+                    var highlight = document.getElementById('calendarGuideHighlight');
+                    var tooltip = document.getElementById('calendarGuideTooltip');
+                    var footer = document.getElementById('calendarGuideStepFooter');
+                    var indicators = document.getElementById('calendarGuideStepIndicators');
+                    var prevBtn = document.getElementById('calendarGuidePrevBtn');
+                    var nextBtn = document.getElementById('calendarGuideNextBtn');
+                    var stepTitle = document.getElementById('calendarStepTitle');
+                    var stepDesc = document.getElementById('calendarStepDesc');
+                    
+                    overlay.classList.add('active');
+                    footer.style.display = 'flex';
+                    
+                    var rect = targetElement.getBoundingClientRect();
+                    var modalRect = document.getElementById('calendarModal').getBoundingClientRect();
+                    
+                    var relativeLeft = rect.left - modalRect.left;
+                    var relativeTop = rect.top - modalRect.top;
+                    
+                    if (isElementVisible) {
+                        highlight.style.left = relativeLeft - 10 + 'px';
+                        highlight.style.top = relativeTop - 10 + 'px';
+                        highlight.style.width = rect.width + 20 + 'px';
+                        highlight.style.height = rect.height + 20 + 'px';
+                        highlight.style.display = 'block';
+                    } else {
+                        highlight.style.display = 'none';
+                    }
+                    
+                    stepTitle.textContent = step.title;
+                    stepDesc.textContent = step.description;
+                    
+                    tooltip.className = 'guide-step-tooltip ' + step.position;
+                    tooltip.style.display = 'block';
+                    
+                    var tooltipWidth = tooltip.offsetWidth;
+                    var tooltipHeight = tooltip.offsetHeight;
+                    
+                    if (isElementVisible) {
+                        switch (step.position) {
+                            case 'top':
+                                tooltip.style.left = relativeLeft + rect.width / 2 - tooltipWidth / 2 + 'px';
+                                tooltip.style.top = relativeTop - tooltipHeight - 15 + 'px';
+                                break;
+                            case 'bottom':
+                                tooltip.style.left = relativeLeft + rect.width / 2 - tooltipWidth / 2 + 'px';
+                                tooltip.style.top = relativeTop + rect.height + 15 + 'px';
+                                break;
+                            case 'left':
+                                tooltip.style.left = relativeLeft - tooltipWidth - 15 + 'px';
+                                tooltip.style.top = relativeTop + rect.height / 2 - tooltipHeight / 2 + 'px';
+                                break;
+                            case 'right':
+                                tooltip.style.left = relativeLeft + rect.width + 15 + 'px';
+                                tooltip.style.top = relativeTop + rect.height / 2 - tooltipHeight / 2 + 'px';
+                                break;
+                        }
+                    }
+                    
+                    indicators.innerHTML = '';
+                    for (var i = 0; i < calendarGuideSteps.length; i++) {
+                        var indicator = document.createElement('div');
+                        indicator.className = 'guide-step-indicator' + (i === stepIndex ? ' active' : '');
+                        indicators.appendChild(indicator);
+                    }
+                    
+                    prevBtn.style.display = stepIndex === 0 ? 'none' : 'block';
+                    nextBtn.textContent = stepIndex === calendarGuideSteps.length - 1 ? '完成' : '下一步';
+                    
+                    var nextBtnEl = document.getElementById('calendarGuideNextBtn');
+                    var prevBtnEl = document.getElementById('calendarGuidePrevBtn');
+                    var skipBtnEl = document.getElementById('calendarGuideSkipBtn');
+                    
+                    nextBtnEl.onclick = nextCalendarGuideStep;
+                    prevBtnEl.onclick = prevCalendarGuideStep;
+                    skipBtnEl.onclick = endCalendarGuide;
+                }, 100);
+            }
+            
+            function nextCalendarGuideStep() {
+                if (currentCalendarGuideStep === calendarGuideSteps.length - 1) {
+                    showCalendarGuideEndModal();
+                } else {
+                    showCalendarGuideStep(currentCalendarGuideStep + 1);
+                }
+            }
+            
+            function prevCalendarGuideStep() {
+                showCalendarGuideStep(currentCalendarGuideStep - 1);
+            }
+            
+            function showCalendarGuideEndModal() {
+                isCalendarGuideActive = false;
+                document.getElementById('calendarGuideEndModal').classList.remove('hidden');
+                document.getElementById('calendarGuideStepFooter').style.display = 'none';
+                document.getElementById('calendarGuideStepOverlay').classList.remove('active');
+                document.getElementById('calendarGuideHighlight').style.display = 'none';
+                document.getElementById('calendarGuideTooltip').style.display = 'none';
+            }
+            
+            function endCalendarGuide() {
+                isCalendarGuideActive = false;
+                document.body.classList.remove('calendar-guide-active');
+                document.getElementById('calendarGuideStepOverlay').classList.remove('active');
+                document.getElementById('calendarGuideStepFooter').style.display = 'none';
+                restoreCalendarGlobalGuide();
+            }
+            
+            function restartCalendarGuide() {
+                document.getElementById('calendarGuideEndModal').classList.add('hidden');
+                document.body.classList.add('calendar-guide-active');
+                currentCalendarGuideStep = 0;
+                isCalendarGuideActive = true;
+                showCalendarGuideStep(0);
+            }
+            
+            function finishCalendarGuide() {
+                document.getElementById('calendarGuideEndModal').classList.add('hidden');
+                endCalendarGuide();
+            }
+            
+            function restoreCalendarGlobalGuide() {
+                guideSteps = savedCalendarGuideSteps;
+                currentGuideStep = savedCalendarCurrentGuideStep;
+                isGuideActive = savedCalendarIsGuideActive;
+            }
             
             function exportCalendarData() {
                 var data = {

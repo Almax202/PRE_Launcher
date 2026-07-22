@@ -343,6 +343,7 @@ function initMailSystem() {
     var sidebarMail = document.getElementById('sidebarMail');
     if (sidebarMail) {
         sidebarMail.addEventListener('click', function() {
+            if (sidebarMail.classList.contains('disabled-mail')) return;
             showMailModal();
         });
     }
@@ -416,6 +417,13 @@ function initMailSystem() {
 }
 
 function showMailModal() {
+    // 检查登录状态
+    var currentUser = localStorage.getItem('currentUser');
+    if (!currentUser || currentUser === '未登录' || currentUser === '') {
+        showAlert('请先登录账号以使用邮件功能');
+        return;
+    }
+    
     var mailModal = document.getElementById('mailModal');
     if (!mailModal) return;
     

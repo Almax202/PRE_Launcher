@@ -849,9 +849,6 @@
         }
         
         function loadGlobalThemeColor() {
-            var isEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
-            if (!isEnabled) return;
-            
             var savedColor = localStorage.getItem('globalThemeColor');
             if (!savedColor) savedColor = '#d45d79';
             

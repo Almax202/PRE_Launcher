@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.7.1.3 (b10)",
+    login: "RC 2.7.1.4 (b10)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.2 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260721.2713.b10.115",
+    launcher: "20260722.2714.b10.116",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -54,9 +54,9 @@ const versionInfo = {
             icon: "fas fa-sticky-note",
             iconBg: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
             iconColor: "#ff8c42",
-            version: "RC 1.2.1",
+            version: "RC 1.2.2",
             releaseDate: "2026-06-20",
-            updateDate: "2026-07-13",
+            updateDate: "2026-07-22",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -138,10 +138,10 @@ const versionInfo = {
             icon: "fas fa-calendar-alt",
             iconBg: "linear-gradient(135deg, #d45d79 0%, #e67e8a 100%)",
             iconColor: "#ffffff",
-            version: "Public Beta 0.1.0.2",
+            version: "RC 1.0.3",
             releaseDate: "2026-07-11",
-            updateDate: "2026-07-14",
-            status: "公开测试版",
+            updateDate: "2026-07-22",
+            status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
             description: "功能完整的日历组件，支持月视图日历、待办事项、日程管理和课程表功能",
@@ -161,8 +161,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),
-    buildDate: "2026-07-21",
-    patchDate: "2026-07-21",
+    buildDate: "2026-07-22",
+    patchDate: "2026-07-22",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",

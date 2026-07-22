@@ -8926,17 +8926,6 @@ document.addEventListener('DOMContentLoaded', function() {
         calendarToggle.checked = isCalendarEnabled;
     }
     
-    var globalThemeColorToggle = document.getElementById('enableGlobalThemeColor');
-    if (globalThemeColorToggle) {
-        var isGlobalThemeColorEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
-        globalThemeColorToggle.checked = isGlobalThemeColorEnabled;
-        
-        var globalThemeColorCard = document.getElementById('globalThemeColorCard');
-        if (globalThemeColorCard) {
-            globalThemeColorCard.style.display = isGlobalThemeColorEnabled ? 'block' : 'none';
-        }
-    }
-    
     var redeemCodeToggle = document.getElementById('enableRedeemCode');
     if (redeemCodeToggle) {
         var isRedeemCodeEnabled = localStorage.getItem('redeemCodeEnabled') === 'true';
@@ -8970,8 +8959,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateGlobalThemeColorPreview();
     
     var savedGlobalThemeColor = localStorage.getItem('globalThemeColor');
-    var isGlobalThemeColorEnabled = localStorage.getItem('globalThemeColorEnabled') === 'true';
-    if (isGlobalThemeColorEnabled && savedGlobalThemeColor) {
+    if (savedGlobalThemeColor) {
         applyGlobalThemeColorToPage(savedGlobalThemeColor);
     }
     
@@ -9019,28 +9007,6 @@ function toggleCalendarFeature() {
     
     if (typeof parent.updateEnhancedFeatureButtons === 'function') {
         parent.updateEnhancedFeatureButtons();
-    }
-}
-
-function toggleGlobalThemeColorFeature() {
-    var enabled = document.getElementById('enableGlobalThemeColor').checked;
-    localStorage.setItem('globalThemeColorEnabled', enabled ? 'true' : 'false');
-    
-    var globalThemeColorCard = document.getElementById('globalThemeColorCard');
-    if (globalThemeColorCard) {
-        globalThemeColorCard.style.display = enabled ? 'block' : 'none';
-    }
-    
-    if (enabled) {
-        showAlert('全局主题颜色功能已启用，在个性化设置中可设置主题颜色');
-        applyGlobalThemeColor();
-    } else {
-        showAlert('全局主题颜色功能已关闭，将恢复默认主题颜色');
-        resetGlobalThemeColor();
-    }
-    
-    if (typeof parent.applyGlobalThemeColor === 'function') {
-        parent.applyGlobalThemeColor();
     }
 }
 

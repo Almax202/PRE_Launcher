@@ -1118,6 +1118,36 @@ body.dark-mode .version-info .version-number {
         margin-top: 20px;
     }
     
+    .settings-sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+    
+    .settings-sidebar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+    }
+    
+    .settings-sidebar::-webkit-scrollbar-thumb {
+        background: #d45d79;
+        border-radius: 3px;
+    }
+    
+    .settings-sidebar::-webkit-scrollbar-thumb:hover {
+        background: #c44d69;
+    }
+    
+    body.dark-mode .settings-sidebar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    body.dark-mode .settings-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(212, 93, 121, 0.7);
+    }
+    
+    body.dark-mode .settings-sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(212, 93, 121, 0.9);
+    }
+    
     .mobile-menu-btn {
         display: block !important;
         position: relative;
@@ -5848,6 +5878,30 @@ body.dark-mode .toggle-password:hover {
     text-align: center;
 }
 
+/* 邮件禁用状态 */
+.menu-item.disabled-mail {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.menu-item.disabled-mail:hover {
+    background: transparent;
+    color: #999;
+}
+
+.menu-item.disabled-mail i {
+    color: #999;
+}
+
+body.dark-mode .menu-item.disabled-mail:hover {
+    background: transparent;
+    color: #666;
+}
+
+body.dark-mode .menu-item.disabled-mail i {
+    color: #666;
+}
+
 .menu-item span {
     font-size: 14px;
 }
@@ -6912,6 +6966,36 @@ body.dark-mode .version-modal-buttons {
     padding: 10px 0;
 }
 
+.sidebar-menu::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: #c44d69;
+}
+
+body.dark-mode .sidebar-menu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .sidebar-menu::-webkit-scrollbar-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.dark-mode .sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 93, 121, 0.9);
+}
+
 .sidebar-menu .menu-item {
     display: flex;
     align-items: center;
@@ -7084,6 +7168,42 @@ body.dark-mode .about-info p {
     box-shadow: none;
 }
 
+#redeemCodeModal .about-desktop-content {
+    overflow-y: auto;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#redeemCodeModal .about-desktop-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+#redeemCodeModal .about-desktop-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+#redeemCodeModal .about-desktop-content::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+#redeemCodeModal .about-desktop-content::-webkit-scrollbar-thumb:hover {
+    background: #c44d69;
+}
+
+body.dark-mode #redeemCodeModal .about-desktop-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode #redeemCodeModal .about-desktop-content::-webkit-scrollbar-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.dark-mode #redeemCodeModal .about-desktop-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 93, 121, 0.9);
+}
+
 .about-desktop-header {
     display: flex;
     align-items: center;
@@ -7178,6 +7298,58 @@ body.dark-mode .about-info p {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
+}
+
+.about-desktop-copyright-card .info-card-title::before {
+    display: none;
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(212, 93, 121, 0.2);
+}
+
+.info-card-header .info-card-title {
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.tab-toggle-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.tab-toggle-btn {
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: 6px;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-toggle-btn:hover {
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+}
+
+.tab-toggle-btn.active {
+    background: #d45d79;
+    color: white;
+}
+
+.disclaimer-text {
+    color: #666;
+    line-height: 1.8;
+    font-size: 14px;
 }
 
 .info-card-title {
@@ -7332,6 +7504,29 @@ body.dark-mode .about-desktop-copyright-card {
 body.dark-mode .info-card-title {
     color: #e0e0e0;
     border-bottom-color: rgba(212, 93, 121, 0.3);
+}
+
+body.dark-mode .info-card-header {
+    border-bottom-color: rgba(212, 93, 121, 0.3);
+}
+
+body.dark-mode .tab-toggle-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: #aaa;
+}
+
+body.dark-mode .tab-toggle-btn:hover {
+    background: rgba(212, 93, 121, 0.2);
+    color: #d45d79;
+}
+
+body.dark-mode .tab-toggle-btn.active {
+    background: rgba(212, 93, 121, 0.8);
+    color: white;
+}
+
+body.dark-mode .disclaimer-text {
+    color: #aaa;
 }
 
 body.dark-mode .info-label {
@@ -9093,6 +9288,29 @@ body.transparent-mode .info-card-title {
     border-bottom-color: rgba(212, 93, 121, 0.4);
 }
 
+body.transparent-mode .info-card-header {
+    border-bottom-color: rgba(212, 93, 121, 0.4);
+}
+
+body.transparent-mode .tab-toggle-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.transparent-mode .tab-toggle-btn:hover {
+    background: rgba(212, 93, 121, 0.3);
+    color: #ffffff;
+}
+
+body.transparent-mode .tab-toggle-btn.active {
+    background: rgba(212, 93, 121, 0.8);
+    color: white;
+}
+
+body.transparent-mode .disclaimer-text {
+    color: rgba(255, 255, 255, 0.8);
+}
+
 body.transparent-mode .info-label {
     color: rgba(255, 255, 255, 0.7);
 }
@@ -9416,6 +9634,96 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     padding: 15px;
 }
 
+.calendar-sidebar-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.calendar-sidebar-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.calendar-sidebar-content::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+.calendar-sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: #c44d69;
+}
+
+body.dark-mode .calendar-sidebar-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .calendar-sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.dark-mode .calendar-sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 93, 121, 0.9);
+}
+
+.calendar-settings-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.calendar-settings-sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.calendar-settings-sidebar::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+.calendar-settings-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #c44d69;
+}
+
+body.dark-mode .calendar-settings-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .calendar-settings-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.dark-mode .calendar-settings-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 93, 121, 0.9);
+}
+
+.calendar-main::-webkit-scrollbar {
+    width: 5px;
+}
+
+.calendar-main::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.calendar-main::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+.calendar-main::-webkit-scrollbar-thumb:hover {
+    background: #c44d69;
+}
+
+body.dark-mode .calendar-main::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .calendar-main::-webkit-scrollbar-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.dark-mode .calendar-main::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 93, 121, 0.9);
+}
+
 .calendar-settings-sidebar {
     width: 360px;
     background: white;
@@ -9429,6 +9737,7 @@ body.transparent-mode #announcementModal .about-desktop-close:hover {
     flex-direction: column;
     transition: right 0.3s ease;
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
 }
 
 .calendar-settings-sidebar.show {
@@ -11171,6 +11480,36 @@ body.transparent-mode .schedule-submit-btn:hover {
         overflow-y: auto;
         padding: 20px;
         background: white;
+    }
+
+    .about-mobile-content::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .about-mobile-content::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+    }
+
+    .about-mobile-content::-webkit-scrollbar-thumb {
+        background: #d45d79;
+        border-radius: 3px;
+    }
+
+    .about-mobile-content::-webkit-scrollbar-thumb:hover {
+        background: #c44d69;
+    }
+
+    body.dark-mode .about-mobile-content::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    body.dark-mode .about-mobile-content::-webkit-scrollbar-thumb {
+        background: rgba(212, 93, 121, 0.7);
+    }
+
+    body.dark-mode .about-mobile-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(212, 93, 121, 0.9);
     }
 
     .about-mobile-info {
@@ -18918,6 +19257,41 @@ body.transparent-mode.dark-mode .guide-step-tooltip.right::after {
     z-index: 29998 !important;
 }
 
+.alert-content.calendar-fullscreen {
+    position: relative;
+}
+
+#calendarGuideStepOverlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 35000 !important;
+}
+
+#calendarGuideStepFooter {
+    position: absolute !important;
+    bottom: 30px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 35001 !important;
+}
+
+#calendarGuideStepOverlay .guide-highlight {
+    z-index: 35000 !important;
+}
+
+#calendarGuideStepOverlay .guide-step-tooltip {
+    z-index: 35001 !important;
+}
+
+#calendarGuideWelcomeModal,
+#calendarGuideEndModal {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 36000 !important;
+}
+
 /* 便签全屏弹窗样式 */
 .custom-fullscreen-modal {
     position: fixed;
@@ -19259,10 +19633,58 @@ body.dark-mode .component-copyright {
     position: relative;
 }
 
-.sticky-notes-modal-close {
+.sticky-notes-modal-actions {
     position: absolute;
     top: 20px;
     right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+}
+
+.delete-note-btn {
+    padding: 10px 20px;
+    background: #ff6b6b;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-note-btn:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+body.dark-mode .delete-note-btn {
+    background: rgba(255, 107, 107, 0.8);
+}
+
+body.dark-mode .delete-note-btn:hover {
+    background: rgba(255, 82, 82, 0.9);
+}
+
+body.transparent-mode .delete-note-btn {
+    background: rgba(255, 107, 107, 0.8);
+}
+
+body.transparent-mode.dark-mode .delete-note-btn {
+    background: rgba(255, 107, 107, 0.6);
+}
+
+body.transparent-mode.dark-mode .delete-note-btn:hover {
+    background: rgba(255, 82, 82, 0.8);
+}
+
+.sticky-notes-modal-close {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -19275,7 +19697,6 @@ body.dark-mode .component-copyright {
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 100;
 }
 
 .sticky-notes-modal-close:hover {
@@ -19636,7 +20057,7 @@ body.dark-mode .component-copyright {
 }
 
 .sticky-notes-sidebar.fullscreen-mode .sidebar-header {
-    padding-right: 80px;
+    padding-right: 220px;
 }
 
 .sticky-notes-sidebar.fullscreen-mode .sidebar-search {
@@ -20183,6 +20604,36 @@ body.dark-mode .component-copyright {
     padding: 20px;
     overflow-y: auto;
     min-height: 0;
+}
+
+.main-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #c44d69;
+}
+
+body.dark-mode .main-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .main-content::-webkit-scrollbar-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.dark-mode .main-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 93, 121, 0.9);
 }
 
 .main-content textarea {
