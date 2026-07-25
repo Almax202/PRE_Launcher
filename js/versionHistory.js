@@ -352,6 +352,32 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 2.7.1.5 (b10)",
+            date: "2026-07-25",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2715.png", "./images/2715_2.png"],
+            features: [
+                "新增功能",
+                "- 一键领取邮件：邮件弹窗左侧边栏底部新增\"一键领取\"按钮，点击后弹窗确认领取全部邮件，领取后显示附件汇总",
+                "- 邮件领取记录单条删除：每个领取记录条目右上角新增垃圾桶按钮，点击弹窗确认后删除该条记录",
+                "- 兑换历史记录单条删除：每个兑换记录条目右上角新增垃圾桶按钮，点击弹窗确认后删除该条记录",
+                "优化改进",
+                "- 邮件领取记录排版优化：领取账户和领取时间改为一排显示并靠左对齐，领取内容文本也靠左对齐",
+                "- 邮件内图片查看器功能栏隐藏：在邮件内使用图片查看器查看背景时隐藏右侧功能栏",
+                "- 兑换历史记录排版优化：兑换时间放到和兑换账户一行显示",
+                "- 领取成功弹窗内容优化：换行显示并加深附件文本颜色（深黑色）",
+                "- 移动端更多功能弹窗优化：修复移动端模式下弹窗显示不全、无法正常点击的问题",
+                "修复问题",
+                "- 修复账号数据错误互通问题：修复了账号数据在不同账号间互通时的错误问题，确保账号数据的一致性",
+                "- 修复切换账号后，邮件数据和兑换码数据会保留在上一个账号的问题",
+                "- 修复图片查看器动态背景元素残留：查看动态背景后再查看静态背景时，右上角\"动态背景\"标签和右下角日期数字不再错误显示",
+                "- 修复版本更新记录图片背景残留：在邮件中查看背景后，版本更新记录图片不再显示之前的背景",
+                "- 修复七月流火背景粒子效果不显示：图片查看器中七月流火背景现在能正常显示粒子效果",
+                "- 修复showAlert函数不支持HTML内容：将textContent改为innerHTML，支持HTML标签渲染"
+            ]
+        },
+        {
             version: "RC 2.7.1.4 (b10)",
             date: "2026-07-22",
             tag: "normal",
@@ -3973,6 +3999,7 @@ function initImageViewer() {
         imageViewerModal.classList.remove('show');
         setTimeout(function() {
             imageViewerModal.style.display = 'none';
+            viewerImage.src = '';
             resetViewer();
         }, 300); // 等待动画完成
     });
@@ -4152,6 +4179,13 @@ function initImageViewer() {
         var scaleY = flipVertical ? -1 : 1;
         viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * scaleX}, ${currentZoom * scaleY}) rotate(${currentRotation}deg)`;
         
+        // 同时应用变换到邮件背景预览div（如果存在）
+        var mailBgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (mailBgPreviewDiv) {
+            mailBgPreviewDiv.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom}) rotate(${currentRotation}deg)`;
+            mailBgPreviewDiv.style.transformOrigin = 'center center';
+        }
+        
         // 更新缩放信息
         document.getElementById('viewerZoomInfo').textContent = Math.round(currentZoom * 100) + '%';
         
@@ -4190,7 +4224,29 @@ function initImageViewer() {
         flipVertical = false;
         viewerImage.style.transform = 'translate(0, 0) scale(1) rotate(0deg)';
         viewerImage.style.cursor = 'grab';
+        viewerImage.style.display = 'block';
         document.getElementById('viewerZoomInfo').textContent = '100%';
+        
+        // 恢复右侧功能栏（从邮件预览切换回来时）
+        var viewerControls = document.querySelector('.image-viewer-controls');
+        if (viewerControls) {
+            viewerControls.style.display = 'flex';
+            delete viewerControls.dataset.mailPreview;
+        }
+        
+        // 清理邮件背景预览元素
+        var bgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (bgPreviewDiv) {
+            bgPreviewDiv.style.display = 'none';
+            bgPreviewDiv.innerHTML = '';
+        }
+        
+        var dateEl = document.getElementById('mailBgPreviewDate');
+        if (dateEl) dateEl.style.display = 'none';
+        var particlesEl = document.getElementById('mailBgPreviewParticles');
+        if (particlesEl) particlesEl.style.display = 'none';
+        var badgeEl = document.getElementById('mailBgPreviewBadge');
+        if (badgeEl) badgeEl.style.display = 'none';
     }
     
     // 为所有版本图片添加点击事件

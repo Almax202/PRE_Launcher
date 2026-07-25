@@ -7670,6 +7670,42 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 .mail-sidebar-header {
     padding: 20px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+}
+
+.mail-sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+}
+
+.mail-claim-all-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #D45D79 0%, #E87A90 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.mail-claim-all-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #C04D69 0%, #D86A80 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.3);
+}
+
+.mail-claim-all-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .mail-sidebar-tabs {
@@ -7939,7 +7975,13 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mail-attachment-item.mail-attachment-background:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(212, 93, 121, 0.15);
 }
 
 .mail-attachment-preview {
@@ -8226,9 +8268,9 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 }
 
 #mailHistoryModal .alert-content {
-    max-width: 800px;
-    width: 90%;
-    max-height: 80vh;
+    max-width: 900px;
+    width: 92%;
+    max-height: 85vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -8323,23 +8365,71 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 
 .mail-history-item {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    margin-bottom: 8px;
+    flex-direction: column;
+    padding: 20px;
+    margin-bottom: 12px;
     background: #fafafa;
-    border-radius: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(212, 93, 121, 0.1);
 }
 
 .mail-history-item-info {
-    flex: 1;
+    margin-bottom: 14px;
+}
+
+.mail-history-item-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
 }
 
 .mail-history-item-title {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 600;
     color: #333;
-    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mail-history-item-title::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(180deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 2px;
+}
+
+.mail-history-item-delete {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.mail-history-item-delete:hover {
+    background: rgba(212, 93, 121, 0.2);
+    transform: scale(1.05);
+}
+
+.mail-history-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.mail-history-item-account {
+    font-size: 13px;
+    color: #666;
 }
 
 .mail-history-item-time {
@@ -8348,9 +8438,43 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 }
 
 .mail-history-item-rewards {
+    padding-top: 12px;
+    border-top: 1px dashed rgba(212, 93, 121, 0.2);
+    text-align: left;
+}
+
+.mail-history-item-rewards-title {
     font-size: 13px;
-    color: #d45d79;
     font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.mail-history-item-rewards-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.mail-history-item-reward {
+    padding: 6px 14px;
+    font-size: 12px;
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    border-radius: 20px;
+    cursor: default;
+    transition: all 0.2s;
+}
+
+.mail-history-item-reward.mail-history-reward-background {
+    cursor: pointer;
+    background: rgba(212, 93, 121, 0.15);
+}
+
+.mail-history-item-reward.mail-history-reward-background:hover {
+    background: rgba(212, 93, 121, 0.25);
+    transform: translateY(-1px);
 }
 
 .mail-history-empty {
@@ -9137,6 +9261,33 @@ body.transparent-mode .redeem-rules-box li {
     font-size: 16px;
     font-weight: 600;
     color: #333;
+}
+
+.history-item-delete {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.history-item-delete:hover {
+    background: rgba(212, 93, 121, 0.2);
+    transform: scale(1.05);
+}
+
+.history-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 8px;
 }
 
 .history-time {
@@ -16591,6 +16742,136 @@ body.dark-mode .more-feature-card.disabled {
 
     .feature-card-desc {
         font-size: 12px;
+    }
+
+    /* 移动端更多功能弹窗优化 */
+    #mobileFunctionsModal {
+        background: rgba(0, 0, 0, 0.85) !important;
+    }
+
+    #mobileFunctionsModal .alert-content.more-features-fullscreen {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        transform: scale(1) !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-shadow: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+    }
+
+    #mobileFunctionsModal.show .alert-content.more-features-fullscreen {
+        transform: scale(1) !important;
+    }
+
+    #mobileFunctionsModal .more-features-header {
+        padding: 15px 20px !important;
+        background: white !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+    }
+
+    #mobileFunctionsModal .more-features-title h2 {
+        font-size: 18px !important;
+    }
+
+    #mobileFunctionsModal .more-features-content {
+        flex: 1 !important;
+        padding: 20px !important;
+        background: #f8fafc !important;
+        overflow-y: auto !important;
+        display: block !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+    }
+
+    #mobileFunctionsModal .more-features-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #mobileFunctionsModal .more-feature-card {
+        padding: 20px !important;
+        background: white !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+        cursor: pointer !important;
+        border: none !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    #mobileFunctionsModal .more-feature-card:active {
+        transform: scale(0.98) !important;
+    }
+
+    #mobileFunctionsModal .feature-card-icon {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 20px !important;
+    }
+
+    #mobileFunctionsModal .feature-card-title {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+    }
+
+    #mobileFunctionsModal .feature-card-desc {
+        font-size: 12px !important;
+        color: #999 !important;
+    }
+
+    #mobileFunctionsModal .feature-card-info-btn {
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        font-size: 16px !important;
+        color: #bbb !important;
+        z-index: 10 !important;
+    }
+
+    /* 暗色模式移动端更多功能弹窗 */
+    body.dark-mode #mobileFunctionsModal .more-features-fullscreen {
+        background: #1a1a2e !important;
+    }
+
+    body.dark-mode #mobileFunctionsModal .more-features-header {
+        background: #1a1a2e !important;
+        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    body.dark-mode #mobileFunctionsModal .more-features-title h2 {
+        color: #e0e0e0 !important;
+    }
+
+    body.dark-mode #mobileFunctionsModal .more-features-content {
+        background: #0f0f1a !important;
+    }
+
+    body.dark-mode #mobileFunctionsModal .more-feature-card {
+        background: #1a1a2e !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    body.dark-mode #mobileFunctionsModal .feature-card-title {
+        color: #e0e0e0 !important;
+    }
+
+    body.dark-mode #mobileFunctionsModal .feature-card-desc {
+        color: #666 !important;
     }
 }
 

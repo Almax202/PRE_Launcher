@@ -8,17 +8,35 @@ var mailSystem = {
         LAST_MAIL_VERSION: 'last_mail_version'
     },
     
+    getUserPrefix: function() {
+        var currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            try {
+                var user = JSON.parse(currentUser);
+                return user.username ? user.username + '_' : '';
+            } catch(e) {
+                console.error('[MailSystem] Failed to parse currentUser:', e);
+                return '';
+            }
+        }
+        return '';
+    },
+    
+    getStorageKey: function(baseKey) {
+        return this.getUserPrefix() + baseKey;
+    },
+    
     getMails: function() {
-        var mails = localStorage.getItem(this.MAIL_STORAGE_KEYS.MAILS);
+        var mails = localStorage.getItem(this.getStorageKey(this.MAIL_STORAGE_KEYS.MAILS));
         return mails ? JSON.parse(mails) : [];
     },
     
     saveMails: function(mails) {
-        localStorage.setItem(this.MAIL_STORAGE_KEYS.MAILS, JSON.stringify(mails));
+        localStorage.setItem(this.getStorageKey(this.MAIL_STORAGE_KEYS.MAILS), JSON.stringify(mails));
     },
     
     getMailHistory: function() {
-        var history = localStorage.getItem(this.MAIL_STORAGE_KEYS.MAIL_HISTORY);
+        var history = localStorage.getItem(this.getStorageKey(this.MAIL_STORAGE_KEYS.MAIL_HISTORY));
         return history ? JSON.parse(history) : [];
     },
     
@@ -26,7 +44,7 @@ var mailSystem = {
         if (history.length > this.MAX_HISTORY) {
             history = history.slice(0, this.MAX_HISTORY);
         }
-        localStorage.setItem(this.MAIL_STORAGE_KEYS.MAIL_HISTORY, JSON.stringify(history));
+        localStorage.setItem(this.getStorageKey(this.MAIL_STORAGE_KEYS.MAIL_HISTORY), JSON.stringify(history));
     },
     
     addMail: function(mail) {
@@ -106,12 +124,12 @@ var mailSystem = {
     },
     
     getLastMailVersion: function() {
-        var version = localStorage.getItem(this.MAIL_STORAGE_KEYS.LAST_MAIL_VERSION);
+        var version = localStorage.getItem(this.getStorageKey(this.MAIL_STORAGE_KEYS.LAST_MAIL_VERSION));
         return version ? parseInt(version, 10) : 0;
     },
     
     setLastMailVersion: function(version) {
-        localStorage.setItem(this.MAIL_STORAGE_KEYS.LAST_MAIL_VERSION, version.toString());
+        localStorage.setItem(this.getStorageKey(this.MAIL_STORAGE_KEYS.LAST_MAIL_VERSION), version.toString());
     },
     
     parseCSTTime: function(timeStr) {
@@ -330,16 +348,28 @@ var currentMailId = null;
 
 function initMailSystem() {
     console.log('[MailSystem] initMailSystem called');
-    console.log('[MailSystem] Current mails count:', mailSystem.getMails().length);
-    console.log('[MailSystem] Last mail version in localStorage:', localStorage.getItem('last_mail_version'));
     
-    mailSystem.applyMailUpdates();
+    bindMailEventListeners();
     
-    console.log('[MailSystem] Mails count after updates:', mailSystem.getMails().length);
-    
-    mailSystem.removeExpiredMails();
-    mailSystem.updateMailNotification();
-    
+    var hasUser = mailSystem.getUserPrefix() !== '';
+    if (hasUser) {
+        migrateOldMailData();
+        
+        console.log('[MailSystem] Current mails count:', mailSystem.getMails().length);
+        console.log('[MailSystem] Last mail version in localStorage:', localStorage.getItem(mailSystem.getStorageKey(mailSystem.MAIL_STORAGE_KEYS.LAST_MAIL_VERSION)));
+        
+        mailSystem.applyMailUpdates();
+        
+        console.log('[MailSystem] Mails count after updates:', mailSystem.getMails().length);
+        
+        mailSystem.removeExpiredMails();
+        mailSystem.updateMailNotification();
+    } else {
+        console.log('[MailSystem] No user logged in, skipping mail data initialization');
+    }
+}
+
+function bindMailEventListeners() {
     var sidebarMail = document.getElementById('sidebarMail');
     if (sidebarMail) {
         sidebarMail.addEventListener('click', function() {
@@ -392,6 +422,13 @@ function initMailSystem() {
         });
     }
     
+    var mailClaimAllBtn = document.getElementById('mailClaimAllBtn');
+    if (mailClaimAllBtn) {
+        mailClaimAllBtn.addEventListener('click', function() {
+            claimAllMails();
+        });
+    }
+    
     var mailHistoryCloseBtn = document.getElementById('mailHistoryCloseBtn');
     if (mailHistoryCloseBtn) {
         mailHistoryCloseBtn.addEventListener('click', function() {
@@ -413,6 +450,36 @@ function initMailSystem() {
                 closeMailHistoryModal();
             }
         });
+    }
+}
+
+function migrateOldMailData() {
+    var userPrefix = mailSystem.getUserPrefix();
+    if (!userPrefix) return;
+    
+    var keysToMigrate = [
+        { old: 'mails', new: 'mails' },
+        { old: 'mailHistory', new: 'mailHistory' },
+        { old: 'last_mail_version', new: 'last_mail_version' }
+    ];
+    
+    var migrated = false;
+    
+    keysToMigrate.forEach(function(key) {
+        var oldKey = key.old;
+        var newKey = userPrefix + key.new;
+        
+        if (localStorage.getItem(oldKey) && !localStorage.getItem(newKey)) {
+            var data = localStorage.getItem(oldKey);
+            localStorage.setItem(newKey, data);
+            localStorage.removeItem(oldKey);
+            console.log('[MailSystem] Migrated data from', oldKey, 'to', newKey);
+            migrated = true;
+        }
+    });
+    
+    if (migrated) {
+        console.log('[MailSystem] Old mail data migration completed');
     }
 }
 
@@ -527,6 +594,8 @@ function renderMailList() {
             selectMail(this.dataset.mailId);
         });
     });
+    
+    updateClaimAllButton();
 }
 
 function renderMailHistory() {
@@ -600,83 +669,104 @@ function selectMail(mailId) {
     
     if (mail.attachments && mail.attachments.length > 0) {
         attachments.style.display = 'block';
-        var html = '';
+        attachmentList.innerHTML = '';
         mail.attachments.forEach(function(att) {
             if (att.type === 'background') {
+                var itemDiv = document.createElement('div');
+                itemDiv.className = 'mail-attachment-item mail-attachment-background';
+                
                 if (att.gradient) {
                     var isDynamic = att.isDynamic || false;
                     var gradientStyle = isDynamic 
                         ? 'background: ' + att.gradient + '; background-size: ' + (att.backgroundSize || '200% 200%') + '; animation: ' + (att.animation || 'monthlyShift 20s ease infinite') + ';' 
                         : 'background: ' + att.gradient + ';';
                     
-                    var dateHtml = att.showDate && att.dateText 
-                        ? '<div class="mail-attachment-date">' + att.dateText + '</div>' 
-                        : '';
+                    var previewDiv = document.createElement('div');
+                    previewDiv.className = 'mail-attachment-preview';
+                    previewDiv.style.cssText = gradientStyle;
                     
-                    var particlesHtml = att.particles 
-                        ? '<div class="mail-attachment-particles"><div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div><div class="particle p4"></div><div class="particle p5"></div><div class="particle p6"></div></div>' 
-                        : '';
+                    if (att.showDate && att.dateText) {
+                        var dateEl = document.createElement('div');
+                        dateEl.className = 'mail-attachment-date';
+                        dateEl.textContent = att.dateText;
+                        previewDiv.appendChild(dateEl);
+                    }
                     
-                    var dynamicBadge = isDynamic 
-                        ? '<div class="mail-attachment-dynamic">动态背景</div>' 
-                        : '';
+                    if (att.particles) {
+                        var particlesEl = document.createElement('div');
+                        particlesEl.className = 'mail-attachment-particles';
+                        particlesEl.innerHTML = '<div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div><div class="particle p4"></div><div class="particle p5"></div><div class="particle p6"></div>';
+                        previewDiv.appendChild(particlesEl);
+                    }
                     
-                    html += `
-                        <div class="mail-attachment-item mail-attachment-background">
-                            <div class="mail-attachment-preview" style="${gradientStyle}">
-                                ${dateHtml}
-                                ${particlesHtml}
-                                ${dynamicBadge}
-                            </div>
-                            <div class="mail-attachment-info">
-                                <div class="mail-attachment-name">${escapeHtml(att.name)}</div>
-                                <div class="mail-attachment-desc">${isDynamic ? '动态背景' : '静态背景'}</div>
-                            </div>
-                        </div>
-                    `;
+                    if (isDynamic) {
+                        var badgeEl = document.createElement('div');
+                        badgeEl.className = 'mail-attachment-dynamic';
+                        badgeEl.textContent = '动态背景';
+                        previewDiv.appendChild(badgeEl);
+                    }
+                    
+                    itemDiv.appendChild(previewDiv);
                 } else if (att.preview) {
-                    html += `
-                        <div class="mail-attachment-item mail-attachment-background">
-                            <div class="mail-attachment-preview">
-                                <img src="${att.preview}" alt="${escapeHtml(att.name)}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'preview-placeholder\\'><i class=\\'fas fa-image\\'></i><span>暂无预览图</span></div>';" />
-                            </div>
-                            <div class="mail-attachment-info">
-                                <div class="mail-attachment-name">${escapeHtml(att.name)}</div>
-                                <div class="mail-attachment-desc">静态背景</div>
-                            </div>
-                        </div>
-                    `;
+                    var previewDiv = document.createElement('div');
+                    previewDiv.className = 'mail-attachment-preview';
+                    previewDiv.innerHTML = '<img src="' + att.preview + '" alt="' + escapeHtml(att.name) + '" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=\'<div class=\\\'preview-placeholder\\\'><i class=\\\'fas fa-image\\\'></i><span>暂无预览图</span></div>\';" />';
+                    itemDiv.appendChild(previewDiv);
                 } else {
-                    html += `
-                        <div class="mail-attachment-item mail-attachment-background">
-                            <div class="mail-attachment-preview">
-                                <div class="preview-placeholder">
-                                    <i class="fas fa-image"></i>
-                                    <span>暂无预览图</span>
-                                </div>
-                            </div>
-                            <div class="mail-attachment-info">
-                                <div class="mail-attachment-name">${escapeHtml(att.name)}</div>
-                                <div class="mail-attachment-desc">静态背景</div>
-                            </div>
-                        </div>
-                    `;
+                    var previewDiv = document.createElement('div');
+                    previewDiv.className = 'mail-attachment-preview';
+                    previewDiv.innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i><span>暂无预览图</span></div>';
+                    itemDiv.appendChild(previewDiv);
                 }
+                
+                var infoDiv = document.createElement('div');
+                infoDiv.className = 'mail-attachment-info';
+                
+                var nameEl = document.createElement('div');
+                nameEl.className = 'mail-attachment-name';
+                nameEl.textContent = att.name;
+                infoDiv.appendChild(nameEl);
+                
+                var descEl = document.createElement('div');
+                descEl.className = 'mail-attachment-desc';
+                descEl.textContent = (att.isDynamic || false) ? '动态背景' : '静态背景';
+                infoDiv.appendChild(descEl);
+                
+                itemDiv.appendChild(infoDiv);
+                
+                itemDiv.addEventListener('click', function() {
+                    openBackgroundPreview(att);
+                });
+                
+                attachmentList.appendChild(itemDiv);
             } else {
-                html += `
-                    <div class="mail-attachment-item">
-                        <div class="mail-attachment-icon">
-                            <i class="fas ${att.icon || 'fa-gift'}"></i>
-                        </div>
-                        <div class="mail-attachment-info">
-                            <div class="mail-attachment-name">${escapeHtml(att.name)}</div>
-                            <div class="mail-attachment-count">${att.count !== undefined ? 'x' + att.count : ''}</div>
-                        </div>
-                    </div>
-                `;
+                var itemDiv = document.createElement('div');
+                itemDiv.className = 'mail-attachment-item';
+                
+                var iconDiv = document.createElement('div');
+                iconDiv.className = 'mail-attachment-icon';
+                iconDiv.innerHTML = '<i class="fas ' + (att.icon || 'fa-gift') + '"></i>';
+                itemDiv.appendChild(iconDiv);
+                
+                var infoDiv = document.createElement('div');
+                infoDiv.className = 'mail-attachment-info';
+                
+                var nameEl = document.createElement('div');
+                nameEl.className = 'mail-attachment-name';
+                nameEl.textContent = att.name;
+                infoDiv.appendChild(nameEl);
+                
+                if (att.count !== undefined) {
+                    var countEl = document.createElement('div');
+                    countEl.className = 'mail-attachment-count';
+                    countEl.textContent = 'x' + att.count;
+                    infoDiv.appendChild(countEl);
+                }
+                
+                itemDiv.appendChild(infoDiv);
+                attachmentList.appendChild(itemDiv);
             }
         });
-        attachmentList.innerHTML = html;
     } else {
         attachments.style.display = 'none';
         attachmentList.innerHTML = '';
@@ -733,6 +823,7 @@ function claimSelectedMail() {
         
         selectMail(currentMailId);
         renderMailList();
+        updateClaimAllButton();
     });
 }
 
@@ -755,6 +846,60 @@ function deleteSelectedMail() {
         
         clearMailDetail();
         renderMailList();
+        updateClaimAllButton();
+    });
+}
+
+function updateClaimAllButton() {
+    var claimAllBtn = document.getElementById('mailClaimAllBtn');
+    if (!claimAllBtn) return;
+    
+    var mails = mailSystem.getMails();
+    var now = Date.now();
+    var hasUnclaimed = mails.some(function(m) {
+        return !m.isClaimed && (!m.expireTime || m.expireTime > now);
+    });
+    
+    claimAllBtn.disabled = !hasUnclaimed;
+}
+
+function claimAllMails() {
+    var mails = mailSystem.getMails();
+    var now = Date.now();
+    var unclaimedMails = mails.filter(function(m) {
+        return !m.isClaimed && (!m.expireTime || m.expireTime > now);
+    });
+    
+    if (unclaimedMails.length === 0) {
+        showAlert('没有可领取的邮件');
+        return;
+    }
+    
+    showConfirm('确认一键领取', '是否要全部领取邮件？', function() {
+        var allRewards = [];
+        
+        unclaimedMails.forEach(function(mail) {
+            mailSystem.claimMail(mail.id);
+            
+            if (mail.attachments && mail.attachments.length > 0) {
+                mail.attachments.forEach(function(attachment) {
+                    allRewards.push(attachment.name + ' x' + (attachment.count || 1));
+                });
+            }
+        });
+        
+        renderMailList();
+        updateClaimAllButton();
+        
+        var rewardText = '您已领取所有邮件，领取的附件内容如下：<br><br><span style="color: #1a1a1a; font-weight: 500;">';
+        if (allRewards.length > 0) {
+            rewardText += allRewards.join('<br>');
+        } else {
+            rewardText += '无附件';
+        }
+        rewardText += '</span>';
+        
+        showAlert(rewardText);
     });
 }
 
@@ -801,7 +946,7 @@ function closeMailHistoryModal() {
 
 function clearMailHistory() {
     showConfirm('确认清空', '确定要全部清空吗？清空后不可恢复', function() {
-        localStorage.removeItem('mailHistory');
+        localStorage.removeItem(mailSystem.getStorageKey(mailSystem.MAIL_STORAGE_KEYS.MAIL_HISTORY));
         renderMailHistoryList();
         showAlert('领取记录已清空');
     });
@@ -812,6 +957,10 @@ function renderMailHistoryList() {
     if (!list) return;
     
     var history = mailSystem.getMailHistory();
+    var currentUser = localStorage.getItem('currentUser');
+    var username = currentUser ? JSON.parse(currentUser).username : '未知用户';
+    
+    list.innerHTML = '';
     
     if (history.length === 0) {
         list.innerHTML = `
@@ -823,30 +972,103 @@ function renderMailHistoryList() {
         return;
     }
     
-    var html = '';
     history.forEach(function(item) {
         var timeStr = formatMailTime(item.claimTime);
-        var rewardsStr = item.rewards && item.rewards.length > 0 
-            ? item.rewards.map(function(r) { 
-                if (r.type === 'background') {
-                    return r.name;
-                }
-                return r.name + ' x' + r.count; 
-            }).join(', ')
-            : '无';
         
-        html += `
-            <div class="mail-history-item">
-                <div class="mail-history-item-info">
-                    <div class="mail-history-item-title">${escapeHtml(item.title)}</div>
-                    <div class="mail-history-item-time">${timeStr}</div>
-                </div>
-                <div class="mail-history-item-rewards">${escapeHtml(rewardsStr)}</div>
-            </div>
-        `;
+        var itemDiv = document.createElement('div');
+        itemDiv.className = 'mail-history-item';
+        
+        var infoDiv = document.createElement('div');
+        infoDiv.className = 'mail-history-item-info';
+        
+        var titleRow = document.createElement('div');
+        titleRow.className = 'mail-history-item-title-row';
+        
+        var titleEl = document.createElement('div');
+        titleEl.className = 'mail-history-item-title';
+        titleEl.textContent = item.title;
+        titleRow.appendChild(titleEl);
+        
+        var deleteBtn = document.createElement('button');
+        deleteBtn.className = 'mail-history-item-delete';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.addEventListener('click', function() {
+            deleteMailHistoryItem(item.id);
+        });
+        titleRow.appendChild(deleteBtn);
+        
+        infoDiv.appendChild(titleRow);
+        
+        var metaDiv = document.createElement('div');
+            metaDiv.className = 'mail-history-item-meta';
+            
+            var accountEl = document.createElement('div');
+            accountEl.className = 'mail-history-item-account';
+            accountEl.textContent = '领取账户：' + (item.account || username);
+            metaDiv.appendChild(accountEl);
+            
+            var timeEl = document.createElement('div');
+            timeEl.className = 'mail-history-item-time';
+            timeEl.textContent = '领取时间：' + timeStr;
+            metaDiv.appendChild(timeEl);
+            
+            infoDiv.appendChild(metaDiv);
+        
+        itemDiv.appendChild(infoDiv);
+        
+        if (item.rewards && item.rewards.length > 0) {
+            var rewardsDiv = document.createElement('div');
+            rewardsDiv.className = 'mail-history-item-rewards';
+            
+            var rewardsTitle = document.createElement('div');
+            rewardsTitle.className = 'mail-history-item-rewards-title';
+            rewardsTitle.textContent = '领取内容：';
+            rewardsDiv.appendChild(rewardsTitle);
+            
+            var rewardsList = document.createElement('div');
+            rewardsList.className = 'mail-history-item-rewards-list';
+            
+            item.rewards.forEach(function(reward, idx) {
+                var rewardEl = document.createElement('div');
+                rewardEl.className = 'mail-history-item-reward';
+                rewardEl.dataset.rewardIndex = idx;
+                
+                if (reward.type === 'background') {
+                    rewardEl.textContent = reward.name + (reward.isDynamic ? ' (动态)' : '');
+                    rewardEl.classList.add('mail-history-reward-background');
+                    
+                    rewardEl.addEventListener('click', function() {
+                        openBackgroundPreview(reward);
+                    });
+                } else {
+                    rewardEl.textContent = reward.name + (reward.count !== undefined ? ' x' + reward.count : '');
+                }
+                
+                rewardsList.appendChild(rewardEl);
+            });
+            
+            rewardsDiv.appendChild(rewardsList);
+            itemDiv.appendChild(rewardsDiv);
+        } else {
+            var rewardsDiv = document.createElement('div');
+            rewardsDiv.className = 'mail-history-item-rewards';
+            rewardsDiv.textContent = '领取内容：无';
+            itemDiv.appendChild(rewardsDiv);
+        }
+        
+        list.appendChild(itemDiv);
     });
-    
-    list.innerHTML = html;
+}
+
+function deleteMailHistoryItem(itemId) {
+    showConfirm('确认删除', '是否要删除该条领取记录？', function() {
+        var history = mailSystem.getMailHistory();
+        history = history.filter(function(item) {
+            return item.id !== itemId;
+        });
+        mailSystem.saveMailHistory(history);
+        renderMailHistoryList();
+    });
 }
 
 function formatMailTime(timestamp) {
@@ -904,4 +1126,351 @@ function debugMailSystem() {
     });
     console.log('Latest version available:', latestVersion);
     console.log('Need updates:', currentVersion < latestVersion);
+}
+
+function openBackgroundPreview(attachment) {
+    var imageViewerModal = document.getElementById('imageViewerModal');
+    
+    if (!imageViewerModal && typeof initImageViewer === 'function') {
+        initImageViewer();
+        imageViewerModal = document.getElementById('imageViewerModal');
+    }
+    
+    if (!imageViewerModal) {
+        imageViewerModal = createMailImageViewer();
+    }
+    
+    var viewerImage = document.getElementById('viewerImage');
+    var imageContainer = document.getElementById('imageViewerContainer');
+    var viewerTitle = imageViewerModal.querySelector('.image-viewer-title span');
+    
+    // 隐藏右侧功能栏（仅在邮件背景预览时）
+    var viewerControls = document.querySelector('.image-viewer-controls');
+    if (viewerControls) {
+        viewerControls.style.display = 'none';
+        viewerControls.dataset.mailPreview = 'true';
+    }
+    
+    if (!viewerImage || !imageContainer) return;
+    
+    if (viewerTitle) {
+        viewerTitle.textContent = attachment.name || '背景预览';
+    }
+    
+    if (attachment.gradient) {
+        var isDynamic = attachment.isDynamic || false;
+        var gradientStyle = isDynamic 
+            ? 'background: ' + attachment.gradient + '; background-size: ' + (attachment.backgroundSize || '200% 200%') + '; animation: ' + (attachment.animation || 'monthlyShift 20s ease infinite') + ';' 
+            : 'background: ' + attachment.gradient + ';';
+        
+        viewerImage.style.display = 'none';
+        
+        var bgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (!bgPreviewDiv) {
+            bgPreviewDiv = document.createElement('div');
+            bgPreviewDiv.id = 'mailBgPreviewDiv';
+            bgPreviewDiv.style.width = '100%';
+            bgPreviewDiv.style.height = '600px';
+            bgPreviewDiv.style.borderRadius = '8px';
+            bgPreviewDiv.style.position = 'relative';
+            bgPreviewDiv.style.overflow = 'hidden';
+            imageContainer.appendChild(bgPreviewDiv);
+        }
+        
+        bgPreviewDiv.style.display = 'block';
+        bgPreviewDiv.style.cssText = 'width: 100%; height: 600px; border-radius: 8px; position: relative; overflow: hidden; ' + gradientStyle;
+        
+        if (attachment.showDate && attachment.dateText) {
+            var dateEl = document.getElementById('mailBgPreviewDate');
+            if (!dateEl) {
+                dateEl = document.createElement('div');
+                dateEl.id = 'mailBgPreviewDate';
+                dateEl.style.position = 'absolute';
+                dateEl.style.bottom = '20px';
+                dateEl.style.right = '20px';
+                dateEl.style.fontSize = '24px';
+                dateEl.style.fontWeight = '700';
+                dateEl.style.color = 'rgba(255,255,255,0.9)';
+                dateEl.style.textShadow = '0 2px 10px rgba(0,0,0,0.3)';
+                bgPreviewDiv.appendChild(dateEl);
+            }
+            dateEl.textContent = attachment.dateText;
+        }
+        
+        if (attachment.particles) {
+            var particlesEl = document.getElementById('mailBgPreviewParticles');
+            if (!particlesEl) {
+                particlesEl = document.createElement('div');
+                particlesEl.id = 'mailBgPreviewParticles';
+                particlesEl.className = 'mail-attachment-particles';
+                particlesEl.innerHTML = '<div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div><div class="particle p4"></div><div class="particle p5"></div><div class="particle p6"></div>';
+                bgPreviewDiv.appendChild(particlesEl);
+            }
+            particlesEl.style.display = 'block';
+        }
+        
+        if (attachment.isDynamic) {
+            var badgeEl = document.getElementById('mailBgPreviewBadge');
+            if (!badgeEl) {
+                badgeEl = document.createElement('div');
+                badgeEl.id = 'mailBgPreviewBadge';
+                badgeEl.textContent = '动态背景';
+                badgeEl.style.position = 'absolute';
+                badgeEl.style.top = '16px';
+                badgeEl.style.right = '16px';
+                badgeEl.style.padding = '6px 14px';
+                badgeEl.style.borderRadius = '4px';
+                badgeEl.style.fontSize = '13px';
+                badgeEl.style.fontWeight = '600';
+                badgeEl.style.background = 'rgba(0,0,0,0.4)';
+                badgeEl.style.color = 'white';
+                bgPreviewDiv.appendChild(badgeEl);
+            }
+            badgeEl.style.display = 'block';
+        }
+    } else if (attachment.preview) {
+        viewerImage.style.display = 'block';
+        viewerImage.src = attachment.preview;
+        
+        var bgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (bgPreviewDiv) {
+            bgPreviewDiv.style.display = 'none';
+            bgPreviewDiv.innerHTML = '';
+        }
+        
+        var dateEl = document.getElementById('mailBgPreviewDate');
+        if (dateEl) dateEl.style.display = 'none';
+        var particlesEl = document.getElementById('mailBgPreviewParticles');
+        if (particlesEl) particlesEl.style.display = 'none';
+        var badgeEl = document.getElementById('mailBgPreviewBadge');
+        if (badgeEl) badgeEl.style.display = 'none';
+    } else {
+        viewerImage.style.display = 'none';
+        
+        var bgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (!bgPreviewDiv) {
+            bgPreviewDiv = document.createElement('div');
+            bgPreviewDiv.id = 'mailBgPreviewDiv';
+            bgPreviewDiv.style.width = '100%';
+            bgPreviewDiv.style.height = '600px';
+            bgPreviewDiv.style.borderRadius = '8px';
+            bgPreviewDiv.style.position = 'relative';
+            bgPreviewDiv.style.overflow = 'hidden';
+            bgPreviewDiv.style.background = '#f0f0f0';
+            bgPreviewDiv.style.display = 'flex';
+            bgPreviewDiv.style.alignItems = 'center';
+            bgPreviewDiv.style.justifyContent = 'center';
+            bgPreviewDiv.innerHTML = '<div style="text-align:center"><i class="fas fa-image" style="font-size:48px;color:#ccc;margin-bottom:12px;"></i><div style="color:#999;">暂无预览图</div></div>';
+            imageContainer.appendChild(bgPreviewDiv);
+        }
+        bgPreviewDiv.style.display = 'flex';
+    }
+    
+    imageViewerModal.style.display = 'flex';
+    setTimeout(function() {
+        imageViewerModal.classList.add('show');
+    }, 10);
+}
+
+function createMailImageViewer() {
+    var imageViewerModal = document.createElement('div');
+    imageViewerModal.id = 'imageViewerModal';
+    imageViewerModal.className = 'custom-alert';
+    imageViewerModal.style.display = 'none';
+    imageViewerModal.innerHTML = `
+        <div class="image-viewer-fullscreen">
+            <div class="image-viewer-header">
+                <div class="image-viewer-title">
+                    <span>背景预览</span>
+                </div>
+                <button class="image-viewer-close" id="closeImageViewer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="image-viewer-main">
+                <div class="image-viewer-container" id="imageViewerContainer">
+                    <img id="viewerImage" src="" alt="查看图片" draggable="false">
+                </div>
+                <div class="image-viewer-controls">
+                    <button class="viewer-control-btn" id="zoomInBtn">
+                        <i class="fas fa-search-plus"></i>
+                        <span class="viewer-btn-tooltip">放大</span>
+                    </button>
+                    <button class="viewer-control-btn" id="zoomOutBtn">
+                        <i class="fas fa-search-minus"></i>
+                        <span class="viewer-btn-tooltip">缩小</span>
+                    </button>
+                    <button class="viewer-control-btn" id="resetZoomBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span class="viewer-btn-tooltip">重置</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn" id="rotateLeftBtn">
+                        <i class="fas fa-rotate-left"></i>
+                        <span class="viewer-btn-tooltip">向左旋转</span>
+                    </button>
+                    <button class="viewer-control-btn" id="rotateRightBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span class="viewer-btn-tooltip">向右旋转</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn" id="flipHorizontalBtn">
+                        <i class="fas fa-arrows-h"></i>
+                        <span class="viewer-btn-tooltip">水平翻转</span>
+                    </button>
+                    <button class="viewer-control-btn" id="flipVerticalBtn">
+                        <i class="fas fa-arrows-v"></i>
+                        <span class="viewer-btn-tooltip">垂直翻转</span>
+                    </button>
+                </div>
+            </div>
+            <div class="image-viewer-footer">
+                <span id="viewerZoomInfo">100%</span>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(imageViewerModal);
+    
+    var currentZoom = 1;
+    var currentX = 0;
+    var currentY = 0;
+    var currentRotation = 0;
+    var flipHorizontal = false;
+    var flipVertical = false;
+    var isDragging = false;
+    var viewerImage = document.getElementById('viewerImage');
+    var imageContainer = document.getElementById('imageViewerContainer');
+    
+    viewerImage.style.position = 'relative';
+    viewerImage.style.transformOrigin = 'center center';
+    viewerImage.style.cursor = 'grab';
+    
+    document.getElementById('closeImageViewer').addEventListener('click', function() {
+        imageViewerModal.classList.remove('show');
+        setTimeout(function() {
+            imageViewerModal.style.display = 'none';
+            currentZoom = 1;
+            currentX = 0;
+            currentY = 0;
+            currentRotation = 0;
+            flipHorizontal = false;
+            flipVertical = false;
+            if (viewerImage) {
+                viewerImage.style.transform = 'scale(1) translate(0, 0) rotate(0deg)';
+                viewerImage.src = '';
+            }
+            document.getElementById('viewerZoomInfo').textContent = '100%';
+            
+            // 恢复右侧功能栏
+            var viewerControls = document.querySelector('.image-viewer-controls');
+            if (viewerControls) {
+                viewerControls.style.display = 'flex';
+                delete viewerControls.dataset.mailPreview;
+            }
+            
+            // 清理邮件背景预览元素
+            var bgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+            if (bgPreviewDiv) {
+                bgPreviewDiv.style.display = 'none';
+                bgPreviewDiv.innerHTML = '';
+            }
+            var dateEl = document.getElementById('mailBgPreviewDate');
+            if (dateEl) dateEl.style.display = 'none';
+            var particlesEl = document.getElementById('mailBgPreviewParticles');
+            if (particlesEl) particlesEl.style.display = 'none';
+            var badgeEl = document.getElementById('mailBgPreviewBadge');
+            if (badgeEl) badgeEl.style.display = 'none';
+        }, 300);
+    });
+    
+    function zoomImage(delta) {
+        currentZoom = Math.max(0.1, Math.min(5, currentZoom + delta));
+        updateImagePosition();
+    }
+    
+    function updateImagePosition() {
+        var scaleX = flipHorizontal ? -1 : 1;
+        var scaleY = flipVertical ? -1 : 1;
+        var transform = 'scale(' + currentZoom * scaleX + ', ' + currentZoom * scaleY + ') translate(' + currentX + 'px, ' + currentY + 'px) rotate(' + currentRotation + 'deg)';
+        if (viewerImage) {
+            viewerImage.style.transform = transform;
+        }
+        var bgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (bgPreviewDiv) {
+            bgPreviewDiv.style.transform = 'scale(' + currentZoom + ') translate(' + currentX + 'px, ' + currentY + 'px) rotate(' + currentRotation + 'deg)';
+            bgPreviewDiv.style.transformOrigin = 'center center';
+        }
+        document.getElementById('viewerZoomInfo').textContent = Math.round(currentZoom * 100) + '%';
+    }
+    
+    document.getElementById('zoomInBtn').addEventListener('click', function() {
+        zoomImage(0.1);
+    });
+    
+    document.getElementById('zoomOutBtn').addEventListener('click', function() {
+        zoomImage(-0.1);
+    });
+    
+    document.getElementById('resetZoomBtn').addEventListener('click', function() {
+        currentZoom = 1;
+        currentX = 0;
+        currentY = 0;
+        currentRotation = 0;
+        flipHorizontal = false;
+        flipVertical = false;
+        updateImagePosition();
+    });
+    
+    document.getElementById('rotateLeftBtn').addEventListener('click', function() {
+        currentRotation -= 90;
+        updateImagePosition();
+    });
+    
+    document.getElementById('rotateRightBtn').addEventListener('click', function() {
+        currentRotation += 90;
+        updateImagePosition();
+    });
+    
+    document.getElementById('flipHorizontalBtn').addEventListener('click', function() {
+        flipHorizontal = !flipHorizontal;
+        updateImagePosition();
+    });
+    
+    document.getElementById('flipVerticalBtn').addEventListener('click', function() {
+        flipVertical = !flipVertical;
+        updateImagePosition();
+    });
+    
+    imageContainer.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        var delta = e.deltaY > 0 ? -0.1 : 0.1;
+        zoomImage(delta);
+    });
+    
+    imageContainer.addEventListener('mousedown', function(e) {
+        if (e.target.closest('.viewer-control-btn')) return;
+        isDragging = true;
+        startX = e.clientX - currentX;
+        startY = e.clientY - currentY;
+        if (viewerImage) viewerImage.style.cursor = 'grabbing';
+    });
+    
+    imageContainer.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        currentX = e.clientX - startX;
+        currentY = e.clientY - startY;
+        updateImagePosition();
+    });
+    
+    imageContainer.addEventListener('mouseup', function() {
+        isDragging = false;
+        if (viewerImage) viewerImage.style.cursor = 'grab';
+    });
+    
+    imageContainer.addEventListener('mouseleave', function() {
+        isDragging = false;
+        if (viewerImage) viewerImage.style.cursor = 'grab';
+    });
+    
+    return imageViewerModal;
 }

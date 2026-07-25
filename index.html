@@ -8076,7 +8076,7 @@
             var alertBox = document.getElementById('customAlert');
             var messageEl = document.getElementById('alertMessage');
             
-            messageEl.textContent = message;
+            messageEl.innerHTML = message;
             alertBox.style.display = 'flex';
             alertBox.style.animation = 'fadeIn 0.3s ease';
         }
@@ -8590,6 +8590,8 @@
                 loadCustomBackground();
                 updateUserCenter(username, validUser.userId);
                 updateMailDisabledState();
+                
+                migrateUserDataForCurrentUser();
                 
                 showAlert(getLanguageText('loginSuccess'));
                 
@@ -9686,6 +9688,8 @@
                         updateUserCenter(username, validUser ? validUser.userId : null);
                         updateMailDisabledState();
                         
+                        migrateUserDataForCurrentUser();
+                        
                         showAlert(getLanguageText('loginSuccess'));
                         
                         sessionStorage.setItem('loginAuthenticated', 'true');
@@ -10005,6 +10009,8 @@
                 
                 updateUserCenter(username, validUser ? validUser.userId : null);
                 updateMailDisabledState();
+                
+                migrateUserDataForCurrentUser();
                 
                 showAlert(getLanguageText('loginSuccess'));
                 
@@ -11903,6 +11909,89 @@
             }
         }
         
+        function getRedeemStorageKey() {
+            var currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                try {
+                    var user = JSON.parse(currentUser);
+                    return user.username ? user.username + '_redeemHistory' : 'redeemHistory';
+                } catch(e) {
+                    return 'redeemHistory';
+                }
+            }
+            return 'redeemHistory';
+        }
+        
+        function getUnlockedBackgroundsKey() {
+            var currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                try {
+                    var user = JSON.parse(currentUser);
+                    return user.username ? user.username + '_unlockedBackgrounds' : 'unlockedBackgrounds';
+                } catch(e) {
+                    return 'unlockedBackgrounds';
+                }
+            }
+            return 'unlockedBackgrounds';
+        }
+        
+        function getDynamicBackgroundKey() {
+            var currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                try {
+                    var user = JSON.parse(currentUser);
+                    return user.username ? user.username + '_dynamicBackgroundEnabled' : 'dynamicBackgroundEnabled';
+                } catch(e) {
+                    return 'dynamicBackgroundEnabled';
+                }
+            }
+            return 'dynamicBackgroundEnabled';
+        }
+        
+        function getUserPrefix() {
+            var currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                try {
+                    var user = JSON.parse(currentUser);
+                    return user.username ? user.username + '_' : '';
+                } catch(e) {
+                    return '';
+                }
+            }
+            return '';
+        }
+        
+        function migrateUserDataForCurrentUser() {
+            var userPrefix = getUserPrefix();
+            if (!userPrefix) return;
+            
+            var keysToMigrate = [
+                { old: 'redeemHistory', new: 'redeemHistory' },
+                { old: 'unlockedBackgrounds', new: 'unlockedBackgrounds' },
+                { old: 'dynamicBackgroundEnabled', new: 'dynamicBackgroundEnabled' },
+                { old: 'unlockedBackgroundIds', new: 'unlockedBackgroundIds' }
+            ];
+            
+            var migrated = false;
+            
+            keysToMigrate.forEach(function(key) {
+                var oldKey = key.old;
+                var newKey = userPrefix + key.new;
+                
+                if (localStorage.getItem(oldKey) && !localStorage.getItem(newKey)) {
+                    var data = localStorage.getItem(oldKey);
+                    localStorage.setItem(newKey, data);
+                    localStorage.removeItem(oldKey);
+                    console.log('[UserDataMigration] Migrated data from', oldKey, 'to', newKey);
+                    migrated = true;
+                }
+            });
+            
+            if (migrated) {
+                console.log('[UserDataMigration] Old user data migration completed');
+            }
+        }
+        
         function redeemCode() {
             var code = document.getElementById('redeemCodeInput').value.trim();
             if (!code) {
@@ -11912,7 +12001,8 @@
             
             if (code === 'PRELAUNCHER2026071901') {
                 var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                var history = JSON.parse(localStorage.getItem('redeemHistory') || '[]');
+                var historyKey = getRedeemStorageKey();
+                var history = JSON.parse(localStorage.getItem(historyKey) || '[]');
                 
                 var existingRecord = history.find(function(item) {
                     return item.code === code;
@@ -11931,10 +12021,10 @@
                 };
                 
                 history.unshift(newRecord);
-                localStorage.setItem('redeemHistory', JSON.stringify(history));
+                localStorage.setItem(historyKey, JSON.stringify(history));
                 
-                localStorage.setItem('dynamicBackgroundEnabled', 'true');
-                localStorage.setItem('unlockedBackgrounds', 'true');
+                localStorage.setItem(getDynamicBackgroundKey(), 'true');
+                localStorage.setItem(getUnlockedBackgroundsKey(), 'true');
                 
                 showAlert('兑换成功！已获得动态流光背景奖励');
                 document.getElementById('redeemCodeInput').value = '';
@@ -11945,7 +12035,8 @@
         }
         
         function loadRedeemHistory() {
-            var history = JSON.parse(localStorage.getItem('redeemHistory') || '[]');
+            var historyKey = getRedeemStorageKey();
+            var history = JSON.parse(localStorage.getItem(historyKey) || '[]');
             var list = document.getElementById('redeemHistoryList');
             
             if (!list) return;
@@ -11961,10 +12052,15 @@
                     <div class="history-item">
                         <div class="history-item-header">
                             <span class="history-code">${item.code}</span>
-                            <span class="history-time">${item.time}</span>
+                            <button class="history-item-delete" onclick="deleteRedeemHistoryItem('${item.code}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                         <div class="history-item-content">
-                            <span class="history-account">兑换账户：${item.account}</span>
+                            <div class="history-item-meta">
+                                <span class="history-account">兑换账户：${item.account}</span>
+                                <span class="history-time">${item.time}</span>
+                            </div>
                             <span class="history-reward">获得奖励：${item.reward}</span>
                         </div>
                     </div>
@@ -11974,9 +12070,22 @@
             list.innerHTML = html;
         }
         
+        function deleteRedeemHistoryItem(code) {
+            showConfirm('确认删除', '是否要删除该条兑换记录？', function() {
+                var historyKey = getRedeemStorageKey();
+                var history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+                history = history.filter(function(item) {
+                    return item.code !== code;
+                });
+                localStorage.setItem(historyKey, JSON.stringify(history));
+                loadRedeemHistory();
+            });
+        }
+        
         function clearRedeemHistory() {
             showConfirm('清空兑换记录', '确定要全部清空吗？清空后不可恢复', function() {
-                localStorage.removeItem('redeemHistory');
+                var historyKey = getRedeemStorageKey();
+                localStorage.removeItem(historyKey);
                 loadRedeemHistory();
                 showAlert('兑换记录已清空');
             });
@@ -15145,6 +15254,12 @@
                                 <i class="fas fa-envelope"></i>
                                 <p>暂无邮件</p>
                             </div>
+                        </div>
+                        <div class="mail-sidebar-footer">
+                            <button class="mail-claim-all-btn" id="mailClaimAllBtn" disabled>
+                                <i class="fas fa-gift"></i>
+                                <span>一键领取</span>
+                            </button>
                         </div>
                     </div>
                     <div class="mail-main">

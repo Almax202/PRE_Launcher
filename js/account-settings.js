@@ -5861,7 +5861,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var alertBox = document.getElementById('customAlert');
         var alertMessage = document.getElementById('alertMessage');
         
-        alertMessage.textContent = message;
+        alertMessage.innerHTML = message;
         alertBox.style.display = 'flex';
         setTimeout(function() {
             alertBox.classList.add('show');
@@ -8205,21 +8205,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    function getUserStoragePrefix() {
+        var currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            try {
+                var user = JSON.parse(currentUser);
+                return user.username ? user.username + '_' : '';
+            } catch(e) {
+                return '';
+            }
+        }
+        return '';
+    }
+    
+    function getUserStorageKey(baseKey) {
+        return getUserStoragePrefix() + baseKey;
+    }
+    
     function isBackgroundUnlocked(background) {
         if (!background.locked) return true;
         
-        var unlockedIds = JSON.parse(localStorage.getItem('unlockedBackgroundIds') || '[]');
+        var unlockedIds = JSON.parse(localStorage.getItem(getUserStorageKey('unlockedBackgroundIds')) || '[]');
         if (unlockedIds.includes(background.id)) return true;
         
         if (background.unlockType === 'mail') {
-            var history = JSON.parse(localStorage.getItem('mailHistory') || '[]');
+            var history = JSON.parse(localStorage.getItem(getUserStorageKey('mailHistory')) || '[]');
             return history.some(function(item) {
                 return item.id === background.unlockSource;
             });
         }
         
         if (background.unlockCode) {
-            if (localStorage.getItem('unlockedBackgrounds') === 'true') return true;
+            if (localStorage.getItem(getUserStorageKey('unlockedBackgrounds')) === 'true') return true;
         }
         
         return false;
