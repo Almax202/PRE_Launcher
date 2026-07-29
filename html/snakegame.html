@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="贪吃蛇小游戏 - PRE Launcher">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>贪吃蛇小游戏</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="../css/homepage.css">
+    <link rel="stylesheet" href="../css/achievement.css">
+    <link rel="stylesheet" href="../css/snakegame.css">
+    <script src="../js/versionManager.js" defer></script>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-avatar">
+                    <i class="fas fa-dragon"></i>
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-username">贪吃蛇游戏</div>
+                    <div class="sidebar-uid" id="versionNumber">RC 1.0.0</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-item menu-header">
+                    <span>游戏控制</span>
+                </div>
+                <div class="menu-item" id="sidebarStartGameBtn">
+                    <i class="fas fa-play-circle"></i>
+                    <span>开始游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarResetGameBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>重置游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarAchievementBtn">
+                    <i class="fas fa-trophy"></i>
+                    <span>成就</span>
+                </div>
+                <div class="menu-item" id="sidebarUpdateBtn">
+                    <i class="fas fa-bell"></i>
+                    <span>版本更新公告</span>
+                </div>
+                <div class="menu-item" id="sidebarLangSwitchBtn">
+                    <i class="fas fa-language"></i>
+                    <span>切换语言</span>
+                </div>
+                <div class="menu-item" id="sidebarBackHomeBtn">
+                    <i class="fas fa-home"></i>
+                    <span>返回首页</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-center" id="userCenter">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">未登录</div>
+                        <div class="user-id" id="userId">ID: ---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-main-content">
+            <div class="game-header">
+                <h1>贪吃蛇游戏</h1>
+                <p>经典的贪吃蛇游戏，使用WASD键或鼠标控制，吃到食物得分</p>
+            </div>
+            
+            <div class="game-body">
+                <div class="game-info-bar">
+                    <div class="game-info-item" data-lang="score">得分: <span id="score">0</span></div>
+                    <div class="game-info-item" data-lang="remainingTime">剩余时间: <span id="time">60</span>s
+                        <input type="checkbox" class="unlimited-time-checkbox" id="unlimitedTimeCheckbox" data-lang="unlimitedTime">
+                        <label for="unlimitedTimeCheckbox" data-lang="unlimitedTimeLabel">无限制</label>
+                    </div>
+                    <div class="difficulty-select-container" id="difficultyBox" data-lang="difficulty">
+                        难度: 
+                        <select class="difficulty-select" id="difficultySelect">
+                            <option value="easy" data-lang="easy">简单</option>
+                            <option value="medium" data-lang="medium">中等</option>
+                            <option value="hard" data-lang="hard">困难</option>
+                        </select>
+                    </div>
+                    <div class="custom-time-container" data-lang="customTime">
+                        自定义时间: 
+                        <input type="number" class="custom-time-input" id="customTimeInput" value="60" min="1" max="300">
+                        <span class="custom-time-tip" data-lang="customTimeTip">(最多5分钟/300秒)</span>
+                    </div>
+                </div>
+
+                <div class="game-area-wrapper">
+                    <div class="game-area" id="gameArea">
+                        <div class="snake-board" id="snakeBoard">
+                            <div class="snake-grid" id="snakeGrid"></div>
+                            <div class="game-over" id="gameOver" data-lang="gameOver">游戏结束!</div>
+                        </div>
+                        <div class="game-tip" id="gameTip" data-lang="gameTip">使用WASD键或鼠标控制方向</div>
+                    </div>
+                </div>
+
+                <div class="ranking-container">
+                    <div class="ranking-title" data-lang="ranking">游戏排行榜</div>
+                    <ul class="ranking-list" id="rankingList">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 成就弹窗 -->
+<div class="modal" id="achievementModal">
+    <div class="modal-content achievement-modal-content">
+        <h3 data-lang="achievements">成就</h3>
+        <div class="achievement-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="achievementTotal">0</div>
+                <div class="stat-label">总成就</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="achievementUnlocked">0</div>
+                <div class="stat-label">已解锁</div>
+            </div>
+        </div>
+        <div class="achievement-list" id="achievementList">
+        </div>
+        <button class="close-btn" id="closeAchievementModal" data-lang="close">关闭</button>
+    </div>
+</div>
+
+<!-- 排行榜弹窗 -->
+<div class="modal" id="rankingModal">
+    <div class="modal-content">
+        <h3 data-lang="congratulations">恭喜你完成游戏！</h3>
+        <p data-lang="finalScore">你的最终得分: <span id="finalScore">0</span></p>
+        <input type="text" class="modal-input" id="playerName" placeholder="请输入你的名字" maxlength="6" data-lang="enterName">
+        <div class="modal-btn-group">
+            <button class="confirm-btn" id="confirmBtn" data-lang="confirmAdd">确认添加</button>
+            <button class="cancel-btn" id="cancelBtn" data-lang="cancel">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- 版本更新公告弹窗 -->
+<div class="modal" id="updateModal">
+    <div class="modal-content update-modal-content">
+        <h3 data-lang="updateAnnouncement">版本更新公告</h3>
+        <!-- 翻页控制器 -->
+        <div class="update-pagination">
+            <button class="pagination-btn" id="prevPage" data-lang="prevPage">上一页</button>
+            <span class="page-info" id="pageInfo" data-lang="pageInfo">第 1 / 1 页</span>
+            <button class="pagination-btn" id="nextPage" data-lang="nextPage">下一页</button>
+        </div>
+        <!-- 公告内容容器 -->
+        <div class="update-content" id="updateContent">
+            <div class="update-page" data-page="1" data-version="release">
+                <p>本次更新时间：2026-04-02</p>
+                <p>版本号：RC 1.0.0</p>
+                <p>核心更新内容：</p>
+                <ul>
+                    <li>新增 贪吃蛇游戏</li>
+                    <li>新增 WASD键和鼠标控制</li>
+                    <li>新增 成就系统</li>
+                    <li>优化 界面风格统一</li>
+                </ul>
+                <p>© 2014-2026 GPY Basically Games</p>
+            </div>
+        </div>
+        <div class="modal-btn-group">
+            <button class="close-btn" id="closeUpdateModal" data-lang="close">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+if (!currentUser.username) {
+    window.location.href = '../index.html';
+}
+
+// 更新用户中心信息
+function updateUserCenter() {
+    if (currentUser.username) {
+        document.getElementById('userName').textContent = currentUser.username;
+        document.getElementById('userId').textContent = 'ID: ' + (currentUser.userId || '---');
+    }
+}
+
+// 初始化用户中心
+updateUserCenter();
+
+// 初始化版本号显示
+document.addEventListener('DOMContentLoaded', function() {
+    updateVersionDisplay('snakegame');
+});
+
+// 用户中心点击事件
+(document.getElementById('userCenter') || { addEventListener: function() {} }).addEventListener('click', function() {
+    if (!currentUser.username) {
+        alert('请先登录');
+        return;
+    }
+    window.open('account-settings.html', '_blank');
+});
+
+function getUserGameData(gameKey, defaultValue) {
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    var user = users.find(function(u) {
+        return u.username === currentUser.username;
+    });
+    
+    if (user && user.gameData && user.gameData[gameKey] !== undefined) {
+        return user.gameData[gameKey];
+    }
+    
+    return defaultValue;
+}
+
+function setUserGameData(gameKey, value) {
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    var userIndex = users.findIndex(function(u) {
+        return u.username === currentUser.username;
+    });
+    
+    if (userIndex !== -1) {
+        if (!users[userIndex].gameData) {
+            users[userIndex].gameData = {};
+        }
+        users[userIndex].gameData[gameKey] = value;
+        localStorage.setItem('registeredUsers', JSON.stringify(users));
+    }
+}
+
+// 多语言配置
+const langConfig = {
+    zh: {
+        score: '得分: ',
+        remainingTime: '剩余时间: ',
+        difficulty: '难度: ',
+        easy: '简单',
+        medium: '中等',
+        hard: '困难',
+        customTime: '自定义时间: ',
+        customTimeTip: '(最多5分钟/300秒)',
+        gameOver: '游戏结束!',
+        startGame: '开始游戏',
+        resetGame: '重置游戏',
+        backHome: '返回首页',
+        ranking: '游戏排行榜',
+        gameVersion: '游戏版本：RC 1.0.0',
+        moreGames: '更多游戏',
+        updateAnnouncement: '版本更新公告',
+        congratulations: '恭喜你完成游戏！',
+        finalScore: '你的最终得分: ',
+        enterName: '请输入你的名字',
+        confirmAdd: '确认添加',
+        cancel: '取消',
+        close: '关闭',
+        anonymousPlayer: '匿名玩家',
+        scoreUnit: ' 分',
+        moreGamesTip: '更多游戏即将上线！',
+        backHomeTip: '即将返回首页！',
+        importantUpdate: '重要更新',
+        gameTip: '使用WASD键或鼠标控制方向',
+        achievements: '成就',
+        achievementUnlocked: '成就解锁！',
+        unlimitedTime: '',
+        unlimitedTimeLabel: '无限制'
+    },
+    en: {
+        score: 'Score: ',
+        remainingTime: 'Remaining Time: ',
+        difficulty: 'Difficulty: ',
+        easy: 'Easy',
+        medium: 'Medium',
+        hard: 'Hard',
+        customTime: 'Custom Time: ',
+        customTimeTip: '(Max 5 mins/300 sec)',
+        gameOver: 'Game Over!',
+        startGame: 'Start Game',
+        resetGame: 'Reset Game',
+        backHome: 'Back to Home',
+        ranking: 'Game Ranking',
+        gameVersion: 'Game Version: RC 1.0.0',
+        moreGames: 'More Games',
+        updateAnnouncement: 'Version Update Notice',
+        congratulations: 'Congratulations on completing the game!',
+        finalScore: 'Your final score: ',
+        enterName: 'Please enter your name',
+        confirmAdd: 'Confirm Add',
+        cancel: 'Cancel',
+        close: 'Close',
+        anonymousPlayer: 'Anonymous Player',
+        scoreUnit: ' pts',
+        moreGamesTip: 'More games coming soon!',
+        backHomeTip: 'Returning to home page soon!',
+        importantUpdate: 'Important Update',
+        gameTip: 'Use WASD keys or mouse to control',
+        achievements: 'Achievements',
+        achievementUnlocked: 'Achievement Unlocked!',
+        unlimitedTime: '',
+        unlimitedTimeLabel: 'Unlimited'
+    }
+};
+
+// 当前语言状态
+let currentLang = 'zh';
+
+// 切换语言函数
+function switchLanguage() {
+    // 切换语言标识
+    currentLang = currentLang === 'zh' ? 'en' : 'zh';
+    
+    // 更新语言切换按钮文本
+    const langBtn = document.getElementById('sidebarLangSwitchBtn');
+    langBtn.querySelector('span').textContent = currentLang === 'zh' ? 'English' : '中文';
+    
+    // 更新页面标题
+    document.title = currentLang === 'zh' ? '贪吃蛇小游戏' : 'Snake Mini Game';
+    
+    // 更新所有带data-lang属性的元素
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const langKey = el.dataset.lang;
+        const originalHtml = el.dataset.originalHtml || el.innerHTML;
+        
+        // 存储原始HTML（首次切换时）
+        if (!el.dataset.originalHtml) {
+            el.dataset.originalHtml = originalHtml;
+        }
+        
+        // 替换文本（保留变量/动态内容）
+        let newHtml = langConfig[currentLang][langKey];
+        // 保留动态内容（如分数、输入框等）
+        if (originalHtml.includes('<span') || originalHtml.includes('<input') || originalHtml.includes('<select') || originalHtml.includes('<label')) {
+            // 提取原始HTML中的动态部分
+            const dynamicPart = originalHtml.replace(/[^<]*<[^>]*>.*<\/[^>]*>[^<]*/, match => match);
+            newHtml = newHtml + dynamicPart.substring(dynamicPart.indexOf('<'));
+        }
+        el.innerHTML = newHtml;
+        
+        // 特殊处理placeholder
+        if (el.tagName === 'INPUT' && el.placeholder) {
+            el.placeholder = langConfig[currentLang][langKey];
+        }
+        
+        // 特殊处理option选项
+        if (el.tagName === 'OPTION') {
+            el.textContent = langConfig[currentLang][langKey];
+        }
+        
+        // 特殊处理label标签
+        if (el.tagName === 'LABEL' && el.dataset.lang) {
+            el.textContent = langConfig[currentLang][langKey];
+        }
+    });
+    
+    // 更新重要更新文本
+    document.querySelectorAll('.important-update').forEach(el => {
+        el.textContent = langConfig[currentLang].importantUpdate;
+    });
+    
+    // 更新排行榜已有项的分数单位
+    document.querySelectorAll('.ranking-item').forEach(item => {
+        const scoreText = item.querySelector('span:last-child').textContent;
+        const num = scoreText.replace(/[^0-9]/g, '');
+        item.querySelector('span:last-child').textContent = num + langConfig[currentLang].scoreUnit;
+    });
+}
+
+// 绑定语言切换按钮事件
+(document.getElementById('sidebarLangSwitchBtn') || { addEventListener: function() {} }).addEventListener('click', switchLanguage);
+
+// 关闭弹窗事件
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        // 等待过渡完成后隐藏
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+}
+
+// 打开弹窗事件
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        // 延迟添加show类触发过渡
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+    }
+}
+
+// 版本更新按钮点击事件
+(document.getElementById('sidebarUpdateBtn') || { addEventListener: function() {} }).addEventListener('click', () => {
+    openModal('updateModal');
+    showUpdatePage(1);
+});
+
+// 关闭版本更新弹窗
+(document.getElementById('closeUpdateModal') || { addEventListener: function() {} }).addEventListener('click', () => {
+    closeModal('updateModal');
+});
+
+// 版本更新公告翻页功能
+let currentPage = 1;
+let totalPages = 1;
+
+function showUpdatePage(page) {
+    const updatePages = document.querySelectorAll('.update-page');
+    const pageInfo = document.getElementById('pageInfo');
+    
+    if (updatePages.length === 0) return;
+    
+    totalPages = updatePages.length;
+    
+    // 确保页码在有效范围内
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    currentPage = page;
+    
+    // 隐藏所有页面
+    updatePages.forEach(pageEl => {
+        pageEl.classList.remove('active');
+    });
+    
+    // 显示当前页面
+    const currentPageEl = document.querySelector(`.update-page[data-page="${currentPage}"]`);
+    if (currentPageEl) {
+        currentPageEl.classList.add('active');
+    }
+    
+    // 更新页面信息
+    if (pageInfo) {
+        pageInfo.textContent = `第 ${currentPage} / ${totalPages} 页`;
+    }
+}
+
+// 上一页按钮
+(document.getElementById('prevPage') || { addEventListener: function() {} }).addEventListener('click', () => {
+    showUpdatePage(currentPage - 1);
+});
+
+// 下一页按钮
+(document.getElementById('nextPage') || { addEventListener: function() {} }).addEventListener('click', () => {
+    showUpdatePage(currentPage + 1);
+});
+
+// 成就按钮点击事件
+(document.getElementById('sidebarAchievementBtn') || { addEventListener: function() {} }).addEventListener('click', () => {
+    openModal('achievementModal');
+    loadAchievements();
+});
+
+// 关闭成就弹窗
+(document.getElementById('closeAchievementModal') || { addEventListener: function() {} }).addEventListener('click', () => {
+    closeModal('achievementModal');
+});
+
+// 点击弹窗外部关闭
+window.addEventListener('click', (e) => {
+    const modals = ['updateModal', 'achievementModal', 'rankingModal'];
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (e.target === modal) {
+            closeModal(modalId);
+        }
+    });
+});
+
+// 难度切换样式同步
+(document.getElementById('difficultySelect') || { addEventListener: function() {} }).addEventListener('change', function() {
+    const difficultyBox = document.getElementById('difficultyBox');
+    if (difficultyBox) {
+        // 移除所有难度类
+        difficultyBox.classList.remove('easy', 'medium', 'hard');
+        // 添加当前难度类
+        difficultyBox.classList.add(this.value);
+    }
+});
+
+// 取消排行榜弹窗
+(document.getElementById('cancelBtn') || { addEventListener: function() {} }).addEventListener('click', function() {
+    closeModal('rankingModal');
+});
+
+// 确认添加排行榜
+(document.getElementById('confirmBtn') || { addEventListener: function() {} }).addEventListener('click', function() {
+    const playerNameInput = document.getElementById('playerName');
+    const finalScoreElement = document.getElementById('finalScore');
+    const rankingList = document.getElementById('rankingList');
+    
+    if (playerNameInput && finalScoreElement && rankingList) {
+        const name = playerNameInput.value.trim() || langConfig[currentLang].anonymousPlayer;
+        const score = finalScoreElement.textContent;
+        
+        // 创建新的排行榜项
+        const li = document.createElement('li');
+        li.className = 'ranking-item';
+        li.innerHTML = `<span>${name}</span><span>${score}${langConfig[currentLang].scoreUnit}</span>`;
+        
+        // 添加到排行榜
+        rankingList.appendChild(li);
+        
+        // 关闭弹窗
+        closeModal('rankingModal');
+        
+        // 清空输入框
+        playerNameInput.value = '';
+    }
+});
+
+// 自定义时间输入限制
+(document.getElementById('customTimeInput') || { addEventListener: function() {} }).addEventListener('change', function() {
+    const unlimitedTimeCheckbox = document.getElementById('unlimitedTimeCheckbox');
+    const timeDisplay = document.getElementById('time');
+    
+    if (unlimitedTimeCheckbox && unlimitedTimeCheckbox.checked) return;
+    
+    let value = parseInt(this.value);
+    if (isNaN(value)) value = 60;
+    if (value < 1) value = 1;
+    if (value > 300) value = 300;
+    this.value = value;
+    // 同步到剩余时间显示
+    if (timeDisplay) {
+        timeDisplay.textContent = value;
+    }
+});
+
+// 无时间限制复选框事件
+(document.getElementById('unlimitedTimeCheckbox') || { addEventListener: function() {} }).addEventListener('change', function() {
+    const customTimeInput = document.getElementById('customTimeInput');
+    const timeDisplay = document.getElementById('time');
+    
+    if (customTimeInput && timeDisplay) {
+        if (this.checked) {
+            // 启用无时间限制
+            customTimeInput.disabled = true;
+            customTimeInput.style.opacity = 0.5;
+            timeDisplay.textContent = '∞';
+            // 如果游戏正在运行，停止计时
+            if (gameRunning) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+        } else {
+            // 禁用无时间限制
+            customTimeInput.disabled = false;
+            customTimeInput.style.opacity = 1;
+            timeDisplay.textContent = customTimeInput.value;
+            // 如果游戏正在运行，重新开始计时
+            if (gameRunning) {
+                clearInterval(gameTimer);
+                timeLeft = parseInt(customTimeInput.value);
+                gameTimer = setInterval(updateTimer, 1000);
+            }
+        }
+    }
+});
+
+// 贪吃蛇核心逻辑
+let gameTimer = null;
+let gameRunning = false;
+let score = 0;
+let timeLeft = 60;
+
+// 贪吃蛇变量
+let snake = [{x: 10, y: 10}];
+let food = {x: 15, y: 10};
+let direction = 'right';
+let nextDirection = 'right';
+const GRID_SIZE = 20;
+const BOARD_SIZE = 30;
+
+// 成就系统
+let snakeAchievements = getUserGameData('snakeAchievements', []);
+let snakeGamesPlayed = getUserGameData('snakeGamesPlayed', 0);
+let snakeHighScore = getUserGameData('snakeHighScore', 0);
+let snakeTotalScore = getUserGameData('snakeTotalScore', 0);
+
+// 贪吃蛇成就定义
+const snakeAchievementDefs = [
+    {
+        id: 'snake_first_game',
+        name: '初次尝试',
+        desc: '完成第一局贪吃蛇游戏',
+        icon: 'fa-gamepad',
+        condition: () => snakeGamesPlayed >= 1
+    },
+    {
+        id: 'snake_score_50',
+        name: '初级贪吃蛇',
+        desc: '单局得分达到50分',
+        icon: 'fa-star',
+        condition: () => score >= 50
+    },
+    {
+        id: 'snake_score_100',
+        name: '中级贪吃蛇',
+        desc: '单局得分达到100分',
+        icon: 'fa-medal',
+        condition: () => score >= 100
+    },
+    {
+        id: 'snake_score_200',
+        name: '高级贪吃蛇',
+        desc: '单局得分达到200分',
+        icon: 'fa-trophy',
+        condition: () => score >= 200
+    },
+    {
+        id: 'snake_games_5',
+        name: '贪吃蛇爱好者',
+        desc: '累计完成5局游戏',
+        icon: 'fa-apple-alt',
+        condition: () => snakeGamesPlayed >= 5
+    },
+    {
+        id: 'snake_games_10',
+        name: '贪吃蛇达人',
+        desc: '累计完成10局游戏',
+        icon: 'fa-gamepad',
+        condition: () => snakeGamesPlayed >= 10
+    },
+    {
+        id: 'snake_total_100',
+        name: '累计得分王',
+        desc: '累计得分达到100分',
+        icon: 'fa-chart-line',
+        condition: () => snakeTotalScore >= 100
+    },
+    {
+        id: 'snake_total_500',
+        name: '贪吃蛇大师',
+        desc: '累计得分达到500分',
+        icon: 'fa-crown',
+        condition: () => snakeTotalScore >= 500
+    },
+    {
+        id: 'snake_perfect_game',
+        name: '完美游戏',
+        desc: '在一局游戏中没有撞到任何墙壁或自己',
+        icon: 'fa-check-circle',
+        condition: () => false
+    },
+    {
+        id: 'snake_survivor',
+        name: '生存大师',
+        desc: '在一局游戏中存活超过2分钟',
+        icon: 'fa-clock',
+        condition: () => false
+    }
+];
+
+// 初始化游戏网格
+function initGameGrid() {
+    const grid = document.getElementById('snakeGrid');
+    grid.innerHTML = '';
+    
+    // 创建网格
+    for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.x = x;
+            cell.dataset.y = y;
+            grid.appendChild(cell);
+        }
+    }
+}
+
+// 绘制游戏
+function drawGame() {
+    const grid = document.getElementById('snakeGrid');
+    
+    // 清空网格
+    const cells = grid.querySelectorAll('.grid-cell');
+    cells.forEach(cell => {
+        cell.className = 'grid-cell';
+    });
+    
+    // 绘制蛇
+    snake.forEach(segment => {
+        const cell = grid.querySelector(`.grid-cell[data-x="${segment.x}"][data-y="${segment.y}"]`);
+        if (cell) {
+            cell.classList.add('snake');
+        }
+    });
+    
+    // 绘制食物
+    const foodCell = grid.querySelector(`.grid-cell[data-x="${food.x}"][data-y="${food.y}"]`);
+    if (foodCell) {
+        foodCell.classList.add('food');
+    }
+}
+
+// 生成食物
+function generateFood() {
+    let newFood;
+    do {
+        newFood = {
+            x: Math.floor(Math.random() * BOARD_SIZE),
+            y: Math.floor(Math.random() * BOARD_SIZE)
+        };
+    } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
+    food = newFood;
+}
+
+// 移动蛇
+function moveSnake() {
+    direction = nextDirection;
+    
+    // 计算新头部位置
+    const head = { ...snake[0] };
+    switch (direction) {
+        case 'up':
+            head.y -= 1;
+            break;
+        case 'down':
+            head.y += 1;
+            break;
+        case 'left':
+            head.x -= 1;
+            break;
+        case 'right':
+            head.x += 1;
+            break;
+    }
+    
+    // 检查边界碰撞
+    if (head.x < 0 || head.x >= BOARD_SIZE || head.y < 0 || head.y >= BOARD_SIZE) {
+        gameOver();
+        return;
+    }
+    
+    // 检查自身碰撞
+    if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+        gameOver();
+        return;
+    }
+    
+    // 添加新头部
+    snake.unshift(head);
+    
+    // 检查是否吃到食物
+    if (head.x === food.x && head.y === food.y) {
+        score += 1;
+        document.getElementById('score').textContent = score;
+        generateFood();
+    } else {
+        // 移除尾部
+        snake.pop();
+    }
+    
+    // 绘制游戏
+    drawGame();
+}
+
+// 游戏结束
+function gameOver() {
+    gameRunning = false;
+    clearInterval(gameTimer);
+    clearInterval(snakeTimer);
+    
+    // 更新游戏数据
+    snakeGamesPlayed += 1;
+    snakeTotalScore += score;
+    if (score > snakeHighScore) {
+        snakeHighScore = score;
+    }
+    
+    // 保存游戏数据
+    setUserGameData('snakeGamesPlayed', snakeGamesPlayed);
+    setUserGameData('snakeHighScore', snakeHighScore);
+    setUserGameData('snakeTotalScore', snakeTotalScore);
+    
+    // 显示游戏结束
+    const gameOverElement = document.getElementById('gameOver');
+    gameOverElement.style.display = 'block';
+    
+    // 检查成就
+    checkAndSaveAchievements();
+    
+    // 显示排行榜弹窗
+    document.getElementById('finalScore').textContent = score;
+    openModal('rankingModal');
+}
+
+// 开始游戏
+function startGame() {
+    // 重置游戏状态
+    snake = [{x: 10, y: 10}];
+    direction = 'right';
+    nextDirection = 'right';
+    score = 0;
+    timeLeft = parseInt(document.getElementById('customTimeInput').value);
+    
+    // 重置UI
+    document.getElementById('score').textContent = score;
+    document.getElementById('time').textContent = timeLeft;
+    document.getElementById('gameOver').style.display = 'none';
+    
+    // 生成食物
+    generateFood();
+    
+    // 绘制游戏
+    drawGame();
+    
+    // 开始游戏
+    gameRunning = true;
+    
+    // 开始计时
+    if (!document.getElementById('unlimitedTimeCheckbox').checked) {
+        gameTimer = setInterval(updateTimer, 1000);
+    }
+    
+    // 开始移动蛇
+    const difficulty = document.getElementById('difficultySelect').value;
+    let speed = 150;
+    switch (difficulty) {
+        case 'easy':
+            speed = 200;
+            break;
+        case 'medium':
+            speed = 150;
+            break;
+        case 'hard':
+            speed = 100;
+            break;
+    }
+    snakeTimer = setInterval(moveSnake, speed);
+}
+
+// 更新计时器
+function updateTimer() {
+    timeLeft -= 1;
+    document.getElementById('time').textContent = timeLeft;
+    
+    if (timeLeft <= 0) {
+        gameOver();
+    }
+}
+
+// 成就系统函数
+function loadAchievements() {
+    snakeAchievements = getUserGameData('snakeAchievements', []);
+    snakeGamesPlayed = getUserGameData('snakeGamesPlayed', 0);
+    snakeHighScore = getUserGameData('snakeHighScore', 0);
+    snakeTotalScore = getUserGameData('snakeTotalScore', 0);
+    renderAchievements();
+}
+
+function checkAndSaveAchievements() {
+    let newAchievements = [];
+    
+    snakeAchievementDefs.forEach(achievement => {
+        if (!snakeAchievements.includes(achievement.id) && achievement.condition()) {
+            newAchievements.push(achievement);
+            snakeAchievements.push(achievement.id);
+            showAchievementPopup(achievement);
+        }
+    });
+    
+    // 检查分数相关成就
+    if (score >= 50 && !snakeAchievements.includes('snake_score_50')) {
+        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_score_50');
+        newAchievements.push(achievement);
+        snakeAchievements.push('snake_score_50');
+        showAchievementPopup(achievement);
+    }
+    
+    if (score >= 100 && !snakeAchievements.includes('snake_score_100')) {
+        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_score_100');
+        newAchievements.push(achievement);
+        snakeAchievements.push('snake_score_100');
+        showAchievementPopup(achievement);
+    }
+    
+    if (score >= 200 && !snakeAchievements.includes('snake_score_200')) {
+        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_score_200');
+        newAchievements.push(achievement);
+        snakeAchievements.push('snake_score_200');
+        showAchievementPopup(achievement);
+    }
+    
+    if (snakeGamesPlayed >= 5 && !snakeAchievements.includes('snake_games_5')) {
+        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_games_5');
+        newAchievements.push(achievement);
+        snakeAchievements.push('snake_games_5');
+        showAchievementPopup(achievement);
+    }
+    
+    if (snakeGamesPlayed >= 10 && !snakeAchievements.includes('snake_games_10')) {
+        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_games_10');
+        newAchievements.push(achievement);
+        snakeAchievements.push('snake_games_10');
+        showAchievementPopup(achievement);
+    }
+    
+    if (snakeTotalScore >= 100 && !snakeAchievements.includes('snake_total_100')) {
+        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_total_100');
+        newAchievements.push(achievement);
+        snakeAchievements.push('snake_total_100');
+        showAchievementPopup(achievement);
+    }
+    
+    if (snakeTotalScore >= 500 && !snakeAchievements.includes('snake_total_500')) {
+        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_total_500');
+        newAchievements.push(achievement);
+        snakeAchievements.push('snake_total_500');
+        showAchievementPopup(achievement);
+    }
+    
+    if (newAchievements.length > 0) {
+        setUserGameData('snakeAchievements', snakeAchievements);
+    }
+}
+
+function renderAchievements() {
+    const achievementList = document.getElementById('achievementList');
+    achievementList.innerHTML = '';
+    
+    snakeAchievementDefs.forEach(achievement => {
+        const isUnlocked = snakeAchievements.includes(achievement.id) || DeveloperConfig.getAchievementsUnlocked();
+        const isCompleted = achievement.condition();
+        
+        const achievementItem = document.createElement('div');
+        let className = 'achievement-item' + (isUnlocked ? ' unlocked' : ' locked');
+        achievementItem.className = className;
+        
+        let progressPercent = 0;
+        let progressText = '';
+        
+        if (isUnlocked) {
+            progressPercent = 100;
+            progressText = '已完成';
+        } else if (achievement.id === 'snake_first_game') {
+            progressPercent = snakeGamesPlayed >= 1 ? 100 : 0;
+            progressText = snakeGamesPlayed >= 1 ? '1/1' : '0/1';
+        } else if (achievement.id === 'snake_score_50') {
+            progressPercent = Math.min((score / 50) * 100, 100);
+            progressText = score + '/50';
+        } else if (achievement.id === 'snake_score_100') {
+            progressPercent = Math.min((score / 100) * 100, 100);
+            progressText = score + '/100';
+        } else if (achievement.id === 'snake_score_200') {
+            progressPercent = Math.min((score / 200) * 100, 100);
+            progressText = score + '/200';
+        } else if (achievement.id === 'snake_games_5') {
+            progressPercent = Math.min((snakeGamesPlayed / 5) * 100, 100);
+            progressText = snakeGamesPlayed + '/5';
+        } else if (achievement.id === 'snake_games_10') {
+            progressPercent = Math.min((snakeGamesPlayed / 10) * 100, 100);
+            progressText = snakeGamesPlayed + '/10';
+        } else if (achievement.id === 'snake_total_100') {
+            progressPercent = Math.min((snakeTotalScore / 100) * 100, 100);
+            progressText = snakeTotalScore + '/100';
+        } else if (achievement.id === 'snake_total_500') {
+            progressPercent = Math.min((snakeTotalScore / 500) * 100, 100);
+            progressText = snakeTotalScore + '/500';
+        } else {
+            progressPercent = isCompleted ? 100 : 0;
+            progressText = isCompleted ? '已完成' : '未完成';
+        }
+        
+        achievementItem.innerHTML = `
+            <div class="achievement-icon">
+                <i class="fas ${achievement.icon}"></i>
+            </div>
+            <div class="achievement-info">
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-desc">${achievement.desc}</div>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <span class="progress-text">${progressText}</span>
+                </div>
+            </div>
+        `;
+        
+        achievementList.appendChild(achievementItem);
+    });
+    
+    // 更新统计
+    document.getElementById('achievementTotal').textContent = snakeAchievementDefs.length;
+    document.getElementById('achievementUnlocked').textContent = snakeAchievements.length;
+}
+
+function showAchievementPopup(achievement) {
+    const achievementPopup = document.createElement('div');
+    achievementPopup.className = 'achievement-popup';
+    achievementPopup.innerHTML = `
+        <div class="achievement-popup-content">
+            <div class="achievement-popup-icon">
+                <i class="fas ${achievement.icon}"></i>
+            </div>
+            <div class="achievement-popup-text">
+                <div class="achievement-popup-title">${langConfig[currentLang].achievementUnlocked}</div>
+                <div class="achievement-popup-name">${achievement.name}</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(achievementPopup);
+    
+    setTimeout(() => {
+        achievementPopup.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        achievementPopup.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(achievementPopup);
+        }, 300);
+    }, 3000);
+}
+
+// 键盘控制
+window.addEventListener('keydown', function(e) {
+    switch (e.key) {
+        case 'w':
+        case 'W':
+            if (direction !== 'down') {
+                nextDirection = 'up';
+            }
+            break;
+        case 's':
+        case 'S':
+            if (direction !== 'up') {
+                nextDirection = 'down';
+            }
+            break;
+        case 'a':
+        case 'A':
+            if (direction !== 'right') {
+                nextDirection = 'left';
+            }
+            break;
+        case 'd':
+        case 'D':
+            if (direction !== 'left') {
+                nextDirection = 'right';
+            }
+            break;
+    }
+});
+
+// 鼠标控制
+(document.getElementById('snakeBoard') || { addEventListener: function() {} }).addEventListener('click', function(e) {
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const boardWidth = rect.width;
+    const boardHeight = rect.height;
+    
+    // 计算点击位置相对于蛇头的方向
+    const head = snake[0];
+    const headX = (head.x * boardWidth) / BOARD_SIZE;
+    const headY = (head.y * boardHeight) / BOARD_SIZE;
+    
+    // 计算水平和垂直距离
+    const dx = x - headX;
+    const dy = y - headY;
+    
+    // 确定主要方向
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // 水平方向
+        if (dx > 0 && direction !== 'left') {
+            nextDirection = 'right';
+        } else if (dx < 0 && direction !== 'right') {
+            nextDirection = 'left';
+        }
+    } else {
+        // 垂直方向
+        if (dy > 0 && direction !== 'up') {
+            nextDirection = 'down';
+        } else if (dy < 0 && direction !== 'down') {
+            nextDirection = 'up';
+        }
+    }
+});
+
+// 开始游戏按钮
+(document.getElementById('sidebarStartGameBtn') || { addEventListener: function() {} }).addEventListener('click', startGame);
+
+// 重置游戏按钮
+(document.getElementById('sidebarResetGameBtn') || { addEventListener: function() {} }).addEventListener('click', startGame);
+
+// 返回首页按钮
+(document.getElementById('sidebarBackHomeBtn') || { addEventListener: function() {} }).addEventListener('click', function() {
+    window.location.href = 'homepage4.0.html';
+});
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化游戏
+    initGameGrid();
+    drawGame();
+    loadAchievements();
+    
+    // 更新版本号显示
+    if (typeof updateVersionDisplay === 'function') {
+        updateVersionDisplay('snakegame');
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="飞行器小游戏 - PRE Launcher">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>飞行器小游戏</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preload" href="../css/homepage.css" as="style">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="../css/homepage.css">
+    <link rel="stylesheet" href="../css/achievement.css">
+    <link rel="stylesheet" href="../css/fxqgame.css">
+    <script src="../js/versionManager.js" defer></script>
+    <script src="../js/developer-config.js"></script>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-avatar">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-username">飞行器游戏</div>
+                    <div class="sidebar-uid" id="versionNumber">RC 1.2.0</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-item menu-header">
+                    <span>游戏控制</span>
+                </div>
+                <div class="menu-item" id="sidebarStartGameBtn">
+                    <i class="fas fa-play-circle"></i>
+                    <span>开始游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarResetGameBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>重置游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarAchievementBtn">
+                    <i class="fas fa-trophy"></i>
+                    <span>成就</span>
+                </div>
+                <div class="menu-item" id="sidebarUpdateBtn">
+                    <i class="fas fa-bell"></i>
+                    <span>版本更新公告</span>
+                </div>
+                <div class="menu-item" id="sidebarLangSwitchBtn">
+                    <i class="fas fa-language"></i>
+                    <span>切换语言</span>
+                </div>
+                <div class="menu-item" id="sidebarBackHomeBtn">
+                    <i class="fas fa-home"></i>
+                    <span>返回首页</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-center" id="userCenter">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">未登录</div>
+                        <div class="user-id" id="userId">ID: ---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-main-content">
+            <div class="game-header">
+                <h1>飞行器游戏</h1>
+                <p>移动鼠标控制飞行器，躲避障碍物获取高分</p>
+            </div>
+            
+            <div class="game-body">
+                <div class="game-info-bar">
+                    <div class="game-info-item" data-lang="score">得分: <span id="score">0</span></div>
+                    <div class="game-info-item" data-lang="remainingTime">剩余时间: <span id="time">30</span>s</div>
+                    <div class="difficulty-select-container" id="difficultyBox" data-lang="difficulty">
+                        难度:
+                        <select class="difficulty-select" id="difficultySelect">
+                            <option value="easy" data-lang="easy">简单</option>
+                            <option value="medium" data-lang="medium">中等</option>
+                            <option value="hard" data-lang="hard">困难</option>
+                            <option value="nightmare" data-lang="nightmare">梦魇</option>
+                        </select>
+                    </div>
+                    <div class="custom-time-container" data-lang="customTime">
+                        自定义时间:
+                        <input type="number" class="custom-time-input" id="customTimeInput" value="30" min="1" max="300">
+                        <span class="custom-time-tip" data-lang="customTimeTip">(最多5分钟/300秒)</span>
+                    </div>
+                    <div class="ai-mode-container" data-lang="aiMode">
+                        自动飞行:
+                        <label class="ai-switch">
+                            <input type="checkbox" id="aiModeSwitch">
+                            <span class="ai-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="game-area-wrapper">
+                    <div class="game-area" id="gameArea">
+                        <div class="chess-tip" id="chessTip">移动鼠标控制飞行器</div>
+                        <div class="game-over" id="gameOver" data-lang="gameOver">游戏结束!</div>
+                    </div>
+                </div>
+
+                <div class="ranking-container">
+                    <div class="ranking-header">
+                        <div class="ranking-title" data-lang="ranking">游戏排行榜</div>
+                        <button class="reset-ranking-btn" id="resetRankingBtn" data-lang="resetRanking">重置排行榜</button>
+                    </div>
+                    <ul class="ranking-list" id="rankingList">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排行榜弹窗 -->
+    <div class="modal" id="rankingModal">
+        <div class="modal-content">
+            <h3 data-lang="congratulations">恭喜你完成游戏！</h3>
+            <p data-lang="finalScore">你的最终得分: <span id="finalScore">0</span></p>
+            <input type="text" class="modal-input" id="playerName" placeholder="请输入你的名字" maxlength="6" data-lang="enterName">
+            <div class="modal-btn-group">
+                <button class="confirm-btn" id="confirmBtn" data-lang="confirmAdd">确认添加</button>
+                <button class="cancel-btn" id="cancelBtn" data-lang="cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认重置弹窗 -->
+    <div class="modal" id="confirmResetModal">
+        <div class="modal-content confirm-modal-content">
+            <h3 data-lang="confirmResetTitle">确认重置</h3>
+            <p data-lang="confirmResetMessage">确定要重置排行榜吗？此操作将清空所有排行榜数据。</p>
+            <div class="modal-btn-group">
+                <button class="confirm-btn confirm-reset-btn" id="confirmResetBtn" data-lang="confirmReset">确认重置</button>
+                <button class="cancel-btn cancel-reset-btn" id="cancelResetBtn" data-lang="cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 版本更新公告弹窗（带翻页+版本切换） -->
+    <div class="modal" id="updateModal">
+        <div class="modal-content update-modal-content">
+            <h3 data-lang="updateAnnouncement">版本更新公告</h3>
+            <!-- 翻页控制器 -->
+            <div class="update-pagination">
+                <button class="pagination-btn" id="prevPage" data-lang="prevPage">上一页</button>
+                <span class="page-info" id="pageInfo" data-lang="pageInfo">第 1 / 2 页</span>
+                <button class="pagination-btn" id="nextPage" data-lang="nextPage">下一页</button>
+            </div>
+            <!-- 公告内容容器 -->
+            <div class="update-content" id="updateContent">        
+                <div class="update-page" data-page="1" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-03-24</p>
+                    <p>版本号：RC 1.2.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 成就系统</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
+                </div>
+
+                <div class="update-page" data-page="2" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-27</p>
+                    <p>版本号：RC 1.1.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <li>新增 梦魇难度</li>
+                        <li>优化 顶部状态栏样式统一</li>
+                        <li>修复 上个版本并未正确修复的游戏结束后卡死问题</li>
+                        <li>增强 障碍物生成逻辑</li>
+                        <li>增强 AI难度逻辑</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
+                </div>
+
+                <div class="update-page" data-page="3" data-version="release">
+                    <span class="important-update">重要更新</span>
+                    <p>本次更新时间：2026-02-27</p>
+                    <p>版本号：RC 1.0.0</p>
+                    <p>核心更新内容：</p>
+                    <ul>
+                        <p>通告 飞行器小游戏上线</p>
+                        <li>新增 自动飞行功能</li>
+                        <li>新增 时间无限制功能</li>
+                        <li>优化 顶部状态栏样式统一</li>
+                        <li>修复 游戏结束后卡死问题</li>
+                        <li>增强 障碍物生成逻辑</li>
+                    </ul>
+                    <p>© 2014-2026 GPY Basically Games Studio版权所有</p>
+                </div>
+
+                <div class="update-page" data-page="1" data-version="beta">
+                    <p>无内容</p>
+                </div>
+            </div>
+            <div class="modal-btn-group">
+                <button class="close-btn" id="closeUpdateModal">关闭</button>
+            </div>
+            <button class="version-switch-btn" id="versionSwitchBtn">Beta</button>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="modal" id="achievementModal">
+        <div class="modal-content achievement-modal-content">
+            <h3 data-lang="achievements">游戏成就</h3>
+            <div class="achievement-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="achievementTotal">0</div>
+                    <div class="stat-label">总成就</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="achievementUnlocked">0</div>
+                    <div class="stat-label">已解锁</div>
+                </div>
+            </div>
+            <div id="achievementList" class="achievement-list"></div>
+            <div class="modal-btn-group">
+                <button class="close-btn" id="closeAchievementModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+        if (!currentUser.username) {
+            window.location.href = '../index.html';
+        }
+
+        function getUserGameData(gameKey, defaultValue) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (user && user.gameData && user.gameData[gameKey] !== undefined) {
+                return user.gameData[gameKey];
+            }
+            
+            return defaultValue;
+        }
+
+        function setUserGameData(gameKey, value) {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(u) {
+                return u.username === currentUser.username;
+            });
+            
+            if (userIndex !== -1) {
+                if (!users[userIndex].gameData) {
+                    users[userIndex].gameData = {};
+                }
+                users[userIndex].gameData[gameKey] = value;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+            }
+        }
+
+        const langConfig = {
+            zh: {
+                score: '得分: ',
+                remainingTime: '剩余时间: ',
+                difficulty: '难度: ',
+                easy: '简单',
+                medium: '中等',
+                hard: '困难',
+                nightmare: '梦魇',
+                customTime: '自定义时间: ',
+                customTimeTip: '(最多5分钟/300秒)',
+                aiMode: '自动飞行:',
+                startGame: '开始游戏',
+                resetGame: '重置游戏',
+                backHome: '返回首页',
+                gameOver: '游戏结束!',
+                ranking: '游戏排行榜',
+                resetRanking: '重置排行榜',
+                confirmResetTitle: '确认重置',
+                confirmResetMessage: '确定要重置排行榜吗？此操作将清空所有排行榜数据。',
+                confirmReset: '确认重置',
+                congratulations: '恭喜你完成游戏！',
+                finalScore: '你的最终得分: ',
+                enterName: '请输入你的名字',
+                confirmAdd: '确认添加',
+                cancel: '取消',
+                achievements: '游戏成就',
+                updateAnnouncement: '版本更新公告',
+                prevPage: '上一页',
+                nextPage: '下一页',
+                pageInfo: '第 {current} / {total} 页',
+                blackTurn: '移动鼠标控制飞行器',
+                whiteTurn: '自动飞行中',
+                whiteWin: '撞到障碍物！',
+                timeUp: '时间到！'
+            },
+            en: {
+                score: 'Score: ',
+                remainingTime: 'Time Left: ',
+                difficulty: 'Difficulty: ',
+                easy: 'Easy',
+                medium: 'Medium',
+                hard: 'Hard',
+                nightmare: 'Nightmare',
+                customTime: 'Custom Time: ',
+                customTimeTip: '(Max 5 minutes/300 seconds)',
+                aiMode: 'Auto Fly:',
+                startGame: 'Start Game',
+                resetGame: 'Reset Game',
+                backHome: 'Back Home',
+                gameOver: 'Game Over!',
+                ranking: 'Game Ranking',
+                resetRanking: 'Reset Ranking',
+                confirmResetTitle: 'Confirm Reset',
+                confirmResetMessage: 'Are you sure you want to reset the ranking? This will clear all ranking data.',
+                confirmReset: 'Confirm Reset',
+                congratulations: 'Congratulations!',
+                finalScore: 'Your final score: ',
+                enterName: 'Enter your name',
+                confirmAdd: 'Confirm',
+                cancel: 'Cancel',
+                achievements: 'Achievements',
+                updateAnnouncement: 'Update Announcement',
+                prevPage: 'Previous',
+                nextPage: 'Next',
+                pageInfo: 'Page {current} / {total}',
+                blackTurn: 'Move mouse to control spaceship',
+                whiteTurn: 'Auto flying',
+                whiteWin: 'Hit obstacle!',
+                timeUp: "Time's up!"
+            }
+        };
+
+        var currentLang = localStorage.getItem('fxqgameLang') || 'zh';
+
+        function changeLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('fxqgameLang', currentLang);
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            var texts = langConfig[currentLang];
+            
+            document.querySelectorAll('[data-lang="score"]').forEach(function(el) {
+                el.innerHTML = texts.score + '<span id="score">' + document.getElementById('score').textContent + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="remainingTime"]').forEach(function(el) {
+                el.innerHTML = texts.remainingTime + '<span id="time">' + document.getElementById('time').textContent + '</span>s';
+            });
+            
+            document.querySelectorAll('[data-lang="difficulty"]').forEach(function(el) {
+                el.innerHTML = texts.difficulty + '<select class="difficulty-select" id="difficultySelect"><option value="easy" data-lang="easy">' + texts.easy + '</option><option value="medium" data-lang="medium">' + texts.medium + '</option><option value="hard" data-lang="hard">' + texts.hard + '</option><option value="nightmare" data-lang="nightmare">' + texts.nightmare + '</option></select>';
+                document.getElementById('difficultySelect').value = difficulty;
+            });
+            
+            document.querySelectorAll('[data-lang="customTime"]').forEach(function(el) {
+                el.innerHTML = texts.customTime + '<input type="number" class="custom-time-input" id="customTimeInput" value="' + document.getElementById('customTimeInput').value + '" min="1" max="300"><span class="custom-time-tip">' + texts.customTimeTip + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="aiMode"]').forEach(function(el) {
+                el.innerHTML = texts.aiMode + '<label class="ai-switch"><input type="checkbox" id="aiModeSwitch" ' + (aiMode ? 'checked' : '') + '><span class="ai-slider"></span></label>';
+            });
+            
+            document.querySelectorAll('[data-lang="ranking"]').forEach(function(el) {
+                el.textContent = texts.ranking;
+            });
+            
+            document.querySelectorAll('[data-lang="congratulations"]').forEach(function(el) {
+                el.textContent = texts.congratulations;
+            });
+            
+            document.querySelectorAll('[data-lang="finalScore"]').forEach(function(el) {
+                el.innerHTML = texts.finalScore + '<span id="finalScore">' + document.getElementById('finalScore').textContent + '</span>';
+            });
+            
+            document.querySelectorAll('[data-lang="enterName"]').forEach(function(el) {
+                el.setAttribute('placeholder', texts.enterName);
+            });
+            
+            document.querySelectorAll('[data-lang="confirmAdd"]').forEach(function(el) {
+                el.textContent = texts.confirmAdd;
+            });
+            
+            document.querySelectorAll('[data-lang="cancel"]').forEach(function(el) {
+                el.textContent = texts.cancel;
+            });
+            
+            document.querySelectorAll('[data-lang="achievements"]').forEach(function(el) {
+                el.textContent = texts.achievements;
+            });
+            
+            document.querySelectorAll('[data-lang="updateAnnouncement"]').forEach(function(el) {
+                el.textContent = texts.updateAnnouncement;
+            });
+            
+            document.querySelectorAll('[data-lang="prevPage"]').forEach(function(el) {
+                el.textContent = texts.prevPage;
+            });
+            
+            document.querySelectorAll('[data-lang="nextPage"]').forEach(function(el) {
+                el.textContent = texts.nextPage;
+            });
+            
+            document.querySelectorAll('[data-lang="pageInfo"]').forEach(function(el) {
+                el.textContent = texts.pageInfo.replace('{current}', currentPage).replace('{total}', filteredPages.length);
+            });
+
+            document.querySelectorAll('[data-lang="resetRanking"]').forEach(function(el) {
+                el.textContent = texts.resetRanking;
+            });
+
+            document.querySelectorAll('[data-lang="confirmResetTitle"]').forEach(function(el) {
+                el.textContent = texts.confirmResetTitle;
+            });
+
+            document.querySelectorAll('[data-lang="confirmResetMessage"]').forEach(function(el) {
+                el.textContent = texts.confirmResetMessage;
+            });
+
+            document.querySelectorAll('[data-lang="confirmReset"]').forEach(function(el) {
+                el.textContent = texts.confirmReset;
+            });
+
+            updateChessTip();
+        }
+
+        function updateChessTip() {
+            const chessTip = document.getElementById('chessTip');
+            chessTip.textContent = aiMode ? langConfig[currentLang].whiteTurn : langConfig[currentLang].blackTurn;
+        }
+
+        let gameTimer = null;
+        let gameRunning = false;
+        let score = 0;
+        let timeLeft = 30;
+        let aiMode = false;
+        let spaceship = null;
+        let obstacles = [];
+        let rewards = [];
+        let obstacleSpeed = 5;
+        let obstacleSpawnRate = 1000;
+        let obstacleSpawnTimer = null;
+        let autoFlyInterval = null;
+        let difficulty = 'easy';
+
+        const aiDifficultyConfig = {
+            easy: { moveRange: 8, randomness: 0.7, avoidRange: 60 },
+            medium: { moveRange: 10, randomness: 0.5, avoidRange: 50 },
+            hard: { moveRange: 12, randomness: 0.3, avoidRange: 40 },
+            nightmare: { moveRange: 15, randomness: 0.1, avoidRange: 30 }
+        };
+
+        const fxqAchievementDefs = [
+            {
+                id: 'fxq_first_game',
+                name: '初次飞行',
+                desc: '完成第一次飞行',
+                icon: 'fa-rocket',
+                condition: () => getUserGameData('fxqGamesPlayed', 0) >= 1
+            },
+            {
+                id: 'fxq_score_50',
+                name: '初级飞行员',
+                desc: '单局得分达到50分',
+                icon: 'fa-star',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 50
+            },
+            {
+                id: 'fxq_score_100',
+                name: '中级飞行员',
+                desc: '单局得分达到100分',
+                icon: 'fa-medal',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 100
+            },
+            {
+                id: 'fxq_score_200',
+                name: '高级飞行员',
+                desc: '单局得分达到200分',
+                icon: 'fa-trophy',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 200
+            },
+            {
+                id: 'fxq_games_5',
+                name: '飞行爱好者',
+                desc: '累计完成5局游戏',
+                icon: 'fa-plane',
+                condition: () => getUserGameData('fxqGamesPlayed', 0) >= 5
+            },
+            {
+                id: 'fxq_games_10',
+                name: '飞行达人',
+                desc: '累计完成10局游戏',
+                icon: 'fa-fighter-jet',
+                condition: () => getUserGameData('fxqGamesPlayed', 0) >= 10
+            },
+            {
+                id: 'fxq_easy_master',
+                name: '轻松过关',
+                desc: '在简单难度下完成一局游戏',
+                icon: 'fa-smile',
+                condition: () => false
+            },
+            {
+                id: 'fxq_hard_master',
+                name: '困难征服者',
+                desc: '在困难难度下完成一局游戏',
+                icon: 'fa-fire',
+                condition: () => false
+            },
+            {
+                id: 'fxq_nightmare_survivor',
+                name: '梦魇幸存者',
+                desc: '在梦魇难度下完成一局游戏',
+                icon: 'fa-skull',
+                condition: () => false
+            },
+            {
+                id: 'fxq_perfect_score',
+                name: '完美飞行',
+                desc: '单局得分达到300分',
+                icon: 'fa-crown',
+                condition: () => getUserGameData('fxqHighScore', 0) >= 300
+            }
+        ];
+
+        let fxqAchievements = getUserGameData('fxqAchievements', []);
+
+        function setObstacleSpeed() {
+            switch(difficulty) {
+                case 'easy': obstacleSpeed = 3; break;
+                case 'medium': obstacleSpeed = 5; break;
+                case 'hard': obstacleSpeed = 8; break;
+                case 'nightmare': obstacleSpeed = 12; break;
+            }
+        }
+
+        function setObstacleSpawnRate() {
+            switch(difficulty) {
+                case 'easy': obstacleSpawnRate = 1200; break;
+                case 'medium': obstacleSpawnRate = 800; break;
+                case 'hard': obstacleSpawnRate = 500; break;
+                case 'nightmare': obstacleSpawnRate = 300; break;
+            }
+            if (gameRunning && obstacleSpawnTimer) {
+                clearInterval(obstacleSpawnTimer);
+                startObstacleSpawn();
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                endGame(langConfig[currentLang].timeUp);
+            }
+        }
+
+        function createSpaceship() {
+            if (spaceship) {
+                gameArea.removeChild(spaceship);
+            }
+            
+            spaceship = document.createElement('div');
+            spaceship.className = 'spaceship';
+            spaceship.textContent = '🚀';
+            spaceship.style.left = (gameArea.clientWidth / 2 - 20) + 'px';
+            spaceship.style.top = (gameArea.clientHeight / 2 - 20) + 'px';
+            gameArea.appendChild(spaceship);
+        }
+
+        function createObstacle() {
+            const difficulty = document.getElementById('difficultySelect').value;
+            const createCount = difficulty === 'nightmare' ? 2 : 1;
+            
+            for (let i = 0; i < createCount; i++) {
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.textContent = '🚧';
+                
+                const top = Math.random() * (gameArea.clientHeight - 30);
+                obstacle.style.left = gameArea.clientWidth + 'px';
+                obstacle.style.top = top + 'px';
+                
+                gameArea.appendChild(obstacle);
+                obstacles.push(obstacle);
+            }
+        }
+
+        function createReward() {
+            const reward = document.createElement('div');
+            reward.className = 'reward';
+            reward.textContent = '⭐';
+            
+            const top = Math.random() * (gameArea.clientHeight - 25);
+            reward.style.left = gameArea.clientWidth + 'px';
+            reward.style.top = top + 'px';
+            
+            gameArea.appendChild(reward);
+            rewards.push(reward);
+        }
+
+        function startObstacleSpawn() {
+            if (obstacleSpawnTimer) {
+                clearInterval(obstacleSpawnTimer);
+            }
+            obstacleSpawnTimer = setInterval(() => {
+                if (!gameRunning) return;
+                createObstacle();
+                const diff = document.getElementById('difficultySelect').value;
+                const rewardProbability = diff === 'nightmare' ? 0.05 : 0.2;
+                if (Math.random() < rewardProbability) {
+                    createReward();
+                }
+            }, obstacleSpawnRate);
+        }
+
+        function moveObstacles() {
+            if (!gameRunning) return;
+            
+            obstacles.forEach((obstacle, index) => {
+                const currentLeft = parseFloat(obstacle.style.left);
+                obstacle.style.left = (currentLeft - obstacleSpeed) + 'px';
+                
+                if (currentLeft < -30) {
+                    gameArea.removeChild(obstacle);
+                    obstacles.splice(index, 1);
+                    const diff = document.getElementById('difficultySelect').value;
+                    const scorePoints = diff === 'nightmare' ? 2 : 1;
+                    addScore(scorePoints);
+                }
+                
+                if (checkCollision(spaceship, obstacle)) {
+                    endGame(langConfig[currentLang].whiteWin);
+                }
+            });
+            
+            rewards.forEach((reward, index) => {
+                const currentLeft = parseFloat(reward.style.left);
+                reward.style.left = (currentLeft - obstacleSpeed) + 'px';
+                
+                if (currentLeft < -25) {
+                    gameArea.removeChild(reward);
+                    rewards.splice(index, 1);
+                }
+                
+                if (checkCollision(spaceship, reward)) {
+                    gameArea.removeChild(reward);
+                    rewards.splice(index, 1);
+                    const diff = document.getElementById('difficultySelect').value;
+                    const rewardPoints = diff === 'nightmare' ? 10 : 5;
+                    addScore(rewardPoints);
+                }
+            });
+            
+            requestAnimationFrame(moveObstacles);
+        }
+
+        function checkCollision(el1, el2) {
+            const rect1 = el1.getBoundingClientRect();
+            const rect2 = el2.getBoundingClientRect();
+            
+            return !(
+                rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom
+            );
+        }
+
+        function addScore(points) {
+            score += points;
+            document.getElementById('score').textContent = score;
+        }
+
+        function autoFly() {
+            if (!aiMode || !spaceship || !gameRunning) return;
+            
+            const aiConfig = aiDifficultyConfig[difficulty] || aiDifficultyConfig.easy;
+            const gameAreaRect = gameArea.getBoundingClientRect();
+            const spaceshipRect = spaceship.getBoundingClientRect();
+            
+            let targetX = spaceshipRect.left - gameAreaRect.left;
+            let targetY = spaceshipRect.top - gameAreaRect.top;
+            
+            obstacles.forEach(obstacle => {
+                const obsRect = obstacle.getBoundingClientRect();
+                const obsX = obsRect.left - gameAreaRect.left;
+                const obsY = obsRect.top - gameAreaRect.top;
+                
+                if (obsX > targetX && Math.abs(obsY - targetY) < aiConfig.avoidRange) {
+                    if (Math.random() > aiConfig.randomness) {
+                        targetY += (Math.random() > 0.5 ? 1 : -1) * aiConfig.moveRange;
+                    }
+                }
+            });
+            
+            targetX -= 5;
+            targetY = Math.max(20, Math.min(gameArea.clientHeight - 40, targetY));
+            
+            spaceship.style.left = targetX + 'px';
+            spaceship.style.top = targetY + 'px';
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            
+            gameRunning = true;
+            score = 0;
+            timeLeft = parseInt(document.getElementById('customTimeInput').value);
+            aiMode = document.getElementById('aiModeSwitch').checked;
+            difficulty = document.getElementById('difficultySelect').value;
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('gameOver').style.display = 'none';
+            
+            obstacles.forEach(obs => gameArea.removeChild(obs));
+            rewards.forEach(rwd => gameArea.removeChild(rwd));
+            obstacles = [];
+            rewards = [];
+            
+            setObstacleSpeed();
+            setObstacleSpawnRate();
+            createSpaceship();
+            
+            clearInterval(gameTimer);
+            gameTimer = setInterval(updateTimer, 1000);
+            
+            startObstacleSpawn();
+            moveObstacles();
+            
+            if (aiMode) {
+                autoFlyInterval = setInterval(autoFly, 50);
+            }
+            
+            updateChessTip();
+        }
+
+        function resetGame() {
+            clearInterval(gameTimer);
+            clearInterval(obstacleSpawnTimer);
+            clearInterval(autoFlyInterval);
+            gameRunning = false;
+            score = 0;
+            timeLeft = parseInt(document.getElementById('customTimeInput').value);
+            difficulty = document.getElementById('difficultySelect').value;
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('gameOver').style.display = 'none';
+            
+            obstacles.forEach(obs => gameArea.removeChild(obs));
+            rewards.forEach(rwd => gameArea.removeChild(rwd));
+            obstacles = [];
+            rewards = [];
+            
+            if (spaceship) {
+                gameArea.removeChild(spaceship);
+                spaceship = null;
+            }
+        }
+
+        function endGame(message) {
+            clearInterval(gameTimer);
+            clearInterval(obstacleSpawnTimer);
+            clearInterval(autoFlyInterval);
+            gameRunning = false;
+            
+            document.getElementById('gameOver').textContent = message;
+            document.getElementById('gameOver').style.display = 'block';
+            
+            saveGameData();
+            showRankingModal();
+        }
+
+        function saveGameData() {
+            var gamesPlayed = getUserGameData('fxqGamesPlayed', 0) + 1;
+            var highScore = getUserGameData('fxqHighScore', 0);
+            if (score > highScore) {
+                highScore = score;
+            }
+            
+            setUserGameData('fxqGamesPlayed', gamesPlayed);
+            setUserGameData('fxqHighScore', highScore);
+            
+            checkAchievements();
+        }
+
+        function checkAchievements() {
+            fxqAchievementDefs.forEach(function(achievement) {
+                if (!fxqAchievements.includes(achievement.id) && achievement.condition()) {
+                    fxqAchievements.push(achievement.id);
+                    setUserGameData('fxqAchievements', fxqAchievements);
+                    alert('🏆 成就解锁: ' + achievement.name + '\n' + achievement.desc);
+                }
+            });
+        }
+
+        function showRankingModal() {
+            var modal = document.getElementById('rankingModal');
+            document.getElementById('finalScore').textContent = score;
+            modal.classList.add('active');
+        }
+
+        function showAchievements() {
+            var modal = document.getElementById('achievementModal');
+            var achievementList = document.getElementById('achievementList');
+            achievementList.innerHTML = '';
+            
+            document.getElementById('achievementTotal').textContent = fxqAchievementDefs.length;
+            document.getElementById('achievementUnlocked').textContent = fxqAchievements.length;
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('active');
+            }, 10);
+            
+            fxqAchievementDefs.forEach(function(achievement) {
+                var isUnlocked = fxqAchievements.includes(achievement.id) || DeveloperConfig.getAchievementsUnlocked();
+                var isCompleted = achievement.condition();
+                
+                var achievementItem = document.createElement('div');
+                var className = 'achievement-item' + (isUnlocked ? ' unlocked' : ' locked');
+                achievementItem.className = className;
+                
+                var progressPercent = isUnlocked ? 100 : (isCompleted ? 100 : 0);
+                var progressText = isUnlocked ? '已完成' : (isCompleted ? '已完成' : '未完成');
+                
+                achievementItem.innerHTML = '<div class="achievement-icon"><i class="fas ' + achievement.icon + '"></i></div>' +
+                                      '<div class="achievement-info">' +
+                                      '<div class="achievement-name">' + achievement.name + '</div>' +
+                                      '<div class="achievement-desc">' + achievement.desc + '</div>' +
+                                      '<div class="achievement-progress">' +
+                                      '<div class="progress-bar">' +
+                                      '<div class="progress-fill" style="width: ' + progressPercent + '%"></div>' +
+                                      '</div>' +
+                                      '<span class="progress-text">' + progressText + '</span>' +
+                                      '</div>' +
+                                      '</div>';
+                
+                achievementList.appendChild(achievementItem);
+            });
+            
+            modal.classList.add('active');
+        }
+
+        function loadRankings() {
+            var rankings = getUserGameData('fxqRankings', []);
+            var rankingList = document.getElementById('rankingList');
+            rankingList.innerHTML = '';
+            
+            rankings.sort(function(a, b) {
+                return b.score - a.score;
+            });
+            
+            rankings.slice(0, 10).forEach(function(ranking, index) {
+                var item = document.createElement('li');
+                item.className = 'ranking-item';
+                item.innerHTML = '<span>' + (index + 1) + '. ' + ranking.name + '</span>' +
+                              '<span>' + ranking.score + ' 分</span>';
+                rankingList.appendChild(item);
+            });
+        }
+
+        function addRanking() {
+            var name = document.getElementById('playerName').value.trim();
+            if (!name) {
+                alert('请输入名字');
+                return;
+            }
+            
+            var rankings = getUserGameData('fxqRankings', []);
+            rankings.push({
+                name: name,
+                score: score,
+                date: new Date().toISOString()
+            });
+            
+            setUserGameData('fxqRankings', rankings);
+            
+            var modal = document.getElementById('rankingModal');
+            modal.classList.remove('active');
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+            
+            loadRankings();
+        }
+
+        function resetRankings() {
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.add('active');
+        }
+
+        function confirmReset() {
+            setUserGameData('fxqRankings', []);
+            loadRankings();
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.remove('active');
+        }
+
+        function cancelReset() {
+            var modal = document.getElementById('confirmResetModal');
+            modal.classList.remove('active');
+        }
+
+        // 翻页功能
+        const updateModal = document.getElementById('updateModal');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const pageInfo = document.getElementById('pageInfo');
+        const updatePages = document.querySelectorAll('.update-page');
+        const versionSwitchBtn = document.getElementById('versionSwitchBtn');
+        let currentPage = 1;
+        let currentVersion = 'release';
+        let filteredPages = [];
+
+        function filterVersionPages(version) {
+            filteredPages = Array.from(updatePages).filter(page => page.dataset.version === version);
+            currentPage = 1;
+            pageInfo.textContent = langConfig[currentLang].pageInfo
+                .replace('{current}', currentPage)
+                .replace('{total}', filteredPages.length);
+            switchPage(1);
+            versionSwitchBtn.textContent = version === 'release' ? 'Beta' : 'RC';
+        }
+
+        function switchPage(targetPage) {
+            updatePages.forEach(page => {
+                page.classList.remove('active');
+            });
+            if (filteredPages[targetPage - 1]) {
+                filteredPages[targetPage - 1].classList.add('active');
+            }
+            currentPage = targetPage;
+            pageInfo.textContent = langConfig[currentLang].pageInfo
+                .replace('{current}', currentPage)
+                .replace('{total}', filteredPages.length);
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === filteredPages.length;
+        }
+
+        prevPageBtn.addEventListener('click', function() {
+            if (currentPage > 1) {
+                switchPage(currentPage - 1);
+            }
+        });
+
+        nextPageBtn.addEventListener('click', function() {
+            if (currentPage < filteredPages.length) {
+                switchPage(currentPage + 1);
+            }
+        });
+
+        versionSwitchBtn.addEventListener('click', function() {
+            currentVersion = currentVersion === 'release' ? 'beta' : 'release';
+            filterVersionPages(currentVersion);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('page-transition-in');
+            setTimeout(function() {
+                document.body.classList.remove('page-transition-in');
+            }, 500);
+
+            loadCurrentUser();
+            loadRankings();
+            updateLanguage();
+            initializeMenu();
+            initializeModals();
+            initializeDifficulty();
+            initializeAiMode();
+            
+            if (typeof updateVersionDisplay === 'function') {
+                updateVersionDisplay('fxqgame');
+            }
+            
+            filterVersionPages(currentVersion);
+        });
+
+        function loadCurrentUser() {
+            var userName = document.getElementById('userName');
+            var userId = document.getElementById('userId');
+
+            if (currentUser.username) {
+                userName.textContent = currentUser.username;
+                if (currentUser.userId) {
+                    userId.textContent = 'ID: ' + currentUser.userId;
+                } else {
+                    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    var user = users.find(function(u) {
+                        return u.username === currentUser.username;
+                    });
+                    if (user && user.userId) {
+                        userId.textContent = 'ID: ' + user.userId;
+                    }
+                }
+            } else {
+                userName.textContent = '未登录';
+                userId.textContent = 'ID: ---';
+            }
+        }
+
+        function initializeMenu() {
+            document.getElementById('sidebarStartGameBtn').addEventListener('click', startGame);
+            document.getElementById('sidebarResetGameBtn').addEventListener('click', resetGame);
+            document.getElementById('sidebarAchievementBtn').addEventListener('click', showAchievements);
+            document.getElementById('sidebarUpdateBtn').addEventListener('click', showUpdateModal);
+            document.getElementById('sidebarLangSwitchBtn').addEventListener('click', changeLanguage);
+            document.getElementById('sidebarBackHomeBtn').addEventListener('click', function() {
+                window.location.href = 'homepage4.0.html';
+            });
+
+            document.getElementById('userCenter').addEventListener('click', function() {
+                if (!currentUser.username) {
+                    alert('请先登录');
+                    return;
+                }
+                window.open('account-settings.html', '_blank');
+            });
+        }
+
+        function initializeModals() {
+            document.getElementById('confirmBtn').addEventListener('click', addRanking);
+            
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                var modal = document.getElementById('rankingModal');
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('closeUpdateModal').addEventListener('click', function() {
+                var modal = document.getElementById('updateModal');
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('closeAchievementModal').addEventListener('click', function() {
+                var modal = document.getElementById('achievementModal');
+                modal.classList.remove('active');
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                }, 300);
+            });
+
+            document.getElementById('resetRankingBtn').addEventListener('click', function() {
+                resetRankings();
+            });
+
+            document.getElementById('confirmResetBtn').addEventListener('click', function() {
+                confirmReset();
+            });
+
+            document.getElementById('cancelResetBtn').addEventListener('click', function() {
+                cancelReset();
+            });
+            
+            document.querySelectorAll('.modal').forEach(function(modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                        setTimeout(function() {
+                            modal.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        }
+
+        function initializeDifficulty() {
+            document.getElementById('difficultySelect').addEventListener('change', function() {
+                difficulty = this.value;
+                setObstacleSpeed();
+                setObstacleSpawnRate();
+            });
+        }
+
+        function initializeAiMode() {
+            document.getElementById('aiModeSwitch').addEventListener('change', function() {
+                aiMode = this.checked;
+                if (gameRunning) {
+                    if (aiMode) {
+                        autoFlyInterval = setInterval(autoFly, 50);
+                    } else {
+                        clearInterval(autoFlyInterval);
+                    }
+                }
+                updateChessTip();
+            });
+        }
+
+        function showUpdateModal() {
+            var modal = document.getElementById('updateModal');
+            modal.classList.add('active');
+            currentVersion = 'release';
+            filterVersionPages(currentVersion);
+        }
+
+        // 游戏区域鼠标控制
+        var gameArea = document.getElementById('gameArea');
+        gameArea.addEventListener('mousemove', function(e) {
+            if (!gameRunning || aiMode || !spaceship) return;
+            
+            const rect = gameArea.getBoundingClientRect();
+            const x = e.clientX - rect.left - 20;
+            const y = e.clientY - rect.top - 20;
+            
+            spaceship.style.left = Math.max(0, Math.min(gameArea.clientWidth - 40, x)) + 'px';
+            spaceship.style.top = Math.max(0, Math.min(gameArea.clientHeight - 40, y)) + 'px';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,4367 @@
+const ZipImageCache = {
+    isReady: false,
+    cache: {},
+    pendingCallbacks: [],
+    
+    init: function() {
+        var self = this;
+        if (typeof JSZip === 'undefined') {
+            console.warn('[ZipImageCache] JSZip 未加载，将使用原始图片路径');
+            self.isReady = true;
+            self._executeCallbacks();
+            return;
+        }
+        
+        if (window.location.protocol === 'file:') {
+            console.warn('[ZipImageCache] 当前为 file:// 协议，无法使用 fetch 加载本地文件，将使用原始图片路径');
+            self.isReady = true;
+            self._executeCallbacks();
+            return;
+        }
+        
+        self._loadZipWithXHR('./images/verimg.zip')
+            .then(function(zipBlob) {
+                return JSZip.loadAsync(zipBlob);
+            })
+            .then(function(zip) {
+                var promises = [];
+                
+                zip.forEach(function(relativePath, zipEntry) {
+                    if (!zipEntry.dir && /\.(png|jpg|jpeg|gif|webp)$/i.test(relativePath)) {
+                        var fileName = self._normalizeFileName(relativePath);
+                        
+                        var promise = zipEntry.async('blob').then(function(blob) {
+                            var url = URL.createObjectURL(blob);
+                            self.cache[fileName] = url;
+                            console.log('[ZipImageCache] 已缓存图片:', fileName);
+                        });
+                        
+                        promises.push(promise);
+                    }
+                });
+                
+                return Promise.all(promises);
+            })
+            .then(function() {
+                self.isReady = true;
+                console.log('[ZipImageCache] 缓存初始化完成，共', Object.keys(self.cache).length, '张图片');
+                self._executeCallbacks();
+            })
+            .catch(function(err) {
+                console.warn('[ZipImageCache] 解压失败，将使用原始图片路径:', err);
+                self.isReady = true;
+                self._executeCallbacks();
+            });
+    },
+    
+    _loadZipWithXHR: function(url) {
+        return new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'blob';
+            
+            xhr.onload = function() {
+                if (xhr.status === 200 || xhr.status === 0) {
+                    resolve(xhr.response);
+                } else {
+                    reject(new Error('加载失败: ' + xhr.status));
+                }
+            };
+            
+            xhr.onerror = function() {
+                reject(new Error('网络错误'));
+            };
+            
+            xhr.send();
+        });
+    },
+    
+    _normalizeFileName: function(path) {
+        var parts = path.replace(/\\/g, '/').split('/');
+        var fileName = parts[parts.length - 1];
+        return fileName.toLowerCase();
+    },
+    
+    _getImageKey: function(imagePath) {
+        var parts = imagePath.replace(/\\/g, '/').split('/');
+        var fileName = parts[parts.length - 1];
+        return fileName.toLowerCase();
+    },
+    
+    _toLocalImagesPath: function(imagePath) {
+        if (imagePath && typeof imagePath === 'string') {
+            return imagePath.replace(/^\.\/images\//, './localimages/').replace(/^images\//, 'localimages/');
+        }
+        return imagePath;
+    },
+    
+    getImageUrl: function(imagePath) {
+        if (!this.isReady) {
+            return this._toLocalImagesPath(imagePath);
+        }
+        
+        var key = this._getImageKey(imagePath);
+        if (this.cache[key]) {
+            return this.cache[key];
+        }
+        
+        console.warn('[ZipImageCache] 未找到缓存图片，使用 localimages 路径:', imagePath);
+        return this._toLocalImagesPath(imagePath);
+    },
+    
+    whenReady: function(callback) {
+        if (this.isReady) {
+            callback();
+        } else {
+            this.pendingCallbacks.push(callback);
+        }
+    },
+    
+    _executeCallbacks: function() {
+        while (this.pendingCallbacks.length > 0) {
+            var cb = this.pendingCallbacks.shift();
+            try {
+                cb();
+            } catch (err) {
+                console.error('[ZipImageCache] 回调执行错误:', err);
+            }
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    ZipImageCache.init();
+});
+
+function getVersionImageUrl(imagePath) {
+    return ZipImageCache.getImageUrl(imagePath);
+}
+
+// 版本更新本地存储键名
+const VERSION_STORAGE_KEYS = {
+    LAST_VIEWED_VERSION_DATE: 'last_viewed_version_date',
+    VIEWED_VERSION_IDS: 'viewed_version_ids'
+};
+
+// 获取所有版本更新的最新日期
+function getLatestVersionDate() {
+    let latestDate = null;
+    
+    Object.keys(versionHistoryData).forEach(function(sectionId) {
+        versionHistoryData[sectionId].forEach(function(version) {
+            if (!latestDate || new Date(version.date) > new Date(latestDate)) {
+                latestDate = version.date;
+            }
+        });
+    });
+    
+    return latestDate;
+}
+
+// 检查是否有新版本更新
+function hasNewVersionUpdates() {
+    const lastViewedDate = localStorage.getItem(VERSION_STORAGE_KEYS.LAST_VIEWED_VERSION_DATE);
+    const latestDate = getLatestVersionDate();
+    
+    if (!lastViewedDate || !latestDate) {
+        return false;
+    }
+    
+    return new Date(latestDate) > new Date(lastViewedDate);
+}
+
+function scrollVersionImages(btn, direction) {
+    var container = btn.parentElement;
+    var scrollContainer = container.querySelector('.version-images');
+    if (!scrollContainer) return;
+    
+    var scrollAmount = scrollContainer.offsetWidth * 0.85;
+    scrollContainer.scrollBy({
+        left: scrollAmount * direction,
+        behavior: 'smooth'
+    });
+    
+    setTimeout(function() {
+        updateVersionScrollButtons(scrollContainer);
+    }, 300);
+}
+
+function updateVersionScrollButtons(scrollContainer) {
+    if (!scrollContainer) return;
+    
+    var container = scrollContainer.parentElement;
+    var leftBtn = container.querySelector('.version-scroll-btn.left');
+    var rightBtn = container.querySelector('.version-scroll-btn.right');
+    
+    if (!leftBtn || !rightBtn) return;
+    
+    if (scrollContainer.classList.contains('single-image')) {
+        leftBtn.classList.remove('show');
+        rightBtn.classList.remove('show');
+        return;
+    }
+    
+    var isAtStart = scrollContainer.scrollLeft < 10;
+    var isAtEnd = scrollContainer.scrollLeft >= scrollContainer.scrollWidth - scrollContainer.clientWidth - 10;
+    
+    if (isAtStart) {
+        leftBtn.classList.remove('show');
+    } else {
+        leftBtn.classList.add('show');
+    }
+    
+    if (isAtEnd) {
+        rightBtn.classList.remove('show');
+    } else {
+        rightBtn.classList.add('show');
+    }
+}
+
+function initVersionScrollButtons() {
+    var allScrollContainers = document.querySelectorAll('.version-images');
+    allScrollContainers.forEach(function(container) {
+        if (container.dataset.scrollButtonsInitialized === 'true') {
+            updateVersionScrollButtons(container);
+            return;
+        }
+        
+        container.dataset.scrollButtonsInitialized = 'true';
+        
+        updateVersionScrollButtons(container);
+        
+        container.addEventListener('scroll', function() {
+            updateVersionScrollButtons(container);
+        });
+        
+        container.addEventListener('mouseenter', function() {
+            updateVersionScrollButtons(container);
+        });
+    });
+}
+
+// 更新最后查看版本日期
+function updateLastViewedVersionDate() {
+    const latestDate = getLatestVersionDate();
+    if (latestDate) {
+        localStorage.setItem(VERSION_STORAGE_KEYS.LAST_VIEWED_VERSION_DATE, latestDate);
+    }
+}
+
+// 获取已查看的版本ID列表
+function getViewedVersionIds() {
+    const stored = localStorage.getItem(VERSION_STORAGE_KEYS.VIEWED_VERSION_IDS);
+    return stored ? JSON.parse(stored) : [];
+}
+
+// 标记版本为已查看
+function markVersionAsViewed(versionId) {
+    const viewedIds = getViewedVersionIds();
+    if (!viewedIds.includes(versionId)) {
+        viewedIds.push(versionId);
+        localStorage.setItem(VERSION_STORAGE_KEYS.VIEWED_VERSION_IDS, JSON.stringify(viewedIds));
+    }
+}
+
+// 检查版本是否已查看
+function isVersionViewed(versionId) {
+    return getViewedVersionIds().includes(versionId);
+}
+
+// 生成版本唯一标识符（版本号+日期，确保相同版本号不同日期的更新能被正确识别）
+function generateVersionId(version) {
+    return version.version.replace(/\s/g, '') + '-' + version.date;
+}
+
+// 获取未查看版本数量
+function getUnviewedVersionCount() {
+    let count = 0;
+    console.log('[DEBUG] getUnviewedVersionCount called');
+    console.log('[DEBUG] versionHistoryData exists:', typeof versionHistoryData !== 'undefined');
+    if (typeof versionHistoryData !== 'undefined' && versionHistoryData.launcherUpdateContent && versionHistoryData.launcherUpdateContent.length > 0) {
+        console.log('[DEBUG] Total versions:', versionHistoryData.launcherUpdateContent.length);
+        versionHistoryData.launcherUpdateContent.forEach(function(version) {
+            var versionId = generateVersionId(version);
+            var viewed = isVersionViewed(versionId);
+            console.log('[DEBUG] Version:', version.version, 'Date:', version.date, 'Viewed:', viewed);
+            if (!viewed) {
+                count++;
+            }
+        });
+    } else {
+        console.log('[DEBUG] versionHistoryData not available or empty');
+    }
+    console.log('[DEBUG] Unviewed version count:', count);
+    return count;
+}
+
+// 一键标记所有版本为已读
+function markAllVersionsAsRead() {
+    const allVersionIds = [];
+    Object.keys(versionHistoryData).forEach(function(sectionId) {
+        versionHistoryData[sectionId].forEach(function(version) {
+            allVersionIds.push(generateVersionId(version));
+        });
+    });
+    localStorage.setItem(VERSION_STORAGE_KEYS.VIEWED_VERSION_IDS, JSON.stringify(allVersionIds));
+    updateLastViewedVersionDate();
+    updateVersionNotificationDot();
+    if (typeof renderCurrentVersionContent === 'function') {
+        renderCurrentVersionContent();
+    }
+}
+
+// 更新版本更新红点显示
+function updateVersionNotificationDot() {
+    const dot = document.getElementById('versionNotificationDot');
+    if (dot) {
+        const count = getUnviewedVersionCount();
+        if (count > 0) {
+            dot.style.display = 'block';
+        } else {
+            dot.style.display = 'none';
+        }
+    }
+}
+
+// 语法使用：
+        // {
+        //     version: "版本号",
+        //     date: "日期",
+        //     tag: "标签",                 /tag标签使用:   major 重大更新; important 重要更新; normal 常规更新; patch 补丁更新
+        //     tagText: "标签文本",
+        //     images: ["图片路径1", "图片路径2"],
+        //     features: ["功能描述1", "功能描述2", ...]
+        // },
+        //     demo:
+        // {
+        //     version: "RC 1.0.0.0 (a1)",
+        //     date: "2026-04-26",
+        //     tag: "normal",
+        //     tagText: "常规更新",
+        //     images: [],
+        //     features: [
+                    // "新增功能"
+                    // "[color:颜色]文本1[/color]",  /文本段落颜色使用方法：red, blue, green, yellow, orange, pink, #ff0000, #0000ff, #00ff00, #ff933ff, #ff9900, #0099ff
+                    // "优化改进"
+                    // "[color:颜色]-文本2[/color]",
+                    // "修复问题"
+                    // "[color:颜色]-文本3[/color]" 
+                    //     ]
+        // },
+// 版本更新公告数据
+const versionHistoryData = {
+    launcherUpdateContent: [
+        {
+            version: "RC 2.7.2.1 (b10)",
+            date: "2026-07-29",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2721.png", "./images/2721_2.png", "./images/2721_3.png", "./images/2721_4.png"],
+            features: [
+                "新增功能",
+                "- 新增系统级提示横条，并替换大量一次确认弹窗的显示，确保用户操作更流畅，避免用户操作被弹窗遮挡",
+                "- 新增百宝箱中，今日人品与今日运势的全新显示样式，点击查看今日人品/运势按钮后将弹出新的显示样式",
+                "- 名片设置功能新增\"布局管理\"、\"外观设置\"和\"个人资料\"功能，在个人资料中修改个人签名时会同步到系统设置页中",
+                "- 在用户名片的成就徽章中新增查看全部功能，点击后可以查看所有已解锁/未解锁的成就徽章，并且点击单个徽章可以查看详细信息",
+                "优化改进",
+                "- 优化未登录时登录页的部分功能逻辑，现在更多功能和更多操作系统在未登录时将不再可用",
+                "- 时钟组件调整侧边栏样式统一：将页面时钟的组件调整侧边栏和天气设置侧边栏改为直角白色背景样式，与用户名片侧边栏风格统一",
+                "- 侧边栏色调统一：时钟设置和天气设置的强调色从蓝色(#3498db)统一改为粉色(#d45d79/#e67e8a)，与整体主题色保持一致",
+                "- 侧边栏标题装饰：时钟设置标题添加滑块图标(fa-sliders-h)，天气设置标题添加天气图标(fa-cloud-sun)，视觉层次更清晰",
+                "- 天气跳转目标改为下拉菜单：将原先平铺的跳转目标选项改为标准下拉选择菜单，支持MSN Weather、Yahoo Weather、AccuWeather、Windy.com和页面天气五个选项",
+                "- 页面天气VPN提示智能隐藏：选择\"页面天气\"作为跳转目标时，自动隐藏VPN提示信息；选择其他外部跳转目标时恢复显示",
+                "- 滚动条样式统一：时钟设置和天气设置的滚动条样式统一为粉色半透明样式，与用户名片侧边栏滚动条保持一致",
+                "- 侧边栏模式移除：移除时钟设置中的\"侧边栏模式\"开关，所有设置面板现在默认使用侧边栏模式，从右侧滑入滑出",
+                "修复问题",
+                "- 修复了在登陆页的部分全局弹窗按钮颜色及阴影色不一致的问题",
+                "- 修复了在用户名片中点击编辑按钮后会导致页面无响应的问题",
+                "- 修复在移动端下，系统设置页点击返回按钮后不会返回到主界面的问题",
+                "- 修复时钟设置和天气设置侧边栏暗色模式适配不完整的问题：完善暗色模式下的背景色、边框色、滚动条、下拉菜单、按钮等样式",
+                "- 修复时钟设置弹窗关闭动画不统一的问题：所有设置面板关闭动画统一为侧边栏滑出动画(slideOutToRight)",
+                "",
+            ]
+        },
+        {
+            version: "RC 2.7.2.0 (b10)",
+            date: "2026-07-27",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2720.png", "./images/2720_2.png", "./images/2720_3.png", "./images/2720_4.png"],
+            features: [
+                "新增功能",
+                "- 对游戏大厅进行了全面改版，现在将大厅页与登录页合并为一个页面，用户无需再登录后跳转大厅页",
+                "- 每日签到功能重新改版，并且一并支持等级里程碑等功能",
+                "- 用户名片功能重新改版，新增\"成长\"标签页，显示等级信息、累计经验、当前等级、连续签到、累计签到等成长数据",
+                "- 签到里程碑弹窗：每日签到卡片中的\"下一里程碑\"改为可点击，点击后弹出里程碑弹窗，以双列网格形式展示所有签到里程碑（7天/15天/30天/60天/90天/180天/365天），已达成的里程碑以紫色渐变高亮显示",
+                "- 名片成长标签页：用户名片中新增\"成长\"标签页，显示等级信息、累计经验、当前等级、连续签到、累计签到等成长数据",
+                "- 等级红点显示：登录页和大厅页头像右下角显示等级小红点，白底红圈样式，实时同步等级",
+                "- 新增在新的大厅页面中，更多操作弹窗内新增\"退回至登录页\"按钮，点击后返回登录页，无需重新登录",
+                "优化改进",
+                "- 经验值公式重设计：每级所需经验改为 50 + (等级-1) × 30，升级曲线更平缓，从0 EXP到满级60级总计约54,280 EXP（原91,450 EXP）",
+                "- 每日签到奖励优化：三层阶梯奖励（1-6天30EXP/7-14天60EXP/15天以上100EXP），断签后从30EXP重新开始",
+                "- 签到里程碑奖励优化：第7天额外500 EXP，每满30天额外1000 EXP（循环触发），支持每月持续获取",
+                "- 签到卡片标题样式统一：每日签到卡片标题图标改为与成长等级一致的渐变方块图标框，标题改为左对齐，字号与颜色统一",
+                "- 卡片布局优化：调整等级按钮移至LV等级徽章左侧，调整签到天数按钮推至卡片最右侧",
+                "- 里程碑弹窗双列布局：里程碑弹窗改为每行两个卡片的网格布局，弹窗宽度扩大至580px，提升视觉体验",
+                "- 深色模式全面适配：里程碑弹窗、签到卡片标题、按钮悬浮效果等全部适配深色模式",
+                "- 成长等级卡片经验条优化：经验条颜色、进度显示、下一级提示实时同步新公式",
+                "修复问题",
+                "- 修复签到卡片标题文字居中问题：修复增强版签到卡片继承基础卡片text-align:center导致标题和描述居中的问题",
+                "- 修复经验值数据不同步：修复开发者调整等级和签到天数时经验值未按新公式正确同步的问题",
+                "- 修复等级徽章红点闪烁：修复等级红点仅在刷新页面时短暂显示的问题，登录页和大厅页均持久显示",
+                "- 修复名片成长标签页数据：修复名片中等级信息显示与签到系统数据不一致的问题",
+                "- 修复收起侧边栏按钮点击无效的问题",
+                "- 修复部分弹窗中的层级显示顺序不正确的问题",
+                "",
+            ]
+        },
+        {
+            version: "RC 2.7.1.5 (b10)",
+            date: "2026-07-25",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2715.png", "./images/2715_2.png"],
+            features: [
+                "新增功能",
+                "- 一键领取邮件：邮件弹窗左侧边栏底部新增\"一键领取\"按钮，点击后弹窗确认领取全部邮件，领取后显示附件汇总",
+                "- 邮件领取记录单条删除：每个领取记录条目右上角新增垃圾桶按钮，点击弹窗确认后删除该条记录",
+                "- 兑换历史记录单条删除：每个兑换记录条目右上角新增垃圾桶按钮，点击弹窗确认后删除该条记录",
+                "优化改进",
+                "- 邮件领取记录排版优化：领取账户和领取时间改为一排显示并靠左对齐，领取内容文本也靠左对齐",
+                "- 邮件内图片查看器功能栏隐藏：在邮件内使用图片查看器查看背景时隐藏右侧功能栏",
+                "- 兑换历史记录排版优化：兑换时间放到和兑换账户一行显示",
+                "- 领取成功弹窗内容优化：换行显示并加深附件文本颜色（深黑色）",
+                "- 移动端更多功能弹窗优化：修复移动端模式下弹窗显示不全、无法正常点击的问题",
+                "修复问题",
+                "- 修复账号数据错误互通问题：修复了账号数据在不同账号间互通时的错误问题，确保账号数据的一致性",
+                "- 修复切换账号后，邮件数据和兑换码数据会保留在上一个账号的问题",
+                "- 修复图片查看器动态背景元素残留：查看动态背景后再查看静态背景时，右上角\"动态背景\"标签和右下角日期数字不再错误显示",
+                "- 修复版本更新记录图片背景残留：在邮件中查看背景后，版本更新记录图片不再显示之前的背景",
+                "- 修复七月流火背景粒子效果不显示：图片查看器中七月流火背景现在能正常显示粒子效果",
+                "- 修复showAlert函数不支持HTML内容：将textContent改为innerHTML，支持HTML标签渲染"
+            ]
+        },
+        {
+            version: "RC 2.7.1.4 (b10)",
+            date: "2026-07-22",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 日历组件查看引导：日历弹窗多级菜单中新增\"查看引导\"选项，点击后显示完整的日历功能引导步骤",
+                "- 关于启动器免责声明：版权声明标题右侧新增\"免责声明\"切换按钮，显示服务性质、数据安全、第三方服务等免责条款",
+                "- 日历功能正式上线：日历功能从实验性功能移至增强功能区域，正式发布",
+                "- 全局主题颜色常态显示：全局主题颜色在个性化设置中始终显示，不可通过开关控制",
+                "- 未登录邮件禁用：登录页侧边栏邮件功能在未登录时显示为灰色且不可点击，防止未登录用户领取邮件",
+                "优化改进",
+                "- 全局主题颜色实时同步：修复登录页侧边栏、用户中心、关于启动器按钮等元素颜色未实时同步的问题",
+                "- 日历引导弹窗优化：日历引导步骤现在正确显示在日历弹窗内部，不再跑到登录页",
+                "- 兑换码弹窗可滚动：低分辨率或小窗口下兑换码弹窗内容可滚动，不会被截断",
+                "- 便签弹窗删除按钮优化：删除按钮移至关闭按钮左侧，避免重叠",
+                "- 自定义滚动条样式：登录页侧边栏、便签内容区、日历弹窗等区域添加统一的自定义滚动条样式",
+                "- 版权声明样式优化：去除版权声明卡片标题左侧的粉色高光竖线",
+                "修复问题",
+                "- 修复退出登录后功能残留问题：退出登录时自动清除所有功能启用状态，确保更多功能弹窗为空",
+                "- 修复日历引导步骤位置错误：引导高亮框和提示正确显示在日历弹窗内",
+                "- 修复滚动条样式未正确应用：为正确的滚动容器添加自定义滚动条样式"
+            ]
+        },
+        {
+            version: "RC 2.7.1.3 (b10)",
+            date: "2026-07-21",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2713.png"],
+            features: [
+                "新增功能",
+                "- 七月份限定动态背景「七月流火」：系统设置页特殊获取类别中新增七月限定动态背景，通过邮件领取解锁",
+                "- 动态背景日期显示：动态背景右下角显示年月份数字（如2026.07），增强月份主题氛围",
+                "- 动态背景粒子效果：七月流火背景支持粒子飘浮动画效果，营造星空般的视觉体验",
+                "- 动态背景标签：有动态效果的壁纸预览右上角添加灰色微透明\"动态背景\"标签，常驻显示",
+                "- 特殊获取说明图标：特殊获取分类文本右侧新增\"i\"信息图标，悬浮显示说明文案",
+                "优化改进",
+                "- 背景预览布局优化：每行显示5个背景预览块，调整样式和间距",
+                "- 背景列表滚动支持：背景列表区域添加自定义滚动条，支持滚动浏览",
+                "- 收起/展开状态持久化：系统默认和特殊获取分类的收起/展开状态保存到本地存储，刷新页面后自动恢复",
+                "- 邮件附件动态预览：邮件附件中动态背景预览同步显示动态效果",
+                "修复问题",
+                "- 修复动态背景不生效问题：优化背景应用逻辑，确保动态渐变和动画效果正确显示",
+                "- 修复粒子效果不显示问题：修正particles属性解析逻辑，确保粒子容器正确创建",
+                "- 修复各页面背景同步问题：登录页、游戏大厅页和系统设置页背景效果统一"
+            ]
+        },
+        {
+            version: "RC 2.7.1.2 (b10)",
+            date: "2026-07-21",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2712.png"],
+            features: [
+                "新增功能",
+                "- 新增邮件功能，支持用户通过邮件领取各种奖励，如背景、兑换码等",
+                "- 增量邮件发放系统：参考versionHistory.js的模式，实现版本化邮件发放，支持按版本号增量添加新邮件",
+                "- 邮件固定有效期：支持设置固定的startTime和endTime（UTC时间），邮件只在指定时间段内显示",
+                "- 鎏金幻彩背景：系统设置页特殊获取类别中新增\"鎏金幻彩\"限定背景，通过邮件领取解锁",
+                "- 测试邮件更新：测试邮件附件改为鎏金幻彩背景奖励，有效期设置为2026-07-20至2026-08-01（UTC时间）",
+                "优化改进",
+                "- 邮件附件预览：支持CSS渐变直接渲染预览图，无需依赖图片文件",
+                "- 背景解锁提示：优化未解锁背景的提示文案，明确指引用户前往邮件功能领取",
+                "- 上锁图标样式：未解锁背景的上锁图标添加毛玻璃效果和阴影，更加醒目",
+                "修复问题",
+                "- 修复背景无法选择的问题：将isBackgroundUnlocked函数移到正确的作用域",
+                "- 修复邮件版本逻辑问题：确保新增邮件能正确添加到邮件列表",
+                "- 修复邮件时间逻辑问题：修复CST时区转换bug，确保时间判断准确",
+                "- 修复旧邮件不更新问题：改进版本检查逻辑，确保旧邮件内容能正确更新"
+            ]
+        },
+        {
+            version: "RC 2.7.1.1 (b10)",
+            date: "2026-07-20",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2711.png", "./images/2711_2.png", ],
+            features: [
+                "(以下的更新内容包含部分为\"兑换码\"的新实验性功能，不建议在生产环境中使用)",
+                "新增功能",
+                "- 兑换码功能：系统设置页实验性功能中新增\"兑换码\"功能，开启后在登录页更多功能中显示\"兑换码\"按钮",
+                "- 获取测试兑换码：兑换码开关左侧新增\"获取测试用兑换码\"按钮，点击弹出包含测试兑换码的弹窗",
+                "- 兑换码弹窗：全屏弹窗包含输入框、确认兑换按钮、兑换历史记录和兑换规则",
+                "- 动态流光背景：更换默认背景弹窗中新增\"特殊获取\"类别，包含通过兑换码或其他来源解锁的动态渐变背景",
+                "- 背景分类：默认背景分为\"系统默认\"（9个原有渐变）和\"特殊获取\"（兑换码或其他来源解锁背景）两大类",
+                "- 清空兑换记录：兑换历史记录标题旁新增\"清空兑换记录\"按钮，点击弹出确认弹窗后执行清空",
+                "优化改进",
+                "- 版本更新图片滚动：版本更新记录弹窗图片区添加左右滚动按钮，移除原生滚动条",
+                "- 兑换码弹窗UI：卡片式布局，粉色竖线标题，渐变色确认按钮，响应式设计",
+                "- 兑换码弹窗放大：各区块内容放大，贴近边框显示",
+                "- 背景预览放大：背景预览图片高度从280px增加到350px，弹窗支持上下滚动",
+                "- 自定义滚动条：兑换历史记录使用粉色主题色自定义滚动条样式",
+                "- 透明主题适配：兑换码弹窗、清空按钮、滚动条等适配透明主题样式",
+                "修复问题",
+                "- 修复关于启动器按钮点击后不弹窗的问题",
+                "- 修复兑换码弹窗标题跑到右侧的问题"
+            ]
+        },
+        {
+            version: "RC 2.7.1.0 (b10)",
+            date: "2026-07-19",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2710.png", "./images/2710_2.png",  "./images/2710_3.png",],
+            features: [
+                "新增功能",
+                "- 实验性功能中新增\"全局主题颜色\"功能，支持用户自定义登录页、系统设置页和游戏大厅页的主题颜色",
+                "- 更换默认背景功能：系统设置页个性化卡片中新增\"更换默认背景\"按钮，点击弹出包含9个渐变背景选项的弹窗，支持选择不同风格的默认背景",
+                "- 默认背景渐变选项：提供梦幻粉紫、深海幽蓝、晨曦暖阳、森林绿意、晚霞橙红、极光幻境、星空夜曲、纯净白蓝、玫瑰金粉共9种渐变背景",
+                "- 系统设置页中新增导航多级菜单，支持用户快速切换到不同的设置页面",
+                "优化改进",
+                "- 默认背景重新设计：登录页、系统设置页和游戏大厅页背景采用多层径向渐变和线性渐变组合，营造现代感视觉效果",
+                "- 个性化卡片按钮调整：删除\"自定义主题\"按钮，\"更多主题\"改名为\"更换更多主题\"并调整位置到第三位",
+                "- 默认背景同步更新：游戏大厅页背景样式与登录页、系统设置页保持一致，支持用户选择的默认渐变",
+                "- 默认背景显示逻辑优化：未选择自定义背景时自动显示用户选择的默认渐变，所有页面背景实现同步",
+                "- 退回至登录页功能：游戏大厅更多操作弹窗中新增\"退回至登录页\"按钮，保留登录状态直接跳转至登录页",
+                "- 自动登录跳过机制：退回登录页时设置skipAutoLogin标志，避免自动登录导致的循环跳转",
+                "- 系统设置页移动端适配：优化导航侧边栏在移动端的显示和操作，提供更方便的导航体验",
+                "修复问题",
+                "- 修复resetToDefaultBackground函数未读取用户选择的默认渐变问题",
+                "- 修复样式冲突问题：removeBackgroundFromPage函数增加清理default-gradient-style元素的逻辑"
+            ]
+        },
+        {
+            version: "RC 2.7.0.6 (b10)",
+            date: "2026-07-15",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 新增在版本更新记录中使用补丁批次的tag标签，用于标识该版本为补丁更新，并优化之前的补丁更新中的tag标签显示，使用户更方便地识别和管理补丁更新",
+                "修复问题",
+                "- 回退了在RC 2.7.0.6 (b9)版本更新中新增的注册时间校验功能，因为该功能存在逻辑错误，导致用户在较新的时间点中注册时，校验功能会认为用户注册时间晚于该版本构建日期",
+            ]
+        },
+        {
+            version: "RC 2.7.0.6 (b9)",
+            date: "2026-07-14",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 新增注册时间校验功能，确保用户注册时间早于该版本构建日期",
+                "修复问题",
+                "- 修复注册时间校验功能在注册时间为空时的校验问题"
+            ]
+        },
+        {
+            version: "RC 2.7.0.6 (b8)",
+            date: "2026-07-14",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 天气版权文本：天气组件弹窗底部添加\"天气数据由 Open-Meteo API 提供支持\"版权声明",
+                "- 组件信息按钮：登录页更多功能弹窗中每个卡片按钮右上角新增\"i\"信息图标，点击弹出组件信息弹窗",
+                "- 显示组件信息开关：系统设置页增强功能中新增\"其他设置\"卡片，包含\"显示组件信息\"开关，控制信息图标的显示/隐藏",
+                "优化改进",
+                "- 日历卡片样式重新设计：待办事项和课程表卡片采用现代化flex布局，视觉更美观",
+                "- 今日日程删除功能：新增删除全部和单个删除按钮，删除全部时弹出自定义确认弹窗",
+                "- 日历清空数据优化：删除日历弹窗菜单中的\"清空所有数据\"选项，只保留日历设置中的该选项，并添加确认弹窗",
+                "- 信息按钮样式优化：移除信息按钮周围的粉色圆圈，只保留i图标",
+                "修复问题",
+                "- 修复日历侧边栏tab高亮常驻问题，切换tab时清除内联样式",
+                "- 修复信息按钮因嵌套button标签导致浏览器自动修正的问题，改为div标签",
+                "- 修复自定义确认弹窗关闭动画异常问题"
+            ]
+        },
+        {
+            version: "RC 2.7.0.5 (b8)",
+            date: "2026-07-13",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2705.png", "./images/2705_2.png",  "./images/2705_4.png","./images/2705_3.png",],
+            features: [
+                "新增功能",
+                "- 增强功能总开关：系统设置页增强功能卡片右上角新增启用/关闭按钮，控制登录页更多功能按钮显示及所有子功能开关状态",
+                "- 日历设置侧边栏：点击日历设置后从屏幕右侧滑出侧边栏，包含显示设置、提醒设置、外观设置、日期格式和数据管理功能",
+                "- 关于启动器弹窗：新增Github源码跳转和开发者Github主页跳转，点击跳转后即可打开相应的页面，方便开发者和用户查看和贡献",
+                "优化改进",
+                "- 更多功能弹窗全屏样式：将更多功能弹窗从居中对话框改为全屏样式，与关于启动器弹窗风格统一，采用卡片式按钮设计",
+                "- 便签关闭按钮位置调整：将便签弹窗关闭按钮从侧边栏头部移至弹窗右上角，操作更直观",
+                "- 关闭增强功能确认弹窗：点击关闭增强功能时弹出确认弹窗，防止误操作",
+                "- 透明主题日历样式优化：日历弹窗输入框和设置侧边栏改为透明毛玻璃样式，适配透明主题",
+                "修复问题",
+                "- 修复透明主题下登录页侧边栏头部纯白问题，改为透明样式",
+                "- 修复透明主题下系统设置页侧边栏头部纯白问题，改为透明样式",
+                "- 修复便签弹窗侧边栏透明主题下纯白问题，调整为透明样式",
+                "- 修复更多功能弹窗空状态内容偏右问题，改为居中显示",
+                "- 修复移动端更多功能弹窗打开后突然消失问题，统一使用.show类控制显示",
+                "- 修复便签侧边栏全屏状态下三点按钮与关闭按钮重叠问题，增加头部右侧padding",
+                "- 修复开启增强功能后登录页左下角个人卡片上方显示移动端按钮的问题",
+                "- 修复日历设置功能无法正确应用的问题，修复侧边栏被裁剪、开关样式缺失、主题色变量未定义等问题"
+            ]
+        },
+        {
+            version: "RC 2.7.0.4 (b8)",
+            date: "2026-07-11",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2704.png", "./images/2704_2.png"],
+            features: [
+                "(以下的更新内容为\"日历\"组件的新实验性功能，不建议在生产环境中使用)",
+                "新增功能",
+                "- 日历组件：实验性功能中新增日历组件，支持添加/删除/修改事件等功能，事件数据存储在本地文件中",
+                "- 日历组件信息：在versionManager.js中新增日历组件版本信息，包含详细功能特性描述",
+                "- 组件信息弹窗：日历三点菜单中的\"使用帮助\"功能改为\"组件信息\"，点击弹出统一的组件信息弹窗",
+                "- 日历三点菜单：在日历弹窗右上角关闭按钮左侧添加三点按钮，点击弹出多级菜单",
+                "- 日历菜单功能：菜单包含导出数据、导入数据、日历设置、清空所有数据、组件信息等功能项",
+                "优化改进",
+                "- 便签弹窗样式统一：便签弹窗侧边栏从紫色渐变背景改为白色背景+粉色主题色，与日历弹窗风格一致",
+                "- 便签内部元素样式：统一便签弹窗内按钮、搜索框、标题、便签列表项等元素样式，采用粉色主题色",
+                "- 多主题适配：便签弹窗完整适配默认、暗色、透明三种主题，保持视觉一致性",
+                "- 交互体验优化：便签按钮悬停效果、选中状态、滚动条样式等细节优化",
+                "修复问题",
+                "- 修复日历弹窗显示不到一秒后突然消失的问题"
+            ]
+        },
+        {
+            version: "RC 2.7.0.3 (b8)",
+            date: "2026-07-06",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2703.png", "./images/2703_2.png"],
+            features: [
+                "新增功能",
+                "- 城市管理侧边栏：点击添加城市按钮后从左侧划出侧边栏，支持搜索城市、查看城市卡片预览（含地区、空气质量、温度、天气状态）、添加/删除城市",
+                "- 地区下拉菜单：天气组件左上角地区文本旁添加右三角图标，点击展开菜单显示切换城市和添加城市选项",
+                "- 生活指数卡片弹窗：点击生活指数卡片弹出详情弹窗，显示影响因素和温馨提示",
+                "- 空气质量详情卡片弹窗：点击污染物卡片弹出详情弹窗，显示等级标准和健康建议",
+                "- 便签颜色标签：编辑器工具栏新增调色板按钮，支持9种颜色选择，侧边栏便签卡片左侧显示彩色边框指示",
+                "- 自动保存功能：输入停止3秒后自动保存便签，未创建便签时直接输入会自动创建新便签",
+                "- 字数统计：编辑器底部实时显示字符数统计，打开便签时自动更新",
+                "- 快捷键增强：Ctrl+N新建便签、Ctrl+D删除便签、Escape关闭便签弹窗",
+                "优化改进",
+                "- 卡片悬浮弹跳效果：为生活指数、空气质量详情、天气详情卡片添加鼠标悬浮时图标弹跳动画",
+                "- 天气引导步骤优化：更新引导步骤以适配新的城市管理功能和卡片点击弹窗功能",
+                "- 透明主题适配：天气位置下拉菜单适配透明主题样式，使用毛玻璃效果",
+                "- 保存状态反馈：底部显示已保存/保存中/未保存状态，不同状态使用不同颜色图标和文字",
+                "- 空状态优化：重新设计空状态页面，添加图标和引导文案，搜索无结果时显示搜索提示和创建按钮",
+                "- 便签卡片视觉增强：圆角增大、添加毛玻璃效果、悬停时向右滑动并添加阴影",
+                "- 工具栏按钮激活状态：检测当前选区格式，粗体、斜体等按钮在激活时高亮显示",
+                "- 多级菜单优化：组件信息和查看引导移至菜单最底部，菜单结构更加合理",
+                "- 暗色/透明主题适配：所有新增UI元素适配三种主题，保持视觉一致性",
+                "修复问题",
+                "- 修复头像悬浮卡片被边框遮挡的问题，使卡片正常显示在边框外围",
+                "- 修复PM10卡片中fa-smoke图标不显示的问题，替换为fa-cloud-meatball"
+            ]
+        },
+        {
+            version: "RC 2.7.0.2 (b8)",
+            date: "2026-07-05",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2702.png", "./images/2702_2.png"],
+            features: [
+                "重要变更",
+                "- 天气组件的实验性测试现已结束，现已移动到'增强设置'卡片中，正式成为稳定功能",
+                "新增功能",
+                "- 天气动画效果：为天气图标添加太阳脉冲、云朵飘动、雨滴下落、雪花飘落、闪电、风吹等动态动画效果",
+                "- 动态背景：天气弹窗根据天气状况自动切换背景渐变（晴天橙红、多云蓝、雨天灰黑、雪天银灰等）",
+                "- 多城市管理：支持添加、删除、切换多个城市，城市列表显示实时温度",
+                "- 穿衣建议：根据温度、湿度、天气状况智能推荐穿搭方案",
+                "- 生活指数：提供洗车指数、运动指数、钓鱼指数、发型指数、化妆指数、旅游指数等参考",
+                "- 语音播报：使用Web Speech API播放当前天气信息",
+                "- 分享功能：一键复制天气信息到剪贴板",
+                "- 空气质量详情：展示PM2.5、PM10、NO₂、O₃等详细污染物数据",
+                "- 智能缓存策略：使用localStorage缓存天气数据，30分钟内有效，支持离线模式",
+                "- 离线状态指示器：网络断开时显示离线状态提示",
+                "- 天气预警提示：高温、低温、降水、紫外线、空气质量预警",
+                "优化改进",
+                "- 天气引导步骤优化：调整引导步骤顺序，添加自动滚动功能，确保所有步骤都能正常显示",
+                "- 引导步骤扩展：新增添加城市、分享天气、语音播报、城市列表、穿衣建议、生活指数、空气质量等引导步骤",
+                "- 响应式布局：天气弹窗适配移动端显示",
+                "- 深色模式适配：天气组件完整适配暗色主题",
+                "修复问题",
+                "- 修复生活指数数值不显示的问题",
+                "- 修复添加城市按钮点击后无反应的问题",
+                "- 修复引导步骤自动滚动到空气质量区域不生效的问题",
+                "- 修复新增城市后直接切换而不是添加到列表的问题",
+                "- 修复天气详情、24小时预报、7天预报引导步骤触发时间过早导致不显示的问题"
+            ]
+        },
+        {
+            version: "RC 2.7.0.1 (b8)",
+            date: "2026-07-03",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2701.png", "./images/2701_2.png", "./images/2701_3.png", ],
+            features: [
+                "新增功能",
+                "- 系统设置页卡片折叠功能：每个条目下的卡片右上角新增展开/收起按钮，默认展开状态，点击可折叠卡片内容",
+                "- 卡片折叠状态持久化：每个卡片的展开/收起状态保存到本地存储，刷新页面后自动恢复",
+                "- 全部展开/收起按钮：每个条目顶部导航栏新增\"全部展开/收起\"按钮，可一键操作所有卡片",
+                "- 卡片折叠动画：为卡片展开/收起操作添加平滑的高度渐变、透明度变化和轻微位移动画效果",
+                "- 开发者公告多级筛选菜单：开发日志中新增多级筛选菜单，支持按月份和版本筛选公告",
+                "- 图片查看器组件信息按钮：版本更新记录中图片查看器右下角新增\"组件信息\"按钮，替换原展开按钮，点击可查看图片查看器组件版本详情",
+                "优化改进",
+                "- 卡片折叠动画优化：修复非当前显示条目下的卡片折叠/展开功能异常问题，确保所有条目下的卡片都能正常展开收起",
+                "- 基本信息卡片排版优化：系统设置页基本信息卡片中用户名、用户ID和注册时间改为一行三列布局，竖线分隔并保留间距",
+                "- 联系方式卡片排版优化：联系方式卡片改为与基本信息卡片相同的一行多列排版布局",
+                "- 自定义背景显示逻辑优化：只有选择预设背景或自定义背景图片后才显示背景预览区域及其下方各个条目",
+                "- 图片查看器全屏弹窗样式：图片查看器弹窗改为全屏显示样式，包含顶部标题栏、渐变装饰条和圆形关闭按钮，视觉风格与关于启动器弹窗保持一致",
+                "- 图片查看器组件版本信息：在versionManager.js中新增图片查看器组件版本代码，包含详细的功能特性描述",
+                "修复问题",
+                "- 清除筛选按钮无反应：修复开发者公告中清除筛选按钮点击后无反应的问题",
+                "- 图片查看器弹窗无法弹出：修复图片查看器中引用已删除的expandBtn元素导致JavaScript报错的问题，现在点击图片可正常弹出查看器"
+            ]
+        },
+        {
+            version: "RC 2.7.0.0 (b8)",
+            date: "2026-07-01",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2700.png", "./images/2700_2.png", "./images/2700_3.png", "./images/2700_4.png"],
+            features: [
+                "新增功能",
+                "- 毛玻璃主题重新开放：更多主题中的毛玻璃主题正式开放使用，带来柔和的半透明模糊视觉体验",
+                "优化改进",
+                "- 透明主题全面优化：修复透明主题下的显示bug，现在透明主题效果与登录页保持一致，无模糊效果，通透性更强",
+                "- 系统设置页现代化重构：优化系统设置页的整体样式布局，界面风格更加现代简洁",
+                "- 全屏弹窗样式重构：重构部分全屏显示的弹窗样式，视觉效果更加精致统一",
+                "- 全屏弹窗透明主题适配：对重构的全屏弹窗进行透明主题适配，保证各主题下的一致性体验",
+                "- 编辑头像弹窗优化：修复并优化了编辑头像弹窗的按钮排版，以及透明主题下的显示效果",
+                "- 背景图片显示优化：修复系统设置页个性化设置中修改背景图片后页面不显示背景的问题",
+                "修复问题",
+                "- 修复透明主题选择器不匹配导致样式无法正常生效的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.4.8 (b8)",
+            date: "2026-06-30",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2648.png", "./images/2648_2.png", "./images/2648_3.png"],
+            features: [
+                "新增功能",
+                "- 名言打字机效果开关：组件调整弹窗中新增\"名言打字机效果\"开关，关闭后名言直接显示，开启后保留打字机动画",
+                "- 显示秒数：时钟调整弹窗中新增\"显示秒数\"开关，可在时间中显示秒数",
+                "- 分别调整字体大小：时钟调整弹窗中新增4个独立滑块，可分别调整时钟数字、日期、天气、名言的字体大小",
+                "- 新增字体样式：新增粗体、手写体、细体3种字体样式，提供更多个性化选择",
+                "- 组件初始化功能：组件设置弹窗中新增\"初始化\"大类和\"组件初始化\"按钮，点击后可一键重置组件所有设置到默认状态",
+                "- 天气详情弹窗：天气组件中的8个信息卡片（体感温度、湿度、风向风力、气压、能见度、紫外线、降水概率、空气质量）点击后弹出详情弹窗，展示更详细的天气信息和科普知识",
+                "- 天气组件折线图切换：天气组件中新增折线图展示未来7天内的天气变化趋势，更直观地了解天气变化",
+                "优化改进",
+                "- 跳转目标按钮布局：跳转目标按钮改为一行两个排版，按钮之间有间距，视觉上更清晰",
+                "- 时钟调整弹窗滚动：时钟调整弹窗内容区域改为可滚动浏览，滚动条使用自定义样式，内容过多时不会溢出",
+                "- 组件初始化按钮间距：调整组件初始化按钮与弹窗底部边框的距离，避免紧贴边框",
+                "- 天气详情弹窗布局：详情弹窗采用左右两栏布局，左侧为大卡片展示主数值（粘性定位），右侧为详细信息列表，弹窗宽度扩大至860px，视觉更美观",
+                "- 天气详情弹窗字体：所有文字优化为白色/亮色，配合渐变背景，大幅提升可读性",
+                "- 天气详情弹窗标题栏：移除左上角返回按钮，仅保留右上角关闭按钮，界面更简洁统一",
+                "- 透明主题适配：选择城市弹窗改为透明毛玻璃样式，与透明主题风格统一"
+            ]
+        },
+        {
+            version: "RC 2.6.4.7 (b8)",
+            date: "2026-06-29",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 时钟调整收起展开：时钟调整弹窗底部新增收起/展开小按钮，点击后收起弹窗只保留顶部标题栏，再次点击恢复完整大小",
+                "- 引导功能新增：在便签组件、页面时钟组件和天气组件中新增引导功能，引导用户完成首次设置",
+                "优化改进",
+                "- 引导事件绑定优化：全局引导按钮事件从addEventListener改为onclick属性绑定，避免与组件引导的事件处理函数冲突导致状态混乱",
+                "- 引导重新开始逻辑：全局引导结束弹窗的\"重新开始\"按钮改为直接从头开始引导，不再走欢迎弹窗流程，与组件引导行为一致",
+                " -启动器查看引导一图流功能移除：启动器引导一图流功能已被移除，仅保留全局引导功能，引导用户完成首次设置",
+                "修复问题",
+                "- 修复引导进行到一半时提前显示完成弹窗的问题，解决全局和组件引导事件同时执行导致的状态不同步",
+                "- 修复所有组件引导步骤文本不显示的问题，恢复tooltip提示框的可见状态",
+                "- 修复启动器引导结束弹窗中重新开始按钮点击后无反应的问题",
+                "- 修复个人名片设置中保存设置按钮无法显示的问题，改用唯一ID选择器定位",
+                "- 修复名片组件调整后关闭刷新状态不保留的问题，确保设置正确持久化"
+            ]
+        },
+        {
+            version: "RC 2.6.4.6 (b8)",
+            date: "2026-06-28",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 一键已读：版本更新记录和开发者公告弹窗侧边栏底部新增\"一键已读\"按钮，点击后自动标记所有内容为已读，无需逐个查看",
+                "优化改进",
+                "- 暗色模式适配：天气设置弹窗和组件调整弹窗完整适配暗色模式，所有元素样式与深色主题统一",
+                "- 透明主题适配：天气下拉菜单、版本更新/公告侧边栏子按钮、页面时钟设置按钮等改为透明毛玻璃样式，适配透明主题",
+                "- 便签菜单样式统一：便签多级菜单样式改为与天气下拉菜单一致，圆角、阴影、内边距等风格统一",
+                "- 便签菜单透明度：透明主题下便签多级菜单透明度调整为微透明，提高可读性同时保留毛玻璃质感",
+                "- 页面时钟定时优化：弹窗打开时不触发页面时钟自动定时功能，避免停留弹窗过久自动进入时钟模式",
+                "- 天气功能联动：关闭显示天气时自动关闭并禁用\"点击天气后跳转到指定程序\"功能，开启天气后恢复可用",
+                "- 组件版本条目：保持隐藏UI模式下组件版本条目始终可见可点击，不受全局禁用影响",
+                "- 组件调整滚动条：组件调整弹窗滚动条改为自定义样式，支持亮色、暗色、透明三种主题",
+                "- 文字调整：组件调整弹窗中\"时钟位置\"改为\"调整时钟\"，\"调整位置\"按钮改为\"点击调整\"",
+                "修复问题",
+                "- 修复组件调整弹窗滚动时开关按钮溢出圆角边界的问题",
+                "- 修复部分天气类型（如雷暴）图标不显示的问题，补充缺失的天气代码图标映射"
+            ]
+        },
+        {
+            version: "RC 2.6.4.5 (b8)",
+            date: "2026-06-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2645.png", "./images/2645_2.png"],
+            features: [
+                "新增功能",
+                "- 页面时钟定时开启：页面时钟条目内新增\"定时开启\"子功能，支持设置登录页静置X分钟/秒后自动启用页面时钟，所有功能在同一条目框内显示",
+                "- 天气跳转目标扩展：天气跳转功能新增Yahoo Weather、AccuWeather、Windy.com三个跳转选项，提供更多天气网站选择",
+                "优化改进",
+                "- 页面时钟天气跳转：将\"跳转到MSN Weather\"改为\"点击天气后跳转到指定程序\"，支持下拉选择MSN Weather、Yahoo Weather、AccuWeather、Windy.com和页面天气五种目标",
+                "- 名言打字机效果：页面时钟名言刷新后文字以打字机效果逐字显示，内容和作者分别打字，带有闪烁光标",
+                "- 城市选择自动保存：手动选择城市后自动保存到本地存储，下次进入天气弹窗时自动使用该地址查询天气",
+                "- MSN天气图标优化：将MSN Weather的图标从地球图标改为微软田字格品牌图标",
+                "修复问题",
+                "- 修复名言打字机效果循环播放的问题，现在打字完成后不会再重新开始"
+            ]
+        },
+        {
+            version: "RC 2.6.4.4 (b8)",
+            date: "2026-06-27",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2644.png", "./images/2644_2.png",],
+            features: [
+                "(以下的更新内容为\"天气\"组件的新实验性功能，不建议在生产环境中使用)",
+                "新增功能",
+                "- 天气组件：实验性功能中新增天气组件，支持实时天气、24小时预报、7天预报等功能，数据来源为Open-Meteo API",
+                "- 城市切换：天气弹窗支持切换城市，内置全国主要城市数据库，支持搜索定位",
+                "- 自动定位：支持浏览器自动定位功能，开启后打开天气弹窗自动获取当前位置天气",
+                "- 更多选项菜单：天气弹窗右上角新增竖向三个点按钮，下拉菜单包含自动定位开关、温度单位切换、自动刷新设置、组件信息等功能",
+                "- 温度单位切换：支持摄氏度（°C）与华氏度（°F）切换，所有温度显示同步转换",
+                "- 自动刷新：支持15分钟、30分钟、1小时三档自动刷新间隔",
+                "- 组件信息：天气组件版本信息统一存放在versionManager.js的components中，可通过下拉菜单查看",
+                "优化改进",
+                "- 天气卡片布局：体感温度等八个卡片数值放大并右对齐，布局更清晰",
+                "- 24小时预报优化：改为大卡片横向滚动布局，每小时数据用竖线分隔",
+                "- 滚动条样式：天气弹窗垂直滚动条和24小时预报横向滚动条改为自定义样式，与整体风格统一",
+                "- 城市数据库：内置丰富的全国城市数据，减少搜索未找到的情况",
+                "- 组件信息样式优化：弹窗内显示组件详细信息，包括版本号、开发者、版权等，优化样式和布局，更符合整体风格"
+            ]
+        },
+        {
+            version: "RC 2.6.4.3 (b8)",
+            date: "2026-06-24",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "优化改进",
+                "- 对《用户协议》和《隐私政策》进行了全面更新，更新后的协议将于 2026年6月24日 起正式生效",
+                "修复问题",
+                "- 修复了在开发者公告中，普通公告tag标签错误使用的问题",
+                "- 在RC 2.6.4.3 (b7)版本更新记录中新增了一张预览图片，因为该图片在更新整合时被意外遗落，故此补充"
+            ]
+        },
+        {
+            version: "RC 2.6.4.3 (b7)",
+            date: "2026-06-24",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2643.png", "./images/2643_2.png", "./images/2643_3.png", "./images/2643_4.png"],
+            features: [
+                "新增功能",
+                "- 便签全屏显示：便签弹窗侧边栏右上角新增\"全屏显示\"按钮，点击后侧边栏向右延展铺满全屏，放大便签卡片比例显示更多内容",
+                "- 页面时钟侧边栏模式：组件调整弹窗新增\"侧边栏模式\"，开启后天气设置和组件设置弹窗改为从右到左侧滑出",
+                "- 组件版本信息：组件设置弹窗新增\"组件版本\"类别，点击显示便签、页面时钟等组件的详细版本信息",
+                "- 实验性功能提示卡片：系统设置页面实验性功能区域新增提示卡片，显示实验性功能说明",
+                "- 禁用实验性功能：新增禁用实验性功能按钮，点击后弹出确认弹窗，禁用后禁止所有实验性功能开关",
+                "优化改进",
+                "- 便签卡片预览扩展：全屏显示模式下便签卡片预览内容从50字符扩展到200字符，配合自定义滚动条样式",
+                "- 侧边栏模式背景：启用侧边栏模式后背景为正常透明效果，而非模糊效果",
+                "- 侧边栏模式天气排版：天气设置面板中天气预览和刷新按钮移至温度单位条目下方（仅侧边栏模式）",
+                "- 登录页图标更新：PRE Launcher图标从游戏手柄改为火箭图标，更符合多功能启动器定位",
+                "- 版本号动态更新：修复修改versionManager.js后组件版本条目中版本号不更新的问题",
+                "- 实验性功能状态持久化：实验性功能警告阅读状态和禁用状态使用localStorage持久化保存",
+                "修复问题",
+                "- 修复登录页更多操作弹窗关闭动效未生效问题",
+                "- 修复登录页更多功能弹窗关闭动效未生效问题",
+                "- 修复页面时钟天气设置弹窗关闭动效未生效问题",
+                "- 修复页面时钟组件调整弹窗关闭动效未生效问题",
+                "- 修复便签弹窗关闭动效未生效问题"
+            ]
+        },
+        {
+            version: "RC 2.6.4.2 (b7)",
+            date: "2026-06-21",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 系统引导卡片：增强功能页面新增\"系统引导\"开关，启用后在登录页\"更多功能\"中显示\"查看引导\"按钮",
+                "- UI调整卡片：增强功能页面新增\"UI调整\"开关，启用后在登录页\"更多功能\"中显示\"调整UI比例\"按钮",
+                "- 页面时钟卡片：增强功能页面中页面时钟功能保持独立卡片",
+                "- 隐藏UI功能：增强功能页面新增\"隐藏UI\"开关，与页面时钟联动，开启后可使用页面时钟功能",
+                "- 关于启动器功能：增强功能页面新增\"关于启动器\"开关，启用后在登录页\"更多功能\"中显示\"关于启动器\"按钮",
+                "- 富文本编辑器增强：便签富文本编辑器新增撤销、重做、左对齐、右对齐、两端对齐、缩进、文字颜色、高亮颜色、插入链接、插入水平线功能",
+                "优化改进",
+                "- 功能开关控制：增强功能中的开关可控制登录页\"更多功能\"弹窗中对应按钮的显示与隐藏",
+                "- 空状态提示：当所有功能都关闭时，更多功能弹窗显示友好的空状态提示，引导用户前往系统设置开启功能",
+                "- 实验性功能集成：便签等实验性功能现在可被更多功能弹窗正确识别和显示"
+            ]
+        },
+        {
+            version: "RC 2.6.4.1 (b7)",
+            date: "2026-06-21",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 回退了个性化中的某个更新，因为该更新导致背景图片出现异常",
+            ]
+        },
+        {
+            version: "RC 2.6.4.1 (b6)",
+            date: "2026-06-21",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2641.png", "./images/2641_2.png", "./images/2641_3.png"],
+            features: [
+                "(以下的更新内容为\"便签\"组件的新实验性功能，不建议在生产环境中使用)",
+                "新增功能",
+                "- 自动创建便签：在未新建便签时直接写入内容，点击保存后自动创建新便签",
+                "- 菜单选项：便签侧边栏右上角新增三个点菜单按钮，滑出多级选项卡",
+                "- 编辑模式：支持批量选择便签进行置顶或删除操作，点击卡片即可选择",
+                "- 列表/宫格模式：支持切换便签列表排版，一行一个便签或一行两个宫格布局",
+                "- 组件信息：点击显示便签组件详细版本信息弹窗，版本信息统一管理在versionManager.js",
+                "- 置顶功能：支持将便签置顶，置顶便签显示金色图钉图标在右上角",
+                "- 取消置顶：支持取消便签的置顶状态，新增取消置顶按钮",
+                "- 导出便签：支持选择便签导出为TXT文本文件，包含标题、时间和内容",
+                "- 导入便签：支持导入TXT文本文件，自动解析并创建新便签",
+                "- 排序功能：支持按创建时间或修改时间降序排列便签",
+                "优化改进",
+                "- 编辑模式优化：进入编辑模式时隐藏新建按钮，三个操作按钮样式减小并下移",
+                "- 取消按钮：编辑模式新增取消按钮，点击退出编辑模式并显示新建按钮",
+                "- 点击逻辑：编辑模式下点击卡片即可完成选择，无需点击圆圈按钮",
+                "- 暗色主题适配：便签菜单面板适配暗色主题样式，统一深色背景和文字",
+                "- 透明主题适配：便签菜单面板和导出导入弹窗适配透明主题毛玻璃样式",
+                "- 按钮颜色：透明主题下导出导入按钮统一改为粉色样式",
+                "修复问题",
+                "- 组件信息弹窗层级：修复弹窗显示在便签窗口下方的问题",
+                "- 排序功能：修复按创建时间/修改时间排序不生效的问题",
+                "- 置顶功能：修复置顶后便签未正确标记和排序的问题",
+                "- 滚动功能：修复右侧便签内容过多时无法滚动的问题",
+                "- 导出导入弹窗层级：修复导出和导入便签弹窗显示在便签窗口下方的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.4.0 (b6)",
+            date: "2026-06-20",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2640.png", "./images/2640_2.png", "./images/2640_3.png", "./images/2640_4.png"],
+            features: [
+                "新增功能",
+                "- 登录认证机制：新增登录页认证机制，大厅页面需要通过登录页认证才能进入，直接进入大厅会被拦截并踢回登录页",
+                "- 便签功能：实验性功能中新增便签功能，支持富文本编辑、搜索、删除等操作",
+                "- 便签富文本编辑：支持标题、小标题、正文、等宽样式、居中、项目符号列表、编号列表、斜体、粗体、下划线、删除线、引用、待办事项",
+                "优化改进",
+                "- 字体更新：所有页面字体更新为鸿蒙字体 HarmonyOS Sans",
+                "- 账户设置更名为系统设置：侧边栏、顶部导航栏、语言配置、弹窗文本等全部更新",
+                "- 增强功能：高级管理类别下新增\"增强功能\"条目，页面时钟从个性化移动到此条目",
+                "- 便签侧边栏优化：新增搜索框支持快速搜索便签，新建按钮改为右下角大圆圈+号样式",
+                "- 透明主题适配：便签弹窗支持透明主题毛玻璃样式",
+                "- 删除确认弹窗：便签删除确认改为自定义弹窗样式，替代浏览器默认confirm",
+                "- 字体版权声明：登录页关于启动器中的字体版权声明更新为鸿蒙字体版权信息",
+                "修复问题",
+                "- 修复直接进入大厅页面没有被拦截的问题",
+                "- 修复增强功能页面标题显示为账户信息的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.13 (b6)",
+            date: "2026-06-18",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 天气跳转功能：页面时钟天气组件新增点击跳转到MSN Weather网站功能",
+                "- 天气跳转开关：组件调整弹窗中新增\"点击天气组件后跳转到MSN Weather\"开关选项",
+                "优化改进",
+                "- 安全验证弹窗按钮：使用PIN码进行安全验证按钮改为透明样式",
+                "- PIN码验证弹窗：PIN码提示文本框改为透明样式",
+                "- 实验性功能弹窗：透明主题下文本内容字体调亮，提高可读性",
+                "- 卡片条目文本：所有卡片条目中主标题下方的详细内容文本改为统一亮色",
+                "- 弹窗内容文本：所有弹窗中主标题下方的详细内容文本改为统一亮色",
+                "- 注册弹窗样式：注册新账号弹窗中的步骤栏、输入框和按钮改为透明样式",
+                "修复问题",
+                "- 修复验证码图片和输入框不对齐的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.12 (b6)",
+            date: "2026-06-17",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 页面时钟实验性测试已结束，现已移动到\"个性化\"设置中",
+                "- 点击名言刷新：点击名言框内即可刷新名言内容",
+                "- 名言加载图标：点击刷新时在名言框中间显示旋转加载图标",
+                "- 隐藏所有图标功能：可隐藏页面时钟中的返回、天气设置和组件调整按钮，鼠标悬停显示",
+                "- 时钟调整提示：进入时钟调整模式时底部弹出\"拖拽时间组件可调整位置\"提示横条",
+                "优化改进",
+                "- 名言框尺寸固定：固定名言框宽度和高度，防止被较长名言内容延长",
+                "- 个性化命名：将主题设置更名为个性化",
+                "- 透明主题适配：天气设置、组件设置弹窗和底部提示横条支持透明主题毛玻璃样式",
+                "修复问题",
+                "- 修复点击时钟调整弹窗关闭按钮后时钟仍可拖动的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.11 (b6)",
+            date: "2026-06-16",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/26311.png", "./images/26311_2.png", "./images/26311_3.png"],
+            features: [
+                "新增功能",
+                "(以下的更新内容为页面时钟的新实验性功能，不建议在生产环境中使用)",
+                "- 页面时钟新增名言显示功能：使用 hitokoto API 获取实时名言数据，显示在时钟下方",
+                "- 时钟调整面板：点击调整位置按钮后显示可移动弹窗，支持调整文字大小、对齐方式、时间格式、字体样式、日期格式",
+                "- 鼠标滚轮调节大小：进入调整模式后，鼠标悬停在时钟上滚动滚轮可调节大小",
+                "- 左上角返回按钮：开启页面时钟后在左上角显示返回按钮，点击退出时钟模式",
+                "优化改进",
+                "- 天气对齐同步：调整对齐方式时，天气显示也同步调整对齐方向",
+                "- 农历字体统一：农历字体与时钟字体样式保持一致",
+                "- 组件调整弹窗优化：删除名言位置功能，时钟位置移至显示选项上方，改为单列布局",
+                "- 时钟调整弹窗按钮样式统一：所有按钮使用一致的样式设计",
+                "- 时钟调整弹窗加宽：宽度从280px增加到340px，按钮显示更完整",
+                "- 点击行为优化：开启页面时钟后点击空白处不再返回，需点击返回按钮；关闭后恢复点击空白显示UI",
+                "- 提示横条优化：启用页面时钟后自动隐藏提示横条，关闭后重新显示",
+                "修复问题",
+                "- 修复调整位置后大小功能失效的问题",
+                "- 修复保存设置后刷新时钟大小不生效的问题",
+                "- 修复时钟设置弹窗按钮点击无效的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.10 (b6)",
+            date: "2026-06-15",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/26310.png", "./images/26310_2.png"],
+            features: [
+                "新增功能",
+                "(以下的更新内容为页面时钟的新实验性功能，不建议在生产环境中使用)",
+                "- 天气设置功能：支持API获取天气数据，用户可自行选择城市/省份",
+                "- 温度单位切换：支持摄氏度/华氏度切换，并持久化保存设置",
+                "- Open-Meteo API版权声明：在天气设置弹窗底部添加API版权信息",
+                "- 关于启动器新增Open-Meteo API版权按钮，点击显示详细声明",
+                "- 天气预览测试区域：方便测试切换地区后的天气显示效果",
+                "优化改进",
+                "- 天气设置弹窗改为左右两栏布局，左侧显示设置项，右侧显示预览",
+                "- 版权声明按钮重新排序，改为分类显示结构",
+                "- 自动定位时显示\"获取位置信息中\"状态提示",
+                "修复问题",
+                "- 修复部分城市天气图标不显示的问题",
+                "- 修复PC端开启页面时钟后仍显示\"隐藏UI\"文本的问题",
+                "- 修复自动定位只显示摄氏度的问题",
+                "- 修复温度单位设置刷新后不生效的问题",
+                "- 修复自动定位弹窗自动关闭的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.9 (b6)",
+            date: "2026-06-14",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2639.png", "./images/2639_2.png", "./images/2639_3.png"],
+            features: [
+                "新增功能",
+                "- 账户设置页新增\"实验室\"类别和\"实验性功能\"页面",
+                "- 页面时钟实验性功能：隐藏UI后显示时间、日期、天气和农历",
+                "- 页面时钟设置弹窗：可调整位置、格式、字体大小等多项参数",
+                "优化改进",
+                "- 页面时钟支持9种位置、3种日期格式、3种字体样式、12/24小时制",
+                "- 页面时钟设置弹窗采用双列布局，全局开关置于顶部",
+                "- \"保持UI隐藏\"模式下所有调节按钮自动禁用变灰",
+                "修复问题",
+                "- 修复关闭页面时钟实验功能后登录页仍显示该功能的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.8 (b6)",
+            date: "2026-06-10",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2638.png", "./images/2638_2.png"],
+            features: [
+                "新增功能",
+                "- 反馈选择弹窗：点击反馈建议先弹出选择弹窗，包含\"本地反馈\"和\"提交到Github Issue\"两个按钮",
+                "- 透明主题正式版现已推出：包含登录页、游戏大厅、游戏内界面等所有元素的透明毛玻璃效果",
+                "优化改进",
+                "- Github跳转确认：点击Github按钮弹出离开页面确认弹窗，确认后才跳转",
+                "- 透明主题全面优化：登录页所有弹窗、侧边栏、导航项、公告项、版本记录等全部改为透明毛玻璃样式",
+                "- 透明主题文本：所有文字颜色提升亮度，添加文字阴影增强对比度和可读性",
+            ]
+        },
+        {
+            version: "RC 2.6.3.7 (b6)",
+            date: "2026-06-09",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2637.png", "./images/2637_2.png", "./images/2637_3.png"],
+            features: [
+                "新增功能",
+                "- 弹窗快捷键支持：账户设置页所有弹窗支持Enter键确认、ESC键取消",
+                "- 登录页引导功能：首次进入或无账号登录时自动显示UI引导，详细介绍各功能位置及用途",
+                "- 更多功能查看引导：登录页右上角更多功能中新增\"查看引导\"按钮，可随时重新查看引导",
+                "优化改进",
+                "- 引导步骤优化：添加登录卡片、侧边栏收起、更多功能弹窗等引导内容",
+                "- 引导颜色优化：高亮框从淡蓝色改为更醒目的橙色，进度条同步更新",
+                "- 引导底部布局优化：进度条移至按钮上方，跳过引导改为淡红色按钮样式",
+                "- 引导结束弹窗：引导完成后显示确认弹窗，可选择结束引导或重新开始",
+                "修复问题",
+                "- 修复登录后点击查看引导按钮无反应的问题",
+                "- 修复引导结束弹窗弹出后底部按钮仍可点击的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.6 (b6)",
+            date: "2026-06-09",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "优化改进",
+                "- 背景图片上传：最大文件限制从100MB调整为20MB，防止过大图片导致内存占用过高",
+                "- 背景图片上传：添加图片格式白名单验证，仅支持JPG、PNG、GIF、WebP、BMP格式",
+                "- 背景图片上传：添加30秒超时机制，防止异常格式图片处理超时",
+                "- 背景图片上传：使用Image对象验证图片解码有效性，防止无效图片导致页面卡死",
+                "- IndexedDB操作：所有页面背景读取添加5秒超时机制，超时后跳过背景加载",
+                "- IndexedDB操作：所有IndexedDB操作添加try-catch保护，防止异常导致页面卡死",
+                "- 背景设置验证：加载背景时验证fit、opacity、blur参数有效性，防止无效值导致错误",
+                "- 全局错误监听：所有页面添加window.onerror和unhandledrejection监听",
+                "- 外部资源加载：Font Awesome CSS添加onerror回退机制",
+                "- 外部资源加载：JSZip脚本添加onerror处理，标记fallback状态",
+                "修复问题",
+                "- 修复移动端账户设置页更换自选背景后设置不会同步到其他页面的问题",
+                "- 修复重新加载页面时CSS和JS文件加载异常导致页面卡死的问题",
+                "- 修复使用HDR图片作为背景时有概率导致页面卡死的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.5 (b6)",
+            date: "2026-06-08",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2635.png", "./images/2635_2.png", "./images/2635_3.png"],
+            features: [
+                "新增功能",
+                "- 主题信息查看按钮：账户设置页更多主题弹窗中每个主题按钮左上角新增信息按钮，点击显示主题详细版本信息",
+                "- 登录页复制功能：用户信息卡片右侧新增复制按钮，点击后显示所有条目的单独复制按钮",
+                "优化改进",
+                "- 透明主题适配：账户设置页默认弹窗、按钮和输入框改为透明毛玻璃样式",
+                "- 弹窗文本可读性：透明主题下弹窗内文字颜色提升，添加阴影增强对比度",
+                "- 复制提示样式：复制成功提示横条改为与隐藏UI横条一致的透明毛玻璃样式",
+                "- 版本更新图片路径：原始路径 fallback 方案改为使用 localimages 目录，保持 zip 解压方案不变",
+                "修复问题",
+                "- 修复透明主题下复制提示横条样式不正确的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.4 (b6)",
+            date: "2026-06-07",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 隐藏UI提示横条：点击隐藏UI后，屏幕底部从下往上弹出提示横条'点击空白处显示UI'",
+                "- 提示横条交互：鼠标悬浮时文本淡入淡出切换为'点击隐藏该提示'，点击可隐藏提示横条",
+                "优化改进",
+                "- 透明主题适配：用户信息卡片、更多操作悬浮气泡、按钮悬浮气泡、侧边栏菜单悬浮气泡全部改为透明样式",
+                "- 透明主题适配：更多功能按钮、更多操作按钮、登录按钮、左上角徽标图标改为透明样式",
+                "- 透明主题适配：账户设置页卡片图标、条目背景、返回按钮、滚动条改为透明样式",
+                "- 透明主题适配：成就系统页小游戏按钮、进度条改为透明样式",
+                "- 透明主题适配：更多功能弹窗、更多操作弹窗、确认弹窗改为透明毛玻璃样式",
+                "- UI优化：删除确认弹窗内部上下两条隔断横线，视觉更简洁",
+                "修复问题",
+                "- 修复透明主题下头像悬浮卡片中昵称输入框边框不显示和字体过白的问题",
+                "- 修复移动端模式下更多功能区透明主题样式不生效的问题",
+                "- 修复移动端提示弹窗在透明主题下不是透明主题样式的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.3 (b6)",
+            date: "2026-06-07",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 引入 JSZip 技术：版本公告图片支持从 verimg.zip 压缩包自动解压加载",
+                "优化改进",
+                "- 图片加载方式升级：使用本地缓存系统存储图片 URL，减少 HTTP 请求",
+                "修复问题",
+                "- 修复本地 file:// 协议下无法加载资源的问题，自动降级使用原始图片路径"
+            ]
+        },
+        {
+            version: "RC 2.6.3.3 (b5)",
+            date: "2026-06-06",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2633.png", "./images/2633_2.png", "./images/2633_3.png"],
+            features: [
+                "新增功能",
+                "- 更多主题弹窗：毛玻璃主题按钮改为'更多主题'入口，弹出选择窗口",
+                "- 透明主题 BETA：全新的透明主题，侧边栏、导航栏和卡片全部透明化，保留边框线条，文字添加阴影增强可读性",
+                "- 本地预设背景：预设背景选择新增联网/本地切换滑块，支持使用bgimg目录下的本地图片",
+                "优化改进",
+                "- 透明主题移动端优化：移动端侧边栏弹出时自动调暗背景，提升可读性",
+                "- 毛玻璃主题功能精简：毛玻璃主题按钮暂时禁用，待优化后重新开放",
+                "- 透明主题输入框统一优化：所有输入框、下拉框、文本域统一透明样式，文字颜色为白色并带阴影",
+                "- 弹窗输入框样式覆盖：透明主题下弹窗背景为白色，输入框改用深色边框和深色文字保持对比",
+                "- 下拉菜单选项优化：透明主题下下拉选项改为深色文字，确保白底黑字可读性",
+                "- 三页面同步：账户设置页、登录页、游戏大厅页透明主题输入框样式完全统一",
+                "- 预设背景弹窗精简：移除刷新预设背景按钮，简化界面",
+                "- 滑块按钮悬浮提示：本地/联网切换滑块添加悬浮气泡提示，显示'切换本地壁纸或联网壁纸'",
+                "- 移动端预设背景弹窗优化：调整滑块按钮位置，避免遮挡标题文本",
+                "修复问题",
+                "- 修复透明主题在登录页和游戏大厅页面不生效的问题",
+                "- 修复登录页顶部导航栏透明主题不生效的问题",
+                "- 修复本地图片路径问题：账户设置、登录页、游戏大厅页本地背景图片路径统一处理",
+                "- 修复背景预览区双重图片显示问题：预览区与页面背景分别应用，不再叠加",
+                "- 修复预设背景图片预览不显示问题：本地/联网预设图片选择后正确显示预览",
+                "- 修复自定义背景图片应用后页面空白问题：base64 data URL 不再被错误添加路径前缀",
+                "- 修复登录页开发者公告中点击返回顶部按钮后功能不生效的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.3.2 (b5)",
+            date: "2026-06-04",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2632.png"],
+            features: [
+                "新增功能",
+                "- 静默更新提示弹窗：登录页检测到最新版本后自动弹出静默更新提示弹窗",
+                "- 跳转到版本更新按钮：点击按钮可直接打开版本更新记录窗口",
+                "- 自动定位版本公告：点击跳转后自动识别当前版本号并跳转到对应的更新公告处",
+                "优化改进",
+                "- 全局设置弹窗样式：登录页全局设置弹窗改为全屏统一样式",
+                "- 弹窗宽度优化：静默更新弹窗宽度从300px增加到550px",
+                "修复问题",
+                "- 修复版本更新跳转问题：点击\"跳转到版本更新\"按钮后不再显示\"加载中\"，正确显示更新公告内容"
+            ]
+        },
+        {
+            version: "RC 2.6.3.1 (b5)",
+            date: "2026-06-03",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 弹窗键盘快捷键支持：所有弹窗新增键盘按键绑定，按下Enter触发确定按钮，按下Esc触发取消/返回按钮",
+                "修复问题",
+                "- 修复注册成功弹窗文本不显示问题：注册成功后弹窗正确显示\"注册成功！请使用新账号登录\"提示",
+                "- 修复注册自动登录问题：注册成功后不再自动登录，不会覆盖原有登录表单和个人卡片"
+            ]
+        },
+        {
+            version: "RC 2.6.3.0 (b5)",
+            date: "2026-05-29",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2630.png", "./images/2630_2.png", "./images/2630_3.png", "./images/2630_4.png"],
+            features: [
+                "新增功能",
+                "- 反馈建议弹窗全屏显示：采用侧边栏导航布局，包含功能建议、Bug反馈、其他问题三个分类",
+                "- 反馈表单增强：添加优先级选择、平台选择、反馈标题、复现步骤、预期结果等字段",
+                "- 文件附件上传：支持图片、日志文件上传，最大5MB",
+                "- 开发者公告月份分类：重要公告和普通公告按月份分组显示，例如2026年5月、2026年4月分别显示",
+                "- 预设背景底部抽屉：移动端预设背景弹窗改为底部抽拉样式，支持触摸滑动关闭",
+                "- 图片查看器全面升级：新增旋转、翻转功能，控制按钮移至右侧，支持展开/收起",
+                "- 图片查看器悬浮气泡：控制按钮添加从右往左滑出的悬浮气泡提示",
+                "优化改进",
+                "- 版本更新红点逻辑优化：使用版本号+日期作为唯一标识，相同版本号不同日期更新也能正确触发消息通知",
+                "- 反馈弹窗布局优化：充分利用右侧显示区域，所有内容一页显示",
+                "- 账户设置移动端布局优化：账户信息卡片内容不再溢出卡片边界，按钮、输入框和文本排版更加整齐",
+                "- 预设背景图片放大：移动端预设背景弹窗中图片放大显示，改为全屏高度展示",
+                "- 暗色模式按钮样式统一：版本更新记录和开发者公告中的版本块状按钮支持暗色模式，文本颜色调亮",
+                "- 预设背景功能精简：移除预设背景弹窗中的预览背景功能，界面更加简洁",
+                "- 图片查看器布局优化：采用三栏布局，控制按钮垂直排列在右侧，底部显示缩放百分比",
+                "- 图片查看器优化拖拽功能：优化拖拽图片时的响应速度，拖拽更流畅",
+                "修复问题",
+                "- 修复反馈弹窗双重滚动条问题",
+                "- 修复Bug反馈时复现步骤字段未正确显示问题",
+                "- 修复开发者公告中块状按钮未生效暗色模式的问题",
+                "- 修复版本更新记录中块状按钮文本在暗色模式下不明显的问题",
+                "- 修复图片查看器悬浮气泡被侧边栏裁剪的问题，现在可以正常向外显示",
+                "- 修复图片查看器控制栏展开/收起状态重置问题"
+            ]
+        },
+        {
+            version: "RC 2.6.2.5 (b5)",
+            date: "2026-05-27",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 修复消息红点显示错误问题"
+            ]
+        },
+        {
+            version: "RC 2.6.2.5 (b4)",
+            date: "2026-05-26",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2625.png", "./images/2625_2.png", "./images/2625_3.png", "./images/2625_4.png", "./images/2625_5.png"],
+            features: [
+                "新增功能",
+                "- 开发者公告选择界面：公告窗口右侧首先显示块状按钮列表，点击按钮后显示公告详情",
+                "- 消息红点通知：侧边栏版本更新和开发者公告按钮添加红点提醒，有未查看内容时显示",
+                "- 悬浮气泡提示：鼠标悬浮在红点上时显示\"存在未查看的更新\"提示",
+                "- 返回按钮固定：公告详情页返回按钮使用粘性定位，滚动时保持固定",
+                "优化改进",
+                "- 红点显示优化：版本和公告按钮内红点显示未查看数量，提高辨识效率",
+                "- 红点位置调整：按钮内红点移至右下角，悬浮气泡从下往上滑出",
+                "- 新更新标签：版本条目内添加\"新更新\"标签，查看后自动消失",
+                "修复问题",
+                "- 修复红点数量计算错误：版本按钮红点显示该版本下未查看子版本数量",
+                "- 修复红点显示文本错误：侧边栏红点仅显示圆点，不显示数字",
+                "- 修复按钮内红点不显示数量问题"
+            ]
+        },
+        {
+            version: "RC 2.6.2.4 (b4)",
+            date: "2026-05-24",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2624.png"],
+            features: [
+                "优化改进",
+                "- 版本选择按钮样式优化：版本更新记录窗口中版本号选择改为块状按钮样式，一行四个按钮，支持自动换行",
+                "- 按钮样式优化：加长按钮宽度，背景改为白色，日期和版本数量文本放大加深，提升可读性",
+                "- 版本分类功能：添加版本维护状态分类条目，分为\"正在维护中的版本\"和\"已结束维护的版本\"两组显示"
+            ]
+        },
+        {
+            version: "RC 2.6.2.3 (b4)",
+            date: "2026-05-17",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2623.png", "./images/2623_2.png", "./images/2623_3.png", "./images/2623_4.png"],
+            features: [
+                "新增功能",
+                "- 侧边栏收起功能：登录页侧边栏顶部新增\"收起侧边栏\"按钮，点击后收起侧边栏仅保留图标显示",
+                "- 侧边栏收起状态持久化：使用localStorage保存收起状态，刷新或退出后重新访问时保持上次状态",
+                "- 收起侧边栏悬浮气泡：侧边栏收起时，鼠标悬浮在菜单按钮上在对应条目右侧显示悬浮气泡文本",
+                "- 移动端更多功能按钮：移动端模式下在个人卡片上方新增独立卡片样式的更多功能按钮，点击弹出与PC端一样的弹窗",
+                "优化改进",
+                "- 收起侧边栏样式优化：个人卡片竖向排列，仅显示头像和更多操作按钮，隐藏顶部启动器图标",
+                "- 收起侧边栏边框优化：增加个人卡片边框宽度，确保头像和按钮全部包含在卡片内",
+                "- 移动端按钮位置优化：收起侧边栏按钮移至三条杠按钮左侧，解决位置冲突问题",
+                "- 悬浮气泡样式统一：菜单项悬浮气泡显示效果与更多功能按钮保持一致",
+                "- 移动端弹窗样式统一：移动端更多功能弹窗改为与PC端一致的弹窗样式",
+                "- 移动端收起侧边栏优化：移动端模式下收起侧边栏时，个人卡片上方也显示更多功能按钮",
+                "修复问题",
+                "- 修复收起侧边栏后用户信息卡片被限制在侧边栏内无法正常显示的问题",
+                "- 修复移动端更多功能弹窗关闭按钮样式不正确的问题",
+                "- 修复收起侧边栏时悬浮气泡被拦截在侧边栏内无法正常显示的问题",
+                "- 修复移动端关于启动器弹窗显示不完整的问题，改为全屏滚动显示",
+                "- 修复移动端账户设置侧边栏无法上下滑动的问题，确保侧边栏内容超出屏幕时可正常滚动",
+            ]
+        },
+        {
+            version: "RC 2.6.2.2 (b4)",
+            date: "2026-05-16",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "优化改进",
+                "- 暗色模式提示弹窗：暗色模式下通用提示弹窗改为暗色主题，与整体界面风格保持一致",
+                "- 未登录状态按钮禁用：未登录时禁用进入账户设置、退出登录和名片按钮，显示为淡灰色不可点击状态",
+                "- 名片按钮位置调整：将名片按钮移动到更多操作弹窗的进入账户设置按钮右侧",
+                "- 账户设置返回按钮：账户设置页面左下角新增返回按钮，点击返回上一级页面",
+                "- 开发者模式菜单优化：开发者模式下新增\"开发测试\"类别，将测试页面按钮移至侧边栏",
+                "- 解绑验证码优化：解绑功能验证码改为使用图片验证码API，与登录页保持一致",
+                "- dummyimage版权声明：关于启动器弹窗新增dummyimage按钮，显示完整版权声明",
+                "- 外部链接安全提示：点击外部链接时弹出安全确认弹窗，显示跳转地址",
+                "- 登录页翻译优化：登录页所有文本现已支持中文、英文、日语、韩语四种语言切换",
+                "- 新增翻译键：在 lang.js 中新增22个翻译键，覆盖提示模态框、PIN验证、安全验证、主题更新、更多操作/功能弹窗等",
+                "- 模态框翻译支持：完善所有登录页模态框的翻译支持，包括提示、确认、倒计时等文本",
+                "- 版本历史翻译：版本更新记录侧边栏和小游戏名称等文本也已支持多语言",
+            ]
+        },
+        {
+            version: "RC 2.6.2.1 (b4)",
+            date: "2026-05-15",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2621.png", "./images/2621_2.png","./images/2621_3.png","./images/2621_4.png"],
+            features: [
+                "新增功能",
+                "- 更多操作弹窗：个人卡片中的退出登录按钮改为\"更多操作\"按钮，点击后弹出包含账户设置和退出登录的窗口",
+                "- 更多功能弹窗：点击展开更多功能按钮改为弹出窗口形式，包含关于启动器、名片、隐藏UI、调整UI比例四个功能",
+                "- UI比例调整弹窗：重新设计UI比例调整功能，使用滑动条进行调整",
+                "- 全部展开按钮：在版本更新记录中新增\"全部展开\"按钮，点击后可展开所有更新记录",
+                "优化改进",
+                "- 弹窗按钮布局：统一弹窗按钮样式为2x2或3xN网格布局，图标在上文字在下",
+                "- 个人卡片优化：个人卡片及其悬浮卡改为不可点击，仅显示用户信息",
+                "- 悬浮气泡位置：调整更多操作按钮和展开更多功能按钮的悬浮气泡从左侧显示",
+                "- 按钮样式统一：更多操作弹窗和更多功能弹窗使用相同的按钮样式",
+                "修复问题",
+                "- 修复调整UI比例按钮点击后没有反应的问题",
+            ]
+        },
+        {
+            version: "RC 2.6.2.0 (b4)",
+            date: "2026-05-13",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2620.png", "./images/2620_1.png", "./images/2620_2.png", "./images/2620_3.png", "./images/2620_4.png", "./images/2620_5.png"],
+            features: [
+                "新增功能",
+                "- 启用登录PIN验证功能：在账户设置页安全设置中新增该选项，启用后登录时输入密码还需进行两步验证",
+                "- 安全验证功能：点击用户卡片或用户信息卡片跳转账户设置时，需先通过安全验证",
+                "- 今日不再验证：安全验证和PIN验证弹窗新增该选项，勾选后当日不再弹出验证窗口",
+                "- PIN验证弹窗：登录时启用PIN验证功能后，密码验证通过后弹出PIN验证弹窗",
+                "- 快速登录模式：启用\"快速登录\"功能后，下次登录仅显示用户名和登录按钮，点击即可直接进入游戏大厅",
+                "- 快速登录标签：快速登录模式下在用户名输入框右侧显示绿色\"快速登录模式\"标签",
+                "- 功能说明弹窗：勾选\"快速登录\"或\"自动登录\"时弹出功能说明窗口，提示用户功能用途和安全注意事项",
+                "优化改进",
+                "- 安全验证弹窗：新增详细提示信息和图标，优化界面设计",
+                "- 提示框优先级：修复提示框被其他弹窗遮挡的问题",
+                "- 注册页面优化：改为全屏样式，取消卡片显示，内容居中，返回按钮固定在底部",
+                "- 快速登录按钮样式：快速登录模式下按钮显示为正常粉色渐变，而非灰色",
+                "- 用户名修改检测：修改用户名时自动退出快速登录模式并重新显示验证码",
+                "修复问题",
+                "- 修复登录PIN验证通过后错误跳转到账户设置页面的问题",
+                "- 修复点击用户卡片后直接跳转而非弹出验证弹窗的问题",
+                "- 修复快速登录模式下取消按钮样式不正确的问题",
+            ]
+        },
+        {
+            version: "RC 2.6.1.4 (b4)",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2614.png"],
+            features: [
+                "新增功能",
+                "- 小游戏更新记录：登录页版本更新记录窗口的LIST栏添加\"小游戏更新记录\"按钮，点击后显示所有小游戏的子选项",
+                "优化改进",
+                "- 子按钮交互优化：修复点击其他按钮后小游戏按钮不会自动收回的问题",
+            ]
+        },
+        {
+            version: "RC 2.6.1.3 (b4)",
+            date: "2026-05-08",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2613.png", "./images/2613_2.png", "./images/2613_3.png"],
+            features: [
+                "新增功能",
+                "- 离线模式：登录页侧边栏新增离线模式功能，支持在无网络环境下使用启动器",
+                "- 离线模式标签：登录页和账户设置页左上角显示离线模式状态标签",
+                "- 网络状态检测：自动检测网络连接状态变化，智能提示用户切换模式",
+                "优化改进",
+                "- 离线模式限制：离线模式下自动禁用账户信息修改、安全设置、成就系统、设备管理、数据管理等重要功能",
+                "- 验证码优化：离线模式下自动切换为本地生成验证码，正常模式下通过API获取",
+                "- 用户体验：网络恢复时自动提示用户是否重新上线",
+            ]
+        },
+        {
+            version: "RC 2.6.1.2 (b4)",
+            date: "2026-05-07",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 登录页无网络提示：在登录页新增提示功能，无网络情况下将显示\"无网络连接，请检查网络设置\"",
+                "- 主题更新自动刷新：在账户设置页面切换主题后，游戏大厅页面会弹出主题更新窗口，三秒后自动刷新页面以应用新主题",
+                "优化改进",
+                "- 界面体验：主题更新弹窗倒计时按钮调整为居中显示",
+                "- 界面体验：优化主题更新检测机制，确保弹窗正确显示",
+            ]
+        },
+        {
+            version: "RC 2.6.1.1 (b4)",
+            date: "2026-05-03",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 用户协议优化：修复在用户协议窗口内点击右侧导航栏后，再查看隐私政策内容不显示的问题",
+            ]
+        },
+        {
+            version: "RC 2.6.1.0 (b4)",
+            date: "2026-04-30",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2610.png", "./images/2610_2.png"],
+            features: [
+                "新增功能",
+                "- 开发者公告：登录页侧边栏新增\"开发者公告\"按钮，可查看最新公告",
+                "优化改进",
+                "- 界面优化：优化了关于启动器窗口和MIT License窗口的滚动条样式",
+                "- 界面优化：公告和版本记录内容全部改为左对齐，阅读更舒适",
+                "- 界面优化：登录页侧边栏优化排版布局",
+            ]
+        },
+        {
+            version: "RC 2.6.0.12 (b4)",
+            date: "2026-04-30",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/26012.png",],
+            features: [
+                "新增功能",
+                "- 预设背景：主题设置新增\"预设背景\"功能，提供9款精美预设背景图可选",
+                "- 预览效果：选中预设背景后可预览查看效果",
+                "优化改进",
+                "- 预设背景窗口支持亮色/暗色模式自适应切换",
+                "- 优化图片显示尺寸，提升视觉效果",
+                "修复问题",
+                "- 修复预设背景刷新页面后无法保存的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.11 (b4)",
+            date: "2026-04-29",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/26011.png", "./images/26011_2.png", "./images/26011_3.png"],
+            features: [
+                "新增功能",
+                "- 忘记密码功能优化：新增使用PIN码重置密码的功能",
+                "优化改进",
+                "- 登录页优化：优化登录卡片的布局和交互，提升用户体验",
+                "- 统一并重置账户设置页面样式：将账户信息、安全设置、隐私设置、通知设置、设备管理、主题设置等页面的条目统一改为卡片式布局，左侧显示文本说明，右侧放置按钮或控件",
+                "- 暗色模式优化：提升暗色模式下所有设置页面和卡片的字体亮度，确保文字清晰可读",
+                "- 统一按钮样式：所有设置页面的按钮采用一致的设计风格",
+                "- 输入框样式标准化：各类文本输入框统一宽度和对齐方式",
+                "- 卡片悬停效果：添加鼠标悬停时的视觉反馈，提升交互体验",
+                "修复问题",
+                "- 用户协议改进：修复用户协议目录侧边栏无法滚动的问题，增加最大高度限制",
+                "- 编辑头像窗口：优化头像编辑窗口为全屏显示，修复裁剪预设比例按钮不生效的问题",
+                "- 两步验证功能：修复了两步验证功能在退出登录后自动关闭的问题",
+                "- 头像悬浮卡片：修复了鼠标悬浮在头像上时，悬浮卡片显示不完整的问题",
+            ]
+        },
+        {
+            version: "RC 2.6.0.10 (b4)",
+            date: "2026-04-28",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/26010.png", "./images/26010_2.png"],
+            features: [
+                "新增功能",
+                "- 版权声明：在关于启动器的版权声明部分添加\"MIT License\"按钮",
+                "优化改进",
+                "- 界面优化：MIT License弹窗内容改为分页展示，提升阅读体验",
+                "- 界面体验：版本更新记录窗口优化更新公告显示区域与LIST列表对齐",
+                "- 界面体验：调整版本更新记录返回和排序按钮位置向上对齐",
+                "- 优化JavaScript代码，提取公共功能模块，减少重复代码",
+                "- 使用CSS变量系统，统一管理颜色和样式参数",
+                "- 优化资源加载，脚本改为延迟加载提升页面加载速度",
+                "- 图标库改为懒加载，减少初始加载时间",
+                "- 页面加载更加流畅快速",
+                "- 代码结构更加清晰易维护",
+                "- 为所有页面添加完善的Meta标签",
+                "- 支持PWA特性，提升移动端体验",
+                "- 移除无效的文件引用，清理代码",
+            ]
+        },
+        {
+            version: "RC 2.6.0.9 (b4)",
+            date: "2026-04-28",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 版本管理：版本更新记录子按钮添加\"查看中\"tag，显示当前查看状态",
+                "- 字体调整：用户协议和隐私政策窗口添加字体大小调整按钮（支持12px-24px）",
+                "优化改进",
+                "- 自定义滚动条：用户协议目录侧边栏添加自定义滚动条样式",
+                "- 暗色模式：优化游戏大厅个人卡片、签到规则、退出登录悬浮气泡样式",
+                "- 响应式设计：今日运势窗口改为响应式布局，跟随浏览器窗口大小变动",
+                "- 界面体验：版本更新记录提示文本居中显示并添加等待图标",
+                "- 全屏显示：图片查看器窗口改为全屏显示",
+                "- 暗色模式：优化版本更新记录卡片和日期文本在暗色模式下的显示",
+                "修复问题",
+                "- 按钮修复：修复用户协议窗口返回顶部按钮不生效问题",
+                "- 主题修复：修复暗色主题设置后刷新页面变回亮色主题的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.8 (b4)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 界面修复：修复了过时版本记录中排序功能不生效的问题",
+                "- 界面修复：修复了版本日期范围显示倒叙的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.7 (b4)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2607.png"],
+            features: [
+                "优化改进",
+                "- 界面优化：版本更新记录选择版本部分显示日期范围信息",
+                "- 功能增强：版本更新记录添加状态tag显示（版本维护中、更新已结束、已过时版本）",
+                "- 界面优化：登录页用户协议与隐私政策窗口图标改为横向排列",
+                "- 界面优化：调整用户协议与隐私政策窗口图标与边框的距离",
+                "修复问题",
+                "- 界面修复：关于版本更新记录中正序/倒叙排列错误的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.6 (b4)",
+            date: "2026-04-27",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: ["./images/2606.png"],
+            features: [
+                "优化改进",
+                "- 界面优化：关于启动器窗口改为与用户名片相同的大小和排版",
+                "- 界面优化：版权使用声明改为\"版权声明\"，添加详细的版权声明文本",
+                "- 功能增强：添加OPPO Sans和MUI版权信息查看按钮，点击后显示详细版权信息",
+                "修复问题",
+                "- 界面修复：关于启动器窗口左侧图标显示不全的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.6 (b3)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 功能增强：版本更新记录支持字体颜色设置",
+                "- 功能增强：版本更新记录添加\"查看日志\"按钮，支持展开/收起功能",
+                "优化改进",
+                "- 界面优化：版本选择按钮样式与版本更新条目保持一致",
+                "修复问题",
+                "- 界面修复：版本号显示不一致的问题",
+                "- 界面修复：关于启动器悬浮气泡文本显示错误问题",
+            ]
+        },
+        {
+            version: "RC 2.6.0.5 (b3)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 界面体验：在登录页右上角的更多功能区添加一个新按钮为\"调整UI比例\"(BETA)",
+                "优化改进",
+                "- 字体更新：所有页面的字体均已更换为OPPO Sans SC，提升字体质量",
+                "（声明：OPPO Sans 字体著作权与知识产权专属归属：OPPO 广东移动通信有限公司。本项目合法使用 OPPO Sans 开源免费字体，字体完整版权归 OPPO 广东移动通信有限公司所有，已严格遵守官方字体使用协议，仅作正常展示与内容应用，未进行字体修改、售卖及二次分发等违规操作。）",
+                "- 界面体验：提升整体视觉效果，使字体更加美观统一",
+                "修复问题",
+                "- 界面修复：调整UI比例的按钮样式不正确的问题",
+                "- 功能修复：调整完比例后页面UI不会延申，导致出现空白的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.4 (b3)",
+            date: "2026-04-26",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "优化改进",
+                "- 移动端适配：移动端模式下版本更新记录把LIST列表放在中间偏上的位置",
+                "修复问题",
+                "- 布局修复：修复返回顶部按钮与侧边栏和关闭按钮互相遮挡的问题",
+                "- 界面体验：调整返回顶部按钮位置，避免与其他元素重叠",
+                "- 移动端适配：修复移动端模式下LIST侧边栏缩小后为竖向的问题",
+                "- 兼容性：保持PC端不变，确保跨设备兼容性"
+            ]
+        },
+        {
+            version: "RC 2.6.0.3 (b3)",
+            date: "2026-04-26",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2603.png", "./images/2603_2.png",],
+            features: [
+                "优化改进",
+                "- 界面体验：将版本更新记录窗口改为全屏显示，提升内容展示空间",
+                "- 界面体验：调整窗口布局以适应全屏显示，优化用户浏览体验",
+                "- 界面体验：版本更新记录中图标和文本改为横向排列",
+                "- 界面体验：调整头部布局，提升视觉层次感",
+                "- 界面体验：在版本更新记录中添加返回按钮，方便用户返回版本选择页面",
+                "- 界面体验：调整头部内边距，提升视觉舒适度",
+                "- 界面体验：优化返回按钮和排序按钮的样式，使其贴合总体风格",
+                "- 界面体验：更新按钮样式，使其和其他按钮样式一致",
+            ]
+        },
+        {
+            version: "RC 2.6.0.2 (b3)",
+            date: "2026-04-26",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 版本管理：实现版本号按主版本号和次版本号分组显示（如2.0, 2.1, 2.2等）",
+                "- 版本管理：在每个版本内添加排序功能，可以按正序/倒序显示版本",
+                "优化改进",
+                "- 界面体验：在版本选择页面上方添加提示文本，提升用户引导",
+                "- 界面体验：在版本详情页面添加返回版本选择按钮，方便导航",
+                "- 界面体验：优化返回按钮位置，使其不随滚动条滚动，保持在页面顶部",
+                "- 界面体验：固定返回按钮和排序按钮的位置，使其不被滚动操作所影响",
+                "- 界面体验：优化按钮样式和美观度，添加鼠标悬浮效果",
+                "- 界面体验：增加版本号按钮之间的间距，提升视觉效果",
+                "修复问题",
+                "- 功能修复：修复返回版本选择按钮多次点击后无反应的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.1 (b3)",
+            date: "2026-04-26",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 语言支持：在账户设置页面和登录页添加韩语支持",
+                "- 语言管理：同步语言状态，集中管理账户设置页面的语言映射",
+                "- 语言同步：实现账户设置与登录页的全局设置状态同步，无需每个页面单独设置",
+                "优化改进",
+                "- 性能优化：优化账户设置页面语言切换性能，解决页面卡死问题",
+                "- 界面体验：改进语言切换后的弹窗提示，点击确定后自动刷新页面",
+                "- 语言一致性：修复账户标签页在四语状态下尾缀均显示韩文的问题",
+                "- 翻译完整性：修复英文、日语和韩语状态下侧边栏和顶部导航栏翻译不完整的问题",
+                "修复问题",
+                "- 语言切换：修复账户设置页面语言切换后页面不响应对应语言状态的问题",
+                "- 事件绑定：修复登录页在英文和日语状态下点击用户协议和隐私政策按钮没反应的问题"
+            ]
+        },
+        {
+            version: "RC 2.6.0.0 (b3)",
+            date: "2026-04-24",
+            tag: "major",
+            tagText: "重大更新",
+            images: ["./images/2600.png", "./images/2600_2.png", "./images/2600_3.png"],
+            features: [
+                "新增功能",
+                "- 个人名片：个人名片支持新增/移除小组件",
+                "优化改进",
+                "- 界面体验：弹窗样式更新，新增新窗口的过渡动画效果",
+                "- 功能更新：将社交链接小组件改为签到统计",
+                "- 界面体验：在个人名片中添加设置按钮，点击后滑出选项栏可添加新小组件",
+                "- 界面体验：为个人名片设置面板添加最近游戏、统计数据、徽章展示和社交链接等小组件选项",
+                "- 界面体验：在个人名片的功能区块添加移除按钮，点击后可将组件恢复显示在设置栏中",
+                "- 界面体验：为设置面板中的小组件选项添加点击事件，可重新添加已移除的组件",
+                "- 界面体验：点击名片设置的关闭按钮时弹出提示，询问用户是否要退出编辑模式",
+                "- 界面体验：为组件部分添加滚动条，解决组件过多显示不全的问题",
+                "- 功能更新：实现最近游戏、统计数据和签到统计组件与账户设置页的同步",
+                "- 界面体验：将浏览器自带的提示改为页面内使用固定弹窗的样式",
+                "- 修复问题：修复弹窗点击取消和确认按钮没有过渡动画效果的问题",
+                "- 界面体验：在版本更新记录窗口右下角添加快速返回顶部的功能按钮",
+                "- 界面体验：为返回顶部按钮添加鼠标悬浮提示气泡效果",
+                "- 界面体验：调整个人名片窗口中设置按钮与窗口边框的间距，并为其添加鼠标悬浮提示气泡",
+                "修复问题",
+                "- 界面体验：修复个人名片功能，在账户设置更换头像后名片不会更新头像的问题",
+                "- 界面体验：修复上传头像按钮会被之前设置的头像暂时顶掉的问题，确保上传按钮始终显示正确样式",
+                "- 界面体验：修复窗口优先级问题，确保名片设置栏显示在用户名片的上方",
+                "- 修复问题：修复未点击名片设置按钮小组件也会显示移除按钮的问题",
+                "- 界面体验：固定用户名片的窗口大小，使其不会受到增加/移除小组件窗口大小变动的问题",
+                "- 修复问题：修复个人名片窗口中设置按钮位置错乱的问题",
+            ]
+        },
+        {
+            version: "RC 2.5.4.1 (b3)",
+            date: "2026-04-23",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 登录页：在顶部导航栏右上角添加隐藏UI按钮，点击后仅显示背景图",
+                "- 登录页：为隐藏UI按钮添加悬停提示",
+                "- 登录页：将名片按钮从个人卡片移动到顶部导航栏右上角",
+                "- 登录页：在顶部导航栏右上角添加可收起/展开的功能按钮组及其切换按钮",
+                "优化改进",
+                "- 界面体验：为隐藏UI功能添加过渡动画效果",
+                "- 界面体验：修复名片提示错位问题，调大按钮间距",
+                "- 登录体验：优化未同意协议时的动效提示",
+                "- 界面体验：将同意协议提示从左侧移到下方，确保完整显示",
+                "- 界面体验：优化关于启动器按钮的颜色，使其与其他按钮协调",
+                "- 界面体验：统一所有按钮的提示气泡样式，确保位置和大小一致",
+                "- 界面体验：为功能按钮组添加平滑的展开/收起动画效果",
+                "- 界面体验：为按钮添加从展开按钮内滑出的动效，增强视觉体验",
+                "- 界面体验：优化移动端模式下的按钮显示，将按钮移动到侧边栏",
+                "- 界面体验：为移动端按钮添加从右侧滑出的动效，增强视觉体验",
+                "- 界面体验：添加移动端提示弹窗，提醒用户使用桌面端以获得更好的使用体验",
+                "修复问题",
+                "- 界面体验：修复按钮提示气泡不显示的问题",
+                "- 界面体验：修复按钮与边框冲突导致显示不完整的问题"
+            ]
+        },
+        {
+            version: "RC 2.5.4.0 (b3)",
+            date: "2026-04-23",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2540.png", "./images/2540_2.png"],
+            features: [
+                "新增功能",
+                "- 个人名片：新增个人名片功能，用户可以在登录页查看个人名片",
+                "- 个人名片：在成就完成度文本右侧添加向下的小三角按钮，点击后展开所有游戏的成就",
+                "- 个人名片：点击对应的游戏成就可以查看其完成度",
+                "- 个人名片：未登录状态下禁用名片功能",
+                "优化改进",
+                "- 个人名片：修复成就总完成度和账户设置中的成就系统不一致的问题",
+                "- 个人名片：将个人签名的文本位置向左对齐，与成就完成度文本达成视觉平衡",
+                "- 个人名片：把名片的提示样式改为和退出登录一样的提示样式"
+            ]
+        },
+        {
+            version: "RC 2.5.3.0 (b3)",
+            date: "2026-04-22",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 数据管理：修复清除缓存功能，选择清除全部数据后会导致账户直接被删除的问题，现在只会清除缓存相关数据，不会发生其他问题"
+            ]
+        },
+        {
+            version: "RC 2.5.3.0 (b2)",
+            date: "2026-04-22",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2530.png"],
+            features: [
+                "新增功能",
+                "- 两步验证：启用两步验证后添加更改PIN码和更新安全问题的功能",
+                "- 两步验证：设置PIN码时添加\"使用英文及字符\"的复选框，选择后才能输入英文及字符",
+                "优化改进",
+                "- 两步验证：优化设置模态框布局，将PIN码设置和安全问题设置分为左右两栏，提高界面清晰度",
+                "- 安全性：点击更新PIN码和更新安全问题按钮后需要验证当前的PIN码",
+                "- 安全性：关闭两步验证时需要验证PIN码，确保只有授权用户可以禁用该功能",
+                "修复问题",
+                "- 两步验证：修复状态在页面刷新或重进后关闭的问题",
+                "- 两步验证：修复点击启用按钮后，即使没有输入密码进行验证，启用状态也会持续的问题",
+                "- 未登录状态：修复在登录页个人中心悬浮卡片中点击\"点击进入账户设置\"后会短时间跳转到账户设置页面然后重新跳转到登录页的问题，改为直接显示未登录提示窗口"
+            ]
+        },
+        {
+            version: "RC 2.5.2.0 (b2)",
+            date: "2026-04-18",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2520.png", "./images/2520_2.png", "./images/2520_3.png", "./images/2520_4.png"],
+            features: [
+                "新增功能",
+                "- 数据管理：添加导入数据功能，支持从之前导出的数据文件恢复数据",
+                "- 数据安全：导出数据时添加密码验证，加强数据安全性",
+                "- 数据安全：导入数据时添加密码验证，确保只有授权用户可以导入数据",
+                "- 数据管理：优化导出数据功能，导出更加详细的用户数据",
+                "- 缓存管理：优化清除缓存功能，支持选择要清除的具体数据内容",
+                "优化改进",
+                "- 界面一致性：清除缓存选择窗口使用与其他模态窗口相同的样式",
+                "- 交互体验：当常规清理的四个选项都被选中时，自动启动全部清理的选项",
+                "- 显示优化：增加清除缓存选择窗口的宽度，避免出现滚动条",
+                "- 界面一致性：突出显示\"清除全部数据\"选项，提醒用户此操作的风险",
+                "修复问题",
+                "- 导出数据：修复密码框保留之前输入的密码的问题",
+                "- 清除缓存：修复清除数据功能不生效的问题"
+            ]
+        },
+        {
+            version: "RC 2.5.1.0 (b2)",
+            date: "2026-04-18",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2510.png"],
+            features: [
+                "新增功能",
+                "- 游戏中心个人卡片样式更新：登出按钮改为小按钮放在个人卡片内部右侧",
+                "- 登出按钮悬浮提示：鼠标悬停时显示\"退出登录\"提示",
+                "- 未登录状态处理：点击登出按钮或个人卡片时显示提示窗口，提供去登录和去注册选项",
+                "优化改进",
+                "- 登出流程优化：添加二级确认提示，确保用户操作准确性",
+                "- 界面一致性：登录页个人卡片添加与游戏大厅相同的登出按钮",
+                "- 交互体验：修复登出按钮与个人卡片点击事件的冲突",
+                "- 显示优先级：确保登出按钮悬浮提示显示在用户信息悬浮卡上方",
+                "修复问题",
+                "- 注册模态窗口：修复\"返回登录\"链接无反应的问题"
+            ]
+        },
+        {
+            version: "RC 2.5.0.2 (b2)",
+            date: "2026-04-12",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "优化改进",
+                "- 登录页新增：用户可以通过点击\"关于启动器\"按钮，查看启动器的详细信息，包括版本号、版权信息等。",
+                "- 账户设置页优化：优化了账户设置中的暗色主题的颜色适配度。",
+                "修复问题",
+                "- 已知问题",
+            ]
+        },
+        {
+            version: "RC 2.5.0.1 (b2)",
+            date: "2026-04-11",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/2501.png"],
+            features: [
+                "优化改进",
+                "- 登录页面优化：个人卡片更新鼠标悬浮其上时显示用户信息卡片",
+                "修复问题",
+                "- 已知问题",
+            ]
+        },
+        {
+            version: "RC 2.5.0.0 (b2)",
+            date: "2026-04-08",
+            tag: "major",
+            tagText: "重大更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 启动器页面移动端适配：添加移动端菜单按钮，优化侧边栏滑出效果",
+                "- 账户设置页面移动端适配：添加移动端菜单按钮，优化布局和交互体验",
+                "- 侧边栏强制刷新按钮：在移动端模式下添加强制刷新所有页面的按钮，防止出现bug导致的需要反复重启程序的问题",
+                "优化改进",
+                "- 启动器页面优化：优化登录页页面布局，个人卡片位置更显眼",
+                "- 百宝箱和游戏卡片大小统一：调整百宝箱卡片大小，使其与游戏卡片大小一致",
+                "- 每日签到日期排版优化：调整日历网格布局为5列，优化日期单元格的大小和间距",
+                "- 游戏原声带功能优化：调整顶部音乐图标位置为垂直布局，扩大曲目卡片尺寸，优化按钮排布使序号和按钮靠左对齐",
+                "- 顶部区域贴合度优化：确保在移动端模式下顶部区域完全贴合页面框架",
+                "修复问题",
+                "- 播放控制问题：修复点击停止按钮后再点击播放按钮不播放音频的问题",
+                "- 响应式布局问题：确保在不同屏幕尺寸下都能良好显示"
+            ]
+        },
+        {
+            version: "RC 2.4.0.0 (b2)",
+            date: "2026-04-06",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2400.png", "./images/2400_1.png", "./images/2400_2.png"],
+            features: [
+                "新增功能",
+                "- 正式版更新：毛玻璃主题，硬件GPU加速功能以及自定义背景现已推出",
+                "- 头像编辑功能：支持图片裁剪、滤镜效果（原图/黑白）、亮度/对比度/饱和度调整",
+                "- 自定义头像管理：最多支持10个自定义头像，包含名称设置和悬浮卡片操作",
+                "- 设备管理：显示真实设备数据，包括操作系统、浏览器和设备类型",
+                "- 登录历史：仅保留30天内前20次登录记录，支持删除功能",
+                "- 图片大小突破：支持最大100MB的背景图片上传（使用IndexedDB存储）",
+                "- 智能提示：上传超过5MB图片时显示确认弹窗",
+                "优化改进",
+                "- 界面美观：统一按钮样式，优化滚动条样式",
+                "- 头像编辑：调整编辑窗口大小，优化裁剪区域初始位置和大小",
+                "- 图片显示：保持原图比例，优化图片显示尺寸",
+                "修复问题",
+                "- 布局问题：修复毛玻璃主题下登录页个人卡片与启动器名称重叠问题",
+                "- 背景显示：修复自定义背景在登录页和游戏大厅不显示的问题",
+                "- 裁剪功能：修复确认按钮无响应、裁剪边框样式和编辑窗口不弹出问题",
+                "- 边界处理：确保裁剪区域不会超出图片边界"
+            ]
+        },
+        {
+            version: "RC 2.3.0.0 (b2)",
+            date: "2026-04-06",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/2300.png", "./images/2300_2.png", "./images/2300_3.png", "./images/2300_4.png"],
+            features: [
+                "新增功能",
+                "- 毛玻璃主题（BETA）以及自定义背景（BETA）",
+                "- 硬件GPU加速（BETA）：添加了GPU加速功能，启用时会显示系统要求和警告信息的确认对话框",
+                "- 针对性保存按钮：在个人资料卡片和声音设置卡片中添加了保存按钮",
+                "优化改进",
+                "- 自动保存机制：删除了\"保存所有更改\"按钮，实现所有设置的自动保存",
+                "- 按钮样式统一：统一了上传自定义头像、上传背景图片、保存个人资料和保存声音设置按钮的颜色",
+                "- 毛玻璃效果优化：为所有按钮和示例按钮添加了毛玻璃模式下的样式",
+                "- 主题设置独立：为自定义主题和毛玻璃主题分别添加了独立的示例按钮、应用主题和重置按钮",
+                "- 导航栏优化：将\"高级设置\"导航项改为\"主题设置\"，并同步更新了页面描述文本",
+                "- 全局滚动条优化：优化了全局滚动条样式与主题适配度统一",
+                "- 账户设置优化：优化了账户设置页面的部分文字排版布局",
+                "修复问题",
+                "- 按钮颜色不一致：修复了上传按钮与保存按钮颜色不统一的问题",
+                "- 毛玻璃模式下的按钮样式：修复了毛玻璃模式下按钮样式与其他元素不协调的问题",
+                "- 主题设置导航：修复了主题设置页面标题与导航文本不一致的问题",
+                "- 主题设置：修复了暗色主题下启动器页面未正确同步主题的问题",
+                "- 登录：修复了账户退出登录时，自定义背景残留的问题"
+            ]
+        },
+        {
+            version: "RC 2.2.1.1 (b1)",
+            date: "2026-04-05",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "修复 账户退出登录后卡片显示为未登录但仍有自定义头像留存的问题",
+                "修复 再次登录已退出的账户后登录页和游戏大厅等没有即时加载自定义头像的问题",
+                "优化 退出登录时的头像清除逻辑，确保账户隔离",
+                "优化 登录时的头像同步逻辑，确保立即显示自定义头像"
+            ]
+        },
+        {
+            version: "RC 2.2.1.0 (b1)",
+            date: "2026-04-05",
+            tag: "important",
+            tagText: "重要更新",
+            images: [
+                "./images/2210.png",
+                "./images/2210_2.png",
+            ],
+            features: [
+                "新增 头像同步功能，在账户设置、登录页、游戏大厅等页面同步显示自定义头像",
+                "修复 账户设置页面左上角头像不更新的问题",
+                "优化 头像上传和同步逻辑，确保所有页面都能显示最新的头像",
+                "优化 响应式设计，确保在各种设备上都有良好的用户体验"
+            ]
+        },
+        {
+            version: "RC 2.2.0.0 (b1)",
+            date: "2026-04-05",
+            tag: "important",
+            tagText: "重要更新",
+            images: [
+                "./images/2120.png",
+                "./images/2120_2.png",
+            ],
+            features: [
+                "新增 开发者模式下新增演示功能",
+                "新增 版本号右侧显示常规更新、重要更新和重大更新标签",
+                "新增 图片查看器功能，支持放大缩小和拖拽移动",
+                "新增 图片右上角添加查看图片提示",
+                "新增 多张图片时水平排列并显示滚动条",
+                "修复 开发者模式下LIST任务栏收起后竖条内会出现演示模式按钮的问题",
+                "修复 图片查看器再次打开时没有动效的问题",
+                "修复 图片查看器拖拽时松开鼠标左键后图片依旧会跟着鼠标移动的问题",
+                "修复 禁止图片被拖拽出窗口外进行新建标签页或复制操作",
+                "优化 按钮悬浮时的动效从向右浮动改为向上浮动",
+                "优化 图片查看器窗口大小与版本更新记录窗口一致",
+                "优化 为图片查看器添加弹出/关闭动效",
+                "优化 将放大、缩小和还原按钮与关闭按钮放在同一排",
+                "优化 图片查看器中添加灰色方框，明确图片显示区域",
+                "优化 当同时存在的图片大小不一致时，通过固定容器尺寸使它们看上去长宽高都一样",
+                "优化 如果更新公告中只存在一张图片，则保持原图片尺寸，不进行固定尺寸限制",
+            ]
+        },
+        {
+            version: "RC 2.1.1.0 (b1)",
+            date: "2026-04-05",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [
+                "./images/list.png"
+            ],
+            features: [
+                "新增 版本更新记录中新版本条目使用图片说明的功能",
+                "新增 版本更新记录界面布局及优化功能体验",
+                "修复 版本更新记录出现两个滚动条的问题",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC 2.1.0.0 (b1)",
+            date: "2026-04-04",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "修复 自动登录功能，现已正常且无需重新登录",
+                "新增 启动器页面登出的提示逻辑",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC 2.0.0.0 (b1)",
+            date: "2026-04-04",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "优化 账号注册时的所有流程及功能，包括验证码、密码、手机号、邮箱、用户名等",
+                "优化 部分文本内容",
+                "删除 账户设置显示UID",
+                "优化 页面布局和操作体验",
+                "优化 查看协议内容时的加载速度",
+                "修复 切换至自定义服务器时未出现调试设置的问题",
+                "其他 RC1.0及其之后的衍生版本的所有版本更新公告已移动至过时版本记录中",
+                "修复 已知问题"
+            ]
+        }
+    ],
+    homepageUpdateContent: [
+        {
+            version: "RC 1.1.0.2 (a2)",
+            date: "2026-07-19",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/h1102.png"],
+            features: [
+                "优化改进",
+                "- 默认背景同步更新：游戏大厅页背景样式与登录页、系统设置页保持一致，采用多层径向渐变和线性渐变组合",
+                "- 默认背景显示逻辑优化：未选择自定义背景时自动显示用户选择的默认渐变，支持9种渐变背景选项",
+                "- 退回至登录页功能：更多操作弹窗中新增\"退回至登录页\"按钮，保留登录状态直接跳转至登录页",
+                "- 自动登录跳过机制：退回登录页时设置skipAutoLogin标志，避免自动登录导致的循环跳转",
+                "- 更多操作按钮布局优化：按钮改为3列布局，移动端自动切换为垂直排列"
+            ]
+        },
+        {
+            version: "RC 1.1.0.1 (a2)",
+            date: "2026-07-03",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/h1101.png"],
+            features: [
+                "新增功能",
+                "- 游戏大厅更多操作按钮：个人卡片中的退出登录按钮改为\"更多操作\"按钮，点击弹出包含系统设置和退出登录选项的弹窗",
+                "优化改进",
+                "- 游戏大厅弹窗样式统一：将游戏大厅中的默认弹窗样式改为与登录页一致，包括标题居左、按钮右对齐、粉色渐变主按钮等设计元素",
+                "- 用户信息卡片优化：删除用户信息卡片中的\"点击进入系统设置\"文本，点击卡片不再跳转到系统设置页",
+            ]
+        },
+        {
+            version: "RC 1.1.0.0 (a2)",
+            date: "2026-05-30",
+            tag: "important",
+            tagText: "重要更新",
+            images: ["./images/h1100.png"],
+            features: [
+                "新增功能",
+                "- 侧边栏收起功能：在游戏大厅页面侧边栏添加与登录页一致的收起/展开按钮，支持状态记忆",
+                "- 侧边栏收起小卡片：侧边栏收起时底部显示个人卡片，包含用户头像和退出按钮",
+                "优化改进",
+                "- 侧边栏收起后图标放大：收起侧边栏时菜单项图标放大显示，提升视觉效果",
+                "- 弹窗样式统一：游戏大厅弹窗样式与登录页保持一致，包括深色遮罩、顶部粉色渐变条和粉色渐变按钮",
+                "修复问题",
+                "- 修复侧边栏收起时个人卡片图标和按钮显示在方框外的问题"
+            ]
+        },
+        {
+            version: "RC 1.0.3.3 (a2)",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            images: ["./images/h1033_2.png"],
+            features: [
+                "优化改进",
+                "- 飞行器游戏样式重构：将飞行器小游戏页面样式重构为与点击方块小游戏相同的设计风格，包括左侧边栏导航和右侧主内容区布局",
+                "- 版本号统一管理：在 versionManager.js 中添加记忆卡牌和颜色匹配小游戏的版本号，实现所有小游戏版本号统一管理",
+                "- 版本号调用优化：修复贪吃蛇和飞行器小游戏版本号未正确调用版本管理文件的问题",
+                "- 页面布局优化：修复飞行器游戏页面顶部导航栏和右侧显示区域样式不正确的问题"
+            ]
+        },
+        {
+            version: "RC 1.0.3.2 (a2)",
+            date: "2026-04-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化改进",
+                "- 功能调整：游戏大厅中暂时屏蔽游戏原声带功能",
+            ]
+        },
+        {
+            version: "RC 1.0.3.1 (a2)",
+            date: "2026-04-18",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增功能",
+                "- 成就系统更新：为记忆卡牌和颜色匹配游戏各新增两个成就",
+                "- 记忆卡牌新增：记忆卡牌专家（累计完成20局游戏）和记忆大师（单局得分达到300分）",
+                "- 颜色匹配新增：色彩大师（累计完成100局游戏）和万分王者（累计获得2000分）",
+                "优化改进",
+                "- 成就系统优化：修复了成就总数量计算错误的问题",
+                "- 成就系统优化：修复了一键开启所有成就后成就数量混乱的问题",
+                "- 成就系统优化：确保了记忆卡牌和颜色匹配游戏的成就数据互通",
+                "- 成就系统优化：更新了成就进度显示，确保每个游戏的成就数量和进度正确显示",
+                "修复问题",
+                "- 修复 记忆卡牌和颜色匹配游戏成就条目单个按钮点击后没反应的问题",
+                "- 修复 开发者模式下一键开启所有成就后记忆卡牌成就未启用的问题"
+            ]
+        },
+        {
+            version: "RC 1.0.3.0 (a2)",
+            date: "2026-04-07",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "上线 记忆卡牌游戏 （BETA）",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC 1.0.2.0 (a2)",
+            date: "2026-04-02",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "上线 贪吃蛇小游戏",
+                "新增 新的成就条目及其新的功能",
+                "优化 启动器游戏卡片图标，使其游戏主题更明晰",
+                "修复 部分情况下，游戏中心会错误出现每日签到页面的内容的问题",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC 1.0.1.2 (a2)",
+            date: "2026-04-01",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "下线 启动器页面中的版本回退功能，该功能因过于老旧且影响安全问题所以已被移除",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC 1.0.1.2 (a1)",
+            date: "2026-04-01",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "更新 账户设置中的《用户协议》与《隐私政策》部分，并优化其使用体验",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC 1.0.1.1",
+            date: "2026-04-01",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 每日签到功能，包含30天日历视图",
+                "新增 签到积分系统，支持积分累积",
+                "新增 开发者模式下的签到管理功能",
+                "优化 账户设置中的签到统计数据",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC 1.0.1.0",
+            date: "2026-03-31",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 百宝箱功能，包含多种实用工具",
+                "新增 每日人品、运势、每日一句等功能",
+                "新增 随机数生成器、掷骰子、抛硬币等工具",
+                "优化 游戏中心卡片布局",
+                "改进 整体用户体验"
+            ]
+        },
+        {
+            version: "RC 1.0.0.0",
+            date: "2026-03-25",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "优化 启动器整体风格，使其更匹配全局主题",
+                "改进 整体用户体验"
+            ]
+        }
+    ],
+    earlyUpdateContent: [],
+    // 过时版本记录 - 启动器记录 (RC-L)
+    outdatedLauncherContent: [
+        {
+            version: "RC-L 1.2.1.2 (a5)",
+            date: "2026-04-04",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "修复 登录页卡片验证码点击无法刷新的问题",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.2.1.2 (a4)",
+            date: "2026-04-03",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 账户设置页面显示启动器版本号",
+                "优化 退出登录后启动器主页重定向逻辑",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.2.1.2 (a3)",
+            date: "2026-04-02",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "修复 登录页查看《用户协议》和《隐私政策》无法上下滑动的问题",
+                "新增 登录页版权信息显示",
+                "新增 登录页反馈建议功能",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.2.1.1 (a3)",
+            date: "2026-04-02",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 账户注销七天等待期",
+                "新增 用户协议与隐私政策最后更新日期",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.2.1.0 (a3)",
+            date: "2026-04-01",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 登录页版本更新公告窗口样式及其操作体验",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.2.1.0 (a2)",
+            date: "2026-04-01",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "更新 登录页提供查看《用户协议》与《隐私政策》的功能",
+                "添加 登陆或注册账户时必须要确定《用户协议》与《隐私政策》",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.2.1.0 (a1)",
+            date: "2026-03-31",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "更新 验证码生成，现已接入网络请求",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.2.0.0 (a1)",
+            date: "2026-03-25",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 各种运行问题",
+                "修复 已知问题"
+            ]
+        },
+        {
+            version: "RC-L 1.1.0.0",
+            date: "2026-03-22",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 查看账户设置功能，以及退出登录及其更多",
+                "优化 登录注册流程",
+                "改进 用户体验"
+            ]
+        },
+        {
+            version: "RC-L 1.0.0.0",
+            date: "2026-03-22",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "更新游戏启动器登录页，独立保存每个玩家的游戏数据",
+                "支持账号注册和登录",
+                "多个新功能及其优化",
+                "优化界面设计"
+            ]
+        }
+    ],
+    // 过时版本记录 - 主页面记录 (RC-H)
+    outdatedHomepageContent: [
+        {
+            version: "RC-H 4.0.0 ",
+            date: "无记录",
+            tag: "",
+            tagText: "",
+            features: [
+                "过渡版",
+                "开发者模式模块测试"
+            ]
+        },
+        {
+            version: "RC-H 3.3.0 ",
+            date: "2026-02-28",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "修复 版本更新公告未正确显示更新时间和版本号的问题",
+                "修复 版本回退未正确启用的问题",
+                "修复 切换语言选项中未正确出现日语语言的问题",
+                "修复 重要更新提示及其他提示未正确生效显示undefined的问题",
+                "修复 进入游戏跳转错误的问题",
+                "禁用 切换游戏/模拟器的功能按钮",
+                "优化 UI排版",
+                "优化 界面流畅度，提升用户体验"
+            ]
+        },
+        {
+            version: "RC-H 3.2.0 ",
+            date: "2026-02-28",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 日语语言"
+            ]
+        },
+        {
+            version: "RC-H 3.1.0 ",
+            date: "2026-02-28",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "上线 飞行器小游戏",
+                "优化 小游戏卡片显示逻辑",
+                "优化 界面UI排列",
+                "优化 界面流畅度，提升用户体验"
+            ]
+        },
+        {
+            version: "RC-H 3.0.0 ",
+            date: "2026-02-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 版本回退功能",
+                "优化 部分文本内容",
+                "优化 界面流畅度，提升用户体验"
+            ]
+        },
+        {
+            version: "BETA-H 3.0.1 ",
+            date: "2026-02-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 版本公告翻页过渡效果",
+                "优化 查看版本公告时固定窗口大小使其不会来回变动"
+            ]
+        },
+        {
+            version: "BETA-H 3.0.0 ",
+            date: "2026-02-27",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 游戏/模拟器切换按钮",
+                "新增 Windows11网页模拟器",
+                "修复 重要更新提示未正确启用的问题",
+                "新增 版本更新公告增加RC/BETA公告切换按钮"
+            ]
+        },
+        {
+            version: "RC-H 2.0 ",
+            date: "2026-02-26",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 五子棋小游戏"
+            ]
+        },
+        {
+            version: "RC-H 1.1",
+            date: "2026-02-26",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 英文语言",
+                "新增 中英文切换按钮"
+            ]
+        },
+        {
+            version: "RC-H 1.0.2 ",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 版本更新公告重要更新提示",
+                "修复 版本更新公告错误排版问题"
+            ]
+        },
+        {
+            version: "RC-H 1.0.1.1 ",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 点击版本更新公告时，窗口的淡入，淡出效果"
+            ]
+        },
+        {
+            version: "RC-H 1.0.1 ",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 版本更新公告，快速查看更新内容",
+                "新增 进入小游戏页面的过渡效果"
+            ]
+        },
+        {
+            version: "RC-H 1.0.0 ",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "上线 [点击方块]小游戏",
+                "新增 各项界面视觉体验"
+            ]
+        }
+    ],
+    miniGameSnakeContent: [
+        {
+            version: "RC 1.0.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-04-02",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 贪吃蛇游戏",
+                "新增 WASD键和鼠标控制",
+                "新增 成就系统",
+                "优化 界面风格统一"
+            ]
+        }
+    ],
+    miniGameColormatchContent: [
+        {
+            version: "RC 1.0.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-04-16",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 颜色匹配游戏",
+                "新增 游戏成就系统",
+                "新增 游戏排行榜功能"
+            ]
+        }
+    ],
+    miniGameMemoryContent: [
+        {
+            version: "RC 1.1.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-04-18",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增功能",
+                "- 新增成就：记忆卡牌专家（累计完成20局游戏）",
+                "- 新增成就：记忆大师（单局得分达到300分）",
+                "优化改进",
+                "- 修复成就数据互通问题"
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-04-07",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "上线 记忆卡牌小游戏（BETA）",
+                "新增 卡牌翻转匹配玩法"
+            ]
+        }
+    ],
+    miniGameWzqContent: [
+        {
+            version: "RC 1.2.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.2.0",
+            date: "2026-03-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 界面风格统一",
+                "新增 个人中心页面快捷跳转",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-03-24",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 成就系统",
+            ]
+        },
+        {
+            version: "RC 1.0.2",
+            date: "2026-02-28",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "删除 更多游戏按钮",
+            ]
+        },
+        {
+            version: "RC 1.0.1",
+            date: "2026-02-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 查看版本公告时固定窗口大小使其不会来回变动",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 人机对战功能",
+			        "新增 时间无限制功能",
+			        "优化 顶部状态栏样式统一",
+                    "修复 游戏结束后卡死问题",
+                    "增强 AI对战强度"
+            ]
+        },
+        {
+            version: "Beta v0.2.0",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 棋盘比例调整",
+            ]
+        },
+        {
+            version: "Beta v0.1.0",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "通告 游戏上线",
+            ]
+        }
+    ],
+    miniGameFxqContent: [
+        
+        {
+            version: "RC 1.2.2",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化改进",
+                "- 飞行器游戏样式重构：将飞行器小游戏页面样式重构为与点击方块小游戏相同的设计风格，包括左侧边栏导航和右侧主内容区布局",
+            ]
+        },
+        {
+            version: "RC 1.2.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.2.0",
+            date: "2026-03-24",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 成就系统",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-02-27",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 梦魇难度",
+			        "优化 顶部状态栏样式统一",
+			        "修复 上个版本并未正确修复的游戏结束后卡死问题",
+			        "增强 障碍物生成逻辑",
+					"增强 AI难度逻辑",
+					"删除 更多游戏按钮"
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-02-27",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "通告 飞行器小游戏上线",
+                    "新增 自动飞行功能",
+                    "新增 时间无限制功能",
+                    "优化 顶部状态栏样式统一",
+                    "修复 游戏结束后卡死问题",
+                    "增强 障碍物生成逻辑"
+            ]
+        }
+    ],
+    miniGameFkgameContent: [
+        {
+            version: "RC 1.3.1",
+            date: "2026-05-11",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "调整 更新公告统一存放至个人中心页面的“版本更新”选项卡，方便玩家查看和管理更新",
+            ]
+        },
+        {
+            version: "RC 1.3.0",
+            date: "2026-03-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 界面风格统一",
+                "新增 重置排行榜功能",
+                "新增 个人中心页面快捷跳转"
+            ]
+        },
+        {
+            version: "RC 1.2.0",
+            date: "2026-03-24",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "新增 游戏成就系统",
+            ]
+        },
+        {
+            version: "RC 1.1.2",
+            date: "2026-02-28",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "删除 更多游戏按钮",
+            ]
+        },
+        {
+            version: "RC 1.1.1",
+            date: "2026-02-27",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 查看版本公告时固定窗口大小使其不会来回变动",
+            ]
+        },
+        {
+            version: "RC 1.1.0",
+            date: "2026-02-26",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 英文语言",
+                "新增 中英文语言切换按钮",
+                "新增 版本更新公告重要更新提示",
+                "新增 游戏排行榜功能",
+                "通告：目前正在进行多语种适配，预计将在不久之后的版本实装更多语言（例如日语和韩语），请持续关注GBG工作室。",
+            ]
+        },
+        {
+            version: "RC 1.0.1.2",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "新增 版本更新公告切换正式版(RC)/测试版(Beta)按钮",
+            ]
+        },
+        {
+            version: "RC 1.0.1.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 点击版本更新公告时，窗口的淡入，淡出效果",
+            ]
+        },
+        {
+            version: "RC 1.0.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "修复 返回首页按钮未正确生效的问题",
+            ]
+        },
+        {
+            version: "RC 1.0.0",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "通告 游戏正式上线，版本自动更替已从Beta转至RC",
+            ]
+        },
+        {
+            version: "Beta v0.1.4",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "修复 由版本更新公告导致全局卡死，无法正常进行游戏的问题",
+                "修复 更改难度时背景颜色并未正确生效的问题"
+            ]
+        },
+        {
+            version: "Beta v0.1.3.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 公告排版及其显示逻辑",
+            ]
+        },
+        {
+            version: "Beta v0.1.3",
+            date: "2026-02-26",
+            tag: "important",
+            tagText: "重要更新",
+            features: [
+                "新增 版本更新公告功能",
+                "新增 游戏排行榜功能",
+                "新增 游戏成就系统（部分）"
+            ]
+        },
+        {
+            version: "Beta v0.1.2",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "优化 游戏界面布局",
+                "优化 游戏难度设置"
+            ]
+        },
+        {
+            version: "Beta v0.1.1",
+            date: "2026-02-26",
+            tag: "normal",
+            tagText: "常规更新",
+            features: [
+                "修复 游戏计时器问题",
+                "优化 游戏响应速度"
+            ]
+        },
+        {
+            version: "Beta v0.1.0",
+            date: "2026-02-26",
+            tag: "major",
+            tagText: "重大更新",
+            features: [
+                "游戏首次发布Beta版本",
+                "基础游戏功能实现"
+            ]
+        }
+    ]
+};
+
+// 加载版本历史数据到页面
+function loadVersionHistory() {
+    // 遍历所有版本历史内容区域
+    Object.keys(versionHistoryData).forEach(function(sectionId) {
+        var section = document.getElementById(sectionId);
+        if (section) {
+            // 清空现有内容
+            section.innerHTML = '';
+            
+            // 添加版本更新项
+            versionHistoryData[sectionId].forEach(function(versionItem) {
+                var versionElement = document.createElement('div');
+                versionElement.className = 'version-item';
+                
+                // 检查版本是否已查看
+                var versionId = generateVersionId(versionItem);
+                var isVersionViewedFlag = isVersionViewed(versionId);
+                
+                // 构建版本项HTML
+                var versionHTML = `
+                    <div class="version-header">
+                        <span class="version-number">${versionItem.version}</span>
+                        <div class="version-header-content">
+                            ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
+                            ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                            <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                        </div>
+                        <span class="version-date">${versionItem.date}</span>
+                    </div>
+                    <div class="version-details" style="display: none;">
+                `
+                
+                // 添加版本图片（如果有）
+                if (versionItem.images && versionItem.images.length > 0) {
+                    var isSingleImage = versionItem.images.length === 1;
+                    versionHTML += `
+                        <div class="version-images-container">
+                            <div class="version-scroll-btn left" onclick="scrollVersionImages(this, -1)">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </div>
+                            <div class="version-images ${isSingleImage ? 'single-image' : ''}">
+                    `;
+                    versionItem.images.forEach(function(image) {
+                        var imageUrl = getVersionImageUrl(image);
+                        versionHTML += `
+                            <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
+                                <img src="${imageUrl}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                                <div class="image-tooltip">查看图片</div>
+                            </div>
+                        `;
+                    });
+                    versionHTML += `
+                            </div>
+                            <div class="version-scroll-btn right" onclick="scrollVersionImages(this, 1)">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // 添加版本特性
+                versionHTML += `
+                        <ul class="version-features">
+                `;
+                
+                versionItem.features.forEach(function(feature) {
+                    // 解析颜色格式 [color:red]文本[/color]
+                    let formattedFeature = feature;
+                    const colorRegex = /\[color:(\w+)\]([^\[]+)\[\/color\]/g;
+                    formattedFeature = formattedFeature.replace(colorRegex, '<span style="color: $1;">$2</span>');
+                    
+                    versionHTML += `
+                            <li>${formattedFeature}</li>
+                    `;
+                });
+                
+                versionHTML += `
+                        </ul>
+                    </div>
+                `;
+                
+                versionElement.innerHTML = versionHTML;
+                section.appendChild(versionElement);
+            });
+            initVersionScrollButtons();
+        }
+    });
+    
+    // 为选择功能更新按钮添加点击事件
+    var featureUpdateNav = document.getElementById('featureUpdateNav');
+    if (featureUpdateNav) {
+        featureUpdateNav.addEventListener('click', function(e) {
+            // 阻止事件冒泡，避免触发导航初始化中的点击事件
+            e.stopPropagation();
+            
+            // 显示子按钮
+            var subButtons = document.getElementById('featureSubButtons');
+            if (subButtons) {
+                var isHidden = subButtons.style.display === 'none';
+                subButtons.style.display = isHidden ? 'block' : 'none';
+                
+                // 如果是收起子按钮，隐藏所有"查看中"tag
+                if (!isHidden) {
+                    var allViewingTags = document.querySelectorAll('.viewing-tag');
+                    allViewingTags.forEach(function(tag) {
+                        tag.style.display = 'none';
+                    });
+                }
+            }
+            
+            // 隐藏过时版本记录和小游戏的子按钮
+            var outdatedSubButtons = document.getElementById('outdatedSubButtons');
+            if (outdatedSubButtons) {
+                outdatedSubButtons.style.display = 'none';
+            }
+            var miniGameSubButtons = document.getElementById('miniGameSubButtons');
+            if (miniGameSubButtons) {
+                miniGameSubButtons.style.display = 'none';
+            }
+            
+            // 显示提示文本
+            var contentArea = document.querySelector('.terms-content');
+            if (contentArea) {
+                contentArea.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的功能更新</p>
+                    </div>
+                `;
+            }
+            
+            // 确保其他导航项不处于active状态
+            var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
+            navItems.forEach(function(navItem) {
+                navItem.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    }
+    
+    // 为过时版本记录按钮添加点击事件
+    var earlyUpdateNav = document.getElementById('earlyUpdateNav');
+    if (earlyUpdateNav) {
+        earlyUpdateNav.addEventListener('click', function(e) {
+            // 阻止事件冒泡，避免触发导航初始化中的点击事件
+            e.stopPropagation();
+            
+            // 显示子按钮
+            var subButtons = document.getElementById('outdatedSubButtons');
+            if (subButtons) {
+                var isHidden = subButtons.style.display === 'none';
+                subButtons.style.display = isHidden ? 'block' : 'none';
+                
+                // 如果是收起子按钮，隐藏所有"查看中"tag
+                if (!isHidden) {
+                    var allViewingTags = document.querySelectorAll('.viewing-tag');
+                    allViewingTags.forEach(function(tag) {
+                        tag.style.display = 'none';
+                    });
+                }
+            }
+            
+            // 隐藏选择功能更新和小游戏的子按钮
+            var featureSubButtons = document.getElementById('featureSubButtons');
+            if (featureSubButtons) {
+                featureSubButtons.style.display = 'none';
+            }
+            var miniGameSubButtons = document.getElementById('miniGameSubButtons');
+            if (miniGameSubButtons) {
+                miniGameSubButtons.style.display = 'none';
+            }
+            
+            // 显示提示文本
+            var contentArea = document.querySelector('.terms-content');
+            if (contentArea) {
+                contentArea.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的过时版本记录</p>
+                    </div>
+                `;
+            }
+            
+            // 确保其他导航项不处于active状态
+            var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
+            navItems.forEach(function(navItem) {
+                navItem.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    }
+    
+    // 为小游戏更新记录按钮添加点击事件
+    var miniGameUpdateNav = document.getElementById('miniGameUpdateNav');
+    if (miniGameUpdateNav) {
+        miniGameUpdateNav.addEventListener('click', function(e) {
+            // 阻止事件冒泡，避免触发导航初始化中的点击事件
+            e.stopPropagation();
+            
+            // 显示子按钮
+            var subButtons = document.getElementById('miniGameSubButtons');
+            if (subButtons) {
+                var isHidden = subButtons.style.display === 'none';
+                subButtons.style.display = isHidden ? 'block' : 'none';
+                
+                // 如果是收起子按钮，隐藏所有"查看中"tag
+                if (!isHidden) {
+                    var allViewingTags = document.querySelectorAll('.viewing-tag');
+                    allViewingTags.forEach(function(tag) {
+                        tag.style.display = 'none';
+                    });
+                }
+            }
+            
+            // 隐藏其他子按钮
+            var featureSubButtons = document.getElementById('featureSubButtons');
+            if (featureSubButtons) {
+                featureSubButtons.style.display = 'none';
+            }
+            
+            var outdatedSubButtons = document.getElementById('outdatedSubButtons');
+            if (outdatedSubButtons) {
+                outdatedSubButtons.style.display = 'none';
+            }
+            
+            // 显示提示文本
+            var contentArea = document.querySelector('.terms-content');
+            if (contentArea) {
+                contentArea.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的小游戏更新记录</p>
+                    </div>
+                `;
+            }
+            
+            // 确保其他导航项不处于active状态
+            var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
+            navItems.forEach(function(navItem) {
+                navItem.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    }
+    
+    // 按主版本号和次版本号分组版本数据
+    function groupVersionsByMajorVersion(versions) {
+        var grouped = {};
+        
+        versions.forEach(function(versionItem) {
+            // 提取主版本号和次版本号
+            var versionMatch = versionItem.version.match(/RC\s+(\d+)\.(\d+)\.\d+\.\d+/);
+            var majorVersion;
+            var isRC = versionItem.version.includes('RC');
+            var isMiniGame = versionItem.version.startsWith('V ');
+            
+            if (versionMatch) {
+                // RC 格式: "RC 2.6.0.1 (b3)" -> "2.6"
+                majorVersion = versionMatch[1] + '.' + versionMatch[2];
+            } else if (isMiniGame) {
+                // 小游戏格式: "V 1.1.0" -> "1.1"
+                versionMatch = versionItem.version.match(/V\s+(\d+)\.(\d+)/);
+                majorVersion = versionMatch ? versionMatch[1] + '.' + versionMatch[2] : '其他版本';
+            } else {
+                // 处理其他格式的版本号
+                versionMatch = versionItem.version.match(/(\d+)\.(\d+)/);
+                majorVersion = versionMatch ? versionMatch[1] + '.' + versionMatch[2] : '其他版本';
+            }
+            
+            if (!grouped[majorVersion]) {
+                grouped[majorVersion] = { versions: [], isRC: isRC, isMiniGame: isMiniGame };
+            }
+            grouped[majorVersion].versions.push(versionItem);
+        });
+        
+        // 按版本号降序排序
+        var sortedGroups = [];
+        Object.keys(grouped).sort(function(a, b) {
+            // 处理"其他版本"的情况
+            if (a === '其他版本') return 1;
+            if (b === '其他版本') return -1;
+            
+            // 提取版本号进行比较
+            var aParts = a.split('.').map(Number);
+            var bParts = b.split('.').map(Number);
+            
+            // 比较主版本号
+            if (aParts[0] !== bParts[0]) {
+                return bParts[0] - aParts[0];
+            }
+            // 比较次版本号
+            if (aParts[1] !== bParts[1]) {
+                return bParts[1] - aParts[1];
+            }
+            return 0;
+        }).forEach(function(key) {
+            var group = { 
+                majorVersion: key, 
+                versions: grouped[key].versions, 
+                isRC: grouped[key].isRC,
+                isMiniGame: grouped[key].isMiniGame
+            };
+            
+            // 计算最早和最晚日期
+            if (group.versions.length > 0) {
+                // 按日期正序排序以获取最早和最晚日期
+                var sortedByDate = [...group.versions].sort(function(a, b) {
+                    return new Date(a.date) - new Date(b.date);
+                });
+                group.startDate = sortedByDate[0].date;
+                group.endDate = sortedByDate[sortedByDate.length - 1].date;
+                
+                // 按日期倒序排序版本列表
+                group.versions.sort(function(a, b) {
+                    return new Date(b.date) - new Date(a.date);
+                });
+            }
+            
+            sortedGroups.push(group);
+        });
+        
+        return sortedGroups;
+    }
+    
+    // 为子按钮添加点击事件
+    var subButtons = document.querySelectorAll('.sub-button');
+    subButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            // 阻止事件冒泡
+            e.stopPropagation();
+            
+            // 隐藏所有"查看中"tag
+            var allViewingTags = document.querySelectorAll('.viewing-tag');
+            allViewingTags.forEach(function(tag) {
+                tag.style.display = 'none';
+            });
+            
+            // 显示当前按钮的"查看中"tag
+            var viewingTag = this.querySelector('.viewing-tag');
+            if (viewingTag) {
+                viewingTag.style.display = 'inline-block';
+            }
+            
+            var type = this.getAttribute('data-type');
+            var contentArea = document.querySelector('.terms-content');
+            if (contentArea) {
+                // 清空内容
+                contentArea.innerHTML = '';
+                
+                // 检查按钮所属的父容器，确定加载哪种数据
+                var parentId = this.closest('.sub-buttons').id;
+                var data;
+                
+                if (parentId === 'featureSubButtons') {
+                    // 功能更新按钮
+                    data = type === 'launcher' ? versionHistoryData.launcherUpdateContent : versionHistoryData.homepageUpdateContent;
+                } else if (parentId === 'outdatedSubButtons') {
+                    // 过时版本记录按钮
+                    data = type === 'launcher' ? versionHistoryData.outdatedLauncherContent : versionHistoryData.outdatedHomepageContent;
+                } else if (parentId === 'miniGameSubButtons') {
+                    // 小游戏更新记录按钮
+                    var miniGameDataMap = {
+                        'snake': versionHistoryData.miniGameSnakeContent,
+                        'colormatch': versionHistoryData.miniGameColormatchContent,
+                        'memory': versionHistoryData.miniGameMemoryContent,
+                        'wzq': versionHistoryData.miniGameWzqContent,
+                        'fxq': versionHistoryData.miniGameFxqContent,
+                        'fkgame': versionHistoryData.miniGameFkgameContent
+                    };
+                    data = miniGameDataMap[type] || [];
+                }
+                
+                // 按主版本号分组
+                var groupedVersions = groupVersionsByMajorVersion(data);
+                
+                // 显示版本选择界面
+                function showVersionSelection() {
+                    // 清空内容
+                    contentArea.innerHTML = '';
+                    
+                    // 添加提示文本
+                    var hintText = document.createElement('p');
+                    hintText.className = 'version-selection-hint';
+                    hintText.style.cssText = `
+                        font-style: normal;
+                        text-align: center;
+                        padding: 20px 0;
+                        margin-bottom: 20px;
+                        font-size: 16px;
+                    `;
+                    hintText.textContent = ' 请选择要查看的版本更新 ';
+                    contentArea.appendChild(hintText);
+                    
+                    // 按维护状态分组版本
+                    var maintainingVersions = [];
+                    var endedVersions = [];
+                    var outdatedVersions = [];
+                    
+                    var isOutdatedPage = parentId === 'outdatedSubButtons';
+                    var latestVersion = groupedVersions[0]?.majorVersion;
+                    
+                    groupedVersions.forEach(function(group) {
+                        if (isOutdatedPage) {
+                            outdatedVersions.push(group);
+                        } else {
+                            if (group.majorVersion === latestVersion) {
+                                maintainingVersions.push(group);
+                            } else {
+                                endedVersions.push(group);
+                            }
+                        }
+                    });
+                    
+                    // 创建版本按钮网格容器
+                    var versionsContainer = document.createElement('div');
+                    versionsContainer.style.cssText = `
+                        padding: 0 20px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 24px;
+                    `;
+                    contentArea.appendChild(versionsContainer);
+                    
+                    // 创建分组函数
+                    function createVersionGroup(title, icon, color, versions) {
+                        if (versions.length === 0) return;
+                        
+                        // 创建分组标题
+                        var groupHeader = document.createElement('div');
+                        groupHeader.style.cssText = `
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            margin-bottom: 16px;
+                            padding: 12px 20px;
+                            background: linear-gradient(135deg, ${color}15 0%, ${color}08 100%);
+                            border-radius: 10px;
+                            border-left: 4px solid ${color};
+                        `;
+                        
+                        groupHeader.innerHTML = `
+                            <span style="font-size: 20px;">${icon}</span>
+                            <span style="font-size: 16px; font-weight: bold; color: ${color}; margin: 0;">${title}</span>
+                            <span style="font-size: 14px; color: #888; margin-left: auto;">共 ${versions.length} 个版本</span>
+                        `;
+                        
+                        // 创建网格容器
+                        var gridContainer = document.createElement('div');
+                        gridContainer.style.cssText = `
+                            display: grid;
+                            grid-template-columns: repeat(4, 1fr);
+                            gap: 16px;
+                            margin-bottom: 8px;
+                        `;
+                        
+                        // 创建版本按钮
+                        versions.forEach(function(group) {
+                            var groupButton = document.createElement('button');
+                            groupButton.className = 'version-group-button';
+                            
+                            var isDarkMode = document.body.classList.contains('dark-mode');
+                            var bgColor = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
+                            var borderColor = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
+                            var shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.06)';
+                            var textColor1 = isDarkMode ? '#e0e0e0' : '#444';
+                            var textColor2 = isDarkMode ? '#ccc' : '#666';
+                            
+                            groupButton.style.cssText = `
+                                position: relative;
+                                padding: 20px 16px;
+                                border: none;
+                                border-radius: 12px;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                                background: ${bgColor};
+                                border: 2px solid ${borderColor};
+                                text-align: left;
+                                display: flex;
+                                flex-direction: column;
+                                gap: 8px;
+                                min-height: 90px;
+                                box-shadow: 0 2px 10px ${shadowColor};
+                            `;
+                            
+                            // 添加鼠标悬浮效果
+                            groupButton.addEventListener('mouseenter', function() {
+                                this.style.transform = 'translateY(-3px)';
+                                this.style.boxShadow = '0 8px 20px rgba(212, 93, 121, 0.2)';
+                                this.style.borderColor = '#d45d79';
+                            });
+                            
+                            groupButton.addEventListener('mouseleave', function() {
+                                this.style.transform = 'translateY(0)';
+                                this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.06)';
+                                this.style.borderColor = 'rgba(212, 93, 121, 0.3)';
+                            });
+                            
+                            // 添加点击效果
+                            groupButton.addEventListener('mousedown', function() {
+                                this.style.transform = 'translateY(-1px) scale(0.99)';
+                            });
+                            
+                            groupButton.addEventListener('mouseup', function() {
+                                this.style.transform = 'translateY(-3px)';
+                            });
+                            
+                            // 确定版本状态
+                            var versionStatus = '';
+                            var statusColor = '';
+                            
+                            if (isOutdatedPage) {
+                                versionStatus = '已过时';
+                                statusColor = '#999';
+                            } else if (group.majorVersion === latestVersion) {
+                                versionStatus = '维护中';
+                                statusColor = '#4CAF50';
+                            } else {
+                                versionStatus = '已结束';
+                                statusColor = '#f44336';
+                            }
+                            
+                            // 计算该主版本下未查看的子版本数量
+                            var unviewedCount = group.versions.filter(function(subVersion) {
+                                var subVersionId = generateVersionId(subVersion);
+                                return !isVersionViewed(subVersionId);
+                            }).length;
+                            
+                            // 设置按钮内容
+                            groupButton.innerHTML = `
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <span style="font-size: 18px; font-weight: bold; color: #e67e8a;">${group.isRC ? 'RC' : (group.isMiniGame ? 'V' : '版本')} ${group.majorVersion}</span>
+                                    <span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${statusColor}; color: white;">${versionStatus}</span>
+                                </div>
+                                <div style="font-size: 14px; color: ${textColor1};">共 ${group.versions.length} 个版本</div>
+                                <div style="font-size: 13px; color: ${textColor2};">${group.startDate} ~ ${group.endDate}</div>
+                                ${unviewedCount > 0 ? `<span class="notification-dot">${unviewedCount}<span class="notification-tooltip">存在未查看的更新，数量${unviewedCount}个</span></span>` : ''}
+                            `;
+                            
+                            // 添加点击事件，标记版本为已查看
+                            groupButton.addEventListener('click', function() {
+                                // 标记所有子版本为已查看
+                                group.versions.forEach(function(subVersion) {
+                                    var subVersionId = generateVersionId(subVersion);
+                                    markVersionAsViewed(subVersionId);
+                                });
+                            }, true);
+                            
+                            // 添加点击事件，显示该主版本号下的所有版本
+                            groupButton.addEventListener('click', function() {
+                                // 清空内容
+                                contentArea.innerHTML = '';
+                                
+                                // 添加返回按钮和排序控制
+                                var controlsContainer = document.createElement('div');
+                                controlsContainer.style.cssText = `
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: flex-start;
+                                    margin-bottom: 0;
+                                    position: sticky;
+                                    top: 0;
+                                    z-index: 100;
+                                    background-color: none;
+                                    padding: 0;
+                                    border-radius: 10px 10px 0 0;
+                                `;
+                                
+                                // 按钮容器
+                                var buttonContainer = document.createElement('div');
+                                buttonContainer.style.cssText = `
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                    margin-bottom: 5px;
+                                    margin-top: 2px;
+                                `;
+                                
+                                // 返回按钮
+                                var backButton = document.createElement('button');
+                                backButton.className = 'back-button';
+                                backButton.style.cssText = `
+                                    padding: 8px 16px;
+                                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                `;
+                                
+                                // 添加鼠标悬浮效果
+                                backButton.addEventListener('mouseenter', function() {
+                                    this.style.transform = 'translateY(-3px)';
+                                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                                });
+                                
+                                backButton.addEventListener('mouseleave', function() {
+                                    this.style.transform = 'translateY(0)';
+                                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                                });
+                                backButton.innerHTML = '<i class="fas fa-arrow-left"></i> 返回';
+                                
+                                // 返回按钮点击事件
+                                backButton.addEventListener('click', showVersionSelection);
+                                
+                                // 排序按钮
+                                var sortButton = document.createElement('button');
+                                sortButton.className = 'sort-button';
+                                sortButton.style.cssText = `
+                                    padding: 8px 16px;
+                                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                `;
+                                
+                                // 添加鼠标悬浮效果
+                                sortButton.addEventListener('mouseenter', function() {
+                                    this.style.transform = 'translateY(-3px)';
+                                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                                });
+                                
+                                sortButton.addEventListener('mouseleave', function() {
+                                    this.style.transform = 'translateY(0)';
+                                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                                });
+                                
+                                // 排序状态
+                                var isAscending = false;
+                                sortButton.innerHTML = '<i class="fas fa-sort-down"></i> 倒序';
+                                
+                                // 排序函数
+                                function sortVersions() {
+                                    // 切换排序状态
+                                    isAscending = !isAscending;
+                                    
+                                    // 更新排序按钮文本
+                                    if (isAscending) {
+                                        sortButton.innerHTML = '<i class="fas fa-sort-up"></i> 正序';
+                                    } else {
+                                        sortButton.innerHTML = '<i class="fas fa-sort-down"></i> 倒序';
+                                    }
+                                    
+                                    // 清空内容，重新添加控件
+                                    contentArea.innerHTML = '';
+                                    contentArea.appendChild(controlsContainer);
+                                    
+                                    // 排序版本
+                                    var sortedVersions = [...group.versions];
+                                    sortedVersions.sort(function(a, b) {
+                                        // 提取版本号进行比较
+                                        var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        
+                                        // 如果RC格式不匹配，尝试小游戏格式 "V 1.1.0"
+                                        if (!aMatch) {
+                                            aMatch = a.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        }
+                                        if (!bMatch) {
+                                            bMatch = b.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                        }
+                                        
+                                        if (aMatch && bMatch) {
+                                            var aVersion = aMatch.slice(1).map(Number);
+                                            var bVersion = bMatch.slice(1).map(Number);
+                                            
+                                            // 确保版本号数组长度一致
+                                            while (aVersion.length < 4) aVersion.push(0);
+                                            while (bVersion.length < 4) bVersion.push(0);
+                                            
+                                            for (var i = 0; i < 4; i++) {
+                                                if (aVersion[i] !== bVersion[i]) {
+                                                    return isAscending ? aVersion[i] - bVersion[i] : bVersion[i] - aVersion[i];
+                                                }
+                                            }
+                                        }
+                                        
+                                        // 如果版本号格式不匹配，按日期排序
+                                        return isAscending ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+                                    });
+                                    
+                                    // 生成排序后的版本历史内容
+                                    sortedVersions.forEach(function(versionItem) {
+                                        var versionElement = document.createElement('div');
+                                        versionElement.className = 'version-item';
+                                        
+                                        // 检查版本是否已查看
+                                        var versionId = generateVersionId(versionItem);
+                                        var isVersionViewedFlag = isVersionViewed(versionId);
+                                        
+                                        // 构建版本项HTML
+                                        var versionHTML = `
+                                            <div class="version-header">
+                                                <span class="version-number">${versionItem.version}</span>
+                                                <div class="version-header-content">
+                                                    ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
+                                                    ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                                                    <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                                                </div>
+                                                <span class="version-date">${versionItem.date}</span>
+                                            </div>
+                                            <div class="version-details" style="display: none;">
+                                        `;
+                                        
+                                        // 添加版本图片（如果有）
+                                        if (versionItem.images && versionItem.images.length > 0) {
+                                            var isSingleImage = versionItem.images.length === 1;
+                                            versionHTML += `
+                                                <div class="version-images-container">
+                                                    <div class="version-scroll-btn left" onclick="scrollVersionImages(this, -1)">
+                                                        <i class="fa-solid fa-chevron-left"></i>
+                                                    </div>
+                                                    <div class="version-images ${isSingleImage ? 'single-image' : ''}">
+                                            `;
+                                            versionItem.images.forEach(function(image) {
+                                                var imageUrl = getVersionImageUrl(image);
+                                                versionHTML += `
+                                                    <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
+                                                        <img src="${imageUrl}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                                                        <div class="image-tooltip">查看图片</div>
+                                                    </div>
+                                                `;
+                                            });
+                                            versionHTML += `
+                                                    </div>
+                                                    <div class="version-scroll-btn right" onclick="scrollVersionImages(this, 1)">
+                                                        <i class="fa-solid fa-chevron-right"></i>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }
+                                        
+                                        // 添加版本特性
+                                        versionHTML += `
+                                                <ul class="version-features">
+                                        `;
+                                        
+                                        versionItem.features.forEach(function(feature) {
+                                            // 解析颜色格式 [color:red]文本[/color]
+                                            let formattedFeature = feature;
+                                            const colorRegex = /\[color:(\w+)\]([^\[]+)\[\/color\]/g;
+                                            formattedFeature = formattedFeature.replace(colorRegex, '<span style="color: $1;">$2</span>');
+                                            
+                                            versionHTML += `
+                                                    <li>${formattedFeature}</li>
+                                            `;
+                                        });
+                                        
+                                        versionHTML += `
+                                                </ul>
+                                            </div>
+                                        `;
+                                        
+                                        versionElement.innerHTML = versionHTML;
+                                        contentArea.appendChild(versionElement);
+                                    });
+                                    initVersionScrollButtons();
+                                }
+                                
+                                // 排序按钮点击事件
+                                sortButton.addEventListener('click', sortVersions);
+                                
+                                // 全部展开/收起按钮
+                                var expandAllButton = document.createElement('button');
+                                expandAllButton.className = 'expand-all-button';
+                                expandAllButton.style.cssText = `
+                                    padding: 8px 16px;
+                                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                `;
+                                
+                                // 添加鼠标悬浮效果
+                                expandAllButton.addEventListener('mouseenter', function() {
+                                    this.style.transform = 'translateY(-3px)';
+                                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                                });
+                                
+                                expandAllButton.addEventListener('mouseleave', function() {
+                                    this.style.transform = 'translateY(0)';
+                                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                                });
+                                
+                                // 展开状态
+                                var isAllExpanded = false;
+                                expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
+                                
+                                // 全部展开/收起函数
+                                function toggleAllVersions() {
+                                    isAllExpanded = !isAllExpanded;
+                                    
+                                    if (isAllExpanded) {
+                                        expandAllButton.innerHTML = '<i class="fas fa-chevron-up"></i> 全部收起';
+                                        // 展开所有版本详情
+                                        var allDetails = contentArea.querySelectorAll('.version-details');
+                                        var allButtons = contentArea.querySelectorAll('.view-log-btn');
+                                        allDetails.forEach(function(details) {
+                                            details.style.display = 'block';
+                                        });
+                                        allButtons.forEach(function(btn) {
+                                            btn.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
+                                        });
+                                    } else {
+                                        expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
+                                        // 收起所有版本详情
+                                        var allDetails = contentArea.querySelectorAll('.version-details');
+                                        var allButtons = contentArea.querySelectorAll('.view-log-btn');
+                                        allDetails.forEach(function(details) {
+                                            details.style.display = 'none';
+                                        });
+                                        allButtons.forEach(function(btn) {
+                                            btn.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
+                                        });
+                                    }
+                                }
+                                
+                                expandAllButton.addEventListener('click', toggleAllVersions);
+                                
+                                // 添加按钮到按钮容器
+                                buttonContainer.appendChild(backButton);
+                                buttonContainer.appendChild(sortButton);
+                                buttonContainer.appendChild(expandAllButton);
+                                
+                                // 添加按钮容器到控件容器
+                                controlsContainer.appendChild(buttonContainer);
+                                
+                                // 添加控件容器到内容区域
+                                contentArea.appendChild(controlsContainer);
+                                
+                                // 初始生成版本历史内容（默认倒序）
+                                var sortedVersions = [...group.versions];
+                                sortedVersions.sort(function(a, b) {
+                                    // 提取版本号进行比较
+                                    var aMatch = a.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                    var bMatch = b.version.match(/RC.*?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/);
+                                    
+                                    // 如果RC格式不匹配，尝试小游戏格式 "V 1.1.0"
+                                    if (!aMatch) {
+                                        aMatch = a.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                    }
+                                    if (!bMatch) {
+                                        bMatch = b.version.match(/V\s+(\d+)\.(\d+)(?:\.(\d+))?/);
+                                    }
+                                    
+                                    if (aMatch && bMatch) {
+                                        var aVersion = aMatch.slice(1).map(Number);
+                                        var bVersion = bMatch.slice(1).map(Number);
+                                        
+                                        // 确保版本号数组长度一致
+                                        while (aVersion.length < 4) aVersion.push(0);
+                                        while (bVersion.length < 4) bVersion.push(0);
+                                        
+                                        for (var i = 0; i < 4; i++) {
+                                            if (aVersion[i] !== bVersion[i]) {
+                                                return bVersion[i] - aVersion[i]; // 倒序
+                                            }
+                                        }
+                                    }
+                                    
+                                    // 如果版本号格式不匹配，按日期倒序排序
+                                    return new Date(b.date) - new Date(a.date);
+                                });
+                                
+                                sortedVersions.forEach(function(versionItem) {
+                                    var versionElement = document.createElement('div');
+                                    versionElement.className = 'version-item';
+                                    
+                                    // 检查版本是否已查看
+                                    var versionId = generateVersionId(versionItem);
+                                    var isVersionViewedFlag = isVersionViewed(versionId);
+                                    
+                                    // 构建版本项HTML
+                                    var versionHTML = `
+                                        <div class="version-header">
+                                            <span class="version-number">${versionItem.version}</span>
+                                            <div class="version-header-content">
+                                                ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
+                                                ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                                                <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                                            </div>
+                                            <span class="version-date">${versionItem.date}</span>
+                                        </div>
+                                        <div class="version-details" style="display: none;">
+                                    `;
+                                    
+                                    // 添加版本图片（如果有）
+                                    if (versionItem.images && versionItem.images.length > 0) {
+                                        var isSingleImage = versionItem.images.length === 1;
+                                        versionHTML += `
+                                            <div class="version-images-container">
+                                                <div class="version-scroll-btn left" onclick="scrollVersionImages(this, -1)">
+                                                    <i class="fa-solid fa-chevron-left"></i>
+                                                </div>
+                                                <div class="version-images ${isSingleImage ? 'single-image' : ''}">
+                                        `;
+                                        versionItem.images.forEach(function(image) {
+                                            var imageUrl = getVersionImageUrl(image);
+                                            versionHTML += `
+                                                <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
+                                                    <img src="${imageUrl}" alt="版本更新图片" class="version-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
+                                                    <div class="image-tooltip">查看图片</div>
+                                                </div>
+                                            `;
+                                        });
+                                        versionHTML += `
+                                                </div>
+                                                <div class="version-scroll-btn right" onclick="scrollVersionImages(this, 1)">
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }
+                                    
+                                    // 添加版本特性
+                                    versionHTML += `
+                                            <ul class="version-features">
+                                    `;
+                                    
+                                    versionItem.features.forEach(function(feature) {
+                                        // 解析颜色格式 [color:red]文本[/color]
+                                        let formattedFeature = feature;
+                                        const colorRegex = /\[color:(\w+)\]([^\[]+)\[\/color\]/g;
+                                        formattedFeature = formattedFeature.replace(colorRegex, '<span style="color: $1;">$2</span>');
+                                        
+                                        versionHTML += `
+                                                <li>${formattedFeature}</li>
+                                        `;
+                                    });
+                                    
+                                    versionHTML += `
+                                            </ul>
+                                        </div>
+                                    `;
+                                    
+                                    versionElement.innerHTML = versionHTML;
+                                    contentArea.appendChild(versionElement);
+                                });
+                                initVersionScrollButtons();
+                            });
+                            
+                            gridContainer.appendChild(groupButton);
+                        });
+                        
+                        // 添加分组到容器
+                        versionsContainer.appendChild(groupHeader);
+                        versionsContainer.appendChild(gridContainer);
+                    }
+                    
+                    // 创建各个分组
+                    if (!isOutdatedPage) {
+                        createVersionGroup('正在维护中的版本', '🔧', '#4CAF50', maintainingVersions);
+                        createVersionGroup('已结束维护的版本', '📦', '#f44336', endedVersions);
+                    } else {
+                        createVersionGroup('已过时的版本记录', '📋', '#999', outdatedVersions);
+                    }
+                }
+                
+                // 初始显示版本选择界面
+                showVersionSelection();
+            }
+        });
+    });
+}
+
+// 切换版本详情展开/收起
+function toggleVersionDetails(button, versionId) {
+    const versionItem = button.closest('.version-item');
+    const details = versionItem.querySelector('.version-details');
+    
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        button.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
+        
+        // 标记版本为已查看
+        if (versionId) {
+            markVersionAsViewed(versionId);
+            // 移除新更新标签
+            const newUpdateTag = versionItem.querySelector('.new-update-tag');
+            if (newUpdateTag) {
+                newUpdateTag.remove();
+            }
+        }
+    } else {
+        details.style.display = 'none';
+        button.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
+    }
+}
+
+// 图片查看器功能
+function initImageViewer() {
+    // 创建图片查看器模态框
+    var imageViewerModal = document.createElement('div');
+    imageViewerModal.id = 'imageViewerModal';
+    imageViewerModal.className = 'custom-alert';
+    imageViewerModal.style.display = 'none';
+    imageViewerModal.innerHTML = `
+        <div class="image-viewer-fullscreen">
+            <div class="image-viewer-header">
+                <div class="image-viewer-title">
+                    <span>图片查看器</span>
+                </div>
+                <button class="image-viewer-close" id="closeImageViewer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="image-viewer-main">
+                <div class="image-viewer-container" id="imageViewerContainer">
+                    <img id="viewerImage" src="" alt="查看图片" draggable="false">
+                </div>
+                <div class="image-viewer-controls">
+                    <button class="viewer-control-btn" id="zoomInBtn">
+                        <i class="fas fa-search-plus"></i>
+                        <span class="viewer-btn-tooltip">放大</span>
+                    </button>
+                    <button class="viewer-control-btn" id="zoomOutBtn">
+                        <i class="fas fa-search-minus"></i>
+                        <span class="viewer-btn-tooltip">缩小</span>
+                    </button>
+                    <button class="viewer-control-btn" id="resetZoomBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span class="viewer-btn-tooltip">重置</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn" id="rotateLeftBtn">
+                        <i class="fas fa-rotate-left"></i>
+                        <span class="viewer-btn-tooltip">向左旋转</span>
+                    </button>
+                    <button class="viewer-control-btn" id="rotateRightBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span class="viewer-btn-tooltip">向右旋转</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn" id="flipHorizontalBtn">
+                        <i class="fas fa-arrows-h"></i>
+                        <span class="viewer-btn-tooltip">水平翻转</span>
+                    </button>
+                    <button class="viewer-control-btn" id="flipVerticalBtn">
+                        <i class="fas fa-arrows-v"></i>
+                        <span class="viewer-btn-tooltip">垂直翻转</span>
+                    </button>
+                    <div class="viewer-control-divider"></div>
+                    <button class="viewer-control-btn" id="componentInfoBtn">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="viewer-btn-tooltip">组件信息</span>
+                    </button>
+                </div>
+            </div>
+            <div class="image-viewer-footer">
+                <span id="viewerZoomInfo">100%</span>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(imageViewerModal);
+    
+    // 初始状态
+    var currentZoom = 1;
+    var currentX = 0;
+    var currentY = 0;
+    var currentRotation = 0;
+    var flipHorizontal = false;
+    var flipVertical = false;
+    var isDragging = false;
+    var startX = 0;
+    var startY = 0;
+    var viewerImage = document.getElementById('viewerImage');
+    var imageContainer = document.getElementById('imageViewerContainer');
+    
+    // 设置图片样式
+    viewerImage.style.position = 'relative';
+    viewerImage.style.transformOrigin = 'center center';
+    viewerImage.style.cursor = 'grab';
+    
+    // 关闭图片查看器
+    document.getElementById('closeImageViewer').addEventListener('click', function() {
+        imageViewerModal.classList.remove('show');
+        setTimeout(function() {
+            imageViewerModal.style.display = 'none';
+            viewerImage.src = '';
+            resetViewer();
+        }, 300); // 等待动画完成
+    });
+    
+    // 放大图片
+    document.getElementById('zoomInBtn').addEventListener('click', function() {
+        zoomImage(0.1);
+    });
+    
+    // 缩小图片
+    document.getElementById('zoomOutBtn').addEventListener('click', function() {
+        zoomImage(-0.1);
+    });
+    
+    // 重置缩放
+    document.getElementById('resetZoomBtn').addEventListener('click', function() {
+        resetViewer();
+    });
+    
+    // 向左旋转
+    document.getElementById('rotateLeftBtn').addEventListener('click', function() {
+        currentRotation -= 90;
+        updateImagePosition();
+    });
+    
+    // 向右旋转
+    document.getElementById('rotateRightBtn').addEventListener('click', function() {
+        currentRotation += 90;
+        updateImagePosition();
+    });
+    
+    // 水平翻转
+    document.getElementById('flipHorizontalBtn').addEventListener('click', function() {
+        flipHorizontal = !flipHorizontal;
+        updateImagePosition();
+    });
+    
+    // 垂直翻转
+    document.getElementById('flipVerticalBtn').addEventListener('click', function() {
+        flipVertical = !flipVertical;
+        updateImagePosition();
+    });
+    
+    // 组件信息按钮
+    document.getElementById('componentInfoBtn').addEventListener('click', function() {
+        if (typeof showComponentInfoModal === 'function') {
+            showComponentInfoModal('imageViewer');
+        } else {
+            showAlert('组件信息功能不可用');
+        }
+    });
+    
+    // 鼠标滚轮放大缩小
+    imageContainer.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        var delta = e.deltaY > 0 ? -0.1 : 0.1;
+        zoomImage(delta);
+    });
+    
+    var dragStartX = 0;
+    var dragStartY = 0;
+    var dragImageStartX = 0;
+    var dragImageStartY = 0;
+    var lastX = 0;
+    var lastY = 0;
+    var velocityX = 0;
+    var velocityY = 0;
+    var lastTime = 0;
+    
+    // 鼠标拖拽开始
+    viewerImage.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragImageStartX = currentX;
+        dragImageStartY = currentY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        lastTime = Date.now();
+        velocityX = 0;
+        velocityY = 0;
+        
+        viewerImage.style.cursor = 'grabbing';
+        viewerImage.style.transition = 'none';
+    });
+    
+    // 鼠标拖拽移动
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        var now = Date.now();
+        var deltaTime = now - lastTime;
+        
+        if (deltaTime > 0) {
+            velocityX = (e.clientX - lastX) / deltaTime;
+            velocityY = (e.clientY - lastY) / deltaTime;
+        }
+        
+        lastX = e.clientX;
+        lastY = e.clientY;
+        lastTime = now;
+        
+        currentX = dragImageStartX + (e.clientX - dragStartX);
+        currentY = dragImageStartY + (e.clientY - dragStartY);
+        
+        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * (flipHorizontal ? -1 : 1)}, ${currentZoom * (flipVertical ? -1 : 1)}) rotate(${currentRotation}deg)`;
+    });
+    
+    // 鼠标拖拽结束
+    function endDrag(e) {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        viewerImage.style.cursor = 'grab';
+        
+        var now = Date.now();
+        var deltaTime = now - lastTime;
+        var shouldInertia = deltaTime < 100 && (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1);
+        
+        if (shouldInertia) {
+            var inertiaDuration = 300;
+            var startTime = now;
+            var startX = currentX;
+            var startY = currentY;
+            
+            function applyInertia() {
+                var elapsed = Date.now() - startTime;
+                var progress = Math.min(elapsed / inertiaDuration, 1);
+                var easeOut = 1 - Math.pow(1 - progress, 3);
+                
+                var inertiaMultiplier = 100 * (1 - easeOut);
+                currentX = startX + velocityX * inertiaMultiplier;
+                currentY = startY + velocityY * inertiaMultiplier;
+                
+                viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * (flipHorizontal ? -1 : 1)}, ${currentZoom * (flipVertical ? -1 : 1)}) rotate(${currentRotation}deg)`;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(applyInertia);
+                } else {
+                    viewerImage.style.transition = 'transform 0.2s ease-out';
+                    updateImagePosition();
+                }
+            }
+            
+            requestAnimationFrame(applyInertia);
+        } else {
+            viewerImage.style.transition = 'transform 0.2s ease-out';
+            updateImagePosition();
+        }
+    }
+    
+    // 添加多个事件监听器确保拖拽正确结束
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('mouseleave', function(e) {
+        if (e.target === document || e.target === document.documentElement) {
+            endDrag(e);
+        }
+    });
+    window.addEventListener('blur', endDrag);
+    
+    // 缩放图片
+    function zoomImage(delta) {
+        var newZoom = currentZoom + delta;
+        if (newZoom > 0.1 && newZoom < 5) { // 限制缩放范围
+            currentZoom = newZoom;
+            updateImagePosition();
+        }
+    }
+    
+    // 更新图片位置
+    function updateImagePosition() {
+        // 应用变换：先旋转，再翻转，再缩放和平移
+        var scaleX = flipHorizontal ? -1 : 1;
+        var scaleY = flipVertical ? -1 : 1;
+        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * scaleX}, ${currentZoom * scaleY}) rotate(${currentRotation}deg)`;
+        
+        // 同时应用变换到邮件背景预览div（如果存在）
+        var mailBgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (mailBgPreviewDiv) {
+            mailBgPreviewDiv.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom}) rotate(${currentRotation}deg)`;
+            mailBgPreviewDiv.style.transformOrigin = 'center center';
+        }
+        
+        // 更新缩放信息
+        document.getElementById('viewerZoomInfo').textContent = Math.round(currentZoom * 100) + '%';
+        
+        // 确保图片保持在窗口内
+        keepImageInBounds();
+    }
+    
+    // 确保图片保持在窗口内
+    function keepImageInBounds() {
+        var containerRect = imageContainer.getBoundingClientRect();
+        var imageRect = viewerImage.getBoundingClientRect();
+        
+        // 计算边界（考虑旋转后的情况，放宽限制）
+        var minX = containerRect.left + 10 - imageRect.left;
+        var maxX = containerRect.right - 10 - (imageRect.left + imageRect.width);
+        var minY = containerRect.top + 10 - imageRect.top;
+        var maxY = containerRect.bottom - 60 - (imageRect.top + imageRect.height); // 预留空间给底部
+        
+        // 调整位置
+        currentX = Math.max(minX, Math.min(maxX, currentX));
+        currentY = Math.max(minY, Math.min(maxY, currentY));
+        
+        // 重新应用变换
+        var scaleX = flipHorizontal ? -1 : 1;
+        var scaleY = flipVertical ? -1 : 1;
+        viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom * scaleX}, ${currentZoom * scaleY}) rotate(${currentRotation}deg)`;
+    }
+    
+    // 重置查看器
+    function resetViewer() {
+        currentZoom = 1;
+        currentX = 0;
+        currentY = 0;
+        currentRotation = 0;
+        flipHorizontal = false;
+        flipVertical = false;
+        viewerImage.style.transform = 'translate(0, 0) scale(1) rotate(0deg)';
+        viewerImage.style.cursor = 'grab';
+        viewerImage.style.display = 'block';
+        document.getElementById('viewerZoomInfo').textContent = '100%';
+        
+        // 恢复右侧功能栏（从邮件预览切换回来时）
+        var viewerControls = document.querySelector('.image-viewer-controls');
+        if (viewerControls) {
+            viewerControls.style.display = 'flex';
+            delete viewerControls.dataset.mailPreview;
+        }
+        
+        // 清理邮件背景预览元素
+        var bgPreviewDiv = document.getElementById('mailBgPreviewDiv');
+        if (bgPreviewDiv) {
+            bgPreviewDiv.style.display = 'none';
+            bgPreviewDiv.innerHTML = '';
+        }
+        
+        var dateEl = document.getElementById('mailBgPreviewDate');
+        if (dateEl) dateEl.style.display = 'none';
+        var particlesEl = document.getElementById('mailBgPreviewParticles');
+        if (particlesEl) particlesEl.style.display = 'none';
+        var badgeEl = document.getElementById('mailBgPreviewBadge');
+        if (badgeEl) badgeEl.style.display = 'none';
+    }
+    
+    // 为所有版本图片添加点击事件
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('version-image')) {
+            var imageSrc = e.target.src;
+            viewerImage.src = imageSrc;
+            resetViewer(); // 重置查看器状态
+            imageViewerModal.style.display = 'flex';
+            setTimeout(function() {
+                imageViewerModal.classList.add('show');
+                // 确保图片加载后保持在窗口内，但不自动放大
+                viewerImage.onload = function() {
+                    // 只确保图片在容器内，不调整大小
+                    var containerRect = imageContainer.getBoundingClientRect();
+                    var imageRect = viewerImage.getBoundingClientRect();
+                    
+                    // 计算边界
+                    var minX = containerRect.left + 20 - imageRect.left;
+                    var maxX = containerRect.right - 20 - (imageRect.left + imageRect.width);
+                    var minY = containerRect.top + 20 - imageRect.top;
+                    var maxY = containerRect.bottom - 100 - (imageRect.top + imageRect.height); // 预留空间给按钮
+                    
+                    // 调整位置
+                    currentX = Math.max(minX, Math.min(maxX, currentX));
+                    currentY = Math.max(minY, Math.min(maxY, currentY));
+                    
+                    // 应用变换
+                    viewerImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom})`;
+                };
+            }, 10);
+        }
+    });
+    
+    // 阻止图片被拖拽
+    document.addEventListener('dragstart', function(e) {
+        if (e.target.classList.contains('version-image') || e.target.id === 'viewerImage') {
+            e.preventDefault();
+        }
+    });
+}
+
+// 当文档加载完成时执行
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        loadVersionHistory();
+        initImageViewer();
+        updateVersionNotificationDot();
+    });
+} else {
+    loadVersionHistory();
+    initImageViewer();
+    updateVersionNotificationDot();
+}
