@@ -373,7 +373,12 @@ function bindMailEventListeners() {
     var sidebarMail = document.getElementById('sidebarMail');
     if (sidebarMail) {
         sidebarMail.addEventListener('click', function() {
-            if (sidebarMail.classList.contains('disabled-mail')) return;
+            if (sidebarMail.classList.contains('disabled-mail')) {
+                if (typeof showToastInfo === 'function') {
+                    showToastInfo('您需要登录后才可使用邮件功能');
+                }
+                return;
+            }
             showMailModal();
         });
     }

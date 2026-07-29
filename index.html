@@ -1996,16 +1996,12 @@
                         }
                     });
                     
-                    weatherModal.classList.toggle('sidebar-mode', clockSettings.sidebarMode);
+                    weatherModal.classList.add('sidebar-mode');
                     weatherModal.style.display = 'flex';
                 });
                 
                 closeBtn.addEventListener('click', function() {
-                    if (clockSettings.sidebarMode) {
-                        weatherModal.style.animation = 'slideOutToRight 0.3s ease';
-                    } else {
-                        weatherModal.style.animation = 'fadeOut 0.3s ease';
-                    }
+                    weatherModal.style.animation = 'slideOutToRight 0.3s ease';
                     setTimeout(function() {
                         weatherModal.style.display = 'none';
                         weatherModal.style.animation = '';
@@ -2014,11 +2010,7 @@
                 
                 weatherModal.addEventListener('click', function(e) {
                     if (e.target === weatherModal) {
-                        if (clockSettings.sidebarMode) {
-                            weatherModal.style.animation = 'slideOutToRight 0.3s ease';
-                        } else {
-                            weatherModal.style.animation = 'fadeOut 0.3s ease';
-                        }
+                        weatherModal.style.animation = 'slideOutToRight 0.3s ease';
                         setTimeout(function() {
                             weatherModal.style.display = 'none';
                             weatherModal.style.animation = '';
@@ -2283,7 +2275,7 @@
                 showSeconds: false,
                 weatherClickable: false,
                 weatherClickTarget: 'msn',
-                sidebarMode: false,
+                sidebarMode: true,
                 quoteTypewriter: true
             };
             
@@ -3149,7 +3141,7 @@
                 clockSettings.showLunar = false;
                 clockSettings.showQuote = false;
                 clockSettings.quoteTypewriter = true;
-                clockSettings.sidebarMode = false;
+                clockSettings.sidebarMode = true;
                 clockSettings.hideIcons = false;
                 clockSettings.weatherClickable = false;
                 clockSettings.weatherClickTarget = 'msn';
@@ -3205,9 +3197,6 @@
                 var quoteTypewriterCheckbox = document.getElementById('clockQuoteTypewriter');
                 if (quoteTypewriterCheckbox) quoteTypewriterCheckbox.checked = clockSettings.quoteTypewriter;
                 
-                var sidebarModeCheckbox = document.getElementById('clockSidebarMode');
-                if (sidebarModeCheckbox) sidebarModeCheckbox.checked = clockSettings.sidebarMode;
-                
                 var hideIconsCheckbox = document.getElementById('clockHideIcons');
                 if (hideIconsCheckbox) hideIconsCheckbox.checked = clockSettings.hideIcons;
                 
@@ -3219,10 +3208,14 @@
                     weatherClickTargetSelect.style.display = clockSettings.weatherClickable ? 'block' : 'none';
                 }
                 
-                var selectOptions = document.querySelectorAll('.weather-click-target-select .select-option');
-                selectOptions.forEach(function(option) {
-                    option.classList.toggle('active', option.dataset.target === clockSettings.weatherClickTarget);
-                });
+                var weatherClickTargetSelectEl = document.getElementById('weatherClickTarget');
+                if (weatherClickTargetSelectEl) {
+                    weatherClickTargetSelectEl.value = clockSettings.weatherClickTarget;
+                    var vpnTip = document.getElementById('weatherVpnTip');
+                    if (vpnTip) {
+                        vpnTip.style.display = clockSettings.weatherClickTarget === 'page' ? 'none' : 'flex';
+                    }
+                }
                 
                 var formatBtns = document.querySelectorAll('.format-btn');
                 formatBtns.forEach(function(btn) {
@@ -3360,7 +3353,7 @@
                 if (settingsBtn && settingsModal) {
                     settingsBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        settingsModal.classList.toggle('sidebar-mode', clockSettings.sidebarMode);
+                        settingsModal.classList.add('sidebar-mode');
                         settingsModal.style.display = 'flex';
                     });
                 }
@@ -3376,11 +3369,7 @@
                 
                 if (closeBtn && settingsModal) {
                     closeBtn.addEventListener('click', function() {
-                        if (clockSettings.sidebarMode) {
-                            settingsModal.style.animation = 'slideOutToRight 0.3s ease';
-                        } else {
-                            settingsModal.style.animation = 'fadeOut 0.3s ease';
-                        }
+                        settingsModal.style.animation = 'slideOutToRight 0.3s ease';
                         setTimeout(function() {
                             settingsModal.style.display = 'none';
                             settingsModal.style.animation = '';
@@ -3390,11 +3379,7 @@
                 
                 settingsModal.addEventListener('click', function(e) {
                     if (e.target === settingsModal) {
-                        if (clockSettings.sidebarMode) {
-                            settingsModal.style.animation = 'slideOutToRight 0.3s ease';
-                        } else {
-                            settingsModal.style.animation = 'fadeOut 0.3s ease';
-                        }
+                        settingsModal.style.animation = 'slideOutToRight 0.3s ease';
                         setTimeout(function() {
                             settingsModal.style.display = 'none';
                             settingsModal.style.animation = '';
@@ -3491,25 +3476,23 @@
                 
                 updateWeatherClickableState();
                 
-                var weatherClickTargetOptions = document.querySelectorAll('#weatherClickTargetSelect .select-option');
-                if (weatherClickTargetOptions.length > 0) {
-                    weatherClickTargetOptions.forEach(function(option) {
-                        var target = option.getAttribute('data-target');
-                        if (target === clockSettings.weatherClickTarget) {
-                            option.classList.add('active');
-                        } else {
-                            option.classList.remove('active');
+                var weatherClickTargetSelectEl = document.getElementById('weatherClickTarget');
+                if (weatherClickTargetSelectEl) {
+                    weatherClickTargetSelectEl.value = clockSettings.weatherClickTarget;
+                    
+                    weatherClickTargetSelectEl.addEventListener('change', function() {
+                        clockSettings.weatherClickTarget = this.value;
+                        var vpnTip = document.getElementById('weatherVpnTip');
+                        if (vpnTip) {
+                            vpnTip.style.display = this.value === 'page' ? 'none' : 'flex';
                         }
-                        
-                        option.addEventListener('click', function() {
-                            weatherClickTargetOptions.forEach(function(opt) {
-                                opt.classList.remove('active');
-                            });
-                            option.classList.add('active');
-                            clockSettings.weatherClickTarget = target;
-                            saveClockSettings();
-                        });
+                        saveClockSettings();
                     });
+                    
+                    var vpnTip = document.getElementById('weatherVpnTip');
+                    if (vpnTip) {
+                        vpnTip.style.display = clockSettings.weatherClickTarget === 'page' ? 'none' : 'flex';
+                    }
                 }
                 
                 var showLunarCheckbox = document.getElementById('clockShowLunar');
@@ -3559,15 +3542,6 @@
                     });
                 }
                 
-                var sidebarModeCheckbox = document.getElementById('clockSidebarMode');
-                if (sidebarModeCheckbox) {
-                    sidebarModeCheckbox.checked = clockSettings.sidebarMode;
-                    sidebarModeCheckbox.addEventListener('change', function() {
-                        clockSettings.sidebarMode = this.checked;
-                        saveClockSettings();
-                    });
-                }
-                
                 var versionBtn = document.getElementById('pageClockVersionBtn');
                 var versionNumberEl = document.getElementById('pageClockVersionNumber');
                 if (versionBtn) {
@@ -3592,11 +3566,7 @@
                         var weatherModal = document.getElementById('pageClockWeatherModal');
                         
                         if (settingsModal) {
-                            if (clockSettings.sidebarMode) {
-                                settingsModal.style.animation = 'slideOutToRight 0.3s ease';
-                            } else {
-                                settingsModal.style.animation = 'fadeOut 0.3s ease';
-                            }
+                            settingsModal.style.animation = 'slideOutToRight 0.3s ease';
                             setTimeout(function() {
                                 settingsModal.style.display = 'none';
                                 settingsModal.style.animation = '';
@@ -3604,7 +3574,7 @@
                         }
                         
                         if (weatherModal) {
-                            weatherModal.style.animation = 'fadeOut 0.3s ease';
+                            weatherModal.style.animation = 'slideOutToRight 0.3s ease';
                             setTimeout(function() {
                                 weatherModal.style.display = 'none';
                                 weatherModal.style.animation = '';
@@ -4091,6 +4061,7 @@
             
             // 更新增强功能按钮显示状态
             updateEnhancedFeatureButtons();
+            updateMoreActionsBtnStatus();
             
             var idleTimer = null;
             var idleDuration = 300;
@@ -4460,6 +4431,11 @@
             // 切换按钮点击事件 - 改为弹出窗口
             if (toggleButtonsBtn) {
                 toggleButtonsBtn.addEventListener('click', function() {
+                    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    if (!currentUser.username) {
+                        showToastInfo('您需要登录后才可使用更多功能');
+                        return;
+                    }
                     updateHideInterfaceButton();
                     var modal = document.getElementById('moreFeaturesModal');
                     modal.style.display = 'flex';
@@ -4476,6 +4452,11 @@
             if (mobileButtonsContainer) {
                 mobileButtonsContainer.addEventListener('click', function(e) {
                     e.stopPropagation();
+                    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    if (!currentUser.username) {
+                        showToastInfo('您需要登录后才可使用更多功能');
+                        return;
+                    }
                     showMobileFunctionsModal();
                 });
             }
@@ -4483,6 +4464,11 @@
             if (mobileButtonsBtn) {
                 mobileButtonsBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
+                    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    if (!currentUser.username) {
+                        showToastInfo('您需要登录后才可使用更多功能');
+                        return;
+                    }
                     showMobileFunctionsModal();
                 });
             }
@@ -4883,7 +4869,7 @@
                     <span>启用页面时钟</span>
                 </button>
                 <div class="header-title-container">
-                    <h3>组件调整</h3>
+                    <h3><i class="fas fa-sliders-h" style="color:#d45d79;margin-right:8px;"></i>组件调整</h3>
                 </div>
                 <button class="page-clock-settings-close" id="pageClockSettingsClose">
                     <i class="fas fa-times"></i>
@@ -4915,34 +4901,16 @@
                             </label>
                             <div class="weather-click-target-select" id="weatherClickTargetSelect" style="display: none;">
                                 <div class="select-label">跳转目标</div>
-                                <div class="select-options">
-                                    <div class="select-option active" data-target="msn">
-                                        <i class="fab fa-microsoft"></i>
-                                        <span>MSN Weather</span>
-                                        <i class="fas fa-check check-icon"></i>
-                                    </div>
-                                    <div class="select-option" data-target="yahoo">
-                                        <i class="fab fa-yahoo"></i>
-                                        <span>Yahoo Weather</span>
-                                        <i class="fas fa-check check-icon"></i>
-                                    </div>
-                                    <div class="select-option" data-target="accuweather">
-                                        <i class="fas fa-cloud-sun-rain"></i>
-                                        <span>AccuWeather</span>
-                                        <i class="fas fa-check check-icon"></i>
-                                    </div>
-                                    <div class="select-option" data-target="windy">
-                                        <i class="fas fa-wind"></i>
-                                        <span>Windy.com</span>
-                                        <i class="fas fa-check check-icon"></i>
-                                    </div>
-                                    <div class="select-option" data-target="page">
-                                        <i class="fas fa-desktop"></i>
-                                        <span>页面天气</span>
-                                        <i class="fas fa-check check-icon"></i>
-                                    </div>
+                                <div class="weather-target-dropdown">
+                                    <select id="weatherClickTarget">
+                                        <option value="msn" data-icon="fa-microsoft">MSN Weather</option>
+                                        <option value="yahoo" data-icon="fa-yahoo">Yahoo Weather</option>
+                                        <option value="accuweather" data-icon="fa-cloud-sun-rain">AccuWeather</option>
+                                        <option value="windy" data-icon="fa-wind">Windy.com</option>
+                                        <option value="page" data-icon="fa-desktop">页面天气</option>
+                                    </select>
                                 </div>
-                                <div class="weather-vpn-tip">
+                                <div class="weather-vpn-tip" id="weatherVpnTip">
                                     <i class="fas fa-info-circle"></i>
                                     <span>如果无法打开对应页面，请使用VPN改善网络环境</span>
                                 </div>
@@ -4959,10 +4927,6 @@
                         <label class="settings-toggle-reverse">
                             <span>名言打字机效果</span>
                             <input type="checkbox" id="clockQuoteTypewriter" checked>
-                        </label>
-                        <label class="settings-toggle-reverse">
-                            <span>侧边栏模式</span>
-                            <input type="checkbox" id="clockSidebarMode">
                         </label>
                         <label class="settings-toggle-reverse hint-toggle">
                             <div class="text-with-hint">
@@ -5010,7 +4974,7 @@
     <div class="page-clock-weather-modal" id="pageClockWeatherModal" style="display: none;">
         <div class="page-clock-weather-content">
             <div class="page-clock-weather-header">
-                <h3>天气设置</h3>
+                <h3><i class="fas fa-cloud-sun" style="color:#d45d79;margin-right:8px;"></i>天气设置</h3>
                 <button class="page-clock-weather-close" id="pageClockWeatherClose">
                     <i class="fas fa-times"></i>
                 </button>
@@ -5387,6 +5351,160 @@
                             </button>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统级提示横条容器 -->
+    <div id="systemToastContainer" class="system-toast-container"></div>
+
+    <!-- 今日人品弹窗 -->
+    <div id="luckModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content luck-modal-content">
+            <button class="treasure-modal-close" id="luckModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="luck-modal-body">
+                <div class="luck-modal-title">
+                    <i class="fas fa-star"></i>
+                    <h2>今日人品</h2>
+                </div>
+                <div class="luck-score-container">
+                    <div class="luck-score-ring">
+                        <svg class="luck-score-circle" viewBox="0 0 120 120">
+                            <circle class="luck-score-bg" cx="60" cy="60" r="54"></circle>
+                            <circle class="luck-score-progress" cx="60" cy="60" r="54" id="luckScoreProgress"></circle>
+                        </svg>
+                        <div class="luck-score-display">
+                            <span class="luck-score-number" id="luckScoreNumber">--</span>
+                            <span class="luck-score-unit">分</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="luck-level-display" id="luckLevelDisplay">--</div>
+                <div class="luck-description" id="luckDescription">今日人品加载中...</div>
+                <div class="luck-tips">
+                    <div class="luck-tip-item">
+                        <i class="fas fa-sun"></i>
+                        <span id="luckDateDisplay">--</span>
+                    </div>
+                    <div class="luck-tip-item">
+                        <i class="fas fa-bell"></i>
+                        <span>每日更新</span>
+                    </div>
+                </div>
+            </div>
+            <canvas id="luckAnimationCanvas" class="luck-animation-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- 今日运势弹窗 -->
+    <div id="fortuneModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content fortune-modal-content">
+            <button class="treasure-modal-close" id="fortuneModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="fortune-modal-body">
+                <div class="fortune-modal-header">
+                    <div class="fortune-date" id="fortuneDate">--</div>
+                    <div class="fortune-week" id="fortuneWeek">--</div>
+                    <div class="fortune-year" id="fortuneYear">--</div>
+                </div>
+                <div class="fortune-main">
+                    <div class="fortune-element">
+                        <div class="fortune-element-label">
+                            <i class="fas fa-check-circle"></i>
+                            <span>宜</span>
+                        </div>
+                        <div class="fortune-element-value" id="fortuneYi">--</div>
+                    </div>
+                    <div class="fortune-element">
+                        <div class="fortune-element-label">
+                            <i class="fas fa-times-circle"></i>
+                            <span>忌</span>
+                        </div>
+                        <div class="fortune-element-value" id="fortuneJi">--</div>
+                    </div>
+                </div>
+                <div class="fortune-details">
+                    <div class="fortune-detail-item">
+                        <span class="fortune-detail-label">幸运色</span>
+                        <span class="fortune-detail-value" id="fortuneColor">--</span>
+                    </div>
+                    <div class="fortune-detail-item">
+                        <span class="fortune-detail-label">幸运数字</span>
+                        <span class="fortune-detail-value" id="fortuneNumber">--</span>
+                    </div>
+                    <div class="fortune-detail-item">
+                        <span class="fortune-detail-label">贵人方位</span>
+                        <span class="fortune-detail-value" id="fortuneDirection">--</span>
+                    </div>
+                    <div class="fortune-detail-item">
+                        <span class="fortune-detail-label">开运时段</span>
+                        <span class="fortune-detail-value" id="fortuneTime">--</span>
+                    </div>
+                </div>
+                <div class="fortune-advice">
+                    <h4><i class="fas fa-lightbulb"></i> 今日建议</h4>
+                    <p id="fortuneAdvice">--</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 徽章列表弹窗 -->
+    <div id="badgesListModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content badges-list-content">
+            <button class="treasure-modal-close" id="badgesListClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="badges-list-header">
+                <h2><i class="fas fa-award"></i> 成就徽章</h2>
+                <div class="badges-list-stats">
+                    <span class="stat-unlocked" id="badgesUnlockedCount">0</span>
+                    <span class="stat-divider">/</span>
+                    <span class="stat-total" id="badgesTotalCount">0</span>
+                </div>
+            </div>
+            <div class="badges-list-filter">
+                <label class="switch-container">
+                    <span>显示未解锁徽章</span>
+                    <input type="checkbox" id="showLockedBadgesToggle" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+            <div class="badges-list-body" id="badgesListBody">
+                <!-- 徽章列表将由JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 徽章详情弹窗 -->
+    <div id="badgeDetailModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content badge-detail-content">
+            <button class="treasure-modal-close" id="badgeDetailClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="badge-detail-body">
+                <div class="badge-detail-icon" id="badgeDetailIcon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h2 class="badge-detail-name" id="badgeDetailName">徽章名称</h2>
+                <div class="badge-detail-status" id="badgeDetailStatus">
+                    <span class="status-badge unlocked">已解锁</span>
+                </div>
+                <div class="badge-detail-section">
+                    <h4><i class="fas fa-info-circle"></i> 徽章描述</h4>
+                    <p id="badgeDetailDescription">--</p>
+                </div>
+                <div class="badge-detail-section badge-detail-condition" id="badgeDetailConditionSection" style="display: none;">
+                    <h4><i class="fas fa-lock"></i> 解锁方式</h4>
+                    <p id="badgeDetailCondition">--</p>
+                </div>
+                <div class="badge-detail-section" id="badgeDetailTimeSection" style="display: none;">
+                    <h4><i class="fas fa-clock"></i> 解锁时间</h4>
+                    <p id="badgeDetailTime">--</p>
                 </div>
             </div>
         </div>
@@ -7914,60 +8032,38 @@
         }
         
         function showAutoLoginSuccessModal() {
-            // 创建自动登录成功弹窗
-            const modal = document.createElement('div');
-            modal.id = 'autoLoginModal';
-            modal.className = 'custom-alert show';
-            modal.innerHTML = `
-                <div class="alert-content">
-                    <div class="alert-icon">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </div>
-                    <h3>自动登录成功</h3>
-                    <p>正在登录中，即将进入游戏大厅...</p>
-                    <div class="auto-login-countdown">2</div>
-                </div>
-            `;
-            document.body.appendChild(modal);
+            // 显示自动登录成功提示条
+            showToastSuccess('正在登录中，即将进入游戏大厅...', '自动登录成功');
             
-            // 倒计时
-            let countdown = 2;
-            const countdownEl = modal.querySelector('.auto-login-countdown');
-            
-            const timer = setInterval(() => {
-                countdown--;
-                countdownEl.textContent = countdown;
+            // 倒计时后执行自动登录
+            setTimeout(function() {
+                // 执行自动登录
+                const savedUsername = localStorage.getItem('savedUsername');
+                const savedPassword = localStorage.getItem('savedPassword');
                 
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                    // 执行自动登录
-                    const savedUsername = localStorage.getItem('savedUsername');
-                    const savedPassword = localStorage.getItem('savedPassword');
-                    
-                    // 获取用户信息（包含两步验证）
-                    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                    const validUser = users.find(function(user) {
-                        return user.username === savedUsername && user.password === savedPassword;
-                    });
-                    
-                    // 模拟登录成功
-                    var currentUserObj = {
-                        username: savedUsername,
-                        userId: validUser ? validUser.userId : null,
-                        loginTime: new Date().toISOString()
-                    };
-                    
-                    // 同步两步验证信息
-                    if (validUser && validUser.twoFactorAuth) {
-                        currentUserObj.twoFactorAuth = validUser.twoFactorAuth;
-                    }
-                    
-                    localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
-                    
-                    // 切换到游戏大厅
-                    switchToGameCenter();
+                // 获取用户信息（包含两步验证）
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const validUser = users.find(function(user) {
+                    return user.username === savedUsername && user.password === savedPassword;
+                });
+                
+                // 模拟登录成功
+                var currentUserObj = {
+                    username: savedUsername,
+                    userId: validUser ? validUser.userId : null,
+                    loginTime: new Date().toISOString()
+                };
+                
+                // 同步两步验证信息
+                if (validUser && validUser.twoFactorAuth) {
+                    currentUserObj.twoFactorAuth = validUser.twoFactorAuth;
                 }
-            }, 1000);
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
+                
+                // 切换到游戏大厅
+                switchToGameCenter();
+            }, 1500);
         }
         
         function fetchCaptcha(event) {
@@ -8089,13 +8185,155 @@
             }
         }
  
-        function showAlert(message) {
-            var alertBox = document.getElementById('customAlert');
-            var messageEl = document.getElementById('alertMessage');
+        // 系统级提示横条函数
+        function showToast(options) {
+            if (typeof options === 'string') {
+                options = { message: options };
+            }
             
-            messageEl.innerHTML = message;
-            alertBox.style.display = 'flex';
-            alertBox.style.animation = 'fadeIn 0.3s ease';
+            var container = document.getElementById('systemToastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'systemToastContainer';
+                container.className = 'system-toast-container';
+                document.body.appendChild(container);
+            }
+            
+            var type = options.type || 'info';
+            var title = options.title || '';
+            var message = options.message || '';
+            var duration = options.duration || 3000;
+            var icon = options.icon || getToastIcon(type);
+            
+            var toast = document.createElement('div');
+            toast.className = 'system-toast ' + type;
+            
+            var titleHTML = title ? '<div class="system-toast-title">' + title + '</div>' : '';
+            var messageHTML = message ? '<div class="system-toast-message">' + message + '</div>' : '';
+            
+            toast.innerHTML = 
+                '<div class="system-toast-icon"><i class="' + icon + '"></i></div>' +
+                '<div class="system-toast-content">' +
+                    titleHTML +
+                    messageHTML +
+                '</div>' +
+                '<button class="system-toast-close" title="关闭">' +
+                    '<i class="fas fa-times"></i>' +
+                '</button>';
+            
+            container.appendChild(toast);
+            
+            // 触发动画
+            setTimeout(function() {
+                toast.classList.add('show');
+            }, 10);
+            
+            // 关闭按钮事件
+            var closeBtn = toast.querySelector('.system-toast-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    hideToast(toast);
+                });
+            }
+            
+            // 自动隐藏
+            if (duration > 0) {
+                var autoHideTimer = setTimeout(function() {
+                    hideToast(toast);
+                }, duration);
+                
+                toast.dataset.autoHideTimer = autoHideTimer;
+            }
+            
+            return toast;
+        }
+        
+        function hideToast(toast) {
+            if (!toast || toast.classList.contains('hide')) {
+                return;
+            }
+            
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            
+            // 清除自动隐藏定时器
+            if (toast.dataset.autoHideTimer) {
+                clearTimeout(parseInt(toast.dataset.autoHideTimer));
+            }
+            
+            setTimeout(function() {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 400);
+        }
+        
+        function getToastIcon(type) {
+            switch (type) {
+                case 'success': return 'fas fa-check-circle';
+                case 'warning': return 'fas fa-exclamation-triangle';
+                case 'error': return 'fas fa-times-circle';
+                default: return 'fas fa-info-circle';
+            }
+        }
+        
+        // 便捷方法
+        function showToastSuccess(message, title) {
+            return showToast({ type: 'success', title: title || '成功', message: message });
+        }
+        
+        function showToastInfo(message, title) {
+            return showToast({ type: 'info', title: title || '提示', message: message });
+        }
+        
+        function showToastWarning(message, title) {
+            return showToast({ type: 'warning', title: title || '警告', message: message });
+        }
+        
+        function showToastError(message, title) {
+            return showToast({ type: 'error', title: title || '错误', message: message });
+        }
+
+        function showAlert(message) {
+            // 智能检测提示类型
+            var type = detectToastType(message);
+            var title = detectToastTitle(message, type);
+            showToast({ type: type, title: title, message: message });
+        }
+        
+        // 智能检测提示类型
+        function detectToastType(message) {
+            if (!message) return 'info';
+            var msg = String(message);
+            
+            // 成功类关键词
+            var successKeywords = ['成功', '已保存', '已创建', '已删除', '已退出', '已标记', '已清空', '已导出', '已导入', '已复制', '已保存', '已保存', '已获得'];
+            for (var i = 0; i < successKeywords.length; i++) {
+                if (msg.indexOf(successKeywords[i]) !== -1) return 'success';
+            }
+            
+            // 错误类关键词
+            var errorKeywords = ['错误', '失败', '无效', '错误', '不能', '无法', '请先', '请输入', '至少', '不超过', '不一致', '未开启', '未启用', '错误', '上限'];
+            for (var j = 0; j < errorKeywords.length; j++) {
+                if (msg.indexOf(errorKeywords[j]) !== -1) return 'warning';
+            }
+            
+            return 'info';
+        }
+        
+        // 智能检测提示标题
+        function detectToastTitle(message, type) {
+            if (!message) return '';
+            var msg = String(message);
+            
+            // 如果消息以中文标点开头，使用默认标题
+            if (msg.indexOf('请') === 0 || msg.indexOf('无') === 0) {
+                if (type === 'warning' || type === 'error') return '提示';
+            }
+            
+            if (type === 'success') return '成功';
+            if (type === 'warning') return '提示';
+            return '提示';
         }
         
         document.getElementById('alertConfirm').addEventListener('click', function() {
@@ -8626,19 +8864,15 @@
                 
                 migrateUserDataForCurrentUser();
                 
-                showAlert(getLanguageText('loginSuccess'));
+                showToastSuccess(getLanguageText('loginSuccess'), '登录成功');
                 
                 sessionStorage.setItem('loginAuthenticated', 'true');
                 sessionStorage.setItem('loginTimestamp', Date.now().toString());
                 
-                // 隐藏登录成功提示，直接切换到游戏大厅
+                // 切换到游戏大厅
                 setTimeout(function() {
-                    var alertModal = document.getElementById('customAlert');
-                    if (alertModal) {
-                        alertModal.style.display = 'none';
-                    }
                     switchToGameCenter();
-                }, 500);
+                }, 300);
             }, 1000);
         }
         
@@ -8972,7 +9206,7 @@
                                     </div>
                                     <div class="treasure-card-content">
                                         <h2>今日人品</h2>
-                                        <p class="luck-desc">点击右侧按钮查看今日人品</p>
+                                        <div class="luck-desc">点击下方按钮查看今日人品</div>
                                     </div>
                                     <button class="treasure-btn" id="checkLuckBtn">查看今日人品</button>
                                 </div>
@@ -8984,7 +9218,7 @@
                                     </div>
                                     <div class="treasure-card-content">
                                         <h2>今日运势</h2>
-                                        <p class="fortune-desc">点击右侧按钮查看今日运势</p>
+                                        <div class="fortune-desc">点击下方按钮查看今日运势</div>
                                     </div>
                                     <button class="treasure-btn" id="checkFortuneBtn">查看运势</button>
                                 </div>
@@ -8995,10 +9229,11 @@
                                         <i class="fas fa-quote-left"></i>
                                     </div>
                                     <div class="treasure-card-content">
-                                        <h2>每日N句</h2>
-                                        <div class="quote-content" id="quoteContent">
-                                            <p class="quote-text">生活不是等待风暴过去，而是学会在雨中跳舞。</p>
-                                            <p class="quote-author">— 佚名</p>
+                                        <h2>每日“N”句</h2>
+                                        <div class="quote-box" id="quoteBox">
+                                            <div class="quote-content" id="quoteContent">
+                                                <p class="quote-text">加载中...</p>
+                                            </div>
                                         </div>
                                         <button class="treasure-btn quote-btn" id="refreshQuoteBtn">换一句</button>
                                     </div>
@@ -9456,6 +9691,25 @@
                     color: #666;
                     line-height: 1.5;
                     flex-shrink: 0;
+                }
+                
+                /* 描述区填满卡片空间 */
+                .treasure-card-content .luck-desc,
+                .treasure-card-content .fortune-desc {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    margin: 0;
+                    font-size: 14px;
+                    color: #666;
+                    line-height: 1.5;
+                }
+                
+                /* 名言方框填满卡片空间 */
+                .treasure-card-content .quote-box {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
                 }
                 
                 .treasure-btn {
@@ -10969,9 +11223,7 @@
             var checkLuckBtn = document.getElementById('checkLuckBtn');
             if (checkLuckBtn) {
                 checkLuckBtn.addEventListener('click', function() {
-                    var luckLevels = ['大吉', '吉', '中吉', '小吉', '末吉'];
-                    var luckLevel = luckLevels[Math.floor(Math.random() * luckLevels.length)];
-                    showAlert('今日人品：' + luckLevel);
+                    showLuckModal();
                 });
             }
             
@@ -10979,34 +11231,16 @@
             var checkFortuneBtn = document.getElementById('checkFortuneBtn');
             if (checkFortuneBtn) {
                 checkFortuneBtn.addEventListener('click', function() {
-                    var fortunes = [
-                        '今日宜：勇往直前，忌：犹豫不决',
-                        '今日宜：保持微笑，忌：愁眉苦脸',
-                        '今日宜：尝试新事物，忌：墨守成规',
-                        '今日宜：与人为善，忌：斤斤计较',
-                        '今日宜：放松心情，忌：过度焦虑'
-                    ];
-                    var fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
-                    showAlert('今日运势：' + fortune);
+                    showFortuneModal();
                 });
             }
             
             // 换一句名言
             var refreshQuoteBtn = document.getElementById('refreshQuoteBtn');
             if (refreshQuoteBtn) {
-                refreshQuoteBtn.addEventListener('click', function() {
-                    var quotes = [
-                        { text: '生活不是等待风暴过去，而是学会在雨中跳舞。', author: '佚名' },
-                        { text: '成功的秘诀在于始终如一地坚持目标。', author: '佚名' },
-                        { text: '每一个不曾起舞的日子，都是对生命的辜负。', author: '尼采' },
-                        { text: '相信自己，你比想象中更强大。', author: '佚名' },
-                        { text: '不要等待机会，而要创造机会。', author: '林肯' }
-                    ];
-                    var quote = quotes[Math.floor(Math.random() * quotes.length)];
-                    var quoteContent = document.getElementById('quoteContent');
-                    if (quoteContent) {
-                        quoteContent.innerHTML = '<p class="quote-text">' + quote.text + '</p><p class="quote-author">— ' + quote.author + '</p>';
-                    }
+                refreshQuoteBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    refreshQuote();
                 });
             }
             
@@ -11094,6 +11328,707 @@
                     }
                 });
             }
+            
+            // 初始化弹窗关闭事件
+            initTreasureModalEvents();
+            
+            // 初始化徽章弹窗事件
+            initBadgeModalEvents();
+            
+            // 初始化卡片内容（如果已访问过）
+            initCardContents();
+        }
+        
+        // 获取今日的日期字符串（用于缓存key）
+        function getTodayKey() {
+            var now = new Date();
+            return now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+        }
+        
+        // 获取每日固定的随机数
+        function getDailyLuckScore() {
+            var todayKey = getTodayKey();
+            var cached = localStorage.getItem('dailyLuckScore_' + todayKey);
+            if (cached !== null) {
+                return { score: parseInt(cached), isCached: true };
+            }
+            var score = Math.floor(Math.random() * 100) + 1;
+            localStorage.setItem('dailyLuckScore_' + todayKey, score.toString());
+            return { score: score, isCached: false };
+        }
+        
+        // 根据分数获取人品等级
+        function getLuckLevel(score) {
+            if (score >= 90) return { level: '大吉', className: 'level-perfect', color: '#ff6b6b' };
+            if (score >= 70) return { level: '吉', className: 'level-great', color: '#ffd700' };
+            if (score >= 50) return { level: '中吉', className: 'level-good', color: '#27ae60' };
+            if (score >= 30) return { level: '小吉', className: 'level-medium', color: '#f39c12' };
+            return { level: '末吉', className: 'level-bad', color: '#e74c3c' };
+        }
+        
+        // 根据分数获取描述文本
+        function getLuckDescription(score) {
+            var descriptions = {
+                high: [
+                    '今天的好运简直爆棚！做什么都顺风顺水，把握机会大展身手吧！',
+                    '福星高照的一天，无论是工作还是生活都会有惊喜等着你！',
+                    '贵人运旺盛，人际关系和谐，是推动重要合作的好时机！',
+                    '创意灵感源源不断，适合开展新项目或尝试新方法！',
+                    '财运亨通，可能会有意外之财或成功的投资机会！'
+                ],
+                medium: [
+                    '今天运势平稳，踏实努力会有回报，保持平常心就好。',
+                    '今日适合稳步推进，不急不躁，脚踏实地的努力必有收获。',
+                    '人际关系融洽，适合团队合作，但不宜单独决策重大事项。',
+                    '学习吸收能力较强，适合充电学习和积累经验。',
+                    '健康运势不错，保持良好的作息习惯会让你更有活力。'
+                ],
+                low: [
+                    '今日宜低调行事，遇事多思考，避免冲动决策。',
+                    '运势稍有波折，但塞翁失马焉知非福，保持积极心态。',
+                    '注意沟通方式，避免因言语不当引起不必要的误会。',
+                    '多休息，注意身体健康，今日不适合高强度工作。',
+                    '谨慎为上，重要决定请三思而后行，可请教他人意见。'
+                ]
+            };
+            
+            var category;
+            if (score >= 70) category = 'high';
+            else if (score >= 40) category = 'medium';
+            else category = 'low';
+            
+            var arr = descriptions[category];
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+        
+        // 显示今日人品弹窗
+        function showLuckModal() {
+            var luckModal = document.getElementById('luckModal');
+            if (!luckModal) return;
+            
+            var luckData = getDailyLuckScore();
+            var score = luckData.score;
+            var levelInfo = getLuckLevel(score);
+            var description = getLuckDescription(score);
+            
+            // 更新弹窗内容
+            var scoreNumber = document.getElementById('luckScoreNumber');
+            var scoreProgress = document.getElementById('luckScoreProgress');
+            var levelDisplay = document.getElementById('luckLevelDisplay');
+            var descEl = document.getElementById('luckDescription');
+            var dateDisplay = document.getElementById('luckDateDisplay');
+            
+            if (scoreNumber) {
+                // 数字动画效果
+                animateScoreNumber(scoreNumber, score);
+            }
+            
+            if (scoreProgress) {
+                var circumference = 2 * Math.PI * 54;
+                var offset = circumference - (score / 100) * circumference;
+                setTimeout(function() {
+                    scoreProgress.style.strokeDashoffset = offset;
+                    scoreProgress.style.stroke = levelInfo.color;
+                }, 100);
+            }
+            
+            if (levelDisplay) {
+                levelDisplay.textContent = levelInfo.level;
+                levelDisplay.className = 'luck-level-display ' + levelInfo.className;
+            }
+            
+            if (descEl) {
+                descEl.textContent = description;
+            }
+            
+            if (dateDisplay) {
+                var now = new Date();
+                var weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                dateDisplay.textContent = now.getMonth() + 1 + '月' + now.getDate() + '日 ' + weekDays[now.getDay()];
+            }
+            
+            // 显示弹窗
+            luckModal.style.display = 'flex';
+            
+            // 播放动画效果
+            setTimeout(function() {
+                playLuckAnimation(score);
+            }, 300);
+        }
+        
+        // 数字动画效果
+        function animateScoreNumber(element, targetScore) {
+            var current = 0;
+            var duration = 1500;
+            var increment = targetScore / (duration / 16);
+            
+            var timer = setInterval(function() {
+                current += increment;
+                if (current >= targetScore) {
+                    current = targetScore;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current);
+            }, 16);
+        }
+        
+        // 人品动画效果（烟花/彩带）
+        function playLuckAnimation(score) {
+            var canvas = document.getElementById('luckAnimationCanvas');
+            if (!canvas) return;
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            var ctx = canvas.getContext('2d');
+            
+            var particles = [];
+            var particleCount = score >= 60 ? 80 : 40;
+            var colors = score >= 60 
+                ? ['#ff6b6b', '#ffd700', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9']
+                : ['#a8c0ff', '#3f2b96', '#667eea', '#764ba2'];
+            
+            // 创建粒子
+            for (var i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8 - 2,
+                    radius: Math.random() * 4 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1
+                });
+            }
+            
+            var animationTimer = setInterval(function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(function(p) {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.1;
+                    p.life -= 0.015;
+                    
+                    if (p.life > 0) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = p.life;
+                        ctx.fill();
+                    }
+                });
+                
+                particles = particles.filter(function(p) { return p.life > 0; });
+                
+                if (particles.length === 0) {
+                    clearInterval(animationTimer);
+                }
+            }, 16);
+        }
+        
+        // 关闭今日人品弹窗
+        function closeLuckModal() {
+            var luckModal = document.getElementById('luckModal');
+            if (!luckModal) return;
+            
+            // 如果正在播放关闭动画，不重复执行
+            if (luckModal.classList.contains('modal-closing')) return;
+            
+            // 添加关闭动画类
+            luckModal.classList.add('modal-closing');
+            
+            // 停止动画
+            var canvas = document.getElementById('luckAnimationCanvas');
+            if (canvas) {
+                var ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // 动画结束后隐藏弹窗
+            setTimeout(function() {
+                luckModal.style.display = 'none';
+                luckModal.classList.remove('modal-closing');
+                
+                // 更新卡片内容
+                updateLuckCardContent();
+            }, 300);
+        }
+        
+        // 更新人品卡片内容
+        function updateLuckCardContent() {
+            var luckData = getDailyLuckScore();
+            var levelInfo = getLuckLevel(luckData.score);
+            var luckDesc = document.querySelector('.luck-desc');
+            
+            if (luckDesc) {
+                // 创建圆圈进度条HTML（初始状态）
+                luckDesc.innerHTML = 
+                    '<div class="luck-score-ring-mini">' +
+                        '<svg class="luck-score-circle" viewBox="0 0 120 120">' +
+                            '<circle class="luck-score-bg" cx="60" cy="60" r="54"></circle>' +
+                            '<circle class="luck-score-progress" cx="60" cy="60" r="54" style="stroke-dashoffset: 339.292; stroke: ' + levelInfo.color + ';"></circle>' +
+                        '</svg>' +
+                        '<div class="luck-score-display">' +
+                            '<span class="luck-score-number">0</span>' +
+                            '<span class="luck-score-unit">分</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="luck-level-mini ' + levelInfo.className + '">' + levelInfo.level + '</div>';
+                
+                // 触发动画
+                setTimeout(function() {
+                    var circumference = 2 * Math.PI * 54;
+                    var offset = circumference - (luckData.score / 100) * circumference;
+                    var progressEl = luckDesc.querySelector('.luck-score-progress');
+                    var numberEl = luckDesc.querySelector('.luck-score-number');
+                    
+                    if (progressEl) {
+                        progressEl.style.strokeDashoffset = offset;
+                    }
+                    
+                    if (numberEl) {
+                        // 数字动画
+                        var current = 0;
+                        var duration = 1000;
+                        var increment = luckData.score / (duration / 16);
+                        
+                        var timer = setInterval(function() {
+                            current += increment;
+                            if (current >= luckData.score) {
+                                current = luckData.score;
+                                clearInterval(timer);
+                            }
+                            numberEl.textContent = Math.floor(current);
+                        }, 16);
+                    }
+                }, 100);
+            }
+        }
+        
+        // 显示今日运势弹窗
+        function showFortuneModal() {
+            var fortuneModal = document.getElementById('fortuneModal');
+            if (!fortuneModal) return;
+            
+            var fortuneData = getTodayFortune();
+            
+            // 更新弹窗内容
+            var dateEl = document.getElementById('fortuneDate');
+            var weekEl = document.getElementById('fortuneWeek');
+            var yearEl = document.getElementById('fortuneYear');
+            var yiEl = document.getElementById('fortuneYi');
+            var jiEl = document.getElementById('fortuneJi');
+            var colorEl = document.getElementById('fortuneColor');
+            var numberEl = document.getElementById('fortuneNumber');
+            var directionEl = document.getElementById('fortuneDirection');
+            var timeEl = document.getElementById('fortuneTime');
+            var adviceEl = document.getElementById('fortuneAdvice');
+            
+            if (dateEl) dateEl.textContent = fortuneData.date;
+            if (weekEl) weekEl.textContent = fortuneData.week;
+            if (yearEl) yearEl.textContent = fortuneData.year;
+            if (yiEl) yiEl.textContent = fortuneData.yi;
+            if (jiEl) jiEl.textContent = fortuneData.ji;
+            if (colorEl) colorEl.textContent = fortuneData.color;
+            if (numberEl) numberEl.textContent = fortuneData.number;
+            if (directionEl) directionEl.textContent = fortuneData.direction;
+            if (timeEl) timeEl.textContent = fortuneData.time;
+            if (adviceEl) adviceEl.textContent = fortuneData.advice;
+            
+            fortuneModal.style.display = 'flex';
+        }
+        
+        // 获取今日运势数据
+        function getTodayFortune() {
+            var todayKey = getTodayKey();
+            var cached = localStorage.getItem('dailyFortune_' + todayKey);
+            if (cached) {
+                try {
+                    return JSON.parse(cached);
+                } catch(e) {}
+            }
+            
+            var yiOptions = ['勇往直前', '保持微笑', '尝试新事物', '与人为善', '放松心情', '坚持到底', '勇于创新', '善于倾听'];
+            var jiOptions = ['犹豫不决', '愁眉苦脸', '墨守成规', '斤斤计较', '过度焦虑', '轻易放弃', '固执己见', '猜忌多疑'];
+            var colors = ['红色', '蓝色', '绿色', '黄色', '紫色', '白色', '橙色', '粉色'];
+            var directions = ['正东', '正南', '正西', '正北', '东南', '西南', '东北', '西北'];
+            var times = ['清晨 6-9点', '上午 9-12点', '中午 12-14点', '下午 14-18点', '傍晚 18-20点', '晚上 20-23点'];
+            var advices = [
+                '把握今天的每一个机会，积极主动地去追求你想要的东西。',
+                '保持乐观的心态，相信困难只是暂时的，美好的事情即将到来。',
+                '今天适合学习新技能或阅读好书，知识会给你带来力量。',
+                '多与身边的人沟通交流，良好的人际关系会让一切更顺利。',
+                '适当放松自己，不要给自己太大压力，劳逸结合才是王道。',
+                '勇敢面对挑战，每一次克服困难都会让你变得更强大。',
+                '保持好奇心，多观察身边的事物，灵感可能随时降临。',
+                '今天适合规划未来，制定清晰的目标会让你更有方向感。'
+            ];
+            
+            var now = new Date();
+            var weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            
+            var fortune = {
+                date: (now.getMonth() + 1) + '月' + now.getDate() + '日',
+                week: weekDays[now.getDay()],
+                year: now.getFullYear() + '年',
+                yi: yiOptions[Math.floor(Math.random() * yiOptions.length)],
+                ji: jiOptions[Math.floor(Math.random() * jiOptions.length)],
+                color: colors[Math.floor(Math.random() * colors.length)],
+                number: Math.floor(Math.random() * 9) + 1,
+                direction: directions[Math.floor(Math.random() * directions.length)],
+                time: times[Math.floor(Math.random() * times.length)],
+                advice: advices[Math.floor(Math.random() * advices.length)]
+            };
+            
+            localStorage.setItem('dailyFortune_' + todayKey, JSON.stringify(fortune));
+            return fortune;
+        }
+        
+        // 关闭今日运势弹窗
+        function closeFortuneModal() {
+            var fortuneModal = document.getElementById('fortuneModal');
+            if (!fortuneModal) return;
+            
+            // 如果正在播放关闭动画，不重复执行
+            if (fortuneModal.classList.contains('modal-closing')) return;
+            
+            // 添加关闭动画类
+            fortuneModal.classList.add('modal-closing');
+            
+            // 动画结束后隐藏弹窗
+            setTimeout(function() {
+                fortuneModal.style.display = 'none';
+                fortuneModal.classList.remove('modal-closing');
+                
+                // 更新卡片内容
+                updateFortuneCardContent();
+            }, 300);
+        }
+        
+        // 存储徽章数据供弹窗使用
+        var badgesData = [];
+        
+        // 初始化徽章数据（在用户名片打开时调用）
+        function initBadgesData(data) {
+            badgesData = data || [];
+        }
+        
+        // 显示徽章列表弹窗
+        function showBadgesListModal() {
+            var modal = document.getElementById('badgesListModal');
+            if (!modal || badgesData.length === 0) {
+                showToastInfo('暂无徽章数据');
+                return;
+            }
+            
+            // 统计数据
+            var unlockedCount = badgesData.filter(function(b) { return b.unlocked; }).length;
+            var totalCount = badgesData.length;
+            
+            // 更新统计
+            document.getElementById('badgesUnlockedCount').textContent = unlockedCount;
+            document.getElementById('badgesTotalCount').textContent = totalCount;
+            
+            // 渲染徽章列表
+            renderBadgesList(badgesData);
+            
+            modal.style.display = 'flex';
+        }
+        
+        // 渲染徽章列表
+        function renderBadgesList(badges) {
+            var body = document.getElementById('badgesListBody');
+            var showLocked = document.getElementById('showLockedBadgesToggle').checked;
+            
+            var filteredBadges = showLocked ? badges : badges.filter(function(b) { return b.unlocked; });
+            
+            if (filteredBadges.length === 0) {
+                body.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">暂无已解锁的徽章</p>';
+                return;
+            }
+            
+            body.innerHTML = '<div class="badges-list-grid">' + 
+                filteredBadges.map(function(badge) {
+                    return '<div class="badge-list-item ' + (badge.unlocked ? 'unlocked' : 'locked') + '" onclick="showBadgeDetailModal(\'' + badge.id + '\')">' +
+                        '<div class="badge-list-icon" style="background: linear-gradient(135deg, ' + badge.color + ' 0%, ' + badge.color + 'dd 100%);">' +
+                            '<i class="' + badge.icon + '"></i>' +
+                        '</div>' +
+                        '<span class="badge-list-name">' + badge.name + '</span>' +
+                    '</div>';
+                }).join('') +
+            '</div>';
+        }
+        
+        // 关闭徽章列表弹窗
+        function closeBadgesListModal() {
+            var modal = document.getElementById('badgesListModal');
+            if (!modal) return;
+            
+            if (modal.classList.contains('modal-closing')) return;
+            
+            modal.classList.add('modal-closing');
+            
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+            }, 300);
+        }
+        
+        // 显示徽章详情弹窗
+        function showBadgeDetailModal(badgeId) {
+            var badge = badgesData.find(function(b) { return b.id === badgeId; });
+            if (!badge) {
+                showToastInfo('未找到徽章信息');
+                return;
+            }
+            
+            // 填充详情
+            document.getElementById('badgeDetailIcon').style.background = 'linear-gradient(135deg, ' + badge.color + ' 0%, ' + badge.color + 'dd 100%)';
+            document.getElementById('badgeDetailIcon').innerHTML = '<i class="' + badge.icon + '"></i>';
+            document.getElementById('badgeDetailName').textContent = badge.name;
+            document.getElementById('badgeDetailDescription').textContent = badge.description;
+            
+            // 状态
+            var statusEl = document.getElementById('badgeDetailStatus');
+            if (badge.unlocked) {
+                statusEl.innerHTML = '<span class="status-badge unlocked">已解锁</span>';
+                document.getElementById('badgeDetailTimeSection').style.display = 'block';
+                document.getElementById('badgeDetailTime').textContent = badge.unlockedAt || '刚刚解锁';
+                document.getElementById('badgeDetailConditionSection').style.display = 'none';
+            } else {
+                statusEl.innerHTML = '<span class="status-badge locked">未解锁</span>';
+                document.getElementById('badgeDetailTimeSection').style.display = 'none';
+                document.getElementById('badgeDetailConditionSection').style.display = 'block';
+                document.getElementById('badgeDetailCondition').textContent = badge.condition;
+            }
+            
+            // 先关闭徽章列表弹窗
+            closeBadgesListModal();
+            
+            // 延迟显示详情弹窗
+            setTimeout(function() {
+                var modal = document.getElementById('badgeDetailModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                }
+            }, 300);
+        }
+        
+        // 关闭徽章详情弹窗
+        function closeBadgeDetailModal() {
+            var modal = document.getElementById('badgeDetailModal');
+            if (!modal) return;
+            
+            if (modal.classList.contains('modal-closing')) return;
+            
+            modal.classList.add('modal-closing');
+            
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+            }, 300);
+        }
+        
+        // 绑定徽章弹窗事件
+        function initBadgeModalEvents() {
+            // 徽章列表关闭按钮
+            var badgesListClose = document.getElementById('badgesListClose');
+            if (badgesListClose) {
+                badgesListClose.addEventListener('click', closeBadgesListModal);
+            }
+            
+            // 徽章详情关闭按钮
+            var badgeDetailClose = document.getElementById('badgeDetailClose');
+            if (badgeDetailClose) {
+                badgeDetailClose.addEventListener('click', closeBadgeDetailModal);
+            }
+            
+            // 显示/隐藏未解锁徽章开关
+            var showLockedToggle = document.getElementById('showLockedBadgesToggle');
+            if (showLockedToggle) {
+                showLockedToggle.addEventListener('change', function() {
+                    renderBadgesList(badgesData);
+                });
+            }
+            
+            // 点击遮罩层关闭
+            var badgesListModal = document.getElementById('badgesListModal');
+            if (badgesListModal) {
+                badgesListModal.addEventListener('click', function(e) {
+                    if (e.target === badgesListModal) {
+                        closeBadgesListModal();
+                    }
+                });
+            }
+            
+            var badgeDetailModal = document.getElementById('badgeDetailModal');
+            if (badgeDetailModal) {
+                badgeDetailModal.addEventListener('click', function(e) {
+                    if (e.target === badgeDetailModal) {
+                        closeBadgeDetailModal();
+                    }
+                });
+            }
+        }
+        
+        // 更新运势卡片内容
+        function updateFortuneCardContent() {
+            var fortuneData = getTodayFortune();
+            var fortuneDesc = document.querySelector('.fortune-desc');
+            
+            if (fortuneDesc) {
+                fortuneDesc.innerHTML = 
+                    '<div class="fortunecard-elements">' +
+                        '<div class="fortunecard-element yi">' +
+                            '<div class="fortunecard-element-label">' +
+                                '<i class="fas fa-check-circle"></i>' +
+                                '<span>宜</span>' +
+                            '</div>' +
+                            '<div class="fortunecard-element-value">' + fortuneData.yi + '</div>' +
+                        '</div>' +
+                        '<div class="fortunecard-element ji">' +
+                            '<div class="fortunecard-element-label">' +
+                                '<i class="fas fa-times-circle"></i>' +
+                                '<span>忌</span>' +
+                            '</div>' +
+                            '<div class="fortunecard-element-value">' + fortuneData.ji + '</div>' +
+                        '</div>' +
+                    '</div>';
+            }
+        }
+        
+        // 初始化弹窗事件
+        function initTreasureModalEvents() {
+            var luckModalClose = document.getElementById('luckModalClose');
+            if (luckModalClose) {
+                luckModalClose.addEventListener('click', closeLuckModal);
+            }
+            
+            var fortuneModalClose = document.getElementById('fortuneModalClose');
+            if (fortuneModalClose) {
+                fortuneModalClose.addEventListener('click', closeFortuneModal);
+            }
+            
+            // 点击遮罩层关闭
+            var luckModal = document.getElementById('luckModal');
+            if (luckModal) {
+                luckModal.addEventListener('click', function(e) {
+                    if (e.target === luckModal) {
+                        closeLuckModal();
+                    }
+                });
+            }
+            
+            var fortuneModal = document.getElementById('fortuneModal');
+            if (fortuneModal) {
+                fortuneModal.addEventListener('click', function(e) {
+                    if (e.target === fortuneModal) {
+                        closeFortuneModal();
+                    }
+                });
+            }
+            
+            // ESC键关闭
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (luckModal && luckModal.style.display === 'flex') {
+                        closeLuckModal();
+                    }
+                    if (fortuneModal && fortuneModal.style.display === 'flex') {
+                        closeFortuneModal();
+                    }
+                }
+            });
+        }
+        
+        // 初始化卡片内容
+        function initCardContents() {
+            var todayKey = getTodayKey();
+            
+            // 检查是否有缓存的人品数据
+            if (localStorage.getItem('dailyLuckScore_' + todayKey)) {
+                updateLuckCardContent();
+            }
+            
+            // 检查是否有缓存的运势数据
+            if (localStorage.getItem('dailyFortune_' + todayKey)) {
+                updateFortuneCardContent();
+            }
+            
+            // 初始化加载名言
+            refreshQuote();
+        }
+        
+        // 刷新名言 - 使用hitokoto API
+        function refreshQuote() {
+            var quoteContent = document.getElementById('quoteContent');
+            if (!quoteContent) return;
+            
+            // 显示加载状态
+            quoteContent.innerHTML = '<p class="quote-text quote-loading">加载中...</p>';
+            
+            // 先尝试从API获取
+            if (navigator.onLine) {
+                fetch('https://v1.hitokoto.cn/?c=i&c=k&c=d&c=h&c=g')
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data && data.hitokoto) {
+                            var quote = {
+                                text: data.hitokoto,
+                                author: data.from_who || data.from || '佚名'
+                            };
+                            displayQuote(quote);
+                        } else {
+                            // API返回数据异常，使用本地名言
+                            displayQuote(getLocalQuote());
+                        }
+                    })
+                    .catch(function() {
+                        // 网络错误，使用本地名言
+                        displayQuote(getLocalQuote());
+                    });
+            } else {
+                // 离线状态，使用本地名言
+                displayQuote(getLocalQuote());
+            }
+        }
+        
+        // 显示名言
+        function displayQuote(quote) {
+            var quoteContent = document.getElementById('quoteContent');
+            if (!quoteContent) return;
+            
+            quoteContent.style.opacity = '0';
+            setTimeout(function() {
+                quoteContent.innerHTML = 
+                    '<p class="quote-text">' + quote.text + '</p>' +
+                    '<p class="quote-author">— ' + quote.author + '</p>';
+                quoteContent.style.opacity = '1';
+            }, 200);
+        }
+        
+        // 获取本地名言（作为备用）
+        function getLocalQuote() {
+            var quotes = [
+                { text: '生活不是等待风暴过去，而是学会在雨中跳舞。', author: '佚名' },
+                { text: '成功的秘诀在于始终如一地坚持目标。', author: '佚名' },
+                { text: '每一个不曾起舞的日子，都是对生命的辜负。', author: '尼采' },
+                { text: '相信自己，你比想象中更强大。', author: '佚名' },
+                { text: '不要等待机会，而要创造机会。', author: '林肯' },
+                { text: '人生如逆旅，我亦是行人。', author: '苏轼' },
+                { text: '千磨万击还坚劲，任尔东西南北风。', author: '郑板桥' },
+                { text: '海内存知己，天涯若比邻。', author: '王勃' },
+                { text: '会当凌绝顶，一览众山小。', author: '杜甫' },
+                { text: '天生我材必有用，千金散尽还复来。', author: '李白' },
+                { text: '纸上得来终觉浅，绝知此事要躬行。', author: '陆游' },
+                { text: '山重水复疑无路，柳暗花明又一村。', author: '陆游' },
+                { text: '落红不是无情物，化作春泥更护花。', author: '龚自珍' },
+                { text: '宝剑锋从磨砺出，梅花香自苦寒来。', author: '《警世贤文》' },
+                { text: '长风破浪会有时，直挂云帆济沧海。', author: '李白' }
+            ];
+            return quotes[Math.floor(Math.random() * quotes.length)];
         }
         
         // 初始化签到功能
@@ -12410,39 +13345,56 @@
             var cardBtn = document.getElementById('goToCardBtn');
             var logoutBtn = document.getElementById('logoutFromActionsBtn');
             var backLoginBtn = document.getElementById('backToLoginBtn');
+            var toggleButtonsBtn = document.getElementById('toggleButtonsBtn');
+            var moreActionsBtn = document.getElementById('moreActionsBtn');
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             var isOnGameCenter = document.getElementById('menuGames') !== null;
+            var isLoggedIn = !!currentUser.username;
             
-            if (!currentUser.username) {
-                settingsBtn.disabled = true;
+            if (!isLoggedIn) {
+                settingsBtn.setAttribute('aria-disabled', 'true');
                 settingsBtn.classList.add('disabled');
-                cardBtn.disabled = true;
+                cardBtn.setAttribute('aria-disabled', 'true');
                 cardBtn.classList.add('disabled');
-                logoutBtn.disabled = true;
+                logoutBtn.setAttribute('aria-disabled', 'true');
                 logoutBtn.classList.add('disabled');
-                // 未登录时隐藏"退回至登录页"按钮
+                if (toggleButtonsBtn) {
+                    toggleButtonsBtn.setAttribute('aria-disabled', 'true');
+                    toggleButtonsBtn.classList.add('disabled');
+                }
+                if (moreActionsBtn) {
+                    moreActionsBtn.setAttribute('aria-disabled', 'true');
+                    moreActionsBtn.classList.add('disabled');
+                }
                 if (backLoginBtn) {
                     backLoginBtn.style.display = 'none';
                     backLoginBtn.classList.add('disabled');
-                    backLoginBtn.disabled = true;
+                    backLoginBtn.setAttribute('aria-disabled', 'true');
                 }
             } else {
-                settingsBtn.disabled = false;
+                settingsBtn.removeAttribute('aria-disabled');
                 settingsBtn.classList.remove('disabled');
-                cardBtn.disabled = false;
+                cardBtn.removeAttribute('aria-disabled');
                 cardBtn.classList.remove('disabled');
-                logoutBtn.disabled = false;
+                logoutBtn.removeAttribute('aria-disabled');
                 logoutBtn.classList.remove('disabled');
-                // 仅在游戏中心模式下显示"退回至登录页"按钮
+                if (toggleButtonsBtn) {
+                    toggleButtonsBtn.removeAttribute('aria-disabled');
+                    toggleButtonsBtn.classList.remove('disabled');
+                }
+                if (moreActionsBtn) {
+                    moreActionsBtn.removeAttribute('aria-disabled');
+                    moreActionsBtn.classList.remove('disabled');
+                }
                 if (backLoginBtn) {
                     if (isOnGameCenter) {
                         backLoginBtn.style.display = 'flex';
                         backLoginBtn.classList.remove('disabled');
-                        backLoginBtn.disabled = false;
+                        backLoginBtn.removeAttribute('aria-disabled');
                     } else {
                         backLoginBtn.style.display = 'none';
                         backLoginBtn.classList.add('disabled');
-                        backLoginBtn.disabled = true;
+                        backLoginBtn.setAttribute('aria-disabled', 'true');
                     }
                 }
             }
@@ -12451,6 +13403,11 @@
         // 为更多操作按钮添加点击事件处理
         document.getElementById('moreActionsBtn').addEventListener('click', function(e) {
             e.stopPropagation();
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (!currentUser.username) {
+                showToastInfo('您需要登录后才可使用更多操作');
+                return;
+            }
             updateMoreActionsBtnStatus();
             var modal = document.getElementById('moreActionsModal');
             modal.style.animation = 'fadeIn 0.3s ease';
@@ -12469,6 +13426,11 @@
         
         // 进入账户设置
         document.getElementById('goToAccountSettingsBtn').addEventListener('click', function() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (!currentUser.username) {
+                showToastInfo('您需要登录后才可使用系统设置');
+                return;
+            }
             var modal = document.getElementById('moreActionsModal');
             modal.style.animation = 'fadeOut 0.3s ease';
             setTimeout(function() {
@@ -12480,20 +13442,27 @@
         
         // 打开名片
         document.getElementById('goToCardBtn').addEventListener('click', function() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (!currentUser.username) {
+                showToastInfo('您需要登录后才可使用用户名片');
+                return;
+            }
             var modal = document.getElementById('moreActionsModal');
             modal.style.animation = 'fadeOut 0.3s ease';
             setTimeout(function() {
                 modal.style.display = 'none';
                 modal.style.animation = '';
             }, 300);
-            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            if (currentUser.username) {
-                showUserCardModal();
-            }
+            showUserCardModal();
         });
         
         // 退出登录
         document.getElementById('logoutFromActionsBtn').addEventListener('click', function() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (!currentUser.username) {
+                showToastInfo('您需要登录后才可退出登录');
+                return;
+            }
             var modal = document.getElementById('moreActionsModal');
             modal.style.animation = 'fadeOut 0.3s ease';
             setTimeout(function() {
@@ -13090,19 +14059,15 @@
                         
                         migrateUserDataForCurrentUser();
                         
-                        showAlert(getLanguageText('loginSuccess'));
+                        showToastSuccess(getLanguageText('loginSuccess'), '登录成功');
                         
                         sessionStorage.setItem('loginAuthenticated', 'true');
                         sessionStorage.setItem('loginTimestamp', Date.now().toString());
                         
-                        // 隐藏登录成功提示，直接切换到游戏大厅
+                        // 切换到游戏大厅
                         setTimeout(function() {
-                            var alertModal = document.getElementById('customAlert');
-                            if (alertModal) {
-                                alertModal.style.display = 'none';
-                            }
                             switchToGameCenter();
-                        }, 500);
+                        }, 300);
                     }, 1000);
                 }, 300);
             });
@@ -13431,19 +14396,15 @@
                 
                 migrateUserDataForCurrentUser();
                 
-                showAlert(getLanguageText('loginSuccess'));
+                showToastSuccess(getLanguageText('loginSuccess'), '登录成功');
                 
                 sessionStorage.setItem('loginAuthenticated', 'true');
                 sessionStorage.setItem('loginTimestamp', Date.now().toString());
                 
-                // 隐藏登录成功提示，直接切换到游戏大厅
+                // 切换到游戏大厅
                 setTimeout(function() {
-                    var alertModal = document.getElementById('customAlert');
-                    if (alertModal) {
-                        alertModal.style.display = 'none';
-                    }
                     switchToGameCenter();
-                }, 500);
+                }, 300);
             }, 1000);
         }
         
@@ -15972,6 +16933,12 @@
                 return u.username === currentUser.username;
             });
             
+            // 获取名片配置
+            var cardConfig = getCardConfig();
+            var visibleTabs = getVisibleTabs(cardConfig);
+            var density = cardConfig.settings.density || 'comfortable';
+            var badgeLimit = cardConfig.settings.badgeLimit || 6;
+            
             // 获取用户头像
             var avatarHTML = '<i class="fas fa-user-circle"></i>';
             if (user && user.userProfile) {
@@ -16099,14 +17066,32 @@
             var friends = user && user.gameData && user.gameData.friends ? user.gameData.friends : [];
             
             // 获取成就徽章
-            var badges = [];
             var totalGamesPlayed = user && user.gameData && user.gameData.stats ? user.gameData.stats.totalGames || 0 : 0;
             var checkinStreak = user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.streak || 0 : 0;
-            if (specialAchievements >= 3) badges.push({ name: '全能玩家', icon: 'fas fa-star' });
-            if (totalGamesPlayed >= 100) badges.push({ name: '游戏达人', icon: 'fas fa-trophy' });
-            if (checkinStreak >= 7) badges.push({ name: '坚持不懈', icon: 'fas fa-flame' });
-            if (completionRate >= 50) badges.push({ name: '成就收藏家', icon: 'fas fa-award' });
-            if (completionRate >= 100) badges.push({ name: '完美主义者', icon: 'fas fa-crown' });
+            
+            // 完整的徽章数据定义
+            var allBadges = [
+                { id: 'all_rounder', name: '全能玩家', icon: 'fas fa-star', color: '#ff6b6b', description: '完成3个及以上的特殊游戏成就', condition: '完成3个及以上的特殊游戏成就', unlocked: specialAchievements >= 3, unlockedAt: null },
+                { id: 'game_master', name: '游戏达人', icon: 'fas fa-trophy', color: '#ffd700', description: '累计游戏次数达到100次', condition: '累计游戏次数达到100次', unlocked: totalGamesPlayed >= 100, unlockedAt: null },
+                { id: 'persistent', name: '坚持不懈', icon: 'fas fa-flame', color: '#ff9800', description: '连续签到7天', condition: '连续签到7天', unlocked: checkinStreak >= 7, unlockedAt: null },
+                { id: 'collector', name: '成就收藏家', icon: 'fas fa-award', color: '#4caf50', description: '完成度达到50%', condition: '完成度达到50%', unlocked: completionRate >= 50, unlockedAt: null },
+                { id: 'perfectionist', name: '完美主义者', icon: 'fas fa-crown', color: '#9c27b0', description: '完成度达到100%', condition: '完成度达到100%', unlocked: completionRate >= 100, unlockedAt: null },
+                { id: 'checkin_novice', name: '签到新手', icon: 'fas fa-calendar-check', color: '#2196f3', description: '完成第一次签到', condition: '完成第一次签到', unlocked: user && user.userProfile && user.userProfile.checkinStats ? (user.userProfile.checkinStats.total || 0) >= 1 : false, unlockedAt: null },
+                { id: 'checkin_expert', name: '签到专家', icon: 'fas fa-calendar-alt', color: '#00bcd4', description: '累计签到达到30次', condition: '累计签到达到30次', unlocked: user && user.userProfile && user.userProfile.checkinStats ? (user.userProfile.checkinStats.total || 0) >= 30 : false, unlockedAt: null },
+                { id: 'checkin_master', name: '签到大师', icon: 'fas fa-medal', color: '#ff9800', description: '累计签到达到100次', condition: '累计签到达到100次', unlocked: user && user.userProfile && user.userProfile.checkinStats ? (user.userProfile.checkinStats.total || 0) >= 100 : false, unlockedAt: null },
+                { id: 'level_up', name: '稳步成长', icon: 'fas fa-level-up-alt', color: '#4caf50', description: '等级达到10级', condition: '等级达到10级', unlocked: level >= 10, unlockedAt: null },
+                { id: 'veteran', name: '资深玩家', icon: 'fas fa-shield-alt', color: '#3f51b5', description: '等级达到30级', condition: '等级达到30级', unlocked: level >= 30, unlockedAt: null },
+                { id: 'legend', name: '传奇玩家', icon: 'fas fa-gem', color: '#e91e63', description: '等级达到60级（满级）', condition: '等级达到60级（满级）', unlocked: level >= 60, unlockedAt: null },
+                { id: 'social_butterfly', name: '社交达人', icon: 'fas fa-users', color: '#00bcd4', description: '添加5个好友', condition: '添加5个好友', unlocked: friends.length >= 5, unlockedAt: null },
+                { id: 'game_beginner', name: '游戏初学者', icon: 'fas fa-gamepad', color: '#8bc34a', description: '完成第一次游戏', condition: '完成第一次游戏', unlocked: totalGamesPlayed >= 1, unlockedAt: null },
+                { id: 'game_pro', name: '游戏高手', icon: 'fas fa-rocket', color: '#ff5722', description: '累计游戏次数达到50次', condition: '累计游戏次数达到50次', unlocked: totalGamesPlayed >= 50, unlockedAt: null }
+            ];
+            
+            // 筛选已解锁的徽章用于卡片显示
+            var badges = allBadges.filter(function(b) { return b.unlocked; });
+            
+            // 初始化徽章数据供弹窗使用
+            initBadgesData(allBadges);
             
             // 模态框内容 - 改为邮件弹窗风格
             modal.innerHTML = `
@@ -16116,7 +17101,7 @@
                             <h2>用户名片</h2>
                         </div>
                         <div class="card-header-actions">
-                            <button class="card-action-btn" id="cardEditBtn" onclick="editProfile()">
+                            <button class="card-action-btn" id="cardEditBtn" onclick="openCardSettings()">
                                 <i class="fas fa-edit"></i>
                                 <span>编辑</span>
                             </button>
@@ -16152,339 +17137,389 @@
                                 </div>
                             </div>
                             <div class="card-sidebar-tabs">
-                                <button class="card-tab-btn active" data-tab="profile">
-                                    <i class="fas fa-user"></i>
-                                    <span>个人资料</span>
-                                </button>
-                                <button class="card-tab-btn" data-tab="growth">
-                                    <i class="fas fa-crown"></i>
-                                    <span>成长</span>
-                                </button>
-                                <button class="card-tab-btn" data-tab="achievements">
-                                    <i class="fas fa-trophy"></i>
-                                    <span>成就</span>
-                                </button>
-                                <button class="card-tab-btn" data-tab="stats">
-                                    <i class="fas fa-chart-bar"></i>
-                                    <span>统计</span>
-                                </button>
-                                <button class="card-tab-btn" data-tab="collection">
-                                    <i class="fas fa-heart"></i>
-                                    <span>收藏</span>
-                                </button>
+                                ${visibleTabs.map(function(tab, idx) {
+                                    return `<button class="card-tab-btn ${idx === 0 ? 'active' : ''}" data-tab="${tab.id}">
+                                        <i class="${tab.icon}"></i>
+                                        <span>${tab.name}</span>
+                                    </button>`;
+                                }).join('')}
                             </div>
                         </div>
                         <!-- 右侧主内容 -->
                         <div class="mail-main card-main">
-                            <!-- 个人资料标签页 -->
-                            <div class="card-tab-content active" id="tab-profile">
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-signature"></i> 个人签名</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <p class="user-signature">${signature}</p>
-                                    </div>
-                                </div>
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-award"></i> 成就徽章</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        ${badges.length > 0 ? `
-                                            <div class="badges-grid">
-                                                ${badges.map(b => `
-                                                    <div class="badge-item">
-                                                        <div class="badge-icon">
-                                                            <i class="${b.icon}"></i>
+                            ${visibleTabs.map(function(tab, tabIdx) {
+                                var tabSections = getVisibleSections(cardConfig, tab.id);
+                                if (tabSections.length === 0) {
+                                    return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-${tab.id}">
+                                        <div class="empty-section-state">
+                                            <i class="fas fa-eye-slash"></i>
+                                            <p>该标签页暂无显示内容，请在名片设置中启用相关区块</p>
+                                        </div>
+                                    </div>`;
+                                }
+                                
+                                if (tab.id === 'profile') {
+                                    return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-profile">
+                                        ${tabSections.map(function(sec) {
+                                            if (sec.id === 'signature') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-signature"></i> 个人签名</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <p class="user-signature">${signature}</p>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'badges') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-award"></i> 成就徽章</h4>
+                                                        <button class="section-action-btn" id="viewAllBadgesBtn" onclick="showBadgesListModal()">
+                                                            <span>查看全部</span>
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        ${badges.length > 0 ? `
+                                                            <div class="badges-grid">
+                                                                ${badges.slice(0, badgeLimit).map(b => `
+                                                                    <div class="badge-item ${b.unlocked ? 'unlocked' : 'locked'}" onclick="showBadgeDetailModal('${b.id}')">
+                                                                        <div class="badge-icon" style="background: linear-gradient(135deg, ${b.color} 0%, ${b.color}dd 100%);">
+                                                                            <i class="${b.icon}"></i>
+                                                                        </div>
+                                                                        <span class="badge-name">${b.name}</span>
+                                                                    </div>
+                                                                `).join('')}
+                                                            </div>
+                                                        ` : '<p class="empty-text">暂无成就徽章</p>'}
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'social') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-users"></i> 社交数据</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="social-stats">
+                                                            <div class="social-stat-item">
+                                                                <span class="social-stat-value">${friends.length}</span>
+                                                                <span class="social-stat-label">好友</span>
+                                                            </div>
+                                                            <div class="social-stat-item">
+                                                                <span class="social-stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.total || 0 : 0}</span>
+                                                                <span class="social-stat-label">累计签到</span>
+                                                            </div>
+                                                            <div class="social-stat-item">
+                                                                <span class="social-stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.streak || 0 : 0}</span>
+                                                                <span class="social-stat-label">连续签到</span>
+                                                            </div>
                                                         </div>
-                                                        <span class="badge-name">${b.name}</span>
                                                     </div>
-                                                `).join('')}
-                                            </div>
-                                        ` : '<p class="empty-text">暂无成就徽章</p>'}
-                                    </div>
-                                </div>
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-users"></i> 社交数据</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <div class="social-stats">
-                                            <div class="social-stat-item">
-                                                <span class="social-stat-value">${friends.length}</span>
-                                                <span class="social-stat-label">好友</span>
-                                            </div>
-                                            <div class="social-stat-item">
-                                                <span class="social-stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.total || 0 : 0}</span>
-                                                <span class="social-stat-label">累计签到</span>
-                                            </div>
-                                            <div class="social-stat-item">
-                                                <span class="social-stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.streak || 0 : 0}</span>
-                                                <span class="social-stat-label">连续签到</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- 成长标签页 -->
-                            <div class="card-tab-content" id="tab-growth">
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-crown"></i> 等级信息</h4>
-                                        <span class="completion-badge">Lv.${level}</span>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <div class="growth-level-display">
-                                            <div class="growth-level-big">
-                                                <span class="growth-level-num">Lv.${level}</span>
-                                            </div>
-                                            <div class="growth-level-detail">
-                                                <div class="progress-bar-large">
-                                                    <div class="progress-fill-large" style="width: ${expProgress}%;"></div>
-                                                </div>
-                                                <p class="progress-text">${exp} / ${expToNextLevel} EXP ${level >= 60 ? '(已满级)' : ''}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-chart-line"></i> 成长数据</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <div class="stats-grid">
-                                            <div class="stat-card">
-                                                <i class="fas fa-star"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${user && user.gameData ? user.gameData.totalExp || 0 : 0}</span>
-                                                    <span class="stat-label">累计经验</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <i class="fas fa-level-up-alt"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${level}</span>
-                                                    <span class="stat-label">当前等级</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <i class="fas fa-signal"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.streak || 0 : 0}</span>
-                                                    <span class="stat-label">连续签到</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <i class="fas fa-calendar"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.total || 0 : 0}</span>
-                                                    <span class="stat-label">累计签到</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-info-circle"></i> 等级说明</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <div class="growth-info-list">
-                                            <div class="growth-info-item">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span>最高等级为 60 级</span>
-                                            </div>
-                                            <div class="growth-info-item">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span>每日签到可获得 30-100 经验值</span>
-                                            </div>
-                                            <div class="growth-info-item">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span>连续签到 7 天额外奖励 500 EXP</span>
-                                            </div>
-                                            <div class="growth-info-item">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span>连续签到 30 天额外奖励 1000 EXP</span>
-                                            </div>
-                                            <div class="growth-info-item">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span>等级越高所需经验越多（公式：50 + (等级-1) × 30）</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- 成就标签页 -->
-                            <div class="card-tab-content" id="tab-achievements">
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4>成就完成度</h4>
-                                        <span class="completion-badge">${completionRate}%</span>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <div class="progress-bar-large">
-                                            <div class="progress-fill-large" style="width: ${completionRate}%;"></div>
-                                        </div>
-                                        <p class="progress-text">${completedAchievements}/${totalAchievements} 成就已解锁</p>
-                                    </div>
-                                </div>
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4>游戏成就详情</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <div class="game-achievements-grid">
-                                            <div class="game-achievement-card" onclick="showGameAchievement('fk')">
-                                                <div class="game-achievement-icon">
-                                                    <i class="fas fa-square"></i>
-                                                </div>
-                                                <div class="game-achievement-info">
-                                                    <span class="game-achievement-name">点击方块</span>
-                                                    <div class="game-achievement-progress-bar">
-                                                        <div class="game-achievement-progress-fill" style="width: ${(fkAchievements.length/10)*100}%;"></div>
+                                                </div>`;
+                                            }
+                                            return '';
+                                        }).join('')}
+                                    </div>`;
+                                }
+                                
+                                if (tab.id === 'growth') {
+                                    return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-growth">
+                                        ${tabSections.map(function(sec) {
+                                            if (sec.id === 'level') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-crown"></i> 等级信息</h4>
+                                                        <span class="completion-badge">Lv.${level}</span>
                                                     </div>
-                                                    <span class="game-achievement-count">${fkAchievements.length}/10</span>
-                                                </div>
-                                            </div>
-                                            <div class="game-achievement-card" onclick="showGameAchievement('fxq')">
-                                                <div class="game-achievement-icon">
-                                                    <i class="fas fa-plane"></i>
-                                                </div>
-                                                <div class="game-achievement-info">
-                                                    <span class="game-achievement-name">飞行器</span>
-                                                    <div class="game-achievement-progress-bar">
-                                                        <div class="game-achievement-progress-fill" style="width: ${(fxqAchievements.length/10)*100}%;"></div>
-                                                    </div>
-                                                    <span class="game-achievement-count">${fxqAchievements.length}/10</span>
-                                                </div>
-                                            </div>
-                                            <div class="game-achievement-card" onclick="showGameAchievement('wzq')">
-                                                <div class="game-achievement-icon">
-                                                    <i class="fas fa-circle"></i>
-                                                </div>
-                                                <div class="game-achievement-info">
-                                                    <span class="game-achievement-name">五子棋</span>
-                                                    <div class="game-achievement-progress-bar">
-                                                        <div class="game-achievement-progress-fill" style="width: ${(wzqAchievements.length/10)*100}%;"></div>
-                                                    </div>
-                                                    <span class="game-achievement-count">${wzqAchievements.length}/10</span>
-                                                </div>
-                                            </div>
-                                            <div class="game-achievement-card" onclick="showGameAchievement('snake')">
-                                                <div class="game-achievement-icon">
-                                                    <i class="fas fa-signs-post"></i>
-                                                </div>
-                                                <div class="game-achievement-info">
-                                                    <span class="game-achievement-name">贪吃蛇</span>
-                                                    <div class="game-achievement-progress-bar">
-                                                        <div class="game-achievement-progress-fill" style="width: ${(snakeAchievements.length/10)*100}%;"></div>
-                                                    </div>
-                                                    <span class="game-achievement-count">${snakeAchievements.length}/10</span>
-                                                </div>
-                                            </div>
-                                            <div class="game-achievement-card" onclick="showGameAchievement('memory')">
-                                                <div class="game-achievement-icon">
-                                                    <i class="fas fa-images"></i>
-                                                </div>
-                                                <div class="game-achievement-info">
-                                                    <span class="game-achievement-name">记忆卡牌</span>
-                                                    <div class="game-achievement-progress-bar">
-                                                        <div class="game-achievement-progress-fill" style="width: ${(memoryAchievements.length/10)*100}%;"></div>
-                                                    </div>
-                                                    <span class="game-achievement-count">${memoryAchievements.length}/10</span>
-                                                </div>
-                                            </div>
-                                            <div class="game-achievement-card" onclick="showGameAchievement('color')">
-                                                <div class="game-achievement-icon">
-                                                    <i class="fas fa-palette"></i>
-                                                </div>
-                                                <div class="game-achievement-info">
-                                                    <span class="game-achievement-name">颜色匹配</span>
-                                                    <div class="game-achievement-progress-bar">
-                                                        <div class="game-achievement-progress-fill" style="width: ${(colorAchievements.length/10)*100}%;"></div>
-                                                    </div>
-                                                    <span class="game-achievement-count">${colorAchievements.length}/10</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- 统计标签页 -->
-                            <div class="card-tab-content" id="tab-stats">
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-gamepad"></i> 游戏统计</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        <div class="stats-grid">
-                                            <div class="stat-card">
-                                                <i class="fas fa-play-circle"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.totalGames || 0 : 0}</span>
-                                                    <span class="stat-label">总游戏次数</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <i class="fas fa-clock"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.totalPlayTime || 0 : 0}分钟</span>
-                                                    <span class="stat-label">总游戏时间</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <i class="fas fa-trophy"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.highestScore || 0 : 0}</span>
-                                                    <span class="stat-label">最高分</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <i class="fas fa-chart-line"></i>
-                                                <div class="stat-info">
-                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.highestScore || 0 : 0}</span>
-                                                    <span class="stat-label">最佳成绩</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-history"></i> 最近游戏</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        ${user && user.gameData && user.gameData.recentGames ? `
-                                            <div class="recent-games-list">
-                                                <ul>${user.gameData.recentGames.map(game => `<li>${game.name} - ${game.lastPlayed}</li>`).join('')}</ul>
-                                            </div>
-                                        ` : '<p class="empty-text">最近玩过的游戏将显示在这里</p>'}
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- 收藏标签页 -->
-                            <div class="card-tab-content" id="tab-collection">
-                                <div class="card-section">
-                                    <div class="card-section-header">
-                                        <h4><i class="fas fa-heart"></i> 游戏收藏</h4>
-                                    </div>
-                                    <div class="card-section-body">
-                                        ${favorites.length > 0 ? `
-                                            <div class="favorites-grid">
-                                                ${favorites.map(fav => `
-                                                    <div class="favorite-item">
-                                                        <div class="favorite-icon">
-                                                            <i class="fas fa-star"></i>
+                                                    <div class="card-section-body">
+                                                        <div class="growth-level-display">
+                                                            <div class="growth-level-big">
+                                                                <span class="growth-level-num">Lv.${level}</span>
+                                                            </div>
+                                                            <div class="growth-level-detail">
+                                                                <div class="progress-bar-large">
+                                                                    <div class="progress-fill-large" style="width: ${expProgress}%;"></div>
+                                                                </div>
+                                                                <p class="progress-text">${exp} / ${expToNextLevel} EXP ${level >= 60 ? '(已满级)' : ''}</p>
+                                                            </div>
                                                         </div>
-                                                        <span class="favorite-name">${fav}</span>
                                                     </div>
-                                                `).join('')}
-                                            </div>
-                                        ` : '<p class="empty-text">暂无收藏的游戏</p>'}
-                                    </div>
-                                </div>
-                            </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'growthData') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-chart-line"></i> 成长数据</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="stats-grid">
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-star"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${user && user.gameData ? user.gameData.totalExp || 0 : 0}</span>
+                                                                    <span class="stat-label">累计经验</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-level-up-alt"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${level}</span>
+                                                                    <span class="stat-label">当前等级</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-signal"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.streak || 0 : 0}</span>
+                                                                    <span class="stat-label">连续签到</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-calendar"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.total || 0 : 0}</span>
+                                                                    <span class="stat-label">累计签到</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'levelInfo') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-info-circle"></i> 等级说明</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="growth-info-list">
+                                                            <div class="growth-info-item">
+                                                                <i class="fas fa-check-circle"></i>
+                                                                <span>最高等级为 60 级</span>
+                                                            </div>
+                                                            <div class="growth-info-item">
+                                                                <i class="fas fa-check-circle"></i>
+                                                                <span>每日签到可获得 30-100 经验值</span>
+                                                            </div>
+                                                            <div class="growth-info-item">
+                                                                <i class="fas fa-check-circle"></i>
+                                                                <span>连续签到 7 天额外奖励 500 EXP</span>
+                                                            </div>
+                                                            <div class="growth-info-item">
+                                                                <i class="fas fa-check-circle"></i>
+                                                                <span>连续签到 30 天额外奖励 1000 EXP</span>
+                                                            </div>
+                                                            <div class="growth-info-item">
+                                                                <i class="fas fa-check-circle"></i>
+                                                                <span>等级越高所需经验越多（公式：50 + (等级-1) × 30）</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            return '';
+                                        }).join('')}
+                                    </div>`;
+                                }
+                                
+                                if (tab.id === 'achievements') {
+                                    return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-achievements">
+                                        ${tabSections.map(function(sec) {
+                                            if (sec.id === 'completion') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4>成就完成度</h4>
+                                                        <span class="completion-badge">${completionRate}%</span>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="progress-bar-large">
+                                                            <div class="progress-fill-large" style="width: ${completionRate}%;"></div>
+                                                        </div>
+                                                        <p class="progress-text">${completedAchievements}/${totalAchievements} 成就已解锁</p>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'gameDetails') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4>游戏成就详情</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="game-achievements-grid">
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('fk')">
+                                                                <div class="game-achievement-icon">
+                                                                    <i class="fas fa-square"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">点击方块</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(fkAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${fkAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('fxq')">
+                                                                <div class="game-achievement-icon">
+                                                                    <i class="fas fa-plane"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">飞行器</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(fxqAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${fxqAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('wzq')">
+                                                                <div class="game-achievement-icon">
+                                                                    <i class="fas fa-circle"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">五子棋</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(wzqAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${wzqAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('snake')">
+                                                                <div class="game-achievement-icon">
+                                                                    <i class="fas fa-signs-post"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">贪吃蛇</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(snakeAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${snakeAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('memory')">
+                                                                <div class="game-achievement-icon">
+                                                                    <i class="fas fa-images"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">记忆卡牌</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(memoryAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${memoryAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('color')">
+                                                                <div class="game-achievement-icon">
+                                                                    <i class="fas fa-palette"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">颜色匹配</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(colorAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${colorAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            return '';
+                                        }).join('')}
+                                    </div>`;
+                                }
+                                
+                                if (tab.id === 'stats') {
+                                    return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-stats">
+                                        ${tabSections.map(function(sec) {
+                                            if (sec.id === 'gameStats') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-gamepad"></i> 游戏统计</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="stats-grid">
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-play-circle"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.totalGames || 0 : 0}</span>
+                                                                    <span class="stat-label">总游戏次数</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-clock"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.totalPlayTime || 0 : 0}分钟</span>
+                                                                    <span class="stat-label">总游戏时间</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-trophy"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.highestScore || 0 : 0}</span>
+                                                                    <span class="stat-label">最高分</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="stat-card">
+                                                                <i class="fas fa-chart-line"></i>
+                                                                <div class="stat-info">
+                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.highestScore || 0 : 0}</span>
+                                                                    <span class="stat-label">最佳成绩</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'recentGames') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-history"></i> 最近游戏</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        ${user && user.gameData && user.gameData.recentGames ? `
+                                                            <div class="recent-games-list">
+                                                                <ul>${user.gameData.recentGames.map(game => `<li>${game.name} - ${game.lastPlayed}</li>`).join('')}</ul>
+                                                            </div>
+                                                        ` : '<p class="empty-text">最近玩过的游戏将显示在这里</p>'}
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            return '';
+                                        }).join('')}
+                                    </div>`;
+                                }
+                                
+                                if (tab.id === 'collection') {
+                                    return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-collection">
+                                        ${tabSections.map(function(sec) {
+                                            if (sec.id === 'favorites') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-heart"></i> 游戏收藏</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        ${favorites.length > 0 ? `
+                                                            <div class="favorites-grid">
+                                                                ${favorites.map(fav => `
+                                                                    <div class="favorite-item">
+                                                                        <div class="favorite-icon">
+                                                                            <i class="fas fa-star"></i>
+                                                                        </div>
+                                                                        <span class="favorite-name">${fav}</span>
+                                                                    </div>
+                                                                `).join('')}
+                                                            </div>
+                                                        ` : '<p class="empty-text">暂无收藏的游戏</p>'}
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            return '';
+                                        }).join('')}
+                                    </div>`;
+                                }
+                                
+                                return '';
+                            }).join('')}
                         </div>
                     </div>
                 </div>
@@ -16520,6 +17555,7 @@
                     background: white;
                     transform: none;
                     box-shadow: none;
+                    position: relative;
                 }
                 
                 /* 头部操作按钮 */
@@ -17322,69 +18358,531 @@
             }, 300);
         }
         
-        // 编辑个人资料
-        function editProfile() {
+        // 名片配置默认值
+        var CARD_CONFIG_DEFAULTS = {
+            tabs: {
+                profile: { visible: true, order: 1, name: '个人资料', icon: 'fas fa-user' },
+                growth: { visible: true, order: 2, name: '成长', icon: 'fas fa-crown' },
+                achievements: { visible: true, order: 3, name: '成就', icon: 'fas fa-trophy' },
+                stats: { visible: true, order: 4, name: '统计', icon: 'fas fa-chart-bar' },
+                collection: { visible: true, order: 5, name: '收藏', icon: 'fas fa-heart' }
+            },
+            sections: {
+                profile: {
+                    signature: { visible: true, order: 1, name: '个人签名', icon: 'fas fa-signature' },
+                    badges: { visible: true, order: 2, name: '成就徽章', icon: 'fas fa-award' },
+                    social: { visible: true, order: 3, name: '社交数据', icon: 'fas fa-users' }
+                },
+                growth: {
+                    level: { visible: true, order: 1, name: '等级信息', icon: 'fas fa-crown' },
+                    growthData: { visible: true, order: 2, name: '成长数据', icon: 'fas fa-chart-line' },
+                    levelInfo: { visible: true, order: 3, name: '等级说明', icon: 'fas fa-info-circle' }
+                },
+                achievements: {
+                    completion: { visible: true, order: 1, name: '成就完成度', icon: 'fas fa-percentage' },
+                    gameDetails: { visible: true, order: 2, name: '游戏成就详情', icon: 'fas fa-gamepad' }
+                },
+                stats: {
+                    gameStats: { visible: true, order: 1, name: '游戏统计', icon: 'fas fa-gamepad' },
+                    recentGames: { visible: true, order: 2, name: '最近游戏', icon: 'fas fa-history' }
+                },
+                collection: {
+                    favorites: { visible: true, order: 1, name: '游戏收藏', icon: 'fas fa-heart' }
+                }
+            },
+            settings: {
+                density: 'comfortable',
+                badgeLimit: 6
+            }
+        };
+
+        // 获取名片配置
+        function getCardConfig() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var username = currentUser.username || 'default';
+            var configKey = 'cardConfig_' + username;
+            var saved = localStorage.getItem(configKey);
+            if (saved) {
+                try {
+                    var parsed = JSON.parse(saved);
+                    return mergeConfig(CARD_CONFIG_DEFAULTS, parsed);
+                } catch (e) {
+                    return JSON.parse(JSON.stringify(CARD_CONFIG_DEFAULTS));
+                }
+            }
+            return JSON.parse(JSON.stringify(CARD_CONFIG_DEFAULTS));
+        }
+
+        // 保存名片配置
+        function saveCardConfig(config) {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var username = currentUser.username || 'default';
+            var configKey = 'cardConfig_' + username;
+            localStorage.setItem(configKey, JSON.stringify(config));
+        }
+
+        // 深度合并配置
+        function mergeConfig(defaults, saved) {
+            var result = JSON.parse(JSON.stringify(defaults));
+            for (var key in saved) {
+                if (saved.hasOwnProperty(key)) {
+                    if (typeof saved[key] === 'object' && saved[key] !== null && !Array.isArray(saved[key])) {
+                        result[key] = mergeConfig(defaults[key] || {}, saved[key]);
+                    } else {
+                        result[key] = saved[key];
+                    }
+                }
+            }
+            return result;
+        }
+
+        // 获取排序后的可见标签列表
+        function getVisibleTabs(config) {
+            var tabs = [];
+            for (var key in config.tabs) {
+                if (config.tabs.hasOwnProperty(key) && config.tabs[key].visible) {
+                    tabs.push({ id: key, ...config.tabs[key] });
+                }
+            }
+            tabs.sort(function(a, b) { return a.order - b.order; });
+            return tabs;
+        }
+
+        // 获取排序后的可见章节列表
+        function getVisibleSections(config, tabId) {
+            if (!config.sections[tabId]) return [];
+            var sections = [];
+            for (var key in config.sections[tabId]) {
+                if (config.sections[tabId].hasOwnProperty(key) && config.sections[tabId][key].visible) {
+                    sections.push({ id: key, ...config.sections[tabId][key] });
+                }
+            }
+            sections.sort(function(a, b) { return a.order - b.order; });
+            return sections;
+        }
+
+        // 打开名片设置侧边栏
+        function openCardSettings() {
+            var existingPanel = document.getElementById('userCardSettingsPanel');
+            if (existingPanel) {
+                existingPanel.remove();
+            }
+            var existingOverlay = document.getElementById('cardSettingsOverlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+
+            var cardModal = document.getElementById('userCardModal');
+            if (!cardModal) return;
+
+            var fullscreen = cardModal.querySelector('.about-fullscreen');
+
+            var config = getCardConfig();
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             var user = users.find(function(u) {
                 return u.username === currentUser.username;
             });
-            
             var signature = user && user.userProfile && user.userProfile.bio ? user.userProfile.bio : '';
-            
-            var editModal = document.createElement('div');
-            editModal.id = 'editProfileModal';
-            editModal.className = 'custom-alert';
-            editModal.innerHTML = `
-                <div class="alert-content" style="max-width: 500px; width: 90%;">
-                    <div class="alert-header">
-                        <h2>编辑个人资料</h2>
-                        <button class="alert-close" onclick="document.getElementById('editProfileModal').remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="alert-body" style="padding: 20px;">
-                        <div class="form-group">
-                            <label>个人签名</label>
-                            <textarea id="editSignature" rows="4" placeholder="输入您的个人签名...">${signature}</textarea>
+
+            var overlay = document.createElement('div');
+            overlay.id = 'cardSettingsOverlay';
+            overlay.className = 'card-settings-overlay';
+            overlay.onclick = function() { closeCardSettings(); };
+            fullscreen.appendChild(overlay);
+
+            var panel = document.createElement('div');
+            panel.id = 'userCardSettingsPanel';
+            panel.innerHTML = `
+                <div class="settings-header">
+                    <h3><i class="fas fa-sliders-h"></i>名片设置</h3>
+                    <button class="settings-close-btn" onclick="closeCardSettings()" title="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="settings-tabs" id="settingsTabs">
+                    <button class="settings-tab active" data-panel="layout">布局管理</button>
+                    <button class="settings-tab" data-panel="appearance">外观设置</button>
+                    <button class="settings-tab" data-panel="profile">个人资料</button>
+                </div>
+                <div class="settings-body">
+                    <div class="settings-panel active" id="panel-layout">
+                        <div class="settings-section">
+                            <h4 class="settings-section-title"><i class="fas fa-th-large"></i> 标签页管理</h4>
+                            <div id="tabManagementList"></div>
+                        </div>
+                        <div class="settings-section">
+                            <h4 class="settings-section-title"><i class="fas fa-list"></i> 章节管理</h4>
+                            <div id="sectionManagementList"></div>
                         </div>
                     </div>
-                    <div class="alert-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px;">
-                        <button class="alert-cancel" onclick="document.getElementById('editProfileModal').remove()">取消</button>
-                        <button class="alert-confirm save-btn" onclick="saveProfile()">保存</button>
+                    <div class="settings-panel" id="panel-appearance">
+                        <div class="settings-section">
+                            <h4 class="settings-section-title"><i class="fas fa-layer-group"></i> 卡片密度</h4>
+                            <div class="density-options" id="densityOptions">
+                                <button class="density-btn" data-density="compact">
+                                    <i class="fas fa-th-list"></i>
+                                    <span>紧凑</span>
+                                </button>
+                                <button class="density-btn active" data-density="comfortable">
+                                    <i class="fas fa-square"></i>
+                                    <span>舒适</span>
+                                </button>
+                                <button class="density-btn" data-density="spacious">
+                                    <i class="fas fa-border-all"></i>
+                                    <span>宽松</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h4 class="settings-section-title"><i class="fas fa-cog"></i> 显示选项</h4>
+                            <div class="settings-item">
+                                <div class="settings-item-header">
+                                    <div class="settings-item-title">
+                                        <i class="fas fa-award"></i>
+                                        徽章显示数量
+                                    </div>
+                                    <div class="settings-item-actions">
+                                        <select id="badgeLimitSelect" style="padding:6px 12px;border:1px solid rgba(0,0,0,0.1);border-radius:6px;background:white;">
+                                            <option value="3">3个</option>
+                                            <option value="6" selected>6个</option>
+                                            <option value="9">9个</option>
+                                            <option value="12">全部</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="settings-item-desc">个人资料页中成就徽章的显示数量</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-panel" id="panel-profile">
+                        <div class="settings-section">
+                            <h4 class="settings-section-title"><i class="fas fa-pen"></i> 编辑个人签名</h4>
+                            <div class="signature-editor">
+                                <textarea id="signatureInput" placeholder="输入您的个人签名...">${signature}</textarea>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h4 class="settings-section-title"><i class="fas fa-info-circle"></i> 提示</h4>
+                            <div class="settings-item">
+                                <div class="settings-item-desc" style="padding:0;color:#666;">
+                                    · 个人签名将显示在个人资料页的"个人签名"区块<br>
+                                    · 在"布局管理"中可以调整各区块的显示和顺序<br>
+                                    · 修改后点击底部"保存并应用"按钮立即生效
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <div class="settings-footer">
+                    <button class="settings-btn settings-btn-ghost" onclick="resetCardConfig()" title="恢复默认">
+                        <i class="fas fa-undo"></i> 默认
+                    </button>
+                    <button class="settings-btn settings-btn-secondary" onclick="closeCardSettings()">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button class="settings-btn settings-btn-primary" onclick="applyCardSettings()">
+                        <i class="fas fa-check"></i> 保存并应用
+                    </button>
+                </div>
             `;
-            document.body.appendChild(editModal);
-            editModal.style.display = 'flex';
+
+            fullscreen.appendChild(panel);
+
+            setTimeout(function() {
+                overlay.classList.add('active');
+                panel.classList.add('open');
+                initSettingsPanelTabs();
+                renderTabManagementList(config);
+                renderSectionManagementList(config);
+                initDensityOptions(config);
+                updateBadgeLimitSelect(config);
+            }, 10);
         }
-        
-        // 保存个人资料
-        function saveProfile() {
-            var signature = document.getElementById('editSignature').value;
-            
-            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            var userIndex = users.findIndex(function(u) {
-                return u.username === currentUser.username;
+
+        // 关闭名片设置侧边栏
+        function closeCardSettings() {
+            var panel = document.getElementById('userCardSettingsPanel');
+            var overlay = document.getElementById('cardSettingsOverlay');
+            if (panel) {
+                panel.classList.remove('open');
+            }
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            setTimeout(function() {
+                if (panel) panel.remove();
+                if (overlay) overlay.remove();
+            }, 350);
+        }
+
+        // 初始化设置面板标签切换
+        function initSettingsPanelTabs() {
+            var tabs = document.querySelectorAll('#settingsTabs .settings-tab');
+            tabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(function(t) { t.classList.remove('active'); });
+                    this.classList.add('active');
+                    var panelId = this.getAttribute('data-panel');
+                    document.querySelectorAll('.settings-panel').forEach(function(p) {
+                        p.classList.remove('active');
+                    });
+                    document.getElementById('panel-' + panelId).classList.add('active');
+                });
             });
+        }
+
+        // 渲染标签页管理列表
+        function renderTabManagementList(config) {
+            var container = document.getElementById('tabManagementList');
+            var tabOrder = ['profile', 'growth', 'achievements', 'stats', 'collection'];
             
-            if (userIndex !== -1) {
-                if (!users[userIndex].userProfile) {
-                    users[userIndex].userProfile = {};
+            var sortedTabs = tabOrder
+                .filter(function(id) { return config.tabs[id]; })
+                .sort(function(a, b) { return config.tabs[a].order - config.tabs[b].order; });
+
+            container.innerHTML = sortedTabs.map(function(tabId) {
+                var tab = config.tabs[tabId];
+                return `
+                    <div class="tab-row ${tab.visible ? '' : 'hidden-tab'}" data-tab-id="${tabId}">
+                        <div class="tab-row-info">
+                            <i class="${tab.icon}"></i>
+                            <span>${tab.name}</span>
+                        </div>
+                        <div class="settings-item-actions">
+                            <button class="sort-btn" data-action="up" title="上移">
+                                <i class="fas fa-chevron-up"></i>
+                            </button>
+                            <button class="sort-btn" data-action="down" title="下移">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <label class="toggle-switch" title="${tab.visible ? '隐藏' : '显示'}">
+                                <input type="checkbox" data-toggle="tab" data-tab-id="${tabId}" ${tab.visible ? 'checked' : ''}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.querySelectorAll('.sort-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var row = this.closest('.tab-row');
+                    var tabId = row.getAttribute('data-tab-id');
+                    var action = this.getAttribute('data-action');
+                    moveTab(tabId, action);
+                });
+            });
+
+            container.querySelectorAll('input[data-toggle="tab"]').forEach(function(input) {
+                input.addEventListener('change', function() {
+                    var tabId = this.getAttribute('data-tab-id');
+                    var config = getCardConfig();
+                    config.tabs[tabId].visible = this.checked;
+                    saveCardConfig(config);
+                    this.closest('.tab-row').classList.toggle('hidden-tab', !this.checked);
+                });
+            });
+        }
+
+        // 移动标签页顺序
+        function moveTab(tabId, direction) {
+            var config = getCardConfig();
+            var tabIds = Object.keys(config.tabs).sort(function(a, b) {
+                return config.tabs[a].order - config.tabs[b].order;
+            });
+            var currentIndex = tabIds.indexOf(tabId);
+            var targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+            if (targetIndex < 0 || targetIndex >= tabIds.length) return;
+
+            var currentOrder = config.tabs[tabId].order;
+            var targetTabId = tabIds[targetIndex];
+            var targetOrder = config.tabs[targetTabId].order;
+            config.tabs[tabId].order = targetOrder;
+            config.tabs[targetTabId].order = currentOrder;
+            saveCardConfig(config);
+            renderTabManagementList(config);
+        }
+
+        // 渲染章节管理列表
+        function renderSectionManagementList(config) {
+            var container = document.getElementById('sectionManagementList');
+            var tabOrder = ['profile', 'growth', 'achievements', 'stats', 'collection'];
+
+            container.innerHTML = tabOrder.map(function(tabId) {
+                if (!config.sections[tabId]) return '';
+                var sections = config.sections[tabId];
+                var sectionIds = Object.keys(sections).sort(function(a, b) {
+                    return sections[a].order - sections[b].order;
+                });
+
+                return `
+                    <div style="margin-bottom:14px;">
+                        <div style="font-size:12px;font-weight:600;color:#999;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                            <i class="${config.tabs[tabId].icon}" style="color:#d45d79;font-size:11px;"></i>
+                            ${config.tabs[tabId].name}
+                        </div>
+                        ${sectionIds.map(function(secId) {
+                            var sec = sections[secId];
+                            return `
+                                <div class="settings-item ${sec.visible ? '' : 'hidden-section'}" data-tab-id="${tabId}" data-sec-id="${secId}">
+                                    <div class="settings-item-header">
+                                        <div class="settings-item-title">
+                                            <i class="${sec.icon}"></i>
+                                            ${sec.name}
+                                        </div>
+                                        <div class="settings-item-actions">
+                                            <button class="sort-btn" data-action="up" title="上移">
+                                                <i class="fas fa-chevron-up"></i>
+                                            </button>
+                                            <button class="sort-btn" data-action="down" title="下移">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </button>
+                                            <label class="toggle-switch" title="${sec.visible ? '隐藏' : '显示'}">
+                                                <input type="checkbox" data-toggle="section" data-tab-id="${tabId}" data-sec-id="${secId}" ${sec.visible ? 'checked' : ''}>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }).join('');
+
+            container.querySelectorAll('.sort-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var item = this.closest('.settings-item');
+                    var tabId = item.getAttribute('data-tab-id');
+                    var secId = item.getAttribute('data-sec-id');
+                    var action = this.getAttribute('data-action');
+                    moveSection(tabId, secId, action);
+                });
+            });
+
+            container.querySelectorAll('input[data-toggle="section"]').forEach(function(input) {
+                input.addEventListener('change', function() {
+                    var tabId = this.getAttribute('data-tab-id');
+                    var secId = this.getAttribute('data-sec-id');
+                    var config = getCardConfig();
+                    config.sections[tabId][secId].visible = this.checked;
+                    saveCardConfig(config);
+                    this.closest('.settings-item').classList.toggle('hidden-section', !this.checked);
+                });
+            });
+        }
+
+        // 移动章节顺序
+        function moveSection(tabId, secId, direction) {
+            var config = getCardConfig();
+            var sections = config.sections[tabId];
+            if (!sections) return;
+            var secIds = Object.keys(sections).sort(function(a, b) {
+                return sections[a].order - sections[b].order;
+            });
+            var currentIndex = secIds.indexOf(secId);
+            var targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+            if (targetIndex < 0 || targetIndex >= secIds.length) return;
+
+            var currentOrder = sections[secId].order;
+            var targetSecId = secIds[targetIndex];
+            var targetOrder = sections[targetSecId].order;
+            sections[secId].order = targetOrder;
+            sections[targetSecId].order = currentOrder;
+            saveCardConfig(config);
+            renderSectionManagementList(config);
+        }
+
+        // 初始化密度选项
+        function initDensityOptions(config) {
+            var buttons = document.querySelectorAll('#densityOptions .density-btn');
+            buttons.forEach(function(btn) {
+                var density = btn.getAttribute('data-density');
+                if (density === config.settings.density) {
+                    buttons.forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
                 }
-                users[userIndex].userProfile.bio = signature;
-                localStorage.setItem('registeredUsers', JSON.stringify(users));
-                
-                showAlert('个人资料已保存');
-                document.getElementById('editProfileModal').remove();
-                
-                // 更新名片显示
-                var userSignatureEl = document.querySelector('.user-signature');
-                if (userSignatureEl) {
-                    userSignatureEl.textContent = signature || '暂无签名';
+                btn.addEventListener('click', function() {
+                    buttons.forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                });
+            });
+        }
+
+        // 更新徽章数量选择
+        function updateBadgeLimitSelect(config) {
+            var select = document.getElementById('badgeLimitSelect');
+            if (select) {
+                select.value = config.settings.badgeLimit;
+            }
+        }
+
+        // 应用卡片设置并重新渲染
+        function applyCardSettings() {
+            var config = getCardConfig();
+
+            // 更新密度
+            var activeDensityBtn = document.querySelector('#densityOptions .density-btn.active');
+            if (activeDensityBtn) {
+                config.settings.density = activeDensityBtn.getAttribute('data-density');
+            }
+
+            // 更新徽章数量
+            var badgeSelect = document.getElementById('badgeLimitSelect');
+            if (badgeSelect) {
+                config.settings.badgeLimit = parseInt(badgeSelect.value) || 6;
+            }
+
+            // 更新签名
+            var signatureInput = document.getElementById('signatureInput');
+            if (signatureInput) {
+                var signature = signatureInput.value;
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                var userIndex = users.findIndex(function(u) {
+                    return u.username === currentUser.username;
+                });
+                if (userIndex !== -1) {
+                    if (!users[userIndex].userProfile) {
+                        users[userIndex].userProfile = {};
+                    }
+                    users[userIndex].userProfile.bio = signature;
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
                 }
             }
+
+            saveCardConfig(config);
+            closeCardSettings();
+
+            showToastInfo('设置已保存并应用');
+
+            setTimeout(function() {
+                showUserCardModal();
+            }, 400);
+        }
+
+        // 重置卡片配置
+        function resetCardConfig() {
+            if (!confirm('确定要恢复默认设置吗？所有自定义的布局和显示设置将被重置。')) {
+                return;
+            }
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var username = currentUser.username || 'default';
+            localStorage.removeItem('cardConfig_' + username);
+            
+            var config = JSON.parse(JSON.stringify(CARD_CONFIG_DEFAULTS));
+            renderTabManagementList(config);
+            renderSectionManagementList(config);
+            initDensityOptions(config);
+            updateBadgeLimitSelect(config);
+            
+            showToastInfo('已恢复默认设置');
+        }
+
+        // 保存个人资料（兼容旧代码调用）
+        function saveProfile() {
+            applyCardSettings();
         }
         
         // 分享名片

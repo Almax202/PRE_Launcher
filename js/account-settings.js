@@ -201,7 +201,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (mobileNavBackBtn) {
                 mobileNavBackBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
+                    // 先关闭菜单，然后返回
                     toggleMobileNav(false);
+                    setTimeout(function() {
+                        goBack();
+                    }, 300);
                 });
             }
         }
@@ -5857,23 +5861,150 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function showAlert(message) {
-        var alertBox = document.getElementById('customAlert');
-        var alertMessage = document.getElementById('alertMessage');
+    // 系统级提示横条函数
+    function showToast(options) {
+        if (typeof options === 'string') {
+            options = { message: options };
+        }
         
-        alertMessage.innerHTML = message;
-        alertBox.style.display = 'flex';
+        var container = document.getElementById('systemToastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'systemToastContainer';
+            container.className = 'system-toast-container';
+            document.body.appendChild(container);
+        }
+        
+        var type = options.type || 'info';
+        var title = options.title || '';
+        var message = options.message || '';
+        var duration = options.duration || 3000;
+        var icon = options.icon || getToastIcon(type);
+        
+        var toast = document.createElement('div');
+        toast.className = 'system-toast ' + type;
+        
+        var titleHTML = title ? '<div class="system-toast-title">' + title + '</div>' : '';
+        var messageHTML = message ? '<div class="system-toast-message">' + message + '</div>' : '';
+        
+        toast.innerHTML = 
+            '<div class="system-toast-icon"><i class="' + icon + '"></i></div>' +
+            '<div class="system-toast-content">' +
+                titleHTML +
+                messageHTML +
+            '</div>' +
+            '<button class="system-toast-close" title="关闭">' +
+                '<i class="fas fa-times"></i>' +
+            '</button>';
+        
+        container.appendChild(toast);
+        
         setTimeout(function() {
-            alertBox.classList.add('show');
+            toast.classList.add('show');
         }, 10);
+        
+        var closeBtn = toast.querySelector('.system-toast-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                hideToast(toast);
+            });
+        }
+        
+        if (duration > 0) {
+            var autoHideTimer = setTimeout(function() {
+                hideToast(toast);
+            }, duration);
+            
+            toast.dataset.autoHideTimer = autoHideTimer;
+        }
+        
+        return toast;
+    }
+    
+    function hideToast(toast) {
+        if (!toast || toast.classList.contains('hide')) {
+            return;
+        }
+        
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        
+        if (toast.dataset.autoHideTimer) {
+            clearTimeout(parseInt(toast.dataset.autoHideTimer));
+        }
+        
+        setTimeout(function() {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 400);
+    }
+    
+    function getToastIcon(type) {
+        switch (type) {
+            case 'success': return 'fas fa-check-circle';
+            case 'warning': return 'fas fa-exclamation-triangle';
+            case 'error': return 'fas fa-times-circle';
+            default: return 'fas fa-info-circle';
+        }
+    }
+    
+    function showToastSuccess(message, title) {
+        return showToast({ type: 'success', title: title || '成功', message: message });
+    }
+    
+    function showToastInfo(message, title) {
+        return showToast({ type: 'info', title: title || '提示', message: message });
+    }
+    
+    function showToastWarning(message, title) {
+        return showToast({ type: 'warning', title: title || '警告', message: message });
+    }
+    
+    function showToastError(message, title) {
+        return showToast({ type: 'error', title: title || '错误', message: message });
+    }
+    
+    // 智能检测提示类型
+    function detectToastType(message) {
+        if (!message) return 'info';
+        var msg = String(message);
+        
+        var successKeywords = ['成功', '已保存', '已创建', '已删除', '已退出', '已标记', '已清空', '已导出', '已导入', '已复制', '已保存', '已获得', '已启用', '已关闭'];
+        for (var i = 0; i < successKeywords.length; i++) {
+            if (msg.indexOf(successKeywords[i]) !== -1) return 'success';
+        }
+        
+        var errorKeywords = ['错误', '失败', '无效', '不能', '无法', '请先', '请输入', '至少', '不超过', '不一致', '未开启', '未启用', '上限', '错误', '密码错误'];
+        for (var j = 0; j < errorKeywords.length; j++) {
+            if (msg.indexOf(errorKeywords[j]) !== -1) return 'warning';
+        }
+        
+        return 'info';
+    }
+    
+    // 智能检测提示标题
+    function detectToastTitle(message, type) {
+        if (!message) return '';
+        var msg = String(message);
+        
+        if (msg.indexOf('请') === 0 || msg.indexOf('无') === 0) {
+            if (type === 'warning' || type === 'error') return '提示';
+        }
+        
+        if (type === 'success') return '成功';
+        if (type === 'warning') return '提示';
+        return '提示';
+    }
+
+    function showAlert(message) {
+        var type = detectToastType(message);
+        var title = detectToastTitle(message, type);
+        showToast({ type: type, title: title, message: message });
     }
     
     function hideAlert() {
-        var alertBox = document.getElementById('customAlert');
-        alertBox.classList.remove('show');
-        setTimeout(function() {
-            alertBox.style.display = 'none';
-        }, 300);
+        // hideAlert 函数保留用于向后兼容，toast 会自动隐藏
     }
     
     function formatDate(dateString) {
