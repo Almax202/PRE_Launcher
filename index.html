@@ -124,6 +124,11 @@
         
         // 应用背景样式
         function applyBackgroundStyle(backgroundSettings) {
+            // 如果在登录页模式下，不应用用户设置的背景
+            if (document.body.classList.contains('login-page-mode')) {
+                return;
+            }
+            
             var existingStyle = document.getElementById('custom-background-style');
             if (existingStyle) {
                 existingStyle.remove();
@@ -3903,6 +3908,322 @@
                 return 300;
             }
             
+            function initUIStyle() {
+                // 永久使用简约设计风格
+                document.body.classList.add('ui-minimalist');
+                
+                // 添加登录页模式类 - 显示固定背景和新布局
+                document.body.classList.add('login-page-mode');
+                
+                // 清除可能存在的内联背景样式
+                if (document.body.style.background) {
+                    document.body.style.background = '';
+                    document.body.style.backgroundImage = '';
+                    document.body.style.backgroundSize = '';
+                    document.body.style.backgroundPosition = '';
+                    document.body.style.backgroundRepeat = '';
+                    document.body.style.backgroundAttachment = '';
+                    document.body.style.animation = '';
+                }
+                
+                var topnav = document.getElementById('uiMinTopnav');
+                if (topnav) topnav.style.display = 'flex';
+                
+                // 隐藏侧边栏
+                var sidebar = document.querySelector('.settings-sidebar');
+                if (sidebar) sidebar.style.display = 'none';
+                
+                // 同步用户信息
+                syncMinimalistUserInfo();
+                
+                // 绑定导航栏事件
+                bindMinimalistNavEvents();
+                
+                // 绑定内联注册表单事件
+                bindInlineRegisterEvents();
+                
+                // 渲染快捷组件
+                renderQuickComponents();
+                
+                // 初始化名言名句轮播
+                initLoginQuotes();
+                
+                // 标记UI风格
+                localStorage.setItem('uiStyle', 'minimalist');
+            }
+            
+            // 名言名句轮播
+            var loginQuotes = [
+                { text: '通往成功的道路，总是在施工中。每一个伟大的旅程，都始于一个勇敢的决定。', author: '—— 佚名' },
+                { text: '生活不是等待暴风雨过去，而是学会在雨中起舞。', author: '—— 维维安·格林' },
+                { text: '星光不问赶路人，时光不负有心人。', author: '—— 佚名' },
+                { text: '愿你走出半生，归来仍是少年。', author: '—— 苏轼' },
+                { text: '种一棵树最好的时间是十年前，其次是现在。', author: '—— 谚语' },
+                { text: '心之所向，素履以往。生如逆旅，一苇以航。', author: '—— 苏轼' },
+                { text: '不要等待机会，而要创造机会。', author: '—— 萧伯纳' },
+                { text: '你的时间有限，不要为别人而活。', author: '—— 乔布斯' },
+                { text: '路漫漫其修远兮，吾将上下而求索。', author: '—— 屈原' },
+                { text: '星光不问赶路人，岁月不负有心人。', author: '—— 佚名' }
+            ];
+            var currentQuoteIndex = 0;
+            var quoteIntervalId = null;
+            
+            function initLoginQuotes() {
+                var quoteTextEl = document.getElementById('loginQuoteText');
+                var quoteAuthorEl = document.getElementById('loginQuoteAuthor');
+                if (!quoteTextEl || !quoteAuthorEl) return;
+                
+                if (quoteIntervalId) {
+                    clearInterval(quoteIntervalId);
+                }
+                
+                updateQuoteDisplay();
+                quoteIntervalId = setInterval(function() {
+                    currentQuoteIndex = (currentQuoteIndex + 1) % loginQuotes.length;
+                    updateQuoteDisplay();
+                }, 5000);
+            }
+            
+            function updateQuoteDisplay() {
+                var quoteTextEl = document.getElementById('loginQuoteText');
+                var quoteAuthorEl = document.getElementById('loginQuoteAuthor');
+                if (!quoteTextEl || !quoteAuthorEl) return;
+                
+                var quote = loginQuotes[currentQuoteIndex];
+                quoteTextEl.style.opacity = '0';
+                quoteAuthorEl.style.opacity = '0';
+                quoteTextEl.style.transition = 'opacity 0.5s ease';
+                quoteAuthorEl.style.transition = 'opacity 0.5s ease';
+                
+                setTimeout(function() {
+                    // 确保文字使用span包裹以支持flex居中
+                    var contentSpan = quoteTextEl.querySelector('.quote-text-content');
+                    if (!contentSpan) {
+                        quoteTextEl.innerHTML = '<span class="quote-text-content">' + quote.text + '</span>';
+                    } else {
+                        contentSpan.textContent = quote.text;
+                    }
+                    quoteAuthorEl.textContent = quote.author;
+                    quoteTextEl.style.opacity = '1';
+                    quoteAuthorEl.style.opacity = '1';
+                }, 500);
+            }
+            
+            function syncMinimalistUserInfo() {
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                var userNameEl = document.getElementById('uiMinUserName');
+                var userIdEl = document.getElementById('uiMinUserId');
+                var avatarEl = document.querySelector('.ui-min-user-avatar i');
+                var levelBadge = document.getElementById('uiMinLevelBadge');
+                
+                if (currentUser && currentUser.username) {
+                    if (userNameEl) userNameEl.textContent = currentUser.username;
+                    if (userIdEl) userIdEl.textContent = 'ID: ' + (currentUser.userId || '---');
+                    if (avatarEl) avatarEl.className = 'fas fa-user';
+                    
+                    var level = currentUser.level;
+                    if (!level) {
+                        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                        var fullUser = users.find(function(u) { return u.username === currentUser.username; });
+                        level = fullUser && fullUser.gameData ? fullUser.gameData.level : 1;
+                        currentUser.level = level;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                    if (levelBadge) levelBadge.textContent = level || 1;
+                } else {
+                    if (userNameEl) userNameEl.textContent = '未登录';
+                    if (userIdEl) userIdEl.textContent = 'ID: ---';
+                }
+                
+                // 版本号
+                var uiMinVersion = document.getElementById('uiMinVersion');
+                if (uiMinVersion && typeof getVersion === 'function') {
+                    uiMinVersion.textContent = getVersion('login');
+                }
+            }
+            
+            function bindMinimalistNavEvents() {
+                // 导航项点击事件
+                document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        var nav = this.getAttribute('data-nav');
+                        
+                        // 移除所有active状态
+                        document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(i) {
+                            i.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        
+                        // 触发对应功能
+                        if (nav === 'login') {
+                            // 如果当前在注册面板，则关闭它
+                            if (document.body.classList.contains('right-panel-register')) {
+                                if (hasRegistrationFormFilled()) {
+                                    // 恢复"注册账号"的active状态，因为用户可能取消
+                                    var registerNavItem = document.querySelector('#uiMinTopnav .ui-min-nav-item[data-nav="register"]');
+                                    if (registerNavItem) {
+                                        document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(i) {
+                                            i.classList.remove('active');
+                                        });
+                                        registerNavItem.classList.add('active');
+                                    }
+                                    showConfirm('切换确认', '当前表单未提交，切换功能则会清空所有已填写内容，是否继续？', function() {
+                                        hideRegisterPanel();
+                                    });
+                                } else {
+                                    hideRegisterPanel();
+                                }
+                            }
+                        } else if (nav === 'register') {
+                            showRegisterPanel();
+                        } else if (nav === 'settings') {
+                            var settingsBtn = document.getElementById('sidebarSettings');
+                            if (settingsBtn) settingsBtn.click();
+                        } else if (nav === 'feedback') {
+                            var feedbackBtn = document.getElementById('sidebarFeedback');
+                            if (feedbackBtn) feedbackBtn.click();
+                        } else if (nav === 'version') {
+                            var versionBtn = document.getElementById('sidebarVersion');
+                            if (versionBtn) versionBtn.click();
+                        } else if (nav === 'announcement') {
+                            var announcementBtn = document.getElementById('sidebarAnnouncement');
+                            if (announcementBtn) announcementBtn.click();
+                        } else if (nav === 'mail') {
+                            if (typeof showMailModal === 'function') {
+                                showMailModal();
+                            } else {
+                                var mailBtn = document.getElementById('sidebarMail');
+                                if (mailBtn) mailBtn.click();
+                            }
+                        }
+                    });
+                });
+                
+                // 按钮事件
+                var aboutBtn = document.getElementById('uiMinAboutBtn');
+                if (aboutBtn) {
+                    aboutBtn.addEventListener('click', function() {
+                        if (typeof showAboutLauncherModal === 'function') {
+                            showAboutLauncherModal();
+                        } else {
+                            var originalBtn = document.getElementById('aboutLauncherBtn');
+                            if (originalBtn) originalBtn.click();
+                        }
+                    });
+                }
+                
+                var cardBtn = document.getElementById('uiMinCardBtn');
+                if (cardBtn) {
+                    cardBtn.addEventListener('click', function() {
+                        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                        if (!currentUser.username) {
+                            var notLoggedInModal = document.getElementById('notLoggedInModal');
+                            if (notLoggedInModal) {
+                                notLoggedInModal.style.display = 'flex';
+                                setTimeout(function() { notLoggedInModal.classList.add('show'); }, 100);
+                            }
+                        } else {
+                            if (typeof showUserCardModal === 'function') {
+                                showUserCardModal();
+                            } else {
+                                var originalBtn = document.getElementById('cardBtn');
+                                if (originalBtn) originalBtn.click();
+                            }
+                        }
+                    });
+                }
+                
+                var clockBtn = document.getElementById('uiMinClockBtn');
+                if (clockBtn) {
+                    clockBtn.addEventListener('click', function() {
+                        var originalBtn = document.getElementById('hideInterfaceBtn');
+                        if (originalBtn) originalBtn.click();
+                    });
+                }
+                
+                var moreFeaturesBtn = document.getElementById('uiMinMoreFeaturesBtn');
+                if (moreFeaturesBtn) {
+                    moreFeaturesBtn.addEventListener('click', function() {
+                        var toggleBtn = document.getElementById('toggleButtonsBtn');
+                        if (toggleBtn) toggleBtn.click();
+                    });
+                }
+                
+                // 用户菜单下拉框切换
+                var userMenuBtn = document.getElementById('uiMinUserMenuBtn');
+                var userDropdown = document.getElementById('uiMinUserDropdown');
+                if (userMenuBtn && userDropdown) {
+                    userMenuBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        userDropdown.classList.toggle('show');
+                        var isOpen = userDropdown.classList.contains('show');
+                        userMenuBtn.querySelector('i').className = isOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                        
+                        // 同步下拉框用户信息
+                        var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                        var ddUsername = document.getElementById('uiMinDropdownUsername');
+                        var ddUserid = document.getElementById('uiMinDropdownUserid');
+                        var ddLevel = document.getElementById('uiMinDropdownLevel');
+                        if (ddUsername && currentUser && currentUser.username) {
+                            ddUsername.textContent = currentUser.username;
+                            ddUserid.textContent = 'ID: ' + (currentUser.userId || '---');
+                            var ddLvl = currentUser.level;
+                            if (!ddLvl) {
+                                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                                var fullUser = users.find(function(u) { return u.username === currentUser.username; });
+                                ddLvl = fullUser && fullUser.gameData ? fullUser.gameData.level : 1;
+                            }
+                            ddLevel.textContent = ddLvl || 1;
+                        } else if (ddUsername) {
+                            ddUsername.textContent = '未登录';
+                            ddUserid.textContent = 'ID: ---';
+                        }
+                    });
+                    
+                    // 点击外部关闭下拉框
+                    document.addEventListener('click', function(e) {
+                        if (userDropdown.classList.contains('show') && 
+                            !userDropdown.contains(e.target) && 
+                            !userMenuBtn.contains(e.target)) {
+                            userDropdown.classList.remove('show');
+                            userMenuBtn.querySelector('i').className = 'fas fa-chevron-down';
+                        }
+                    });
+                }
+                
+                // 下拉菜单项点击事件
+                document.querySelectorAll('#uiMinUserDropdown .ui-min-dropdown-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        var action = this.getAttribute('data-action');
+                        userDropdown.classList.remove('show');
+                        userMenuBtn.querySelector('i').className = 'fas fa-chevron-down';
+                        
+                        if (action === 'userCard') {
+                            var cardBtn = document.getElementById('cardBtn');
+                            if (cardBtn) cardBtn.click();
+                        } else if (action === 'systemSettings') {
+                            if (typeof navigateToAccountSettings === 'function') {
+                                navigateToAccountSettings();
+                            } else {
+                                localStorage.setItem('previousPage', window.location.href);
+                                window.location.href = 'html/account-settings.html';
+                            }
+                        } else if (action === 'backToLogin') {
+                            showConfirm('是否要退回至登录页？', '保持登录状态，仅返回登录页面', function() {
+                                sessionStorage.removeItem('isInGameCenter');
+                                window.location.href = 'index.html';
+                            });
+                        } else if (action === 'logout') {
+                            showConfirm('是否要退出登录？', '退出后需要重新登录才能使用启动器', function() {
+                                localStorage.removeItem('currentUser');
+                                sessionStorage.clear();
+                                window.location.href = 'index.html';
+                            });
+                        }
+                    });
+                });
+            }
+            
             function updateEnhancedFeatureButtons() {
                 var enhancedFeaturesEnabled = isEnhancedFeaturesEnabled();
                 
@@ -4062,6 +4383,9 @@
             // 更新增强功能按钮显示状态
             updateEnhancedFeatureButtons();
             updateMoreActionsBtnStatus();
+            
+            // 初始化UI样式
+            initUIStyle();
             
             var idleTimer = null;
             var idleDuration = 300;
@@ -4485,6 +4809,9 @@
                         <div class="more-features-header">
                             <div class="more-features-title">
                                 <h2>更多功能</h2>
+                                <button class="custom-quick-component-btn" id="mobileCustomQuickComponentBtn" title="自定义快捷组件">
+                                    <i class="fas fa-sliders-h"></i>
+                                </button>
                             </div>
                             <button class="more-features-close" id="mobileMoreFeaturesClose">
                                 <i class="fas fa-times"></i>
@@ -4598,7 +4925,9 @@
                 document.getElementById('mobileModalAboutLauncherBtn').addEventListener('click', function() {
                     closeMobileFunctionsModal();
                     setTimeout(function() {
-                        document.getElementById('aboutLauncherBtn').click();
+                        if (typeof showAboutLauncherModal === 'function') {
+                            showAboutLauncherModal();
+                        }
                     }, 300);
                 });
                 
@@ -4671,6 +5000,9 @@
                         }, 300);
                     });
                 }
+                
+                // 绑定移动端自定义快捷组件按钮
+                bindMobileCustomQuickComponentBtn();
             }
             
             // 显示移动端功能选择弹窗
@@ -4722,7 +5054,7 @@
         });
     </script>
 </head>
-<body>
+<body class="ui-minimalist login-page-mode">
     <div class="hide-ui-hint-bar" id="hideUiHintBar">
         <span>点击左上角返回按钮显示UI</span>
     </div>
@@ -5073,6 +5405,116 @@
 
 
 
+    <!-- 简约设计顶部导航栏（默认隐藏，minimalist模式下显示） -->
+    <nav class="ui-min-topnav" id="uiMinTopnav">
+        <div class="ui-min-topnav-left">
+            <div class="ui-min-logo">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <div class="ui-min-brand">
+                <span class="ui-min-brand-name">PRE Launcher</span>
+                <span class="ui-min-brand-version" id="uiMinVersion">RC 2.7.2.1 (b10)</span>
+            </div>
+        </div>
+        <div class="ui-min-topnav-center">
+            <div class="ui-min-nav-item active" data-nav="login">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>登录账号</span>
+            </div>
+            <div class="ui-min-nav-item" data-nav="register" id="uiMinRegister">
+                <i class="fas fa-user-plus"></i>
+                <span>注册账号</span>
+            </div>
+            <div class="ui-min-nav-item" data-nav="settings" id="uiMinSettings">
+                <i class="fas fa-cog"></i>
+                <span>全局设置</span>
+            </div>
+            <div class="ui-min-nav-item" data-nav="feedback" id="uiMinFeedback">
+                <i class="fas fa-comment-dots"></i>
+                <span>反馈建议</span>
+            </div>
+            <div class="ui-min-nav-item" data-nav="version" id="uiMinVersionNav">
+                <i class="fas fa-history"></i>
+                <span>版本更新</span>
+            </div>
+            <div class="ui-min-nav-item" data-nav="announcement" id="uiMinAnnouncement">
+                <i class="fas fa-newspaper"></i>
+                <span>开发者公告</span>
+            </div>
+            <div class="ui-min-nav-item" data-nav="mail" id="uiMinMail">
+                <i class="fas fa-envelope"></i>
+                <span>邮件</span>
+            </div>
+        </div>
+        <div class="ui-min-topnav-right">
+            <div class="ui-min-header-buttons">
+                <div class="ui-min-btn-container ui-min-more-features-container">
+                    <button class="ui-min-action-btn" id="uiMinMoreFeaturesBtn" title="更多功能">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="ui-min-btn-container">
+                    <button class="ui-min-action-btn" id="uiMinAboutBtn" title="关于启动器">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                </div>
+                <div class="ui-min-btn-container">
+                    <button class="ui-min-action-btn" id="uiMinCardBtn" title="名片">
+                        <i class="fas fa-id-card"></i>
+                    </button>
+                </div>
+                <div class="ui-min-btn-container">
+                    <button class="ui-min-action-btn" id="uiMinClockBtn" title="页面时钟">
+                        <i class="fas fa-clock"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="ui-min-user-area" id="uiMinUserArea">
+                <div class="ui-min-user-avatar">
+                    <i class="fas fa-user"></i>
+                    <span class="ui-min-level-badge" id="uiMinLevelBadge">1</span>
+                </div>
+                <div class="ui-min-user-info">
+                    <div class="ui-min-user-name" id="uiMinUserName">未登录</div>
+                    <div class="ui-min-user-id" id="uiMinUserId">ID: ---</div>
+                </div>
+                <button class="ui-min-user-menu-btn" id="uiMinUserMenuBtn">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="ui-min-user-dropdown" id="uiMinUserDropdown">
+                    <div class="ui-min-dropdown-header">
+                        <div class="ui-min-dropdown-avatar">
+                            <i class="fas fa-user"></i>
+                            <span class="ui-min-level-badge" id="uiMinDropdownLevel">1</span>
+                        </div>
+                        <div class="ui-min-dropdown-user-info">
+                            <div class="ui-min-dropdown-username" id="uiMinDropdownUsername">未登录</div>
+                            <div class="ui-min-dropdown-userid" id="uiMinDropdownUserid">ID: ---</div>
+                        </div>
+                    </div>
+                    <div class="ui-min-dropdown-divider"></div>
+                    <div class="ui-min-dropdown-item" data-action="userCard">
+                        <i class="fas fa-id-card"></i>
+                        <span>用户名片</span>
+                    </div>
+                    <div class="ui-min-dropdown-item" data-action="systemSettings">
+                        <i class="fas fa-cog"></i>
+                        <span>系统设置</span>
+                    </div>
+                    <div class="ui-min-dropdown-divider"></div>
+                    <div class="ui-min-dropdown-item" data-action="backToLogin">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>退回至登录页</span>
+                    </div>
+                    <div class="ui-min-dropdown-item" data-action="logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>退出登录</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="settings-container">
         <div class="settings-sidebar">
             <div class="sidebar-header">
@@ -5290,66 +5732,240 @@
             </div>
             
             <div class="settings-content">
-                <div class="login-wrapper">
-                    <div class="login-container">
-                        <form id="loginForm">
-                            <div class="input-group username-group">
-                                <i class="fas fa-user"></i>
-                                <input type="text" id="username" placeholder="账号">
-                                <span class="quick-login-tag" id="quickLoginTag" style="display: none;">快速登录模式</span>
-                            </div>
-                            
-                            <div class="captcha-group">
-                                <div class="captcha-row">
-                                    <div class="input-group captcha-input">
-                                        <i class="fas fa-shield-alt"></i>
-                                        <input type="text" id="captcha" placeholder="验证码">
-                                    </div>
-                                    <div class="captcha-img" id="captchaImage">
-                                        <span class="captcha-text">加载中...</span>
-                                    </div>
+                <div class="login-page-layout">
+                    <!-- 左侧装饰面板 -->
+                    <div class="login-left-panel">
+                        <div class="login-decorative-circles">
+                            <div class="circle"></div>
+                            <div class="circle"></div>
+                            <div class="circle"></div>
+                        </div>
+                        <div class="login-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                        <div class="login-left-content">
+                            <div class="login-brand" id="loginBrand">
+                                <div class="login-brand-icon" id="loginBrandIcon">
+                                    <i class="fas fa-rocket"></i>
                                 </div>
-                                <div class="captcha-hint">点击刷新验证码</div>
+                                <div class="login-brand-text">
+                                    <h2 id="loginBrandTitle">PRE Launcher</h2>
+                                    <p id="loginBrandSubtitle">PRE LAUNCHER</p>
+                                </div>
                             </div>
-                            
-                            <div class="password-section" id="passwordSection" style="display: none;">
-                                <div class="input-group">
-                                    <i class="fas fa-lock"></i>
-                                    <input type="password" id="password" placeholder="密码">
-                                    <button type="button" class="toggle-password" data-target="password">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
+                            <div class="login-quote" id="loginQuote">
+                                <div class="login-quote-text" id="loginQuoteText">
+                                    <span class="quote-text-content">通往成功的道路，总是在施工中。每一个伟大的旅程，都始于一个勇敢的决定。</span>
+                                </div>
+                                <div class="login-quote-author" id="loginQuoteAuthor">
+                                    —— 佚名
+                                </div>
+                            </div>
+                            <div class="login-copyright">
+                                © 2014-2026 PREAlmax. All rights reserved.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <!-- 右侧登录面板 -->
+                    <div class="login-right-panel">
+                        <div class="login-right-inner">
+                            <!-- 登录表单 -->
+                            <div class="login-form-wrapper login-panel">
+                                <div class="login-greeting">
+                                    <h1>欢迎来到 PRE Launcher</h1>
+                                    <p>登录以开启您的精彩旅程</p>
+                                </div>
+                                <div class="login-wrapper">
+                                    <div class="login-container">
+                                        <form id="loginForm">
+                                <div class="input-group username-group">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" id="username" placeholder="账号">
+                                    <span class="quick-login-tag" id="quickLoginTag" style="display: none;">快速登录模式</span>
                                 </div>
                                 
-                                <div class="options">
-                                    <div class="left-options">
-                                        <div class="remember">
-                                            <input type="checkbox" id="remember">
-                                            <label for="remember">快速登录</label>
+                                <div class="captcha-group">
+                                    <div class="captcha-row">
+                                        <div class="input-group captcha-input">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <input type="text" id="captcha" placeholder="验证码">
                                         </div>
-                                        <div class="auto-login">
-                                            <input type="checkbox" id="autoLogin" disabled>
-                                            <label for="autoLogin">自动登录</label>
+                                        <div class="captcha-img" id="captchaImage">
+                                            <span class="captcha-text">加载中...</span>
                                         </div>
                                     </div>
-                                    <div class="forgot-password">
-                                        <a href="#" id="forgotPassword">忘记密码？</a>
+                                    <div class="captcha-hint">点击刷新验证码</div>
+                                </div>
+                                
+                                <div class="password-section" id="passwordSection" style="display: none;">
+                                    <div class="input-group">
+                                        <i class="fas fa-lock"></i>
+                                        <input type="password" id="password" placeholder="密码">
+                                        <button type="button" class="toggle-password" data-target="password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="options">
+                                        <div class="left-options">
+                                            <div class="remember">
+                                                <input type="checkbox" id="remember">
+                                                <label for="remember">快速登录</label>
+                                            </div>
+                                            <div class="auto-login">
+                                                <input type="checkbox" id="autoLogin" disabled>
+                                                <label for="autoLogin">自动登录</label>
+                                            </div>
+                                        </div>
+                                        <div class="forgot-password">
+                                            <a href="#" id="forgotPassword">忘记密码？</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="agreement-section">
+                                    <input type="checkbox" id="loginAgreement">
+                                    <label for="loginAgreement">
+                                        我已阅读并同意《<a href="#" class="agreement-link" data-type="terms">用户协议</a>》及其《<a href="#" class="agreement-link" data-type="privacy">隐私政策</a>》
+                                    </label>
+                                </div>
+                                
+                                <button type="submit" id="loginButton" class="login-btn">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    登录
+                                </button>
+                            </form>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="agreement-section">
-                                <input type="checkbox" id="loginAgreement">
-                                <label for="loginAgreement">
-                                    我已阅读并同意《<a href="#" class="agreement-link" data-type="terms">用户协议</a>》及其《<a href="#" class="agreement-link" data-type="privacy">隐私政策</a>》
-                                </label>
+                            <!-- 注册表单 -->
+                            <div class="register-form-wrapper register-panel">
+                                <div class="login-greeting register-greeting">
+                                    <h1>创建新账号</h1>
+                                    <p>加入 PRE Launcher 开启您的旅程</p>
+                                </div>
+                                <div class="register-steps" id="inlineRegisterSteps">
+                                    <div class="step-item active" data-step="1">
+                                        <div class="step-number">1</div>
+                                        <div class="step-title">设置账号</div>
+                                    </div>
+                                    <div class="step-divider"></div>
+                                    <div class="step-item" data-step="2">
+                                        <div class="step-number">2</div>
+                                        <div class="step-title">绑定信息</div>
+                                    </div>
+                                    <div class="step-divider"></div>
+                                    <div class="step-item" data-step="3">
+                                        <div class="step-number">3</div>
+                                        <div class="step-title">完成注册</div>
+                                    </div>
+                                </div>
+                                <div class="login-wrapper">
+                                    <div class="login-container register-inline-container">
+                                        <!-- 步骤1 -->
+                                        <div id="inlineRegisterStep1" class="register-step">
+                                            <div class="input-group">
+                                                <i class="fas fa-user"></i>
+                                                <input type="text" id="inlineRegUsername" placeholder="请输入用户名">
+                                                <div class="username-status" id="inlineUsernameStatus">
+                                                    <i class="fas"></i>
+                                                </div>
+                                            </div>
+                                            <div class="input-hint">
+                                                请输入字符数量大于等于三，小于等于十以内的用户名
+                                            </div>
+                                            <div class="input-hint">
+                                                点击下列按钮可随机生成用户名
+                                            </div>
+                                            <div class="random-username-buttons">
+                                                <button type="button" class="random-username-btn" id="inlineRandomUsernameBtn">随机名称</button>
+                                                <button type="button" class="random-username-btn" id="inlineMysteryUsernameBtn">神秘名称</button>
+                                                <button type="button" class="random-username-btn" id="inlineLastNightUsernameBtn">昨夜圆车</button>
+                                            </div>
+                                            <div class="input-group">
+                                                <i class="fas fa-lock"></i>
+                                                <input type="password" id="inlineRegPassword" placeholder="请输入新密码">
+                                                <button type="button" class="toggle-password" data-target="inlineRegPassword">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            <div class="password-strength">
+                                                <div class="strength-bar">
+                                                    <div class="strength-indicator" id="inlineStrengthIndicator1"></div>
+                                                    <div class="strength-indicator" id="inlineStrengthIndicator2"></div>
+                                                    <div class="strength-indicator" id="inlineStrengthIndicator3"></div>
+                                                </div>
+                                                <div class="strength-text" id="inlineStrengthText">密码强度：弱</div>
+                                            </div>
+                                            <div class="input-hint">
+                                                请输入字符数量大于等于六，小于等于五十以内的密码
+                                            </div>
+                                            <div class="input-group">
+                                                <i class="fas fa-lock"></i>
+                                                <input type="password" id="inlineRegConfirmPassword" placeholder="再次确认密码">
+                                                <button type="button" class="toggle-password" data-target="inlineRegConfirmPassword">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            <div class="register-buttons-inline">
+                                                <button class="login-btn register-next-btn" id="inlineRegisterNext1" type="button">继续</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 步骤2 -->
+                                        <div id="inlineRegisterStep2" class="register-step" style="display: none;">
+                                            <div class="input-group">
+                                                <i class="fas fa-mobile-alt"></i>
+                                                <input type="tel" id="inlineRegPhone" placeholder="请输入手机号">
+                                            </div>
+                                            <div class="input-group">
+                                                <i class="fas fa-envelope"></i>
+                                                <input type="email" id="inlineRegEmail" placeholder="请输入邮箱">
+                                            </div>
+                                            <div class="register-buttons-inline">
+                                                <button class="login-btn register-back-btn" id="inlineRegisterBack1" type="button">返回</button>
+                                                <button class="login-btn register-next-btn" id="inlineRegisterNext2" type="button">继续</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 步骤3 -->
+                                        <div id="inlineRegisterStep3" class="register-step" style="display: none;">
+                                            <div class="captcha-group">
+                                                <div class="captcha-row">
+                                                    <div class="input-group captcha-input">
+                                                        <i class="fas fa-shield-alt"></i>
+                                                        <input type="text" id="inlineRegCaptcha" placeholder="验证码">
+                                                    </div>
+                                                    <div class="captcha-img" id="inlineRegCaptchaImage">
+                                                        <span class="captcha-text">加载中...</span>
+                                                    </div>
+                                                </div>
+                                                <div class="captcha-hint">点击刷新验证码</div>
+                                            </div>
+                                            <div class="agreement-section">
+                                                <input type="checkbox" id="inlineRegisterAgreement">
+                                                <label for="inlineRegisterAgreement">
+                                                    我已阅读并同意《<a href="#" class="agreement-link" data-type="terms">用户协议</a>》及其《<a href="#" class="agreement-link" data-type="privacy">隐私政策</a>》
+                                                </label>
+                                            </div>
+                                            <div class="register-buttons-inline">
+                                                <button class="login-btn register-back-btn" id="inlineRegisterBack2" type="button">返回</button>
+                                                <button class="login-btn register-confirm-btn" id="inlineRegisterConfirm" type="button">确定注册</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                             </div>
-                            
-                            <button type="submit" id="loginButton" class="login-btn">
-                                <i class="fas fa-sign-in-alt"></i>
-                                登录
-                            </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5793,6 +6409,9 @@
             <div class="more-features-header">
                 <div class="more-features-title">
                     <h2>更多功能</h2>
+                    <button class="custom-quick-component-btn" id="desktopCustomQuickComponentBtn" title="自定义快捷组件">
+                        <i class="fas fa-sliders-h"></i>
+                    </button>
                 </div>
                 <button class="more-features-close" id="moreFeaturesClose">
                     <i class="fas fa-times"></i>
@@ -7015,6 +7634,7 @@
                             <i class="fas fa-chevron-left"></i>
                         </button>
                     </div>
+                    <div class="terms-nav-scroll">
                     <div class="terms-nav-item active" id="featureUpdateNav">
                         <div class="nav-item-content">
                             <i class="fas fa-cog"></i>
@@ -7085,6 +7705,7 @@
                             <i class="fas fa-play-circle"></i>
                             <span>演示模式<ul>Demo Mode</ul></span>
                         </div>
+                    </div>
                     </div>
                     <div class="sidebar-footer">
                         <button class="mark-all-read-btn" id="markAllVersionReadBtn">
@@ -7361,12 +7982,33 @@
             <h3>确认注册信息</h3>
             <div class="confirm-info" style="margin: 20px 0;">
                 <p><strong>用户名：</strong><span id="confirmUsername"></span></p>
+                <p><strong>密码：</strong><span id="confirmPassword"></span></p>
                 <p><strong>手机号：</strong><span id="confirmPhone"></span></p>
                 <p><strong>邮箱：</strong><span id="confirmEmail"></span></p>
             </div>
             <div class="modal-buttons">
                 <button class="alert-confirm" id="confirmCancel" style="background-color: #95a5a6;">返回修改</button>
                 <button class="alert-confirm" id="confirmSubmit" style="background-color: #4CAF50;">确定注册</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 内联注册信息确认模态框 -->
+    <div id="inlineRegisterConfirmModal" class="custom-alert">
+        <div class="alert-content" style="max-width: 450px;">
+            <div class="alert-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>确认注册信息</h3>
+            <div class="confirm-info" style="margin: 20px 0;">
+                <p><strong>用户名：</strong><span id="inlineConfirmUsername"></span></p>
+                <p><strong>密码：</strong><span id="inlineConfirmPassword"></span></p>
+                <p><strong>手机号：</strong><span id="inlineConfirmPhone"></span></p>
+                <p><strong>邮箱：</strong><span id="inlineConfirmEmail"></span></p>
+            </div>
+            <div class="modal-buttons">
+                <button class="alert-confirm" id="inlineConfirmCancel" style="background-color: #95a5a6;">返回修改</button>
+                <button class="alert-confirm" id="inlineConfirmSubmit" style="background-color: #4CAF50;">确定注册</button>
             </div>
         </div>
     </div>
@@ -8051,7 +8693,8 @@
                 var currentUserObj = {
                     username: savedUsername,
                     userId: validUser ? validUser.userId : null,
-                    loginTime: new Date().toISOString()
+                    loginTime: new Date().toISOString(),
+                    level: validUser && validUser.gameData ? validUser.gameData.level : 1
                 };
                 
                 // 同步两步验证信息
@@ -8060,6 +8703,11 @@
                 }
                 
                 localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
+                
+                // 同步简约设计UI顶部导航栏用户信息
+                if (typeof syncMinimalistUserInfo === 'function') {
+                    syncMinimalistUserInfo();
+                }
                 
                 // 切换到游戏大厅
                 switchToGameCenter();
@@ -8792,7 +9440,8 @@
                 var currentUserObj = {
                     username: username,
                     userId: validUser ? validUser.userId : null,
-                    loginTime: now.toISOString()
+                    loginTime: now.toISOString(),
+                    level: validUser && validUser.gameData ? validUser.gameData.level : 1
                 };
                 
                 if (validUser && validUser.twoFactorAuth) {
@@ -8869,6 +9518,11 @@
                 sessionStorage.setItem('loginAuthenticated', 'true');
                 sessionStorage.setItem('loginTimestamp', Date.now().toString());
                 
+                // 同步简约设计UI顶部导航栏用户信息
+                if (typeof syncMinimalistUserInfo === 'function') {
+                    syncMinimalistUserInfo();
+                }
+                
                 // 切换到游戏大厅
                 setTimeout(function() {
                     switchToGameCenter();
@@ -8931,6 +9585,18 @@
                     settingsContent.innerHTML = window._loginPageHTML;
                     // 重新绑定登录表单事件
                     rebindLoginFormEvents();
+                    // 恢复登录页模式类
+                    document.body.classList.add('login-page-mode');
+                    // 清除可能存在的内联背景样式
+                    document.body.style.background = '';
+                    document.body.style.backgroundImage = '';
+                    document.body.style.backgroundSize = '';
+                    document.body.style.backgroundPosition = '';
+                    document.body.style.backgroundRepeat = '';
+                    document.body.style.backgroundAttachment = '';
+                    document.body.style.animation = '';
+                    // 重新初始化名言名句轮播
+                    initLoginQuotes();
                 }
                 
                 // 5. 移除游戏中心样式
@@ -8978,6 +9644,9 @@
         function switchToGameCenter() {
             var settingsContainer = document.querySelector('.settings-container');
             if (!settingsContainer) return;
+            
+            // 移除登录页模式类，允许背景系统工作
+            document.body.classList.remove('login-page-mode');
             
             // 添加切换动画类
             settingsContainer.classList.add('fade-out');
@@ -9461,7 +10130,85 @@
                 if (currentUserForBadge && currentUserForBadge.username) {
                     updateUserCenter(currentUserForBadge.username, currentUserForBadge.userId);
                 }
+                
+                // 更新简约设计顶部导航栏为游戏中心模式
+                updateMinimalistTopNavForGameCenter();
             }, 300);
+        }
+        
+        // 更新简约设计顶部导航栏为游戏中心模式
+        function updateMinimalistTopNavForGameCenter() {
+            var topnav = document.getElementById('uiMinTopnav');
+            if (!topnav || topnav.style.display === 'none') return;
+            
+            var centerNav = topnav.querySelector('.ui-min-topnav-center');
+            if (centerNav) {
+                centerNav.innerHTML = `
+                    <div class="ui-min-nav-item active" data-nav="gamecenter">
+                        <i class="fas fa-home"></i>
+                        <span>游戏中心</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="treasure">
+                        <i class="fas fa-box-open"></i>
+                        <span>百宝箱</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="checkin">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>每日签到</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="version" id="uiMinVersionNav">
+                        <i class="fas fa-history"></i>
+                        <span>版本更新</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="announcement" id="uiMinAnnouncement">
+                        <i class="fas fa-newspaper"></i>
+                        <span>开发者公告</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="mail">
+                        <i class="fas fa-envelope"></i>
+                        <span>邮件</span>
+                    </div>
+                `;
+                
+                // 重新绑定导航事件
+                centerNav.querySelectorAll('.ui-min-nav-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        var nav = this.getAttribute('data-nav');
+                        
+                        centerNav.querySelectorAll('.ui-min-nav-item').forEach(function(i) {
+                            i.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        
+                        if (nav === 'gamecenter') {
+                            var gamesBtn = document.getElementById('menuGames');
+                            if (gamesBtn) gamesBtn.click();
+                        } else if (nav === 'treasure') {
+                            var treasureBtn = document.getElementById('menuTreasure');
+                            if (treasureBtn) treasureBtn.click();
+                        } else if (nav === 'checkin') {
+                            var checkinBtn = document.getElementById('menuCheckin');
+                            if (checkinBtn) checkinBtn.click();
+                        } else if (nav === 'version') {
+                            var versionBtn = document.getElementById('sidebarVersion');
+                            if (versionBtn) versionBtn.click();
+                        } else if (nav === 'announcement') {
+                            var announcementBtn = document.getElementById('sidebarAnnouncement');
+                            if (announcementBtn) announcementBtn.click();
+                        } else if (nav === 'mail') {
+                            if (typeof showMailModal === 'function') {
+                                showMailModal();
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // 更新用户区域
+            syncMinimalistUserInfo();
+            
+            // 重新渲染快捷组件
+            renderQuickComponents();
         }
         
         // 添加游戏大厅样式
@@ -9482,22 +10229,23 @@
                 .content-area {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
-                    gap: 16px;
-                    padding: 24px;
+                    gap: 20px;
+                    padding: 28px;
                 }
                 
                 .game-card {
                     background: white;
-                    border-radius: 12px;
-                    padding: 16px;
+                    border-radius: 14px;
+                    padding: 18px;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
                     transition: all 0.3s ease;
                     cursor: pointer;
                     border: 1px solid #e0e0e0;
-                    height: 280px;
+                    min-height: 260px;
                     display: flex;
                     flex-direction: column;
                     box-sizing: border-box;
+                    min-width: 0;
                 }
                 
                 .game-card:hover {
@@ -9506,15 +10254,15 @@
                 }
                 
                 .game-logo {
-                    width: 80px;
-                    height: 80px;
+                    width: 70px;
+                    height: 70px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     margin: 0 auto 12px auto;
                     flex-shrink: 0;
-                    font-size: 36px;
+                    font-size: 32px;
                     color: white;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
                 }
@@ -9576,7 +10324,7 @@
                 }
                 
                 .play-btn {
-                    margin-top: 12px;
+                    margin-top: 10px;
                     width: 100%;
                     padding: 8px;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -9611,21 +10359,22 @@
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
                     gap: 20px;
-                    padding: 24px;
+                    padding: 28px;
                 }
                 
                 /* 百宝箱卡片样式 */
                 .treasure-card {
                     background: white;
-                    border-radius: 12px;
+                    border-radius: 14px;
                     padding: 20px;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
                     border: 1px solid #e0e0e0;
-                    min-height: 280px;
+                    min-height: 260px;
                     height: 100%;
                     display: flex;
                     flex-direction: column;
                     box-sizing: border-box;
+                    min-width: 0;
                 }
                 
                 .treasure-icon {
@@ -9635,7 +10384,7 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin: 0 auto 15px auto;
+                    margin: 0 auto 14px auto;
                     flex-shrink: 0;
                     font-size: 32px;
                     color: white;
@@ -9680,14 +10429,14 @@
                 
                 .treasure-card-content h2 {
                     margin: 0 0 8px 0;
-                    font-size: 18px;
+                    font-size: 17px;
                     color: #333;
                     flex-shrink: 0;
                 }
                 
                 .treasure-card-content p {
-                    margin: 0 0 15px 0;
-                    font-size: 14px;
+                    margin: 0 0 12px 0;
+                    font-size: 13px;
                     color: #666;
                     line-height: 1.5;
                     flex-shrink: 0;
@@ -9700,7 +10449,7 @@
                     display: flex;
                     flex-direction: column;
                     margin: 0;
-                    font-size: 14px;
+                    font-size: 13px;
                     color: #666;
                     line-height: 1.5;
                 }
@@ -11155,6 +11904,24 @@
                 
                 menuItems.forEach(function(item) {
                     item.addEventListener('click', function() {
+                        // 如果点击的是"登录账号"菜单项且当前在注册面板，先检测表单填写状态
+                        var menuId = this.id;
+                        var isLoginMenuItem = !menuId && this.querySelector('span') && this.querySelector('span').textContent.trim() === '登录账号';
+                        var shouldProceed = true;
+                        
+                        if (isLoginMenuItem && document.body.classList.contains('right-panel-register')) {
+                            if (hasRegistrationFormFilled()) {
+                                showConfirm('切换确认', '当前表单未提交，切换功能则会清空所有已填写内容，是否继续？', function() {
+                                    hideRegisterPanel();
+                                });
+                                shouldProceed = false;
+                            } else {
+                                hideRegisterPanel();
+                            }
+                        }
+                        
+                        if (!shouldProceed) return;
+                        
                         menuItems.forEach(function(m) {
                             m.classList.remove('active');
                         });
@@ -11163,8 +11930,6 @@
                         if (settingsSidebar) {
                             settingsSidebar.classList.remove('active');
                         }
-                        
-                        var menuId = this.id;
                         
                         // 更新顶部导航栏标题和描述
                         var headerLeft = document.querySelector('.settings-header .header-left');
@@ -13273,11 +14038,8 @@
             setTimeout(function() {
                 document.getElementById('notLoggedInModal').style.display = 'none';
             }, 300);
-            // 显示注册模态窗口
-            document.getElementById('registerModal').style.display = 'flex';
-            setTimeout(function() {
-                document.getElementById('registerModal').classList.add('show');
-            }, 100);
+            // 显示内联注册面板
+            showRegisterPanel();
         });
         
         // 为注册模态窗口的"返回登录"链接添加事件监听器
@@ -13494,6 +14256,236 @@
             });
         }
         
+        // 自定义快捷组件功能列表
+        const quickComponentList = [
+            { id: 'about', name: '关于启动器', icon: 'fa-info-circle', desc: '查看版本信息', action: 'showAboutLauncherModal' },
+            { id: 'clock', name: '页面时钟', icon: 'fa-clock', desc: '全屏时钟', action: 'hideInterfaceBtn' },
+            { id: 'card', name: '用户名片', icon: 'fa-id-card', desc: '查看名片', action: 'showUserCardModal' },
+            { id: 'guide', name: '查看引导', icon: 'fa-compass', desc: '功能引导', action: 'startGuide' },
+            { id: 'notes', name: '便签', icon: 'fa-sticky-note', desc: '记录便签', action: 'openStickyNotes' },
+            { id: 'weather', name: '天气', icon: 'fa-cloud-sun', desc: '天气信息', action: 'openWeather' },
+            { id: 'calendar', name: '日历', icon: 'fa-calendar-alt', desc: '日历信息', action: 'openCalendar' },
+            { id: 'redeem', name: '兑换码', icon: 'fa-gift', desc: '兑换奖励', action: 'showRedeemCodeModal' },
+            { id: 'ui-scale', name: '调整UI比例', icon: 'fa-search', desc: '界面缩放', action: 'openUiScale' }
+        ];
+        
+        // 桌面端自定义快捷组件按钮事件
+        var desktopCustomQuickComponentBtn = document.getElementById('desktopCustomQuickComponentBtn');
+        if (desktopCustomQuickComponentBtn) {
+            desktopCustomQuickComponentBtn.addEventListener('click', function() {
+                openCustomQuickComponentModal();
+            });
+        }
+        
+        // 移动端自定义快捷组件按钮事件（延迟绑定，等待模态框生成）
+        function bindMobileCustomQuickComponentBtn() {
+            var mobileBtn = document.getElementById('mobileCustomQuickComponentBtn');
+            if (mobileBtn && !mobileBtn._bound) {
+                mobileBtn.addEventListener('click', function() {
+                    openCustomQuickComponentModal();
+                });
+                mobileBtn._bound = true;
+            }
+        }
+        
+        // 打开自定义快捷组件选择弹窗
+        function openCustomQuickComponentModal() {
+            const savedComponents = JSON.parse(localStorage.getItem('customQuickComponents') || '["about", "card", "clock"]');
+            
+            const existingModal = document.getElementById('customQuickComponentModal');
+            if (existingModal) existingModal.remove();
+            
+            const modal = document.createElement('div');
+            modal.id = 'customQuickComponentModal';
+            modal.className = 'custom-alert';
+            modal.style.display = 'none';
+            
+            const featuresHTML = quickComponentList.map(function(feature) {
+                const isChecked = savedComponents.indexOf(feature.id) !== -1;
+                return `
+                    <div class="quick-component-item ${isChecked ? 'checked' : ''}" data-id="${feature.id}">
+                        <div class="quick-component-checkbox">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="quick-component-info">
+                            <div class="quick-component-icon"><i class="fas ${feature.icon}"></i></div>
+                            <div class="quick-component-text">
+                                <span class="quick-component-name">${feature.name}</span>
+                                <span class="quick-component-desc">${feature.desc}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            modal.innerHTML = `
+                <div class="alert-content custom-component-modal">
+                    <div class="custom-component-header">
+                        <h2>自定义快捷组件</h2>
+                        <p class="custom-component-desc">选择3个功能显示在顶部导航栏（已选 <span id="selectedCount">${savedComponents.length}</span>/3）</p>
+                    </div>
+                    <div class="custom-component-list">
+                        ${featuresHTML}
+                    </div>
+                    <div class="custom-component-actions">
+                        <button class="custom-component-btn cancel" id="cancelCustomComponentBtn">取消</button>
+                        <button class="custom-component-btn confirm" id="confirmCustomComponentBtn">保存</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+            
+            // 绑定事件
+            const items = modal.querySelectorAll('.quick-component-item');
+            items.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const currentSaved = JSON.parse(localStorage.getItem('customQuickComponents') || '["about", "card", "clock"]');
+                    const currentIndex = currentSaved.indexOf(id);
+                    
+                    if (currentIndex > -1) {
+                        currentSaved.splice(currentIndex, 1);
+                        this.classList.remove('checked');
+                    } else {
+                        if (currentSaved.length >= 3) {
+                            showToastInfo('最多只能选择3个功能');
+                            return;
+                        }
+                        currentSaved.push(id);
+                        this.classList.add('checked');
+                    }
+                    
+                    localStorage.setItem('customQuickComponents', JSON.stringify(currentSaved));
+                    document.getElementById('selectedCount').textContent = currentSaved.length;
+                });
+            });
+            
+            document.getElementById('cancelCustomComponentBtn').addEventListener('click', function() {
+                closeCustomQuickComponentModal();
+            });
+            
+            document.getElementById('confirmCustomComponentBtn').addEventListener('click', function() {
+                const saved = JSON.parse(localStorage.getItem('customQuickComponents') || '["about", "card", "clock"]');
+                if (saved.length === 0) {
+                    showToastInfo('请至少选择一个功能');
+                    return;
+                }
+                renderQuickComponents();
+                closeCustomQuickComponentModal();
+                showToastSuccess('快捷组件已更新');
+            });
+        }
+        
+        // 关闭自定义快捷组件弹窗
+        function closeCustomQuickComponentModal() {
+            const modal = document.getElementById('customQuickComponentModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    modal.remove();
+                }, 300);
+            }
+        }
+        
+        // 渲染快捷组件到顶部导航栏
+        function renderQuickComponents() {
+            const savedComponents = JSON.parse(localStorage.getItem('customQuickComponents') || '["about", "card", "clock"]');
+            const buttonsContainer = document.querySelector('.ui-min-header-buttons');
+            if (!buttonsContainer) return;
+            
+            // 清除现有的快捷按钮（保留更多功能按钮）
+            const moreFeaturesContainer = buttonsContainer.querySelector('.ui-min-more-features-container');
+            buttonsContainer.innerHTML = '';
+            
+            if (moreFeaturesContainer) {
+                buttonsContainer.appendChild(moreFeaturesContainer);
+            }
+            
+            // 根据保存的组件ID添加按钮
+            savedComponents.forEach(function(compId) {
+                const feature = quickComponentList.find(function(f) { return f.id === compId; });
+                if (!feature) return;
+                
+                const container = document.createElement('div');
+                container.className = 'ui-min-btn-container';
+                
+                const btn = document.createElement('button');
+                btn.className = 'ui-min-action-btn';
+                btn.id = 'uiMinQuickBtn_' + feature.id;
+                btn.title = feature.name;
+                btn.innerHTML = '<i class="fas ' + feature.icon + '"></i>';
+                
+                btn.addEventListener('click', function() {
+                    handleQuickComponentAction(feature.action);
+                });
+                
+                container.appendChild(btn);
+                buttonsContainer.appendChild(container);
+            });
+        }
+        
+        // 处理快捷组件点击事件
+        function handleQuickComponentAction(action) {
+            if (typeof action === 'function') {
+                action();
+            } else if (action === 'showAboutLauncherModal' && typeof showAboutLauncherModal === 'function') {
+                showAboutLauncherModal();
+            } else if (action === 'showUserCardModal') {
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                if (!currentUser.username) {
+                    showToastInfo('您需要登录后才可使用此功能');
+                    return;
+                }
+                if (typeof showUserCardModal === 'function') {
+                    showUserCardModal();
+                } else {
+                    var originalBtn = document.getElementById('cardBtn');
+                    if (originalBtn) originalBtn.click();
+                }
+            } else if (action === 'hideInterfaceBtn') {
+                var btn = document.getElementById('hideInterfaceBtn');
+                if (btn) btn.click();
+            } else if (action === 'startGuide') {
+                if (typeof startGuide === 'function') {
+                    startGuide();
+                } else if (typeof showGuide === 'function') {
+                    showGuide();
+                }
+            } else if (action === 'openStickyNotes') {
+                if (typeof showStickyNotesModal === 'function') {
+                    showStickyNotesModal();
+                } else {
+                    var btn = document.getElementById('modalStickyNotesBtn');
+                    if (btn) btn.click();
+                }
+            } else if (action === 'openWeather') {
+                if (typeof showWeatherModal === 'function') {
+                    showWeatherModal();
+                } else {
+                    var btn = document.getElementById('modalWeatherBtn');
+                    if (btn) btn.click();
+                }
+            } else if (action === 'openCalendar') {
+                if (typeof showCalendarModal === 'function') {
+                    showCalendarModal();
+                } else {
+                    var btn = document.getElementById('modalCalendarBtn');
+                    if (btn) btn.click();
+                }
+            } else if (action === 'showRedeemCodeModal' && typeof showRedeemCodeModal === 'function') {
+                showRedeemCodeModal();
+            } else if (action === 'openUiScale') {
+                var btn = document.getElementById('uiScaleBtn');
+                if (btn) btn.click();
+            }
+        }
+        
         // 更多功能弹窗事件
         document.getElementById('moreFeaturesClose').addEventListener('click', function() {
             var modal = document.getElementById('moreFeaturesModal');
@@ -13513,9 +14505,8 @@
                         modal.style.display = 'none';
                     }, 300);
                 }
-                var aboutLauncherBtn = document.getElementById('aboutLauncherBtn');
-                if (aboutLauncherBtn) {
-                    aboutLauncherBtn.click();
+                if (typeof showAboutLauncherModal === 'function') {
+                    showAboutLauncherModal();
                 }
             });
         }
@@ -13795,6 +14786,7 @@
             
             // 显示确认模态框
             document.getElementById('confirmUsername').textContent = username;
+            document.getElementById('confirmPassword').textContent = password.replace(/./g, '●');
             document.getElementById('confirmPhone').textContent = phone;
             document.getElementById('confirmEmail').textContent = email;
             
@@ -14064,6 +15056,11 @@
                         sessionStorage.setItem('loginAuthenticated', 'true');
                         sessionStorage.setItem('loginTimestamp', Date.now().toString());
                         
+                        // 同步简约设计UI顶部导航栏用户信息
+                        if (typeof syncMinimalistUserInfo === 'function') {
+                            syncMinimalistUserInfo();
+                        }
+                        
                         // 切换到游戏大厅
                         setTimeout(function() {
                             switchToGameCenter();
@@ -14328,7 +15325,8 @@
                 var currentUserObj = {
                     username: username,
                     userId: validUser ? validUser.userId : null,
-                    loginTime: now.toISOString()
+                    loginTime: now.toISOString(),
+                    level: validUser && validUser.gameData ? validUser.gameData.level : 1
                 };
                 
                 // 同步两步验证信息
@@ -14401,6 +15399,11 @@
                 sessionStorage.setItem('loginAuthenticated', 'true');
                 sessionStorage.setItem('loginTimestamp', Date.now().toString());
                 
+                // 同步简约设计UI顶部导航栏用户信息
+                if (typeof syncMinimalistUserInfo === 'function') {
+                    syncMinimalistUserInfo();
+                }
+                
                 // 切换到游戏大厅
                 setTimeout(function() {
                     switchToGameCenter();
@@ -14409,11 +15412,7 @@
         }
         
         document.getElementById('sidebarRegister').addEventListener('click', function() {
-            if (localStorage.getItem('offlineMode') === 'true') {
-                showAlert('当前为离线模式，请先上线');
-                return;
-            }
-            showRegisterModal();
+            showRegisterPanel();
         });
         
         document.getElementById('sidebarSettings').addEventListener('click', function() {
@@ -14923,7 +15922,7 @@
             setTimeout(function() {
                 modal.style.display = 'none';
             }, 300);
-            showRegisterModal();
+            showRegisterPanel();
         });
         
         document.getElementById('forgotPassword').addEventListener('click', function(e) {
@@ -15426,26 +16425,484 @@
             }
         }
         
-        function showRegisterModal() {
-            var registerModal = document.getElementById('registerModal');
-            var registerNoNetwork = document.getElementById('registerNoNetwork');
-            var registerContent = document.getElementById('registerContent');
-            
-            if (!navigator.onLine) {
-                registerNoNetwork.style.display = 'block';
-                registerContent.style.display = 'none';
-            } else {
-                registerNoNetwork.style.display = 'none';
-                registerContent.style.display = 'block';
+        function showRegisterPanel() {
+            if (localStorage.getItem('offlineMode') === 'true') {
+                showAlert('当前为离线模式，请先上线');
+                return;
             }
             
-            registerModal.style.display = 'flex';
+            var body = document.body;
+            
+            // 先设置容器高度为注册面板高度，确保过渡时不会塌陷
+            var loginPanel = document.querySelector('.login-panel');
+            var registerPanel = document.querySelector('.register-panel');
+            var rightInner = document.querySelector('.login-right-inner');
+            
+            if (loginPanel && registerPanel && rightInner) {
+                rightInner.style.height = registerPanel.offsetHeight + 'px';
+            }
+            
+            body.classList.add('right-panel-register');
+            body.classList.add('left-panel-register');
+            
+            // 更新左侧面板内容
+            var brandTitle = document.getElementById('loginBrandTitle');
+            var brandSubtitle = document.getElementById('loginBrandSubtitle');
+            var brandIcon = document.getElementById('loginBrandIcon');
+            
+            // 保存原始文本以便恢复
+            if (!brandTitle.dataset.originalText) {
+                brandTitle.dataset.originalText = brandTitle.textContent;
+                brandSubtitle.dataset.originalText = brandSubtitle.textContent;
+                brandIcon.dataset.originalIcon = brandIcon.innerHTML;
+            }
+            
+            brandTitle.textContent = '注册账号';
+            brandSubtitle.textContent = 'CREATE ACCOUNT';
+            brandIcon.innerHTML = '<i class="fas fa-user-plus"></i>';
+            
+            // 重置注册表单状态
+            resetInlineRegisterForm();
+            
+            // 加载验证码
+            if (navigator.onLine) {
+                setTimeout(function() {
+                    fetchInlineRegCaptcha();
+                }, 500);
+            }
+        }
+        
+        function hideRegisterPanel() {
+            var body = document.body;
+            var rightInner = document.querySelector('.login-right-inner');
+            
+            // 先清除容器高度，让登录面板接管高度
+            if (rightInner) {
+                rightInner.style.height = '';
+            }
+            
+            body.classList.remove('right-panel-register');
+            body.classList.remove('left-panel-register');
+            
+            // 恢复左侧面板内容
+            var brandTitle = document.getElementById('loginBrandTitle');
+            var brandSubtitle = document.getElementById('loginBrandSubtitle');
+            var brandIcon = document.getElementById('loginBrandIcon');
+            
+            if (brandTitle.dataset.originalText) {
+                brandTitle.textContent = brandTitle.dataset.originalText;
+                brandSubtitle.textContent = brandSubtitle.dataset.originalText;
+                brandIcon.innerHTML = brandIcon.dataset.originalIcon;
+            }
+            
+            // 重置注册表单
             setTimeout(function() {
-                registerModal.classList.add('show');
-                if (navigator.onLine) {
-                    fetchRegCaptcha();
+                resetInlineRegisterForm();
+            }, 500);
+        }
+        
+        function hasRegistrationFormFilled() {
+            var fields = ['inlineRegUsername', 'inlineRegPassword', 'inlineRegConfirmPassword', 'inlineRegPhone', 'inlineRegEmail', 'inlineRegCaptcha'];
+            for (var i = 0; i < fields.length; i++) {
+                var el = document.getElementById(fields[i]);
+                if (el && el.value && el.value.trim() !== '') {
+                    return true;
                 }
+            }
+            return false;
+        }
+        
+        function switchToLoginWithConfirm() {
+            if (document.body.classList.contains('right-panel-register')) {
+                if (hasRegistrationFormFilled()) {
+                    showConfirm('切换确认', '当前表单未提交，切换功能则会清空所有已填写内容，是否继续？', function() {
+                        hideRegisterPanel();
+                    });
+                } else {
+                    hideRegisterPanel();
+                }
+            }
+        }
+        
+        function resetInlineRegisterForm() {
+            // 重置步骤指示器
+            var steps = document.querySelectorAll('#inlineRegisterSteps .step-item');
+            steps.forEach(function(step) {
+                step.classList.remove('active');
+            });
+            if (steps[0]) steps[0].classList.add('active');
+            
+            // 重置表单字段
+            var fields = ['inlineRegUsername', 'inlineRegPassword', 'inlineRegConfirmPassword', 'inlineRegPhone', 'inlineRegEmail', 'inlineRegCaptcha'];
+            fields.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            
+            // 重置验证码代码
+            window.inlineRegCaptchaCode = '';
+            
+            // 重置步骤显示
+            for (var i = 1; i <= 3; i++) {
+                var step = document.getElementById('inlineRegisterStep' + i);
+                if (step) step.style.display = 'none';
+            }
+            var step1 = document.getElementById('inlineRegisterStep1');
+            if (step1) step1.style.display = 'block';
+            
+            // 重置状态
+            var agreement = document.getElementById('inlineRegisterAgreement');
+            if (agreement) agreement.checked = false;
+            
+            var statusIcon = document.getElementById('inlineUsernameStatus');
+            if (statusIcon) statusIcon.querySelector('i').className = 'fas';
+            
+            // 重置密码强度
+            for (var j = 1; j <= 3; j++) {
+                var indicator = document.getElementById('inlineStrengthIndicator' + j);
+                if (indicator) indicator.classList.remove('active');
+            }
+            var strengthText = document.getElementById('inlineStrengthText');
+            if (strengthText) strengthText.textContent = '密码强度：弱';
+        }
+        
+        function fetchInlineRegCaptcha() {
+            var captchaImg = document.getElementById('inlineRegCaptchaImage');
+            if (!captchaImg) return;
+            
+            var isOfflineMode = localStorage.getItem('offlineMode') === 'true';
+            
+            if (isOfflineMode) {
+                generateLocalCaptcha('inlineRegCaptchaImage', 'inlineRegCaptchaCode');
+            } else {
+                fetchRemoteCaptcha('inlineRegCaptchaImage', 'inlineRegCaptchaCode');
+            }
+        }
+        
+        function bindInlineRegisterEvents() {
+            // 用户名实时检查
+            var inlineUsername = document.getElementById('inlineRegUsername');
+            if (inlineUsername) {
+                inlineUsername.addEventListener('input', function() {
+                    var username = this.value.trim();
+                    var statusIcon = document.getElementById('inlineUsernameStatus').querySelector('i');
+                    
+                    statusIcon.className = 'fas';
+                    
+                    if (username.length < 3) return;
+                    if (username.length > 10) {
+                        statusIcon.className = 'fas fa-times';
+                        return;
+                    }
+                    
+                    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    var existingUser = users.find(function(u) {
+                        return u.username === username;
+                    });
+                    
+                    if (existingUser) {
+                        statusIcon.className = 'fas fa-times';
+                    } else {
+                        statusIcon.className = 'fas fa-check';
+                    }
+                });
+            }
+            
+            // 密码强度检测
+            var inlinePassword = document.getElementById('inlineRegPassword');
+            if (inlinePassword) {
+                inlinePassword.addEventListener('input', function() {
+                    var password = this.value;
+                    var strength = 0;
+                    
+                    if (password.length >= 6) strength++;
+                    if (password.length >= 8) strength++;
+                    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+                    if (/\d/.test(password)) strength++;
+                    if (/[^A-Za-z0-9]/.test(password)) strength++;
+                    
+                    var level = 0;
+                    if (strength <= 1) level = 1;
+                    else if (strength <= 3) level = 2;
+                    else level = 3;
+                    
+                    var indicators = ['inlineStrengthIndicator1', 'inlineStrengthIndicator2', 'inlineStrengthIndicator3'];
+                    indicators.forEach(function(id, i) {
+                        var el = document.getElementById(id);
+                        if (el) {
+                            if (i < level) el.classList.add('active');
+                            else el.classList.remove('active');
+                        }
+                    });
+                    
+                    var strengthText = document.getElementById('inlineStrengthText');
+                    if (strengthText) {
+                        var labels = ['弱', '中', '强'];
+                        strengthText.textContent = '密码强度：' + labels[level - 1];
+                    }
+                });
+            }
+            
+            // 随机用户名按钮
+            var randomBtn = document.getElementById('inlineRandomUsernameBtn');
+            if (randomBtn) {
+                randomBtn.addEventListener('click', function() {
+                    var names = ['星辰大海', '风之子', '暗夜玫瑰', '银色子弹', '幽灵骑士', '火焰凤凰'];
+                    var name = names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 1000);
+                    var input = document.getElementById('inlineRegUsername');
+                    if (input) {
+                        input.value = name;
+                        input.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+            
+            var mysteryBtn = document.getElementById('inlineMysteryUsernameBtn');
+            if (mysteryBtn) {
+                mysteryBtn.addEventListener('click', function() {
+                    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    var name = '';
+                    for (var i = 0; i < 6; i++) {
+                        name += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                    var input = document.getElementById('inlineRegUsername');
+                    if (input) {
+                        input.value = name;
+                        input.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+            
+            var lastNightBtn = document.getElementById('inlineLastNightUsernameBtn');
+            if (lastNightBtn) {
+                lastNightBtn.addEventListener('click', function() {
+                    var input = document.getElementById('inlineRegUsername');
+                    if (input) {
+                        input.value = '昨夜圆车';
+                        input.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+            
+            // 切换密码可见性（仅针对内联注册面板）
+            var inlinePanel = document.querySelector('.register-form-wrapper.register-panel');
+            if (inlinePanel) {
+                inlinePanel.querySelectorAll('.toggle-password').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var targetId = this.getAttribute('data-target');
+                        var input = document.getElementById(targetId);
+                        if (input) {
+                            if (input.type === 'password') {
+                                input.type = 'text';
+                                this.querySelector('i').className = 'fas fa-eye-slash';
+                            } else {
+                                input.type = 'password';
+                                this.querySelector('i').className = 'fas fa-eye';
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // 步骤1 -> 步骤2
+            var next1 = document.getElementById('inlineRegisterNext1');
+            if (next1) {
+                next1.addEventListener('click', function() {
+                    var username = document.getElementById('inlineRegUsername').value.trim();
+                    var password = document.getElementById('inlineRegPassword').value;
+                    var confirmPassword = document.getElementById('inlineRegConfirmPassword').value;
+                    
+                    if (!username) { showAlert('请输入用户名'); return; }
+                    if (username.length < 3) { showAlert('用户名长度至少3个字符'); return; }
+                    if (username.length > 10) { showAlert('用户名长度最多10个字符'); return; }
+                    
+                    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    if (users.find(function(u) { return u.username === username; })) {
+                        showAlert('用户名已存在'); return;
+                    }
+                    
+                    if (!password) { showAlert('请输入密码'); return; }
+                    if (password.length < 6) { showAlert('密码长度至少6个字符'); return; }
+                    if (password.length > 50) { showAlert('密码长度最多50个字符'); return; }
+                    if (password !== confirmPassword) { showAlert('两次输入的密码不一致'); return; }
+                    
+                    // 切换到步骤2
+                    document.getElementById('inlineRegisterStep1').style.display = 'none';
+                    document.getElementById('inlineRegisterStep2').style.display = 'block';
+                    updateInlineStepIndicator(2);
+                });
+            }
+            
+            // 步骤2 -> 步骤1 (返回)
+            var back1 = document.getElementById('inlineRegisterBack1');
+            if (back1) {
+                back1.addEventListener('click', function() {
+                    document.getElementById('inlineRegisterStep2').style.display = 'none';
+                    document.getElementById('inlineRegisterStep1').style.display = 'block';
+                    updateInlineStepIndicator(1);
+                });
+            }
+            
+            // 步骤2 -> 步骤3
+            var next2 = document.getElementById('inlineRegisterNext2');
+            if (next2) {
+                next2.addEventListener('click', function() {
+                    var phone = document.getElementById('inlineRegPhone').value.trim();
+                    var email = document.getElementById('inlineRegEmail').value.trim();
+                    
+                    if (!phone) { showAlert('请输入手机号'); return; }
+                    if (!/^1[3-9]\d{9}$/.test(phone)) { showAlert('请输入正确的手机号'); return; }
+                    if (!email) { showAlert('请输入邮箱'); return; }
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlert('请输入正确的邮箱'); return; }
+                    
+                    document.getElementById('inlineRegisterStep2').style.display = 'none';
+                    document.getElementById('inlineRegisterStep3').style.display = 'block';
+                    updateInlineStepIndicator(3);
+                    
+                    // 加载验证码
+                    fetchInlineRegCaptcha();
+                });
+            }
+            
+            // 步骤3 -> 步骤2 (返回)
+            var back2 = document.getElementById('inlineRegisterBack2');
+            if (back2) {
+                back2.addEventListener('click', function() {
+                    document.getElementById('inlineRegisterStep3').style.display = 'none';
+                    document.getElementById('inlineRegisterStep2').style.display = 'block';
+                    updateInlineStepIndicator(2);
+                });
+            }
+            
+            // 完成注册
+            var confirmBtn = document.getElementById('inlineRegisterConfirm');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    var captcha = document.getElementById('inlineRegCaptcha').value.trim();
+                    var agreement = document.getElementById('inlineRegisterAgreement');
+                    
+                    if (!captcha) { showAlert('请输入验证码'); return; }
+                    if (captcha.toUpperCase() !== window.inlineRegCaptchaCode) {
+                        showAlert('验证码错误');
+                        fetchInlineRegCaptcha();
+                        document.getElementById('inlineRegCaptcha').value = '';
+                        return;
+                    }
+                    if (!agreement.checked) { showAlert('请先阅读并同意用户协议和隐私政策'); return; }
+                    
+                    // 显示确认弹窗
+                    showInlineRegisterConfirmModal();
+                });
+            }
+        }
+        
+        function showInlineRegisterConfirmModal() {
+            var username = document.getElementById('inlineRegUsername').value.trim();
+            var password = document.getElementById('inlineRegPassword').value;
+            var phone = document.getElementById('inlineRegPhone').value.trim();
+            var email = document.getElementById('inlineRegEmail').value.trim();
+            
+            // 显示密码（仅首次确认时展示，注册完成后不保存）
+            var maskedPassword = password.replace(/./g, '●');
+            
+            document.getElementById('inlineConfirmUsername').textContent = username;
+            document.getElementById('inlineConfirmPassword').textContent = maskedPassword;
+            document.getElementById('inlineConfirmPhone').textContent = phone;
+            document.getElementById('inlineConfirmEmail').textContent = email;
+            
+            var modal = document.getElementById('inlineRegisterConfirmModal');
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
             }, 10);
+        }
+        
+        // 内联注册确认弹窗 - 返回修改
+        document.getElementById('inlineConfirmCancel').addEventListener('click', function() {
+            var modal = document.getElementById('inlineRegisterConfirmModal');
+            modal.classList.remove('show');
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+        });
+        
+        // 内联注册确认弹窗 - 确定注册
+        document.getElementById('inlineConfirmSubmit').addEventListener('click', function() {
+            var modal = document.getElementById('inlineRegisterConfirmModal');
+            modal.classList.remove('show');
+            setTimeout(function() {
+                modal.style.display = 'none';
+                // 执行注册
+                inlineHandleRegister();
+            }, 300);
+        });
+        
+        // 内联注册确认弹窗 - 点击外部关闭
+        document.getElementById('inlineRegisterConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+                setTimeout(function() {
+                    e.target.style.display = 'none';
+                }, 300);
+            }
+        });
+        
+        function updateInlineStepIndicator(step) {
+            var items = document.querySelectorAll('#inlineRegisterSteps .step-item');
+            items.forEach(function(item) {
+                var itemStep = parseInt(item.getAttribute('data-step'));
+                item.classList.remove('active');
+                if (itemStep <= step) item.classList.add('active');
+            });
+        }
+        
+        function inlineHandleRegister() {
+            var username = document.getElementById('inlineRegUsername').value.trim();
+            var password = document.getElementById('inlineRegPassword').value;
+            var phone = document.getElementById('inlineRegPhone').value.trim();
+            var email = document.getElementById('inlineRegEmail').value.trim();
+            
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var nextUserId = getNextUserId();
+            
+            users.push({
+                username: username,
+                password: password,
+                userId: nextUserId,
+                phone: phone,
+                email: email,
+                createdAt: new Date().toISOString(),
+                gameData: {
+                    level: 1,
+                    exp: 0,
+                    favorites: [],
+                    friends: [],
+                    recentGames: [],
+                    stats: {
+                        totalGames: 0,
+                        totalPlayTime: 0,
+                        highestScore: 0
+                    }
+                },
+                userProfile: {
+                    avatar: 'user',
+                    bio: '暂无签名',
+                    checkinStats: {
+                        streak: 0,
+                        total: 0,
+                        lastCheckin: null
+                    }
+                }
+            });
+            
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+            
+            showToastSuccess('注册成功！欢迎加入 PRE Launcher', '注册成功');
+            
+            // 隐藏注册面板
+            setTimeout(function() {
+                hideRegisterPanel();
+            }, 1500);
         }
         
         // 实时检查用户名是否可用
@@ -16484,6 +17941,9 @@
             if (typeof updateVersionDisplay === 'function') {
                 updateVersionDisplay('login');
             }
+            
+            // 初始化UI样式
+            initUIStyle();
             
             // 生成关于启动器模态框
             generateAboutLauncherModal();

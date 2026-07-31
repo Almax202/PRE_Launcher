@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 2.7.2.1 (b10)",
+    login: "RC 3.0.0.0 (c1)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.2 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数
-    launcher: "20260729.2721.b10.119",
+    launcher: "20260731.3000.c1.120",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -153,6 +153,26 @@ const versionInfo = {
                 "数据导入导出，支持JSON格式",
                 "数据本地持久化，自动保存不丢失"
             ]
+        },
+        uiSwitching: {
+            name: "UI切换",
+            icon: "fas fa-layer-group",
+            iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            iconColor: "#ffffff",
+            version: "RC 1.0.0",
+            releaseDate: "2026-07-30",
+            updateDate: "2026-07-30",
+            status: "公开测试版",
+            developer: "PREAlmax",
+            copyright: "© 2014-2026 PREAlmax, All rights reserved.",
+            description: "界面风格切换组件，支持在系统默认UI与简约设计UI之间切换，UI设计采用简约风格顶部导航栏布局",
+            features: [
+                "支持系统默认UI（侧边栏布局）和简约设计UI（顶部导航栏布局）切换",
+                "UI设计采用简约风格顶部导航栏，左上角启动器Logo和名称",
+                "右上角账户显示，中间区域更现代化的登录样式",
+                "切换UI后自动保存设置，下次访问自动应用",
+                "支持版本信息查看，了解组件更新历史"
+            ]
         }
     }
 };
@@ -182,6 +202,10 @@ function getThemeVersionInfo(themeName) {
 
 function getComponentVersionInfo(componentName) {
     return versionInfo.components && versionInfo.components[componentName] || null;
+}
+
+function getUIStyleVersionInfo() {
+    return versionInfo.components && versionInfo.components.uiSwitching || null;
 }
 
 function showComponentInfoModal(componentName) {

@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     updateExperimentalFeaturesState();
     
+    // 绑定简约设计顶部导航栏
+    bindMinimalistSettingsNav(currentUser);
+    
     function loadUserInfo() {
         var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
         var user = users.find(function(u) {
@@ -8665,6 +8668,217 @@ document.addEventListener('DOMContentLoaded', function() {
         showAlert('当前为离线模式，部分功能已禁用');
     }
     
+    // 绑定简约设计顶部导航栏事件
+    function bindMinimalistSettingsNav(currentUser) {
+        // 同步用户信息到顶部导航栏
+        var uiMinUsername = document.getElementById('uiMinUsername');
+        var uiMinUserId = document.getElementById('uiMinUserId');
+        var uiMinDropdownUsername = document.getElementById('uiMinDropdownUsername');
+        var uiMinDropdownUserid = document.getElementById('uiMinDropdownUserid');
+        var uiMinLevelBadge = document.getElementById('uiMinLevelBadge');
+        var uiMinDropdownLevel = document.getElementById('uiMinDropdownLevel');
+        
+        if (uiMinUsername && currentUser && currentUser.username) {
+            uiMinUsername.textContent = currentUser.username;
+        }
+        if (uiMinUserId && currentUser) {
+            uiMinUserId.textContent = 'ID: ' + (currentUser.userId || '---');
+        }
+        if (uiMinDropdownUsername && currentUser && currentUser.username) {
+            uiMinDropdownUsername.textContent = currentUser.username;
+        }
+        if (uiMinDropdownUserid && currentUser) {
+            uiMinDropdownUserid.textContent = 'ID: ' + (currentUser.userId || '---');
+        }
+        if (uiMinLevelBadge && currentUser) {
+            var lvl = currentUser.level;
+            if (!lvl) {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var fullUser = users.find(function(u) { return u.username === currentUser.username; });
+                lvl = fullUser && fullUser.gameData ? fullUser.gameData.level : 1;
+            }
+            uiMinLevelBadge.textContent = lvl || 1;
+        }
+        if (uiMinDropdownLevel && currentUser) {
+            var ddLvl = currentUser.level;
+            if (!ddLvl) {
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var fullUser = users.find(function(u) { return u.username === currentUser.username; });
+                ddLvl = fullUser && fullUser.gameData ? fullUser.gameData.level : 1;
+            }
+            uiMinDropdownLevel.textContent = ddLvl || 1;
+        }
+        
+        // 返回按钮
+        var backBtn = document.getElementById('uiMinBackBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', function() {
+                goBack();
+            });
+        }
+        
+        // 多级下拉菜单 - hover展开
+        document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-menu').forEach(function(menu) {
+            var navItem = menu.querySelector('.ui-min-nav-item');
+            
+            navItem.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // 关闭其他打开的菜单
+                document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-menu.open').forEach(function(m) {
+                    if (m !== menu) m.classList.remove('open');
+                });
+                menu.classList.toggle('open');
+            });
+            
+            // 点击菜单项时关闭菜单
+            menu.querySelectorAll('.ui-min-dropdown-item').forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var nav = this.getAttribute('data-nav');
+                    
+                    // 更新所有导航项的active状态
+                    updateNavActiveState(nav);
+                    
+                    // 关闭菜单
+                    menu.classList.remove('open');
+                    
+                    // 切换section
+                    switchSection(nav);
+                    
+                    // 更新侧边栏active状态
+                    updateSidebarActive(nav);
+                });
+            });
+        });
+        
+        // 直接导航项点击（实验室/实验性功能）
+        document.querySelectorAll('#uiMinTopnav .ui-min-nav-item[data-nav]').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var nav = this.getAttribute('data-nav');
+                
+                // 关闭所有打开的下拉菜单
+                document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-menu.open').forEach(function(m) {
+                    m.classList.remove('open');
+                });
+                
+                // 实验性功能特殊处理
+                if (nav === 'experimental') {
+                    var isDisabled = localStorage.getItem('experimentalFeaturesDisabled') === 'true';
+                    var hasRead = localStorage.getItem('experimentalWarningRead') === 'true';
+                    
+                    if (isDisabled || !hasRead) {
+                        showExperimentalWarningModal();
+                        return;
+                    }
+                }
+                
+                // 更新active状态
+                updateNavActiveState(nav);
+                
+                // 切换section
+                switchSection(nav);
+                
+                // 更新侧边栏active状态
+                updateSidebarActive(nav);
+            });
+        });
+        
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#uiMinTopnav')) {
+                document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-menu.open').forEach(function(m) {
+                    m.classList.remove('open');
+                });
+            }
+        });
+        
+        // 更新导航栏active状态
+        function updateNavActiveState(nav) {
+            // 移除所有active状态
+            document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(i) {
+                i.classList.remove('active');
+            });
+            document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-item').forEach(function(i) {
+                i.classList.remove('active');
+            });
+            document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-menu').forEach(function(i) {
+                i.classList.remove('active');
+            });
+            
+            // 查找并设置对应的active状态
+            // 直接导航项
+            var directItem = document.querySelector('#uiMinTopnav .ui-min-nav-item[data-nav="' + nav + '"]');
+            if (directItem) {
+                directItem.classList.add('active');
+                return;
+            }
+            
+            // 下拉菜单项 - 需要同时设置父菜单的active状态
+            var dropdownItem = document.querySelector('#uiMinTopnav .ui-min-dropdown-item[data-nav="' + nav + '"]');
+            if (dropdownItem) {
+                dropdownItem.classList.add('active');
+                var parentMenu = dropdownItem.closest('.ui-min-dropdown-menu');
+                if (parentMenu) {
+                    parentMenu.classList.add('active');
+                    parentMenu.querySelector('.ui-min-nav-item').classList.add('active');
+                }
+            }
+        }
+        
+        // 更新侧边栏active状态
+        function updateSidebarActive(nav) {
+            document.querySelectorAll('.menu-item').forEach(function(item) {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === nav) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
+        // 用户下拉框
+        var userMenuBtn = document.getElementById('uiMinUserMenuBtn');
+        var userDropdown = document.getElementById('uiMinUserDropdown');
+        if (userMenuBtn && userDropdown) {
+            userMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+                var isOpen = userDropdown.classList.contains('show');
+                userMenuBtn.querySelector('i').className = isOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (userDropdown.classList.contains('show') && 
+                    !userDropdown.contains(e.target) && 
+                    !userMenuBtn.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                    userMenuBtn.querySelector('i').className = 'fas fa-chevron-down';
+                }
+            });
+        }
+        
+        // 下拉菜单项点击
+        document.querySelectorAll('#uiMinUserDropdown .ui-min-dropdown-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var action = this.getAttribute('data-action');
+                userDropdown.classList.remove('show');
+                if (userMenuBtn) userMenuBtn.querySelector('i').className = 'fas fa-chevron-down';
+                
+                if (action === 'backToLogin') {
+                    showConfirm('是否要退回至登录页？\n保持登录状态，仅返回登录页面', function() {
+                        sessionStorage.removeItem('isInGameCenter');
+                        window.location.href = '../index.html';
+                    });
+                } else if (action === 'logout') {
+                    showConfirm('是否要退出登录？\n退出后需要重新登录才能使用启动器', function() {
+                        localStorage.removeItem('currentUser');
+                        sessionStorage.clear();
+                        window.location.href = '../index.html';
+                    });
+                }
+            });
+        });
+    }
+    
     function goBack() {
         var referrer = document.referrer;
         var previousPage = localStorage.getItem('previousPage');
@@ -8674,11 +8888,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (referrer && (referrer.includes('homepage') || referrer.includes('index'))) {
             window.location.href = referrer;
-        } else if (previousPage) {
+        } else if (previousPage && previousPage.includes('index')) {
             window.location.href = previousPage;
             localStorage.removeItem('previousPage');
+        } else if (sessionStorage.getItem('isInGameCenter') === 'true') {
+            sessionStorage.removeItem('isInGameCenter');
+            window.location.href = loginPage;
         } else {
-            window.location.href = homePage;
+            window.location.href = loginPage;
         }
     }
     

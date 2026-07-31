@@ -383,79 +383,8 @@ function bindMailEventListeners() {
         });
     }
     
-    var mailCloseBtn = document.getElementById('mailCloseBtn');
-    if (mailCloseBtn) {
-        mailCloseBtn.addEventListener('click', function() {
-            closeMailModal();
-        });
-    }
-    
-    var mailModal = document.getElementById('mailModal');
-    if (mailModal) {
-        mailModal.addEventListener('click', function(e) {
-            if (e.target === mailModal) {
-                closeMailModal();
-            }
-        });
-    }
-    
-    var mailInboxTab = document.getElementById('mailInboxTab');
-    if (mailInboxTab) {
-        mailInboxTab.addEventListener('click', function() {
-            switchMailTab('inbox');
-        });
-    }
-    
-    var mailHistoryTab = document.getElementById('mailHistoryTab');
-    if (mailHistoryTab) {
-        mailHistoryTab.addEventListener('click', function() {
-            showMailHistoryModal();
-        });
-    }
-    
-    var mailClaimBtn = document.getElementById('mailClaimBtn');
-    if (mailClaimBtn) {
-        mailClaimBtn.addEventListener('click', function() {
-            claimSelectedMail();
-        });
-    }
-    
-    var mailDeleteBtn = document.getElementById('mailDeleteBtn');
-    if (mailDeleteBtn) {
-        mailDeleteBtn.addEventListener('click', function() {
-            deleteSelectedMail();
-        });
-    }
-    
-    var mailClaimAllBtn = document.getElementById('mailClaimAllBtn');
-    if (mailClaimAllBtn) {
-        mailClaimAllBtn.addEventListener('click', function() {
-            claimAllMails();
-        });
-    }
-    
-    var mailHistoryCloseBtn = document.getElementById('mailHistoryCloseBtn');
-    if (mailHistoryCloseBtn) {
-        mailHistoryCloseBtn.addEventListener('click', function() {
-            closeMailHistoryModal();
-        });
-    }
-    
-    var mailHistoryClearBtn = document.getElementById('mailHistoryClearBtn');
-    if (mailHistoryClearBtn) {
-        mailHistoryClearBtn.addEventListener('click', function() {
-            clearMailHistory();
-        });
-    }
-    
-    var mailHistoryModal = document.getElementById('mailHistoryModal');
-    if (mailHistoryModal) {
-        mailHistoryModal.addEventListener('click', function(e) {
-            if (e.target === mailHistoryModal) {
-                closeMailHistoryModal();
-            }
-        });
-    }
+    // 模态框内的按钮事件现在由事件委托处理
+    // 事件委托在 showMailModal 和 showMailHistoryModal 中设置
 }
 
 function migrateOldMailData() {
@@ -507,6 +436,55 @@ function showMailModal() {
     setTimeout(function() {
         mailModal.classList.add('show');
     }, 10);
+    
+    // 使用事件委托确保按钮事件正确绑定
+    setupMailModalEventDelegation();
+}
+
+// 使用事件委托确保邮件模态框中的按钮事件正确绑定
+function setupMailModalEventDelegation() {
+    var mailModal = document.getElementById('mailModal');
+    if (!mailModal) return;
+    
+    // 移除旧的事件委托
+    if (mailModal._delegatedHandler) {
+        mailModal.removeEventListener('click', mailModal._delegatedHandler);
+    }
+    
+    // 添加新的事件委托
+    mailModal._delegatedHandler = function(e) {
+        // 点击背景关闭模态框
+        if (e.target === mailModal) {
+            closeMailModal();
+            return;
+        }
+        
+        var target = e.target.closest('button, [role="button"]');
+        if (!target || !mailModal.contains(target)) return;
+        
+        switch (target.id) {
+            case 'mailCloseBtn':
+                closeMailModal();
+                break;
+            case 'mailInboxTab':
+                switchMailTab('inbox');
+                break;
+            case 'mailHistoryTab':
+                showMailHistoryModal();
+                break;
+            case 'mailClaimBtn':
+                claimSelectedMail();
+                break;
+            case 'mailDeleteBtn':
+                deleteSelectedMail();
+                break;
+            case 'mailClaimAllBtn':
+                claimAllMails();
+                break;
+        }
+    };
+    
+    mailModal.addEventListener('click', mailModal._delegatedHandler);
 }
 
 function closeMailModal() {
@@ -811,15 +789,29 @@ function selectMail(mailId) {
 }
 
 function claimSelectedMail() {
-    if (!currentMailId) return;
+    if (!currentMailId) {
+        showAlert('请先选择一封邮件');
+        return;
+    }
     
     var mails = mailSystem.getMails();
     var mail = mails.find(function(m) { return m.id === currentMailId; });
     
-    if (!mail || mail.isClaimed) return;
+    if (!mail) {
+        showAlert('邮件不存在');
+        return;
+    }
+    
+    if (mail.isClaimed) {
+        showAlert('该邮件已领取');
+        return;
+    }
     
     var isExpired = mail.expireTime && mail.expireTime < Date.now();
-    if (isExpired) return;
+    if (isExpired) {
+        showAlert('该邮件已过期');
+        return;
+    }
     
     showConfirm('确认领取', '确定要领取这封邮件的奖励吗？', function() {
         mailSystem.claimMail(currentMailId);
@@ -833,12 +825,18 @@ function claimSelectedMail() {
 }
 
 function deleteSelectedMail() {
-    if (!currentMailId) return;
+    if (!currentMailId) {
+        showAlert('请先选择一封邮件');
+        return;
+    }
     
     var mails = mailSystem.getMails();
     var mail = mails.find(function(m) { return m.id === currentMailId; });
     
-    if (!mail) return;
+    if (!mail) {
+        showAlert('邮件不存在');
+        return;
+    }
     
     var isExpired = mail.expireTime && mail.expireTime < Date.now();
     if (!mail.isClaimed && !isExpired) {
@@ -937,6 +935,43 @@ function showMailHistoryModal() {
     setTimeout(function() {
         modal.classList.add('show');
     }, 10);
+    
+    // 使用事件委托确保邮件历史模态框中的按钮事件正确绑定
+    setupMailHistoryModalEventDelegation();
+}
+
+// 使用事件委托确保邮件历史模态框中的按钮事件正确绑定
+function setupMailHistoryModalEventDelegation() {
+    var modal = document.getElementById('mailHistoryModal');
+    if (!modal) return;
+    
+    // 移除旧的事件委托
+    if (modal._delegatedHandler) {
+        modal.removeEventListener('click', modal._delegatedHandler);
+    }
+    
+    // 添加新的事件委托
+    modal._delegatedHandler = function(e) {
+        // 点击背景关闭模态框
+        if (e.target === modal) {
+            closeMailHistoryModal();
+            return;
+        }
+        
+        var target = e.target.closest('button, [role="button"]');
+        if (!target || !modal.contains(target)) return;
+        
+        switch (target.id) {
+            case 'mailHistoryCloseBtn':
+                closeMailHistoryModal();
+                break;
+            case 'mailHistoryClearBtn':
+                clearMailHistory();
+                break;
+        }
+    };
+    
+    modal.addEventListener('click', modal._delegatedHandler);
 }
 
 function closeMailHistoryModal() {
