@@ -983,7 +983,8 @@ body.dark-mode .mobile-nav-footer {
     display: block;
 }
 
-.section-card {
+.section-card,
+.settings-card {
     background: white;
     border-radius: 15px;
     padding: 25px;
@@ -1007,6 +1008,32 @@ body.dark-mode .mobile-nav-footer {
     margin-bottom: 25px;
     padding-bottom: 20px;
     border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.settings-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.settings-card-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin: 0;
+}
+
+.settings-card-header p {
+    font-size: 14px;
+    color: #888;
+    margin: 0;
+}
+
+.settings-card-body {
+    padding: 0;
 }
 
 .card-header .card-title {
@@ -1363,7 +1390,8 @@ body.dark-mode .two-factor-info p {
     color: #b0b0b0;
 }
 
-body.dark-mode .section-card {
+body.dark-mode .section-card,
+body.dark-mode .settings-card {
     background: rgba(40, 40, 40, 0.8);
     border-color: rgba(255, 255, 255, 0.1);
 }
@@ -4353,7 +4381,8 @@ body.dark-mode .collapse-all-btn:hover {
     background: rgba(212, 93, 121, 0.3);
 }
 
-body.dark-mode .section-card {
+body.dark-mode .section-card,
+body.dark-mode .settings-card {
     background: rgba(30, 30, 30, 0.95);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
@@ -7072,6 +7101,654 @@ input:checked + .toggle-slider:before {
 .more-themes-btn:hover {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* ===================== UI切换卡片样式 ===================== */
+/* ===== 简约设计（顶部导航栏）样式 ===== */
+
+/* 隐藏侧边栏，使用顶部导航栏 */
+body.ui-minimalist .settings-sidebar {
+    display: none !important;
+}
+
+body.ui-minimalist .settings-main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+}
+
+/* 隐藏旧版顶部栏（settings-header） */
+body.ui-minimalist .settings-header {
+    display: none !important;
+}
+
+body.ui-minimalist .settings-container {
+    padding-top: 72px !important;
+    min-height: 100vh;
+    background: transparent;
+}
+
+/* 顶部导航栏 */
+.ui-min-topnav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 1000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* 左侧Logo */
+.ui-min-topnav-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ui-min-logo {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.3);
+}
+
+.ui-min-brand {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.ui-min-brand-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.ui-min-brand-version {
+    font-size: 11px;
+    color: #888;
+}
+
+/* 中间导航 */
+.ui-min-topnav-center {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+}
+
+.ui-min-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.2s ease;
+    position: relative;
+    white-space: nowrap;
+}
+
+.ui-min-nav-item:hover {
+    background: rgba(212, 93, 121, 0.08);
+    color: #d45d79;
+}
+
+.ui-min-nav-item.active {
+    background: rgba(212, 93, 121, 0.12);
+    color: #d45d79;
+}
+
+.ui-min-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    background: linear-gradient(90deg, #d45d79, #e67e8a);
+    border-radius: 2px;
+}
+
+.ui-min-nav-item i {
+    font-size: 15px;
+}
+
+/* 多级下拉菜单容器 */
+.ui-min-dropdown-menu {
+    position: relative;
+}
+
+.ui-min-dropdown-menu .ui-min-nav-item {
+    cursor: pointer;
+}
+
+.ui-min-dropdown-menu.active .ui-min-nav-item {
+    background: rgba(212, 93, 121, 0.12);
+    color: #d45d79;
+}
+
+.ui-min-dropdown-menu .ui-min-arrow {
+    font-size: 10px;
+    margin-left: 4px;
+    transition: transform 0.2s ease;
+}
+
+.ui-min-dropdown-menu.open .ui-min-arrow {
+    transform: rotate(180deg);
+}
+
+.ui-min-dropdown-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 180px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+    z-index: 1001;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.ui-min-dropdown-menu:hover .ui-min-dropdown-panel,
+.ui-min-dropdown-menu.open .ui-min-dropdown-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.ui-min-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.ui-min-dropdown-item:hover {
+    background: rgba(212, 93, 121, 0.08);
+    color: #d45d79;
+}
+
+.ui-min-dropdown-item.active {
+    background: rgba(212, 93, 121, 0.12);
+    color: #d45d79;
+}
+
+.ui-min-dropdown-item i {
+    font-size: 14px;
+    width: 20px;
+    text-align: center;
+}
+
+/* 右侧按钮 */
+.ui-min-topnav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ui-min-action-btn {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    transition: all 0.2s ease;
+    font-size: 17px;
+}
+
+.ui-min-action-btn:hover {
+    background: rgba(212, 93, 121, 0.08);
+    color: #d45d79;
+}
+
+/* 用户区域 */
+.ui-min-user-area {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px 6px 6px;
+    background: rgba(212, 93, 121, 0.08);
+    border-radius: 28px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ui-min-user-area:hover {
+    background: rgba(212, 93, 121, 0.12);
+}
+
+.ui-min-user-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 15px;
+    position: relative;
+}
+
+.ui-min-level-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+.ui-min-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.ui-min-username {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ui-min-user-id {
+    font-size: 11px;
+    color: #888;
+}
+
+.ui-min-user-menu-btn {
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.ui-min-user-menu-btn:hover {
+    color: #d45d79;
+}
+
+/* 用户下拉框 */
+.ui-min-user-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 240px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+    z-index: 1100;
+}
+
+.ui-min-user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.ui-min-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.06) 0%, rgba(230, 126, 138, 0.06) 100%);
+    border-radius: 10px;
+    margin-bottom: 4px;
+}
+
+.ui-min-dropdown-avatar {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.ui-min-dropdown-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ui-min-dropdown-username {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.ui-min-dropdown-userid {
+    font-size: 12px;
+    color: #888;
+}
+
+.ui-min-dropdown-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.06);
+    margin: 6px 4px;
+}
+
+.ui-min-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 14px;
+    color: #333;
+}
+
+.ui-min-dropdown-item:hover {
+    background: rgba(212, 93, 121, 0.08);
+    color: #d45d79;
+}
+
+.ui-min-dropdown-item i {
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+}
+
+.ui-min-dropdown-item:hover i {
+    color: #d45d79;
+}
+
+/* 调整设置内容区布局 */
+body.ui-minimalist .settings-main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+body.ui-minimalist .settings-content {
+    padding: 24px 32px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+body.ui-minimalist .section-card,
+body.ui-minimalist .settings-card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 卡片样式调整 - 更现代化 */
+body.ui-minimalist .settings-section {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+body.ui-minimalist .section-card,
+body.ui-minimalist .settings-card {
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* 暗色模式 - 简约设计 */
+body.ui-minimalist.dark-mode .ui-min-topnav {
+    background: rgba(30, 30, 46, 0.85);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+body.ui-minimalist.dark-mode .ui-min-brand-name {
+    color: #e0e0e0;
+}
+
+body.ui-minimalist.dark-mode .ui-min-brand-version {
+    color: #999;
+}
+
+body.ui-minimalist.dark-mode .ui-min-nav-item {
+    color: #bbb;
+}
+
+body.ui-minimalist.dark-mode .ui-min-nav-item:hover {
+    background: rgba(212, 93, 121, 0.12);
+    color: #e67e8a;
+}
+
+body.ui-minimalist.dark-mode .ui-min-nav-item.active {
+    background: rgba(212, 93, 121, 0.15);
+    color: #e67e8a;
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-panel {
+    background: #1e1e2e;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-item {
+    color: #bbb;
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-item:hover {
+    background: rgba(212, 93, 121, 0.12);
+    color: #e67e8a;
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-item.active {
+    background: rgba(212, 93, 121, 0.15);
+    color: #e67e8a;
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-menu.active .ui-min-nav-item {
+    background: rgba(212, 93, 121, 0.15);
+    color: #e67e8a;
+}
+
+body.ui-minimalist.dark-mode .ui-min-action-btn {
+    background: rgba(255, 255, 255, 0.06);
+    color: #bbb;
+}
+
+body.ui-minimalist.dark-mode .ui-min-action-btn:hover {
+    background: rgba(212, 93, 121, 0.15);
+    color: #e67e8a;
+}
+
+body.ui-minimalist.dark-mode .ui-min-user-area {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.ui-minimalist.dark-mode .ui-min-user-area:hover {
+    background: rgba(212, 93, 121, 0.12);
+}
+
+body.ui-minimalist.dark-mode .ui-min-username {
+    color: #e0e0e0;
+}
+
+body.ui-minimalist.dark-mode .ui-min-user-id {
+    color: #888;
+}
+
+body.ui-minimalist.dark-mode .ui-min-user-dropdown {
+    background: #1e1e2e;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-header {
+    background: linear-gradient(135deg, rgba(212, 93, 121, 0.15) 0%, rgba(230, 126, 138, 0.15) 100%);
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-username {
+    color: #e0e0e0;
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-divider {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-item {
+    color: #ccc;
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-item:hover {
+    background: rgba(212, 93, 121, 0.15);
+    color: #e67e8a;
+}
+
+body.ui-minimalist.dark-mode .ui-min-dropdown-item i {
+    color: #999;
+}
+
+body.ui-minimalist.dark-mode .settings-container {
+    background: transparent;
+}
+
+body.ui-minimalist.dark-mode .settings-section,
+body.ui-minimalist.dark-mode .section-card,
+body.ui-minimalist.dark-mode .settings-card {
+    background: #1e1e2e;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .ui-min-topnav {
+        padding: 0 16px;
+        height: 60px;
+    }
+    
+    .ui-min-brand-version {
+        display: none;
+    }
+    
+    .ui-min-nav-item span {
+        display: none;
+    }
+    
+    .ui-min-dropdown-menu .ui-min-arrow {
+        display: none;
+    }
+    
+    .ui-min-nav-item {
+        padding: 8px 10px;
+    }
+    
+    .ui-min-dropdown-panel {
+        top: calc(100% + 4px);
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        right: auto;
+    }
+    
+    .ui-min-dropdown-menu:hover .ui-min-dropdown-panel,
+    .ui-min-dropdown-menu.open .ui-min-dropdown-panel {
+        transform: translateX(-50%) translateY(0);
+    }
+    
+    .ui-min-username {
+        display: none;
+    }
+    
+    body.ui-minimalist .settings-container {
+        padding-top: 60px;
+    }
+    
+    body.ui-minimalist .settings-content {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ui-min-topnav-center {
+        gap: 0;
+    }
+    
+    .ui-min-action-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .ui-min-user-menu-btn {
+        display: none;
+    }
+    
+    .ui-min-level-badge {
+        display: none;
+    }
+}
+
+body.dark-mode .minimalist-preview-small .more-theme-preview-bar {
+    background: rgba(40, 40, 60, 0.9);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .minimalist-preview-small .more-theme-preview-card {
+    background: #333344;
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* 暗色模式下的弹窗样式 */

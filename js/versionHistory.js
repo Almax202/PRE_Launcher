@@ -1,140 +1,5 @@
-const ZipImageCache = {
-    isReady: false,
-    cache: {},
-    pendingCallbacks: [],
-    
-    init: function() {
-        var self = this;
-        if (typeof JSZip === 'undefined') {
-            console.warn('[ZipImageCache] JSZip 未加载，将使用原始图片路径');
-            self.isReady = true;
-            self._executeCallbacks();
-            return;
-        }
-        
-        if (window.location.protocol === 'file:') {
-            console.warn('[ZipImageCache] 当前为 file:// 协议，无法使用 fetch 加载本地文件，将使用原始图片路径');
-            self.isReady = true;
-            self._executeCallbacks();
-            return;
-        }
-        
-        self._loadZipWithXHR('./images/verimg.zip')
-            .then(function(zipBlob) {
-                return JSZip.loadAsync(zipBlob);
-            })
-            .then(function(zip) {
-                var promises = [];
-                
-                zip.forEach(function(relativePath, zipEntry) {
-                    if (!zipEntry.dir && /\.(png|jpg|jpeg|gif|webp)$/i.test(relativePath)) {
-                        var fileName = self._normalizeFileName(relativePath);
-                        
-                        var promise = zipEntry.async('blob').then(function(blob) {
-                            var url = URL.createObjectURL(blob);
-                            self.cache[fileName] = url;
-                            console.log('[ZipImageCache] 已缓存图片:', fileName);
-                        });
-                        
-                        promises.push(promise);
-                    }
-                });
-                
-                return Promise.all(promises);
-            })
-            .then(function() {
-                self.isReady = true;
-                console.log('[ZipImageCache] 缓存初始化完成，共', Object.keys(self.cache).length, '张图片');
-                self._executeCallbacks();
-            })
-            .catch(function(err) {
-                console.warn('[ZipImageCache] 解压失败，将使用原始图片路径:', err);
-                self.isReady = true;
-                self._executeCallbacks();
-            });
-    },
-    
-    _loadZipWithXHR: function(url) {
-        return new Promise(function(resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.responseType = 'blob';
-            
-            xhr.onload = function() {
-                if (xhr.status === 200 || xhr.status === 0) {
-                    resolve(xhr.response);
-                } else {
-                    reject(new Error('加载失败: ' + xhr.status));
-                }
-            };
-            
-            xhr.onerror = function() {
-                reject(new Error('网络错误'));
-            };
-            
-            xhr.send();
-        });
-    },
-    
-    _normalizeFileName: function(path) {
-        var parts = path.replace(/\\/g, '/').split('/');
-        var fileName = parts[parts.length - 1];
-        return fileName.toLowerCase();
-    },
-    
-    _getImageKey: function(imagePath) {
-        var parts = imagePath.replace(/\\/g, '/').split('/');
-        var fileName = parts[parts.length - 1];
-        return fileName.toLowerCase();
-    },
-    
-    _toLocalImagesPath: function(imagePath) {
-        if (imagePath && typeof imagePath === 'string') {
-            return imagePath.replace(/^\.\/images\//, './localimages/').replace(/^images\//, 'localimages/');
-        }
-        return imagePath;
-    },
-    
-    getImageUrl: function(imagePath) {
-        if (!this.isReady) {
-            return this._toLocalImagesPath(imagePath);
-        }
-        
-        var key = this._getImageKey(imagePath);
-        if (this.cache[key]) {
-            return this.cache[key];
-        }
-        
-        console.warn('[ZipImageCache] 未找到缓存图片，使用 localimages 路径:', imagePath);
-        return this._toLocalImagesPath(imagePath);
-    },
-    
-    whenReady: function(callback) {
-        if (this.isReady) {
-            callback();
-        } else {
-            this.pendingCallbacks.push(callback);
-        }
-    },
-    
-    _executeCallbacks: function() {
-        while (this.pendingCallbacks.length > 0) {
-            var cb = this.pendingCallbacks.shift();
-            try {
-                cb();
-            } catch (err) {
-                console.error('[ZipImageCache] 回调执行错误:', err);
-            }
-        }
-    }
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-    ZipImageCache.init();
-});
-
 function getVersionImageUrl(imagePath) {
-    return ZipImageCache.getImageUrl(imagePath);
+    return imagePath;
 }
 
 // 版本更新本地存储键名
@@ -352,17 +217,98 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.0.0 (c1)",
+            date: "2026-07-31",
+            tag: "major",
+            tagText: "重大更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 该版本对启动器的所有UI样式进行了全面的大改与优化，使其风格更加统一与美观",
+                "- 大厅顶部导航栏右上角新增\"更多功能\"按钮（位于关于启动器、名片、页面时钟三个小功能按钮的最左侧），点击后弹出与登录页一致的更多功能弹窗",
+                "- 更多功能弹窗标题右侧新增\"自定义快捷组件\"按钮（滑块图标），点击后弹出选择弹窗，可从9项功能中选择3项显示在顶部导航栏右上角",
+                "- 自定义快捷组件选择弹窗支持勾选/取消功能，实时显示已选数量，保存后持久化到 localStorage（customQuickComponents）",
+                "- 顶部导航栏动态渲染选中的快捷组件按钮，点击后直接触发对应功能（关于启动器、用户名片、页面时钟、查看引导、便签、天气、日历、兑换码、调整UI比例）",
+                "- 点击页面时钟功能后自动隐藏顶部导航栏（ui-min-topnav、settings-header、settings-sidebar），防止遮挡时钟显示，退出时钟后自动恢复",
+                "- 新增登录页全新视觉设计：采用固定背景（不受系统设置背景切换影响），左侧为色彩柔和的毛玻璃效果与动态粒子背景，右侧为登录功能区，中间以斜向分割线分隔，整体风格更加统一美观",
+                "- 登录页右侧登录功能区顶部新增\"欢迎来到 PRE Launcher\"标题与副标题，标题采用纯白色加阴影替代渐变色文字，显著提升可读性",
+                "- 新增注册账号滑动切换交互：点击\"注册账号\"按钮后不再弹出模态框，改为登录表单向左滑出隐藏、注册表单从右侧滑入登录区原位置，完成注册后再反向滑回，整体交互更顺滑连贯",
+                "- 注册模式下左侧装饰面板同步切换：品牌标题由\"PRE Launcher\"变为\"注册账号\"，logo 图标由火箭变为用户加号图标，并隐藏名言区，注册完成或返回后自动恢复原样",
+                "- 注册表单采用三步式流程（设置账号 / 绑定信息 / 完成注册），含步骤指示器、用户名实时唯一性校验、密码强度实时检测、手机号与邮箱格式校验、图形验证码校验与用户协议勾选",
+                "- 注册表单内嵌随机用户名生成按钮，点击即可一键填入用户名输入框并触发实时校验",
+                "- 注册表单完成所有步骤后新增信息确认弹窗，弹窗内展示用户填写的注册信息（用户名、密码以掩码显示、手机号、邮箱），用户点击\"确定注册\"后才真正执行注册流程，点击\"返回修改\"可返回继续编辑",
+                "- 注册表单验证码改为通过 API 获取图片验证码，与登录页验证码获取方式完全一致，支持在线/离线模式自动切换（离线时回退为本地生成的字符验证码）",
+                "优化改进",
+                "- 大厅顶部导航栏恢复显示\"版本更新\"和\"开发者公告\"导航项，登录后无需返回登录页即可查看版本记录与开发者公告",
+                "- 游戏中心卡片布局由一行三列改为一行四列，并同步缩小卡片图标与内边距，提升信息密度与视觉一致性",
+                "- 百宝箱卡片布局由一行三列改为一行四列，与游戏中心卡片保持一致的网格布局",
+                "- 默认背景与暗色模式背景统一为粉色主题渐变（多层径向渐变叠加线性渐变），与整体粉色主题色保持一致",
+                "- 简约模式下背景装饰形状（bg-shape）透明度提升，背景装饰效果更加明显",
+                "- 新增 .settings-card-header 与 .settings-card-body 基础样式，统一测试页面卡片的标题与内容区布局",
+                "- 系统设置页顶部导航栏改为多级下拉菜单结构，减少导航项数量，提升视觉简洁度",
+                "- 导航菜单分组：\"账户系统\"包含账户信息/安全设置/隐私设置；\"统计数据\"包含统计数据/成就系统；\"高级管理\"包含通知设置/设备管理/个性化/增强功能/账户管理；\"核心条款\"包含用户协议/隐私政策；\"实验室\"直接显示（不使用多级菜单）",
+                "- 多级下拉菜单支持点击展开/收起、悬停显示、点击菜单项切换页面内容并同步更新侧边栏高亮状态",
+                "- 导航项的 active 状态在父级下拉菜单上同步显示（激活子菜单项时父级高亮），提供更清晰的视觉反馈",
+                "- 响应式布局适配移动端：下拉菜单居中显示，隐藏下拉箭头图标，确保小屏幕设备良好体验",
+                "- 顶部导航栏相关元素添加过渡动画（transition），使页面时钟模式下的显示/隐藏更加平滑",
+                "- 登录页名言区边框固定尺寸：宽度固定为 400px（响应式自适应），高度固定为 150px，名言文字限制最多 4 行（-webkit-line-clamp），名言切换时框体不再随内容大小变动",
+                "- 登录页名言区整体尺寸优化：缩小内边距、字号、圆角与装饰引号大小，使名言区更加紧凑精致",
+                "- 登录页名言区下方移除原有三个特性框（精品游戏/安全保障/极速体验），替换为版权文本\"© 2014-2026 PREAlmax. All rights reserved.\"",
+                "- 登录页右侧登录功能区从纯白背景改为半透明毛玻璃效果（rgba + backdrop-filter: blur），与整体背景风格统一",
+                "- 登录页登录按钮改为毛玻璃样式：添加 backdrop-filter 模糊效果，边框加粗并提高透明度保证可读，文字添加阴影增强对比度",
+                "- 登录页表单输入框、复选框、链接等元素全部适配毛玻璃风格，文字颜色统一为白色系",
+                "- 优化登录页名言文字显示位置：名言内容改为在框内垂直居中显示，作者名位置保持不变，视觉重心更平衡",
+                "- 登录页品牌区元素（logo 图标、标题、副标题）添加 transition 过渡动画，使注册模式切换时品牌名称与图标变化更平滑自然",
+                "- 注册面板容器改为毛玻璃效果（rgba(255,255,255,0.15) + backdrop-filter: blur(20px) + 半透明白色边框），与登录页整体毛玻璃风格统一",
+                "- 注册面板内表单元素（输入框、按钮、验证码区、协议勾选、随机用户名按钮等）全部适配毛玻璃风格，文字与图标颜色统一为白色系",
+                "- 注册面板容器隐藏原有顶部彩色渐变条（::before 伪元素），保持毛玻璃视觉纯净度",
+                "- 注册模式下自动隐藏左侧版权信息文本（opacity + max-height 过渡），减少视觉干扰，使左侧更聚焦于\"注册账号\"品牌信息",
+                "- 注册面板容器高度由 JS 动态计算并同步设置到外层容器，确保登录/注册面板切换过程中容器高度平稳过渡，避免内容跳动",
+                "- 暗色模式下注册面板容器同步适配毛玻璃效果（背景透明度降至 0.08、边框与阴影针对深色背景优化）",
+                "- 注册引导步骤指示器框改为毛玻璃效果（rgba(255,255,255,0.15) 半透明背景 + backdrop-filter: blur(20px) + 半透明边框 + 内高光阴影），与注册面板整体毛玻璃风格统一，暗色模式下同步适配（背景透明度降至 0.08）",
+                "- 版本更新记录弹窗和开发者公告弹窗的强调色从紫色主题（#667eea/#764ba2）全面改为粉色主题（#d45d79/#e67e8a），与关于启动器弹窗保持一致的视觉风格",
+                "- 弹窗侧边栏结构优化：新增 .terms-nav-scroll 滚动容器将导航项与底部\"一键已读\"按钮分离，导航项区域可独立滚动而\"一键已读\"按钮始终固定可见，不再随内容滚动消失",
+                "- 弹窗容器移除外边距（.terms-modal-content 的 padding 从 20px 改为 0），与关于启动器全屏弹窗样式保持一致，各区域（header/content）自行管理内边距",
+                "- 暗色模式和透明主题下弹窗的所有紫色 rgba 值同步替换为粉色 rgba 值，确保三种主题模式下视觉风格统一",
+                "- 开发者公告内容中的文本颜色标签（[color:#667eea]）同步从紫色改为粉色（[color:#d45d79]），保持内容文字颜色与弹窗主题一致",
+                "- 弹窗内所有滚动条滑块颜色从紫色统一改为粉色（#d45d79），包括侧边栏导航滚动区、主内容区、暗色模式滚动条等",
+                "- 弹窗内导航项激活态/悬停态、子按钮悬停态、查看中标签、一键已读按钮渐变、折叠按钮等所有交互元素的颜色均从紫色改为粉色渐变",
+                "- 弹窗内内容标题（h3）、列表项符号、加粗文字、协议链接等文本元素颜色从紫色改为粉色",
+                "- 弹窗内版本图片滚动按钮、字体大小调节按钮、图片查看器按钮等辅助交互元素颜色从紫色改为粉色",
+                "修复问题",
+                "- 修复登录页和系统设置页无法显示背景的问题：根因为 .settings-container 设置了不透明的线性渐变背景覆盖了底层 .community-bg 装饰元素，已将其改为 transparent 让 body 渐变背景透出",
+                "- 修复系统设置页中间内容区容器大小不正确导致卡片忽大忽小的问题：根因为 .settings-content 设置了 max-width: 1200px 与 margin: 0 auto 限制了卡片宽度，已移除该限制并添加 width: 100% 与 box-sizing: border-box 让卡片贴近浏览器窗口边缘",
+                "- 修复 .section-card 与 .settings-card 卡片样式不一致的问题：统一两者的 width、box-sizing、border-radius、box-shadow 等属性",
+                "- 修复简约模式暗色模式下 settings-container 选择器缺失空格（body.ui-minimalist.dark-mode.settings-container）导致规则失效的问题，并移除其不透明背景以正确显示 body 渐变背景",
+                "- 修复更多功能弹窗中点击\"关于启动器\"按钮无响应的问题：根因为按钮通过 aboutLauncherBtn.click() 间接触发事件，但该元素在切换页面模式时被替换导致事件绑定丢失，已改为直接调用 showAboutLauncherModal() 函数",           
+                "- 修复登录页斜向分割线变成竖向的问题：原因为使用 transform: skewX 实现斜向效果在某些情况下失效，已改用 clip-path: polygon 方案实现真正的斜向分割线",
+                "- 修复登录页名言区宽度随内容变化的问题：原因为未设置固定宽度，已添加 width: 400px 固定宽度并配合响应式适配",
+                "- 修复每次刷新登录页时出现一瞬老样式再快速切回新样式的问题：根因为 ui-minimalist 与 login-page-mode 类名在 DOMContentLoaded 后才由 JS 添加，导致首帧按无类名默认样式渲染，已改为直接在 <body> 标签硬编码 class=\"ui-minimalist login-page-mode\"，浏览器解析时立即应用样式",
+                "- 修复邮件功能中关闭按钮、领取记录按钮和删除邮件按钮点击均无反应的问题：根因为邮件列表按钮为动态生成，传统的事件监听器在重新渲染后失效，已改用事件委托方案，将 click 统一绑定到模态框容器，通过事件冒泡与 target.closest('button') 分发处理",
+                "- 修复注册账号时登录面板未完全隐藏导致与注册面板内容重叠的问题：根因为登录面板仅使用 transform 移出视口但仍占据文档流且可见，已添加 visibility: hidden 并调整 z-index 层级（登录面板降至 z-index:1、注册面板升至 z-index:2），确保切换时登录面板完全消失且不接收指针事件",
+                "- 修复名言文字垂直居中与 -webkit-line-clamp 多行截断冲突的问题：根因为 display: flex 与 display: -webkit-box 不能同时作用于同一元素，已移除 -webkit-box 相关属性，改用 flex 布局实现垂直居中并保留 text-align: center 确保文本居中",
+                "- 修复注册表单元素 ID 与原模态框注册表单 ID 重复导致事件绑定冲突的问题：已为内联注册表单所有元素添加 inline 前缀（如 inlineRegUsername、inlineRegPassword 等），确保 ID 唯一性",
+                "- 修复暗色模式下注册表单样式异常的问题：根因为未针对注册表单单独适配暗色模式样式，已更新 CSS 选择器将注册表单与登录表单样式合并管理，确保暗色模式下样式统一",
+                "- 修复版本更新记录和开发者公告弹窗侧边栏底部\"一键已读\"按钮不可见的问题：根因为简约模式规则 body.ui-minimalist .sidebar-footer { display: none; } 选择器过于宽泛，误隐藏了弹窗中的页脚容器，已收窄为 body.ui-minimalist .settings-sidebar .sidebar-footer 仅作用于系统设置侧边栏，不影响弹窗中的页脚",
+                "- 修复自定义快捷组件中查看引导、便签、天气、日历等组件通过快捷入口点击无反应的问题：根因为 handleQuickComponentAction 函数引用了不存在的按钮 ID（stickyNotesBtn/weatherBtn/calendarBtn）和函数名（showGuide），已改为优先直接调用对应函数（startGuide/showStickyNotesModal/showWeatherModal/showCalendarModal）并添加按钮点击回退逻辑，确保各组件均可正常打开",
+            ]
+        },
+        {
             version: "RC 2.7.2.1 (b10)",
             date: "2026-07-29",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2721.png", "./images/2721_2.png", "./images/2721_3.png", "./images/2721_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2721.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2721_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2721_3.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2721_4.png",],
             features: [
                 "新增功能",
                 "- 新增系统级提示横条，并替换大量一次确认弹窗的显示，确保用户操作更流畅，避免用户操作被弹窗遮挡",
                 "- 新增百宝箱中，今日人品与今日运势的全新显示样式，点击查看今日人品/运势按钮后将弹出新的显示样式",
                 "- 名片设置功能新增\"布局管理\"、\"外观设置\"和\"个人资料\"功能，在个人资料中修改个人签名时会同步到系统设置页中",
                 "- 在用户名片的成就徽章中新增查看全部功能，点击后可以查看所有已解锁/未解锁的成就徽章，并且点击单个徽章可以查看详细信息",
+                "- 版本更新记录中的图片获取方式已优化，现在从GitHub仓库中直接获取，无需通过JsZip解压，并且一并提升图片的清晰度",
                 "优化改进",
                 "- 优化未登录时登录页的部分功能逻辑，现在更多功能和更多操作系统在未登录时将不再可用",
                 "- 时钟组件调整侧边栏样式统一：将页面时钟的组件调整侧边栏和天气设置侧边栏改为直角白色背景样式，与用户名片侧边栏风格统一",
@@ -386,7 +332,10 @@ const versionHistoryData = {
             date: "2026-07-27",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2720.png", "./images/2720_2.png", "./images/2720_3.png", "./images/2720_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2720.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2720_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2720_3.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2720_4.png",],
             features: [
                 "新增功能",
                 "- 对游戏大厅进行了全面改版，现在将大厅页与登录页合并为一个页面，用户无需再登录后跳转大厅页",
@@ -420,7 +369,8 @@ const versionHistoryData = {
             date: "2026-07-25",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2715.png", "./images/2715_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2715.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2715_2.png"],
             features: [
                 "新增功能",
                 "- 一键领取邮件：邮件弹窗左侧边栏底部新增\"一键领取\"按钮，点击后弹窗确认领取全部邮件，领取后显示附件汇总",
@@ -472,7 +422,7 @@ const versionHistoryData = {
             date: "2026-07-21",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2713.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2713.png"],
             features: [
                 "新增功能",
                 "- 七月份限定动态背景「七月流火」：系统设置页特殊获取类别中新增七月限定动态背景，通过邮件领取解锁",
@@ -496,7 +446,7 @@ const versionHistoryData = {
             date: "2026-07-21",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2712.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2712.png"],
             features: [
                 "新增功能",
                 "- 新增邮件功能，支持用户通过邮件领取各种奖励，如背景、兑换码等",
@@ -520,7 +470,8 @@ const versionHistoryData = {
             date: "2026-07-20",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2711.png", "./images/2711_2.png", ],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2711.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2711_2.png"],
             features: [
                 "(以下的更新内容包含部分为\"兑换码\"的新实验性功能，不建议在生产环境中使用)",
                 "新增功能",
@@ -547,7 +498,9 @@ const versionHistoryData = {
             date: "2026-07-19",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2710.png", "./images/2710_2.png",  "./images/2710_3.png",],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2710.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2710_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2710_3.png"],
             features: [
                 "新增功能",
                 "- 实验性功能中新增\"全局主题颜色\"功能，支持用户自定义登录页、系统设置页和游戏大厅页的主题颜色",
@@ -620,7 +573,9 @@ const versionHistoryData = {
             date: "2026-07-13",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2705.png", "./images/2705_2.png",  "./images/2705_4.png","./images/2705_3.png",],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2705.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2705_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2705_4.png"],
             features: [
                 "新增功能",
                 "- 增强功能总开关：系统设置页增强功能卡片右上角新增启用/关闭按钮，控制登录页更多功能按钮显示及所有子功能开关状态",
@@ -647,7 +602,8 @@ const versionHistoryData = {
             date: "2026-07-11",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2704.png", "./images/2704_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2704.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2704_2.png"],
             features: [
                 "(以下的更新内容为\"日历\"组件的新实验性功能，不建议在生产环境中使用)",
                 "新增功能",
@@ -670,7 +626,8 @@ const versionHistoryData = {
             date: "2026-07-06",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2703.png", "./images/2703_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2703.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2703_2.png"],
             features: [
                 "新增功能",
                 "- 城市管理侧边栏：点击添加城市按钮后从左侧划出侧边栏，支持搜索城市、查看城市卡片预览（含地区、空气质量、温度、天气状态）、添加/删除城市",
@@ -701,7 +658,8 @@ const versionHistoryData = {
             date: "2026-07-05",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2702.png", "./images/2702_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2702.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2702_2.png"],
             features: [
                 "重要变更",
                 "- 天气组件的实验性测试现已结束，现已移动到'增强设置'卡片中，正式成为稳定功能",
@@ -735,7 +693,8 @@ const versionHistoryData = {
             date: "2026-07-03",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2701.png", "./images/2701_2.png", "./images/2701_3.png", ],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2701.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2701_2.png"],
             features: [
                 "新增功能",
                 "- 系统设置页卡片折叠功能：每个条目下的卡片右上角新增展开/收起按钮，默认展开状态，点击可折叠卡片内容",
@@ -761,7 +720,10 @@ const versionHistoryData = {
             date: "2026-07-01",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2700.png", "./images/2700_2.png", "./images/2700_3.png", "./images/2700_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2700.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2700_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2700_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2700_4.png"],
             features: [
                 "新增功能",
                 "- 毛玻璃主题重新开放：更多主题中的毛玻璃主题正式开放使用，带来柔和的半透明模糊视觉体验",
@@ -781,7 +743,9 @@ const versionHistoryData = {
             date: "2026-06-30",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2648.png", "./images/2648_2.png", "./images/2648_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2648.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2648_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2648_3.png"],
             features: [
                 "新增功能",
                 "- 名言打字机效果开关：组件调整弹窗中新增\"名言打字机效果\"开关，关闭后名言直接显示，开启后保留打字机动画",
@@ -852,7 +816,8 @@ const versionHistoryData = {
             date: "2026-06-27",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2645.png", "./images/2645_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2645.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2645_2.png"],
             features: [
                 "新增功能",
                 "- 页面时钟定时开启：页面时钟条目内新增\"定时开启\"子功能，支持设置登录页静置X分钟/秒后自动启用页面时钟，所有功能在同一条目框内显示",
@@ -871,7 +836,8 @@ const versionHistoryData = {
             date: "2026-06-27",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2644.png", "./images/2644_2.png",],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2644.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2644_2.png"],
             features: [
                 "(以下的更新内容为\"天气\"组件的新实验性功能，不建议在生产环境中使用)",
                 "新增功能",
@@ -909,7 +875,10 @@ const versionHistoryData = {
             date: "2026-06-24",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2643.png", "./images/2643_2.png", "./images/2643_3.png", "./images/2643_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2643.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2643_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2643_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2643_4.png"],
             features: [
                 "新增功能",
                 "- 便签全屏显示：便签弹窗侧边栏右上角新增\"全屏显示\"按钮，点击后侧边栏向右延展铺满全屏，放大便签卡片比例显示更多内容",
@@ -968,7 +937,9 @@ const versionHistoryData = {
             date: "2026-06-21",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2641.png", "./images/2641_2.png", "./images/2641_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2641.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2641_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2641_3.png"],
             features: [
                 "(以下的更新内容为\"便签\"组件的新实验性功能，不建议在生产环境中使用)",
                 "新增功能",
@@ -1002,7 +973,10 @@ const versionHistoryData = {
             date: "2026-06-20",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2640.png", "./images/2640_2.png", "./images/2640_3.png", "./images/2640_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2640.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2640_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2640_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2640_4.png"],
             features: [
                 "新增功能",
                 "- 登录认证机制：新增登录页认证机制，大厅页面需要通过登录页认证才能进入，直接进入大厅会被拦截并踢回登录页",
@@ -1068,7 +1042,9 @@ const versionHistoryData = {
             date: "2026-06-16",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/26311.png", "./images/26311_2.png", "./images/26311_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/26311.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/26311_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/26311_3.png"],
             features: [
                 "新增功能",
                 "(以下的更新内容为页面时钟的新实验性功能，不建议在生产环境中使用)",
@@ -1095,7 +1071,8 @@ const versionHistoryData = {
             date: "2026-06-15",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/26310.png", "./images/26310_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/26310.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/26310_2.png"],
             features: [
                 "新增功能",
                 "(以下的更新内容为页面时钟的新实验性功能，不建议在生产环境中使用)",
@@ -1121,7 +1098,9 @@ const versionHistoryData = {
             date: "2026-06-14",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2639.png", "./images/2639_2.png", "./images/2639_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2639.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2639_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2639_3.png"],
             features: [
                 "新增功能",
                 "- 账户设置页新增\"实验室\"类别和\"实验性功能\"页面",
@@ -1140,7 +1119,8 @@ const versionHistoryData = {
             date: "2026-06-10",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2638.png", "./images/2638_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2638.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2638_2.png"],
             features: [
                 "新增功能",
                 "- 反馈选择弹窗：点击反馈建议先弹出选择弹窗，包含\"本地反馈\"和\"提交到Github Issue\"两个按钮",
@@ -1156,7 +1136,9 @@ const versionHistoryData = {
             date: "2026-06-09",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2637.png", "./images/2637_2.png", "./images/2637_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2637.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2637_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2637_3.png"],
             features: [
                 "新增功能",
                 "- 弹窗快捷键支持：账户设置页所有弹窗支持Enter键确认、ESC键取消",
@@ -1201,7 +1183,9 @@ const versionHistoryData = {
             date: "2026-06-08",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2635.png", "./images/2635_2.png", "./images/2635_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2635.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2635_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2635_3.png"],
             features: [
                 "新增功能",
                 "- 主题信息查看按钮：账户设置页更多主题弹窗中每个主题按钮左上角新增信息按钮，点击显示主题详细版本信息",
@@ -1258,7 +1242,9 @@ const versionHistoryData = {
             date: "2026-06-06",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2633.png", "./images/2633_2.png", "./images/2633_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2633.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2633_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2633_3.png"],
             features: [
                 "新增功能",
                 "- 更多主题弹窗：毛玻璃主题按钮改为'更多主题'入口，弹出选择窗口",
@@ -1289,7 +1275,7 @@ const versionHistoryData = {
             date: "2026-06-04",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2632.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2632.png"],
             features: [
                 "新增功能",
                 "- 静默更新提示弹窗：登录页检测到最新版本后自动弹出静默更新提示弹窗",
@@ -1321,7 +1307,10 @@ const versionHistoryData = {
             date: "2026-05-29",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2630.png", "./images/2630_2.png", "./images/2630_3.png", "./images/2630_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2630.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2630_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2630_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2630_4.png"],
             features: [
                 "新增功能",
                 "- 反馈建议弹窗全屏显示：采用侧边栏导航布局，包含功能建议、Bug反馈、其他问题三个分类",
@@ -1365,7 +1354,11 @@ const versionHistoryData = {
             date: "2026-05-26",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2625.png", "./images/2625_2.png", "./images/2625_3.png", "./images/2625_4.png", "./images/2625_5.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2625.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2625_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2625_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2625_4.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2625_5.png"],
             features: [
                 "新增功能",
                 "- 开发者公告选择界面：公告窗口右侧首先显示块状按钮列表，点击按钮后显示公告详情",
@@ -1387,7 +1380,7 @@ const versionHistoryData = {
             date: "2026-05-24",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2624.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2624.png"],
             features: [
                 "优化改进",
                 "- 版本选择按钮样式优化：版本更新记录窗口中版本号选择改为块状按钮样式，一行四个按钮，支持自动换行",
@@ -1400,7 +1393,10 @@ const versionHistoryData = {
             date: "2026-05-17",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2623.png", "./images/2623_2.png", "./images/2623_3.png", "./images/2623_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2623.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2623_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2623_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2623_4.png"],
             features: [
                 "新增功能",
                 "- 侧边栏收起功能：登录页侧边栏顶部新增\"收起侧边栏\"按钮，点击后收起侧边栏仅保留图标显示",
@@ -1449,7 +1445,10 @@ const versionHistoryData = {
             date: "2026-05-15",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2621.png", "./images/2621_2.png","./images/2621_3.png","./images/2621_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2621.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2621_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2621_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2621_4.png"],
             features: [
                 "新增功能",
                 "- 更多操作弹窗：个人卡片中的退出登录按钮改为\"更多操作\"按钮，点击后弹出包含账户设置和退出登录的窗口",
@@ -1470,7 +1469,12 @@ const versionHistoryData = {
             date: "2026-05-13",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2620.png", "./images/2620_1.png", "./images/2620_2.png", "./images/2620_3.png", "./images/2620_4.png", "./images/2620_5.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2620.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2620_1.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2620_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2620_3.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2620_4.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2620_5.png"],
             features: [
                 "新增功能",
                 "- 启用登录PIN验证功能：在账户设置页安全设置中新增该选项，启用后登录时输入密码还需进行两步验证",
@@ -1497,7 +1501,7 @@ const versionHistoryData = {
             date: "2026-05-11",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2614.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2614.png"],
             features: [
                 "新增功能",
                 "- 小游戏更新记录：登录页版本更新记录窗口的LIST栏添加\"小游戏更新记录\"按钮，点击后显示所有小游戏的子选项",
@@ -1510,7 +1514,9 @@ const versionHistoryData = {
             date: "2026-05-08",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2613.png", "./images/2613_2.png", "./images/2613_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2613.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2613_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2613_3.png"],
             features: [
                 "新增功能",
                 "- 离线模式：登录页侧边栏新增离线模式功能，支持在无网络环境下使用启动器",
@@ -1553,7 +1559,8 @@ const versionHistoryData = {
             date: "2026-04-30",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2610.png", "./images/2610_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2610.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2610_2.png"],
             features: [
                 "新增功能",
                 "- 开发者公告：登录页侧边栏新增\"开发者公告\"按钮，可查看最新公告",
@@ -1568,7 +1575,7 @@ const versionHistoryData = {
             date: "2026-04-30",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/26012.png",],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/26012.png"],
             features: [
                 "新增功能",
                 "- 预设背景：主题设置新增\"预设背景\"功能，提供9款精美预设背景图可选",
@@ -1585,7 +1592,9 @@ const versionHistoryData = {
             date: "2026-04-29",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/26011.png", "./images/26011_2.png", "./images/26011_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/26011.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/26011_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/26011_3.png"],
             features: [
                 "新增功能",
                 "- 忘记密码功能优化：新增使用PIN码重置密码的功能",
@@ -1608,7 +1617,8 @@ const versionHistoryData = {
             date: "2026-04-28",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/26010.png", "./images/26010_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/26010.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/26010_2.png"],
             features: [
                 "新增功能",
                 "- 版权声明：在关于启动器的版权声明部分添加\"MIT License\"按钮",
@@ -1666,7 +1676,7 @@ const versionHistoryData = {
             date: "2026-04-27",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2607.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2607.png"],
             features: [
                 "优化改进",
                 "- 界面优化：版本更新记录选择版本部分显示日期范围信息",
@@ -1682,7 +1692,7 @@ const versionHistoryData = {
             date: "2026-04-27",
             tag: "patch",
             tagText: "补丁更新",
-            images: ["./images/2606.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2606.png"],
             features: [
                 "优化改进",
                 "- 界面优化：关于启动器窗口改为与用户名片相同的大小和排版",
@@ -1748,7 +1758,8 @@ const versionHistoryData = {
             date: "2026-04-26",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2603.png", "./images/2603_2.png",],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2603.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2603_2.png"],
             features: [
                 "优化改进",
                 "- 界面体验：将版本更新记录窗口改为全屏显示，提升内容展示空间",
@@ -1808,7 +1819,9 @@ const versionHistoryData = {
             date: "2026-04-24",
             tag: "major",
             tagText: "重大更新",
-            images: ["./images/2600.png", "./images/2600_2.png", "./images/2600_3.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2600.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2600_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2600_3.png"],
             features: [
                 "新增功能",
                 "- 个人名片：个人名片支持新增/移除小组件",
@@ -1870,7 +1883,8 @@ const versionHistoryData = {
             date: "2026-04-23",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2540.png", "./images/2540_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2540.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2540_2.png"],
             features: [
                 "新增功能",
                 "- 个人名片：新增个人名片功能，用户可以在登录页查看个人名片",
@@ -1899,7 +1913,7 @@ const versionHistoryData = {
             date: "2026-04-22",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2530.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2530.png"],
             features: [
                 "新增功能",
                 "- 两步验证：启用两步验证后添加更改PIN码和更新安全问题的功能",
@@ -1919,7 +1933,10 @@ const versionHistoryData = {
             date: "2026-04-18",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2520.png", "./images/2520_2.png", "./images/2520_3.png", "./images/2520_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2520.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2520_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2520_3.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2520_4.png"],
             features: [
                 "新增功能",
                 "- 数据管理：添加导入数据功能，支持从之前导出的数据文件恢复数据",
@@ -1942,7 +1959,7 @@ const versionHistoryData = {
             date: "2026-04-18",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2510.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2510.png"],
             features: [
                 "新增功能",
                 "- 游戏中心个人卡片样式更新：登出按钮改为小按钮放在个人卡片内部右侧",
@@ -1976,7 +1993,7 @@ const versionHistoryData = {
             date: "2026-04-11",
             tag: "normal",
             tagText: "常规更新",
-            images: ["./images/2501.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2501.png"],
             features: [
                 "优化改进",
                 "- 登录页面优化：个人卡片更新鼠标悬浮其上时显示用户信息卡片",
@@ -2011,7 +2028,9 @@ const versionHistoryData = {
             date: "2026-04-06",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2400.png", "./images/2400_1.png", "./images/2400_2.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2400.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2400_1.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2400_2.png"],
             features: [
                 "新增功能",
                 "- 正式版更新：毛玻璃主题，硬件GPU加速功能以及自定义背景现已推出",
@@ -2037,7 +2056,10 @@ const versionHistoryData = {
             date: "2026-04-06",
             tag: "important",
             tagText: "重要更新",
-            images: ["./images/2300.png", "./images/2300_2.png", "./images/2300_3.png", "./images/2300_4.png"],
+            images: ["https://github.com/Almax202/PRE_Launcher/raw/master/images/2300.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2300_2.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2300_3.png", 
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2300_4.png"],
             features: [
                 "新增功能",
                 "- 毛玻璃主题（BETA）以及自定义背景（BETA）",
@@ -2078,8 +2100,8 @@ const versionHistoryData = {
             tag: "important",
             tagText: "重要更新",
             images: [
-                "./images/2210.png",
-                "./images/2210_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2210.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2210_2.png",
             ],
             features: [
                 "新增 头像同步功能，在账户设置、登录页、游戏大厅等页面同步显示自定义头像",
@@ -2094,8 +2116,8 @@ const versionHistoryData = {
             tag: "important",
             tagText: "重要更新",
             images: [
-                "./images/2120.png",
-                "./images/2120_2.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2120.png",
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/2120_2.png",
             ],
             features: [
                 "新增 开发者模式下新增演示功能",
@@ -2122,7 +2144,7 @@ const versionHistoryData = {
             tag: "normal",
             tagText: "常规更新",
             images: [
-                "./images/list.png"
+                "https://github.com/Almax202/PRE_Launcher/raw/master/images/list.png"
             ],
             features: [
                 "新增 版本更新记录中新版本条目使用图片说明的功能",
