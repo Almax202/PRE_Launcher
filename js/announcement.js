@@ -1,4 +1,4 @@
-﻿// 本地存储键名
+// 本地存储键名
 const STORAGE_KEYS = {
     LAST_VIEWED_ANNOUNCEMENT_DATE: 'last_viewed_announcement_date',
     VIEWED_ANNOUNCEMENT_IDS: 'viewed_announcement_ids'
@@ -510,6 +510,47 @@ const announcementData = {
     ],
     // 开发日志
     devLogs: [
+        {
+            id: "devlog-20260807",
+            title: "RC 3.0.0.1 开发日志",
+            date: "2026-08-08",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            content: [
+                "今天我们发布了 RC 3.0.0.1 常规版本更新！本次更新围绕 RC 3.0.0.0 大版本上线后用户反馈的背景显示、卡片间距、刷新闪烁等问题进行了集中修复，并同步新增了大厅反馈建议入口与用户名片等级徽章两项小功能，持续打磨使用体验！",
+                "[color:#d45d79]【新增功能】[/color]",
+                "• 大厅顶部导航栏新增\"反馈建议\"功能按钮（位于\"每日签到\"与\"版本更新\"之间），点击后弹出与登录页一致的反馈建议选择弹窗，无需返回登录页即可提交反馈",
+                "• 右上角用户名片下拉卡片内（粉色边框区域）右侧新增等级显示徽章，采用金色渐变胶囊样式（#ffc107 → #ff9800）显示\"Lv.X\"等级文字，与头像上的小等级徽章形成主次呼应，等级信息一目了然",
+                "• 等级显示徽章样式同步适配 denglu.css 与 account-settings.css 两套样式文件，确保不同主题模式下视觉风格一致",
+                "• 系统设置页个性化设置中新增「八月鎏金」特殊获取动态背景（解锁方式：邮件领取），采用深金、琥珀与初秋渐变配色，搭配金色光晕、粒子浮动效果与右下角「2026.08」年月数字显示",
+                "• 新增对应邮件模板「八月限定动态背景」（邮件ID: monthly_mail_august），有效期 2026-08-08 09:00:00 至 2026-08-31 23:59:59 (UTC+8)",
+                "• 新增 augustShift 关键帧动画，采用5段关键帧（0%→25%→50%→75%→100%）实现更丰富的渐变流动效果，同步添加至 common.js、account-settings.css、denglu.css 及 index.html 内联样式，确保登录页、系统设置页及所有页面动态主题切换正常",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 优化用户名片下拉卡片的布局结构：用户信息区（用户名/ID）添加 flex: 1 占据剩余空间，使右侧等级徽章自然靠右对齐，整体布局更加均衡美观",
+                "• 优化 syncMinimalistUserInfo() 函数：在同步用户信息时一并初始化下拉卡片中的等级显示文字（Lv.X），避免初次打开时显示默认值",
+                "• 优化下拉菜单点击事件处理逻辑：打开下拉时实时从 localStorage 读取最新等级信息并同步到等级徽章文字，保证等级显示始终为最新值",
+                "• 优化 updateLevelCard() 函数：签到升级后同步更新下拉卡片等级徽章文字、头像小徽章、顶部导航栏用户区徽章三处等级显示，并回写 currentUser.level 到 localStorage，确保全站等级信息实时一致",
+                "• 优化每日签到区域（.checkin-area）的 CSS 布局：添加 padding: 28px 与 .content-area / .treasure-area 保持一致的内边距，使签到卡片距离浏览器边框的间距与游戏卡片、百宝箱卡片完全统一",
+                "• 优化签到日历卡片（.calendar-card）样式：移除冗余的 margin-bottom: 20px，改由父容器 .checkin-area 的 flex gap 统一控制卡片间距，避免双重间距叠加",
+                "• 优化游戏中心容器（.game-cards）样式：显式重置 padding/margin/gap 为 0，由内部子区域（.content-area / .checkin-area / .treasure-area）各自控制 padding，避免多层 padding 叠加导致刷新前后间距不一致",
+                "• 兑换码功能从「实验性功能」卡片正式毕业，迁移至「增强功能」卡片中（实验时段已结束并成为正式版），同步移除原「获取测试用兑换码」按钮及相关 showTestRedeemCode/closeTestRedeemCodeModal 函数",
+                "• 优化未解锁背景点击提示交互：将原有的 showConfirm 弹窗改为更轻量的提示横条（showToast），提示内容优化为「该背景未解锁」+「解锁方式：通过邮件获取/通过兑换码获取」分行显示，根据背景发放方式自动判断提示内容",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复邮件系统中新增邮件后未在邮件列表中显示的问题：根因为 showMailModal() 函数在打开邮件弹窗时仅调用 removeExpiredMails() 和 renderMailList()，未调用 applyMailUpdates() 检查并应用新的邮件版本；已在 showMailModal() 中新增 mailSystem.applyMailUpdates() 调用，确保每次打开邮件弹窗时都会检查并添加所有已到达有效期的邮件",
+                "• 修复登录后大厅背景与系统设置页设定的背景不一致的问题：根因为切换到游戏中心时未触发背景加载，已在 switchToGameCenter() 函数中新增 loadCustomBackground() 调用，确保切换瞬间立即加载用户自定义背景",
+                "• 修复大厅页刷新后背景显示为登录页默认壁纸（紫蓝渐变）的问题：根因为 initUIStyle() 在 DOMContentLoaded 时无条件添加 login-page-mode 类并清除内联背景样式，覆盖了用户自定义背景；已改为先检查 sessionStorage.isInGameCenter 与登录状态，若已处于游戏中心会话则跳过登录页模式初始化，并主动调用 loadCustomBackground() 加载用户背景",
+                "• 修复大厅页刷新后出现登录页一闪而过再恢复正常的问题：根因为 switchToGameCenter() 使用 300ms 淡出动画导致内容替换延迟，已为函数新增 skipFadeOut 参数，刷新场景下调用 switchToGameCenter(true) 跳过淡入淡出动画，立即替换内容并显示",
+                "• 修复每日签到区域卡片间距不正确（卡片贴在一起）的问题：根因为导航切换时 checkinArea 被设置为 display: block，导致 CSS 中定义的 display: flex 与 gap 属性失效；已改为 display: flex 使 gap: 20px 正常生效，卡片之间恢复正确间距",
+                "• 修复大厅页刷新后卡片边距与正常登录后不一致的问题：根因为 .game-cards 从 common.css 继承了 padding: 30px 40px，但 addGameCenterStyles 仅覆盖了 width: 100%，导致登录与刷新两条路径下内外 padding 叠加方式不同；已在游戏中心样式中显式重置 .game-cards 的 padding/margin/gap 为 0 统一由子区域控制",
+                "• 修复页面加载检测游戏中心会话时背景加载时机过晚的问题：已在检测到 isInGameCenter 状态时立即移除 login-page-mode 类并调用 loadCustomBackground()，再调用 switchToGameCenter(true) 跳过动画，确保刷新瞬间即显示正确背景",
+                "[color:#d45d79]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！本次常规更新集中修复了 RC 3.0.0.0 大版本上线后反馈的背景显示与卡片间距问题，并补充了反馈建议入口与等级徽章两项小功能，希望能为您带来更稳定、更完善的使用体验。",
+                "如果您在使用过程中发现任何问题，或有任何想法和建议，欢迎通过 Github 仓库提交 Issue 与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
         {
             id: "devlog-20260801",
             title: "RC 3.0.0.0 开发日志",

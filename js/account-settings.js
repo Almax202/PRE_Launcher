@@ -8291,7 +8291,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isDynamic: true,
             category: 'special',
             locked: true,
-            unlockCode: 'PRELAUNCHER2026071901'
+            isObsoleteUnlock: true
         },
         {
             id: 'mail-bg-1',
@@ -8315,6 +8315,21 @@ document.addEventListener('DOMContentLoaded', function() {
             unlockSource: 'monthly_mail_july',
             showDate: true,
             dateText: '2026.07',
+            particles: true
+        },
+        {
+            id: 'monthly-bg-august',
+            name: '八月鎏金',
+            gradient: 'radial-gradient(circle at 12% 18%, rgba(218, 165, 32, 0.35) 0%, transparent 40%), radial-gradient(circle at 88% 82%, rgba(255, 140, 0, 0.25) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.2) 0%, transparent 55%), radial-gradient(circle at 28% 72%, rgba(139, 90, 43, 0.18) 0%, transparent 50%), radial-gradient(circle at 72% 28%, rgba(46, 139, 142, 0.12) 0%, transparent 45%), linear-gradient(135deg, #1a0f00 0%, #2d1810 15%, #4a2c1a 30%, #8b6914 45%, #b8860b 55%, #daa520 65%, #cd853f 75%, #6b4423 85%, #2e2e2e 100%)',
+            backgroundSize: '300% 300%',
+            animation: 'augustShift 18s ease infinite',
+            isDynamic: true,
+            category: 'special',
+            locked: true,
+            unlockType: 'mail',
+            unlockSource: 'monthly_mail_august',
+            showDate: true,
+            dateText: '2026.08',
             particles: true
         }
     ];
@@ -8370,6 +8385,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (background.unlockCode) {
+            if (localStorage.getItem(getUserStorageKey('unlockedBackgrounds')) === 'true') return true;
+        }
+        
+        // 兼容逻辑：动态流光背景旧用户通过测试兑换码解锁过（旧存储键）
+        if (background.id === 'dynamic-bg-1') {
             if (localStorage.getItem(getUserStorageKey('unlockedBackgrounds')) === 'true') return true;
         }
         
@@ -8486,14 +8506,18 @@ document.addEventListener('DOMContentLoaded', function() {
         var isUnlocked = isBackgroundUnlocked(background);
         
         if (!isUnlocked) {
-            var unlockMessage = '';
-            if (background.unlockType === 'mail') {
-                unlockMessage = '「' + background.name + '」背景需要通过邮件领取后获取\n\n请前往登录页侧边栏，点击"邮件"图标，领取奖励后即可解锁';
+            var unlockMethod = '';
+            if (background.isObsoleteUnlock) {
+                unlockMethod = '解锁方式：该背景已无法获取，测试用兑换码已失效';
+            } else if (background.unlockType === 'mail') {
+                unlockMethod = '解锁方式：通过邮件获取';
             } else {
-                unlockMessage = '「' + background.name + '」背景需要通过输入兑换码后获取\n\n请在登录页的"兑换码"功能中输入兑换码后即可解锁';
+                unlockMethod = '解锁方式：通过兑换码获取';
             }
-            showConfirm('背景未解锁', unlockMessage, function() {
-                closeDefaultBackgroundModal();
+            showToast({
+                type: 'warning',
+                title: '该背景未解锁',
+                message: unlockMethod
             });
             return;
         }
@@ -9387,50 +9411,6 @@ function toggleRedeemCodeFeature() {
     
     if (typeof parent.updateEnhancedFeatureButtons === 'function') {
         parent.updateEnhancedFeatureButtons();
-    }
-}
-
-function showTestRedeemCode() {
-    var modal = document.createElement('div');
-    modal.id = 'testRedeemCodeModal';
-    modal.className = 'custom-alert';
-    
-    modal.innerHTML = `
-        <div class="alert-content" style="max-width: 450px;">
-            <div class="alert-header">
-                <h2>测试兑换码</h2>
-            </div>
-            <div class="about-content" style="text-align: center; padding: 20px;">
-                <div style="margin-bottom: 20px;">
-                    <i class="fas fa-gift" style="font-size: 48px; color: #d45d79;"></i>
-                </div>
-                <p style="margin: 10px 0; font-size: 16px; color: #333;">您已获得兑换码！</p>
-                <div style="margin: 20px 0; padding: 15px; background: rgba(212, 93, 121, 0.1); border-radius: 8px; border: 1px solid rgba(212, 93, 121, 0.2);">
-                    <p style="margin: 0; font-size: 18px; font-weight: 600; color: #d45d79; letter-spacing: 2px;">PRELAUNCHER2026071901</p>
-                </div>
-                <p style="margin: 10px 0; font-size: 14px; color: #666; line-height: 1.6;">该兑换码仅用于测试，未来可能会随着兑换码功能的正式更新而失效</p>
-            </div>
-            <div class="modal-buttons">
-                <button class="alert-confirm" onclick="closeTestRedeemCodeModal()">确定</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    modal.style.display = 'flex';
-    setTimeout(function() {
-        modal.classList.add('show');
-    }, 10);
-}
-
-function closeTestRedeemCodeModal() {
-    var modal = document.getElementById('testRedeemCodeModal');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(function() {
-            modal.remove();
-        }, 300);
     }
 }
 

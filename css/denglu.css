@@ -1,4 +1,4 @@
-﻿@font-face {
+@font-face {
     font-family: 'HarmonyOS Sans';
     src: url('../fonts/HarmonyOS_Sans_SC_Regular.ttf') format('truetype');
     font-weight: normal;
@@ -16,6 +16,14 @@
 @keyframes gradientShift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes augustShift {
+    0% { background-position: 0% 50%; }
+    25% { background-position: 50% 25%; }
+    50% { background-position: 100% 50%; }
+    75% { background-position: 50% 75%; }
     100% { background-position: 0% 50%; }
 }
 
@@ -13725,29 +13733,31 @@ body.dark-mode #securityVerifyModal .pin-switch-btn:hover {
 
 body.interface-hidden .settings-container,
 body.interface-hidden .community-bg {
-    opacity: 0;
-    transform: scale(0.95);
-    pointer-events: none;
+    opacity: 0 !important;
+    transform: scale(0.95) !important;
+    pointer-events: none !important;
 }
 
 body.interface-hidden .settings-container {
-    height: 0;
-    overflow: hidden;
+    height: 0 !important;
+    overflow: hidden !important;
 }
 
 /* 页面时钟模式下隐藏顶部导航栏 */
 body.interface-hidden .ui-min-topnav {
-    opacity: 0;
-    transform: translateY(-100%);
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0 !important;
+    transform: translateY(-100%) !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
 }
 
 body.interface-hidden .settings-header,
 body.interface-hidden .settings-sidebar {
-    opacity: 0;
-    transform: translateY(-100%);
-    pointer-events: none;
+    opacity: 0 !important;
+    transform: translateY(-100%) !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
@@ -16257,6 +16267,25 @@ body.dark-mode.ui-minimalist .bg-shape-3 {
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    flex: 1;
+}
+
+.ui-min-dropdown-level-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(255, 152, 0, 0.3);
+}
+
+.ui-min-dropdown-level-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.5px;
 }
 
 .ui-min-dropdown-username {
@@ -18698,9 +18727,9 @@ body.dark-mode .more-feature-card.disabled {
 
 /* 自定义快捷组件选择弹窗样式 */
 .custom-component-modal {
-    max-width: 500px;
+    max-width: 720px;
     width: 90%;
-    max-height: 80vh;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
 }
@@ -18732,6 +18761,41 @@ body.dark-mode .more-feature-card.disabled {
     flex: 1;
     overflow-y: auto;
     padding: 16px 24px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    align-content: start;
+}
+
+/* 自定义滚动条样式 - 自定义快捷组件弹窗 */
+.custom-component-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.custom-component-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.custom-component-list::-webkit-scrollbar-thumb {
+    background: #d45d79;
+    border-radius: 3px;
+}
+
+.custom-component-list::-webkit-scrollbar-thumb:hover {
+    background: #c44d69;
+}
+
+body.dark-mode .custom-component-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .custom-component-list::-webkit-scrollbar-thumb {
+    background: rgba(212, 93, 121, 0.7);
+}
+
+body.dark-mode .custom-component-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 93, 121, 0.9);
 }
 
 .quick-component-item {
@@ -18740,7 +18804,6 @@ body.dark-mode .more-feature-card.disabled {
     gap: 14px;
     padding: 14px;
     border-radius: 12px;
-    margin-bottom: 10px;
     background: #f8f9fa;
     border: 2px solid transparent;
     cursor: pointer;
@@ -18914,6 +18977,31 @@ body.dark-mode .custom-component-btn.cancel {
 
 body.dark-mode .custom-component-btn.cancel:hover {
     background: #444;
+}
+
+/* 响应式：移动端自定义快捷组件弹窗单列布局 */
+@media (max-width: 600px) {
+    .custom-component-modal {
+        max-width: 92%;
+        max-height: 88vh;
+    }
+
+    .custom-component-list {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+
+    .quick-component-item {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .quick-component-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
 }
 
 /* 引导功能样式 */

@@ -265,6 +265,24 @@ var CommonUtils = (function() {
                     }
                 }
                 
+                @keyframes augustShift {
+                    0% {
+                        background-position: 0% 50%;
+                    }
+                    25% {
+                        background-position: 50% 25%;
+                    }
+                    50% {
+                        background-position: 100% 50%;
+                    }
+                    75% {
+                        background-position: 50% 75%;
+                    }
+                    100% {
+                        background-position: 0% 50%;
+                    }
+                }
+                
                 @keyframes particleFloat {
                     0% {
                         transform: translateY(0) translateX(0) scale(1);

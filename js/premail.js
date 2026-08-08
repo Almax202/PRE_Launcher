@@ -239,6 +239,33 @@ var mailSystem = {
                     endTime: "2026-08-31 23:59:59"
                 }
             ]
+        },
+        {
+            version: 3,
+            date: "2026-08-08",
+            mails: [
+                {
+                    id: 'monthly_mail_august',
+                    title: '八月限定动态背景',
+                    sender: 'PRE Launcher',
+                    content: '八月限定动态背景「八月鎏金」已发放！点击"领取"按钮即可获得这一专属背景。\n\n该背景采用深金、琥珀与初秋渐变配色，象征着八月的成熟与华美，右下角带有年月数字显示和动态粒子效果，为您的桌面带来浓郁的秋意氛围。\n\n该动态背景领取有效期截止至 2026-08-31 23:59:59 (UTC+8)，请及时领取！\n\n祝您使用愉快！',
+                    attachments: [
+                        { 
+                            name: '八月鎏金', 
+                            type: 'background', 
+                            gradient: 'radial-gradient(circle at 12% 18%, rgba(218, 165, 32, 0.35) 0%, transparent 40%), radial-gradient(circle at 88% 82%, rgba(255, 140, 0, 0.25) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.2) 0%, transparent 55%), radial-gradient(circle at 28% 72%, rgba(139, 90, 43, 0.18) 0%, transparent 50%), radial-gradient(circle at 72% 28%, rgba(46, 139, 142, 0.12) 0%, transparent 45%), linear-gradient(135deg, #1a0f00 0%, #2d1810 15%, #4a2c1a 30%, #8b6914 45%, #b8860b 55%, #daa520 65%, #cd853f 75%, #6b4423 85%, #2e2e2e 100%)',
+                            isDynamic: true,
+                            backgroundSize: '300% 300%',
+                            animation: 'augustShift 18s ease infinite',
+                            particles: true,
+                            showDate: true,
+                            dateText: '2026.08'
+                        }
+                    ],
+                    startTime: "2026-08-08 09:00:00",
+                    endTime: "2026-08-31 23:59:59"
+                }
+            ]
         }
         
     ],
@@ -429,6 +456,7 @@ function showMailModal() {
     if (!mailModal) return;
     
     mailSystem.removeExpiredMails();
+    mailSystem.applyMailUpdates();
     renderMailList();
     clearMailDetail();
     

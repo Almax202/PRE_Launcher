@@ -253,6 +253,14 @@
                         100% { background-position: 0% 50%; }
                     }
                     
+                    @keyframes augustShift {
+                        0% { background-position: 0% 50%; }
+                        25% { background-position: 50% 25%; }
+                        50% { background-position: 100% 50%; }
+                        75% { background-position: 50% 75%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                    
                     @keyframes particleFloat {
                         0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
                         10% { opacity: 1; }
@@ -2224,6 +2232,17 @@
                         fetchQuoteData();
                     }
                 }
+
+                // 确保page-clock-enabled类已添加，使时钟组件按钮（天气/设置/返回）可见
+                document.body.classList.add('page-clock-enabled');
+
+                // 使用内联样式强制显示时钟按钮，解决类名竞争导致按钮消失的问题
+                var backBtn = document.getElementById('pageClockBackBtn');
+                var weatherBtn = document.getElementById('pageClockWeatherBtn');
+                var settingsBtn = document.getElementById('pageClockSettingsBtn');
+                if (backBtn) backBtn.style.display = 'flex';
+                if (weatherBtn) weatherBtn.style.display = 'flex';
+                if (settingsBtn) settingsBtn.style.display = 'flex';
                 
                 var hintBar = document.getElementById('hideUiHintBar');
                 if (hintBar) {
@@ -2241,6 +2260,17 @@
                     clearInterval(pageClockInterval);
                     pageClockInterval = null;
                 }
+                
+                // 移除page-clock-enabled类
+                document.body.classList.remove('page-clock-enabled');
+
+                // 使用内联样式强制隐藏时钟按钮
+                var backBtn = document.getElementById('pageClockBackBtn');
+                var weatherBtn = document.getElementById('pageClockWeatherBtn');
+                var settingsBtn = document.getElementById('pageClockSettingsBtn');
+                if (backBtn) backBtn.style.display = '';
+                if (weatherBtn) weatherBtn.style.display = '';
+                if (settingsBtn) settingsBtn.style.display = '';
                 
                 var settingsModal = document.getElementById('pageClockSettingsModal');
                 if (settingsModal) {
@@ -3368,6 +3398,7 @@
                     backBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         document.body.classList.remove('interface-hidden');
+                        if (typeof applyInterfaceHiddenUI === 'function') applyInterfaceHiddenUI(false);
                         hidePageClock();
                     });
                 }
@@ -3751,6 +3782,33 @@
                 }
             }
             
+            // 直接控制界面UI元素可见性（内联样式优先级最高，彻底解决CSS类名竞争问题）
+            function applyInterfaceHiddenUI(hide) {
+                var els = [
+                    document.querySelector('.settings-container'),
+                    document.getElementById('uiMinTopnav'),
+                    document.querySelector('.settings-header'),
+                    document.querySelector('.settings-sidebar'),
+                    document.querySelector('.community-bg')
+                ];
+                els.forEach(function(el) {
+                    if (!el) return;
+                    if (hide) {
+                        el.style.setProperty('opacity', '0', 'important');
+                        el.style.setProperty('visibility', 'hidden', 'important');
+                        el.style.setProperty('pointer-events', 'none', 'important');
+                        el.style.setProperty('transform', 'scale(0.98)', 'important');
+                        el.style.setProperty('transition', 'none', 'important');
+                    } else {
+                        el.style.removeProperty('opacity');
+                        el.style.removeProperty('visibility');
+                        el.style.removeProperty('pointer-events');
+                        el.style.removeProperty('transform');
+                        el.style.removeProperty('transition');
+                    }
+                });
+            }
+
             function updateHideInterfaceButton() {
                 var pageClockEnabled = isPageClockEnabled();
                 
@@ -3912,18 +3970,35 @@
                 // 永久使用简约设计风格
                 document.body.classList.add('ui-minimalist');
                 
-                // 添加登录页模式类 - 显示固定背景和新布局
-                document.body.classList.add('login-page-mode');
+                // 检查是否处于游戏中心会话中：如果是，不使用登录页样式
+                var isInGameCenter = sessionStorage.getItem('isInGameCenter') === 'true';
+                var currentUserForInit = JSON.parse(localStorage.getItem('currentUser') || '{}');
                 
-                // 清除可能存在的内联背景样式
-                if (document.body.style.background) {
-                    document.body.style.background = '';
-                    document.body.style.backgroundImage = '';
-                    document.body.style.backgroundSize = '';
-                    document.body.style.backgroundPosition = '';
-                    document.body.style.backgroundRepeat = '';
-                    document.body.style.backgroundAttachment = '';
-                    document.body.style.animation = '';
+                if (!isInGameCenter || !currentUserForInit.username) {
+                    // 只有不在游戏中心时，才添加登录页模式类
+                    // 添加登录页模式类 - 显示固定背景和新布局
+                    document.body.classList.add('login-page-mode');
+                    
+                    // 清除可能存在的内联背景样式（只在登录页才清除）
+                    if (document.body.style.background) {
+                        document.body.style.background = '';
+                        document.body.style.backgroundImage = '';
+                        document.body.style.backgroundSize = '';
+                        document.body.style.backgroundPosition = '';
+                        document.body.style.backgroundRepeat = '';
+                        document.body.style.backgroundAttachment = '';
+                        document.body.style.animation = '';
+                    }
+                    
+                    // 初始化名言名句轮播（只在登录页初始化）
+                    initLoginQuotes();
+                } else {
+                    // 游戏中心模式：确保不使用登录页背景
+                    document.body.classList.remove('login-page-mode');
+                    // 立即加载用户自定义背景，防止登录页背景一闪而过
+                    if (typeof loadCustomBackground === 'function') {
+                        loadCustomBackground();
+                    }
                 }
                 
                 var topnav = document.getElementById('uiMinTopnav');
@@ -3944,9 +4019,6 @@
                 
                 // 渲染快捷组件
                 renderQuickComponents();
-                
-                // 初始化名言名句轮播
-                initLoginQuotes();
                 
                 // 标记UI风格
                 localStorage.setItem('uiStyle', 'minimalist');
@@ -4015,6 +4087,7 @@
                 var userIdEl = document.getElementById('uiMinUserId');
                 var avatarEl = document.querySelector('.ui-min-user-avatar i');
                 var levelBadge = document.getElementById('uiMinLevelBadge');
+                var ddLevelText = document.getElementById('uiMinDropdownLevelText');
                 
                 if (currentUser && currentUser.username) {
                     if (userNameEl) userNameEl.textContent = currentUser.username;
@@ -4030,9 +4103,11 @@
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     }
                     if (levelBadge) levelBadge.textContent = level || 1;
+                    if (ddLevelText) ddLevelText.textContent = 'Lv.' + (level || 1);
                 } else {
                     if (userNameEl) userNameEl.textContent = '未登录';
                     if (userIdEl) userIdEl.textContent = 'ID: ---';
+                    if (ddLevelText) ddLevelText.textContent = 'Lv.1';
                 }
                 
                 // 版本号
@@ -4164,6 +4239,7 @@
                         var ddUsername = document.getElementById('uiMinDropdownUsername');
                         var ddUserid = document.getElementById('uiMinDropdownUserid');
                         var ddLevel = document.getElementById('uiMinDropdownLevel');
+                        var ddLevelText = document.getElementById('uiMinDropdownLevelText');
                         if (ddUsername && currentUser && currentUser.username) {
                             ddUsername.textContent = currentUser.username;
                             ddUserid.textContent = 'ID: ' + (currentUser.userId || '---');
@@ -4174,9 +4250,15 @@
                                 ddLvl = fullUser && fullUser.gameData ? fullUser.gameData.level : 1;
                             }
                             ddLevel.textContent = ddLvl || 1;
+                            if (ddLevelText) {
+                                ddLevelText.textContent = 'Lv.' + (ddLvl || 1);
+                            }
                         } else if (ddUsername) {
                             ddUsername.textContent = '未登录';
                             ddUserid.textContent = 'ID: ---';
+                            if (ddLevelText) {
+                                ddLevelText.textContent = 'Lv.1';
+                            }
                         }
                     });
                     
@@ -4458,6 +4540,7 @@
                     if (!document.body.classList.contains('interface-hidden') && !hasOpenModal()) {
                         isIdleActive = true;
                         document.body.classList.add('interface-hidden');
+                        if (typeof applyInterfaceHiddenUI === 'function') applyInterfaceHiddenUI(true);
                         if (isPageClockEnabled() && clockSettings.globalEnabled) {
                             showPageClock();
                         }
@@ -4552,9 +4635,16 @@
             // 隐藏界面按钮点击事件
             if (hideInterfaceBtn) {
                 hideInterfaceBtn.addEventListener('click', function() {
+                    var willHide = !document.body.classList.contains('interface-hidden');
                     document.body.classList.toggle('interface-hidden');
+                    // 确保page-clock-enabled类正确设置
+                    if (typeof updateHideInterfaceButton === 'function') {
+                        updateHideInterfaceButton();
+                    }
+                    // 使用内联样式直接控制UI元素可见性，彻底解决CSS选择器竞争问题
+                    applyInterfaceHiddenUI(willHide);
                     
-                    if (document.body.classList.contains('interface-hidden')) {
+                    if (willHide) {
                         var pageClockEnabled = isPageClockEnabled();
                         if (pageClockEnabled && clockSettings.globalEnabled) {
                             showPageClock();
@@ -4570,6 +4660,7 @@
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape' && document.body.classList.contains('interface-hidden')) {
                         document.body.classList.remove('interface-hidden');
+                        if (typeof applyInterfaceHiddenUI === 'function') applyInterfaceHiddenUI(false);
                         hidePageClock();
                     }
                 });
@@ -4580,6 +4671,7 @@
                     var pageClockEnabled = isPageClockEnabled();
                     if (!pageClockEnabled || !clockSettings.globalEnabled) {
                         document.body.classList.remove('interface-hidden');
+                        if (typeof applyInterfaceHiddenUI === 'function') applyInterfaceHiddenUI(false);
                         hidePageClock();
                         var hintBar = document.getElementById('hideUiHintBar');
                         if (hintBar) {
@@ -5490,6 +5582,9 @@
                         <div class="ui-min-dropdown-user-info">
                             <div class="ui-min-dropdown-username" id="uiMinDropdownUsername">未登录</div>
                             <div class="ui-min-dropdown-userid" id="uiMinDropdownUserid">ID: ---</div>
+                        </div>
+                        <div class="ui-min-dropdown-level-display">
+                            <span class="ui-min-dropdown-level-text" id="uiMinDropdownLevelText">Lv.1</span>
                         </div>
                     </div>
                     <div class="ui-min-dropdown-divider"></div>
@@ -9639,20 +9734,104 @@
                 }
             }
         }
+
+        // 绑定游戏中心头部按钮事件（hideInterfaceBtn/toggleButtonsBtn/uiScaleBtn等）
+        // 使用 _bound 标记防止重复绑定，解决刷新页面后动态创建按钮无反应的问题
+        function bindGameCenterHeaderEvents() {
+            // 隐藏界面/页面时钟按钮
+            var hideInterfaceBtn = document.getElementById('hideInterfaceBtn');
+            if (hideInterfaceBtn && !hideInterfaceBtn._bound) {
+                hideInterfaceBtn._bound = true;
+                hideInterfaceBtn.addEventListener('click', function() {
+                    var willHide = !document.body.classList.contains('interface-hidden');
+                    document.body.classList.toggle('interface-hidden');
+                    // 确保page-clock-enabled类正确设置
+                    if (typeof updateHideInterfaceButton === 'function') {
+                        updateHideInterfaceButton();
+                    }
+                    // 使用内联样式直接控制UI元素可见性
+                    if (typeof applyInterfaceHiddenUI === 'function') {
+                        applyInterfaceHiddenUI(willHide);
+                    }
+                    if (willHide) {
+                        var pageClockEnabled = typeof isPageClockEnabled === 'function' ? isPageClockEnabled() : false;
+                        if (pageClockEnabled && typeof clockSettings !== 'undefined' && clockSettings.globalEnabled) {
+                            if (typeof showPageClock === 'function') showPageClock();
+                        } else {
+                            if (typeof hidePageClock === 'function') hidePageClock();
+                        }
+                    } else {
+                        if (typeof hidePageClock === 'function') hidePageClock();
+                    }
+                });
+            }
+
+            // 切换更多功能弹窗按钮
+            var toggleButtonsBtn = document.getElementById('toggleButtonsBtn');
+            if (toggleButtonsBtn && !toggleButtonsBtn._bound) {
+                toggleButtonsBtn._bound = true;
+                toggleButtonsBtn.addEventListener('click', function() {
+                    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    if (!currentUser.username) {
+                        if (typeof showToastInfo === 'function') {
+                            showToastInfo('您需要登录后才可使用更多功能');
+                        }
+                        return;
+                    }
+                    if (typeof updateHideInterfaceButton === 'function') {
+                        updateHideInterfaceButton();
+                    }
+                    var modal = document.getElementById('moreFeaturesModal');
+                    if (modal) {
+                        modal.style.display = 'flex';
+                        setTimeout(function() {
+                            modal.classList.add('show');
+                        }, 10);
+                    }
+                });
+            }
+
+            // UI比例调整按钮
+            var uiScaleBtn = document.getElementById('uiScaleBtn');
+            var uiScaleModal = document.getElementById('uiScaleModal');
+            if (uiScaleBtn && uiScaleModal && !uiScaleBtn._bound) {
+                uiScaleBtn._bound = true;
+                uiScaleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (uiScaleModal) uiScaleModal.style.display = 'flex';
+                });
+            }
+        }
         
         // 切换到游戏大厅界面
-        function switchToGameCenter() {
+        function switchToGameCenter(skipFadeOut) {
             var settingsContainer = document.querySelector('.settings-container');
             if (!settingsContainer) return;
             
             // 移除登录页模式类，允许背景系统工作
             document.body.classList.remove('login-page-mode');
             
-            // 添加切换动画类
-            settingsContainer.classList.add('fade-out');
+            // 立即加载用户自定义背景（在移除login-page-mode后立即调用）
+            if (typeof loadCustomBackground === 'function') {
+                loadCustomBackground();
+            }
+            
+            // 如果跳过淡入淡出（刷新时直接切换），先隐藏内容避免闪烁
+            if (skipFadeOut) {
+                settingsContainer.style.opacity = '0';
+            } else {
+                // 添加切换动画类
+                settingsContainer.classList.add('fade-out');
+            }
+            
+            // 根据是否跳过动画设置延迟时间
+            var delay = skipFadeOut ? 50 : 300;
             
             setTimeout(function() {
-                // 修改侧边栏菜单：隐藏登录/注册条目，插入游戏大厅条目
+                // 后续逻辑保持不变...
+                var settingsSidebar = document.querySelector('.settings-sidebar');
+                // 清除initUIStyle设置的内联display:none，防止影响CSS控制可见性
+                if (settingsSidebar) settingsSidebar.style.display = '';
                 var sidebarMenu = document.querySelector('.sidebar-menu');
                 if (sidebarMenu) {
                     // 检查是否已存在游戏中心条目（防止重复插入）
@@ -9767,6 +9946,12 @@
                             </button>
                         `;
                         settingsHeader.innerHTML = settingsHeader.innerHTML + headerRightHTML;
+                    }
+                    // 动态创建按钮后绑定事件（修复刷新页面后按钮无反应的问题）
+                    bindGameCenterHeaderEvents();
+                    // 更新时钟/隐藏UI按钮状态，确保page-clock-enabled类正确
+                    if (typeof updateHideInterfaceButton === 'function') {
+                        updateHideInterfaceButton();
                     }
                 }
                 
@@ -10133,7 +10318,20 @@
                 
                 // 更新简约设计顶部导航栏为游戏中心模式
                 updateMinimalistTopNavForGameCenter();
-            }, 300);
+            }, delay);
+            
+            // 如果跳过淡出动画，移除内联样式并显示容器
+            if (skipFadeOut) {
+                setTimeout(function() {
+                    settingsContainer.style.opacity = '1';
+                    settingsContainer.classList.add('fade-in');
+                    setTimeout(function() {
+                        settingsContainer.classList.remove('fade-in');
+                        // 清除内联opacity，确保CSS类（如interface-hidden）能正确覆盖
+                        settingsContainer.style.opacity = '';
+                    }, 300);
+                }, 50);
+            }
         }
         
         // 更新简约设计顶部导航栏为游戏中心模式
@@ -10155,6 +10353,10 @@
                     <div class="ui-min-nav-item" data-nav="checkin">
                         <i class="fas fa-calendar-check"></i>
                         <span>每日签到</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="feedback" id="uiMinFeedback">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>反馈建议</span>
                     </div>
                     <div class="ui-min-nav-item" data-nav="version" id="uiMinVersionNav">
                         <i class="fas fa-history"></i>
@@ -10189,6 +10391,9 @@
                         } else if (nav === 'checkin') {
                             var checkinBtn = document.getElementById('menuCheckin');
                             if (checkinBtn) checkinBtn.click();
+                        } else if (nav === 'feedback') {
+                            var feedbackBtn = document.getElementById('sidebarFeedback');
+                            if (feedbackBtn) feedbackBtn.click();
                         } else if (nav === 'version') {
                             var versionBtn = document.getElementById('sidebarVersion');
                             if (versionBtn) versionBtn.click();
@@ -10224,6 +10429,9 @@
                 /* 游戏卡片样式 */
                 .game-cards {
                     width: 100%;
+                    padding: 0;
+                    margin: 0;
+                    gap: 0;
                 }
                 
                 .content-area {
@@ -10775,7 +10983,6 @@
                     border-radius: 16px;
                     padding: 24px;
                     color: #333;
-                    margin-bottom: 20px;
                     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
                     border: 1px solid #f0f0f0;
                 }
@@ -11363,7 +11570,6 @@
                     border-radius: 16px;
                     padding: 28px;
                     color: #333;
-                    margin-bottom: 20px;
                     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
                     border: 1px solid #f0f0f0;
                     text-align: left;
@@ -11588,7 +11794,8 @@
                 .checkin-area {
                     display: flex;
                     flex-direction: column;
-                    gap: 0;
+                    gap: 20px;
+                    padding: 28px;
                 }
                 
                 /* 切换动画 */
@@ -11953,7 +12160,7 @@
                             } else if (menuId === 'menuTreasure' && treasureArea) {
                                 treasureArea.style.display = 'grid';
                             } else if (menuId === 'menuCheckin' && checkinArea) {
-                                checkinArea.style.display = 'block';
+                                checkinArea.style.display = 'flex';
                                 loadCheckinData();
                             }
                         }
@@ -12956,6 +13163,9 @@
             var expTextEl = document.getElementById('expText');
             var totalExpEl = document.getElementById('totalExp');
             var nextLevelEl = document.getElementById('nextLevelExp');
+            var ddLevelText = document.getElementById('uiMinDropdownLevelText');
+            var ddLevel = document.getElementById('uiMinDropdownLevel');
+            var levelBadge = document.getElementById('uiMinLevelBadge');
             
             if (levelNumEl) levelNumEl.textContent = 'Lv.' + level;
             if (expTextEl) expTextEl.textContent = exp + ' / ' + expToNext + ' EXP';
@@ -12964,6 +13174,18 @@
             if (expBarEl) {
                 var progress = expToNext > 0 ? Math.min((exp / expToNext) * 100, 100) : 100;
                 expBarEl.style.width = progress + '%';
+            }
+            
+            // 同步更新下拉菜单中的等级显示
+            if (ddLevelText) ddLevelText.textContent = 'Lv.' + level;
+            if (ddLevel) ddLevel.textContent = level;
+            if (levelBadge) levelBadge.textContent = level;
+            
+            // 更新currentUser中的level
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (currentUser && currentUser.username) {
+                currentUser.level = level;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
             }
         }
         
@@ -14291,6 +14513,8 @@
         // 打开自定义快捷组件选择弹窗
         function openCustomQuickComponentModal() {
             const savedComponents = JSON.parse(localStorage.getItem('customQuickComponents') || '["about", "card", "clock"]');
+            // 保存打开弹窗时的原始选择，取消时用于恢复
+            const originalSelection = savedComponents.slice();
             
             const existingModal = document.getElementById('customQuickComponentModal');
             if (existingModal) existingModal.remove();
@@ -14367,6 +14591,13 @@
             });
             
             document.getElementById('cancelCustomComponentBtn').addEventListener('click', function() {
+                const currentSelection = JSON.parse(localStorage.getItem('customQuickComponents') || '["about", "card", "clock"]');
+                if (currentSelection.length === 0) {
+                    showToastInfo('请至少选择一个功能');
+                    return;
+                }
+                // 取消时恢复打开弹窗时的原始选择，避免中间修改污染localStorage
+                localStorage.setItem('customQuickComponents', JSON.stringify(originalSelection));
                 closeCustomQuickComponentModal();
             });
             
@@ -14647,8 +14878,14 @@
         var isInGameCenter = sessionStorage.getItem('isInGameCenter') === 'true';
         var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         if (isInGameCenter && currentUser.username) {
-            // 已登录且在游戏中心会话中，自动切换到游戏中心
-            switchToGameCenter();
+            // 已登录且在游戏中心会话中，立即移除login-page-mode并加载背景
+            // 避免登录页面一闪而过
+            document.body.classList.remove('login-page-mode');
+            if (typeof loadCustomBackground === 'function') {
+                loadCustomBackground();
+            }
+            // 然后切换到游戏中心，跳过淡入淡出动画
+            switchToGameCenter(true);
         }
         
         function showSecurityVerifyModal() {
@@ -17841,39 +18078,81 @@
                 return;
             }
             
-            if (code === 'PRELAUNCHER2026071901') {
-                var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                var historyKey = getRedeemStorageKey();
-                var history = JSON.parse(localStorage.getItem(historyKey) || '[]');
-                
-                var existingRecord = history.find(function(item) {
-                    return item.code === code;
-                });
-                
-                if (existingRecord) {
-                    showAlert('该兑换码已被使用');
-                    return;
+            // 当前有效兑换码表
+            var validCodes = {
+                '20260808BETA': {
+                    backgroundId: 'dynamic-bg-1',
+                    rewardName: '动态流光背景'
                 }
-                
-                var newRecord = {
-                    code: code,
-                    account: currentUser.username || '未登录用户',
-                    time: new Date().toLocaleString('zh-CN'),
-                    reward: '动态流光背景'
-                };
-                
-                history.unshift(newRecord);
-                localStorage.setItem(historyKey, JSON.stringify(history));
-                
-                localStorage.setItem(getDynamicBackgroundKey(), 'true');
-                localStorage.setItem(getUnlockedBackgroundsKey(), 'true');
-                
-                showAlert('兑换成功！已获得动态流光背景奖励');
-                document.getElementById('redeemCodeInput').value = '';
-                loadRedeemHistory();
-            } else {
+            };
+            
+            var codeInfo = validCodes[code];
+            
+            if (!codeInfo) {
                 showAlert('无效的兑换码');
+                return;
             }
+            
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var historyKey = getRedeemStorageKey();
+            var history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            
+            // 1. 相同兑换码是否已被使用 → 该兑换码已被使用
+            var sameCodeRecord = history.find(function(item) {
+                return item.code === code;
+            });
+            
+            if (sameCodeRecord) {
+                showAlert('该兑换码已被使用');
+                return;
+            }
+            
+            // 2. 检查背景是否已持有（通过任何方式获得都算已持有）→ 无法完成兑换 / 您无法再次兑换已持有的背景
+            var dynamicBgId = codeInfo.backgroundId;
+            var userPrefix = currentUser.username ? currentUser.username + '_' : '';
+            var unlockedIds = JSON.parse(localStorage.getItem(userPrefix + 'unlockedBackgroundIds') || '[]');
+            var isBgAlreadyOwned = unlockedIds.includes(dynamicBgId);
+            
+            // 兼容旧broad key：旧版用户通过旧兑换码解锁过也视为已持有
+            if (!isBgAlreadyOwned && dynamicBgId === 'dynamic-bg-1') {
+                if (localStorage.getItem(userPrefix + 'unlockedBackgrounds') === 'true') {
+                    isBgAlreadyOwned = true;
+                }
+            }
+            
+            if (isBgAlreadyOwned) {
+                showToast({
+                    type: 'warning',
+                    title: '无法完成兑换',
+                    message: '您无法再次兑换已持有的背景'
+                });
+                return;
+            }
+            
+            // 3. 执行兑换逻辑
+            var newRecord = {
+                code: code,
+                account: currentUser.username || '未登录用户',
+                time: new Date().toLocaleString('zh-CN'),
+                reward: codeInfo.rewardName
+            };
+            
+            history.unshift(newRecord);
+            localStorage.setItem(historyKey, JSON.stringify(history));
+            
+            // 新风格存储：将背景ID加入用户专属的已解锁列表
+            if (!unlockedIds.includes(dynamicBgId)) {
+                unlockedIds.push(dynamicBgId);
+                localStorage.setItem(userPrefix + 'unlockedBackgroundIds', JSON.stringify(unlockedIds));
+            }
+            
+            // 兼容旧存储键（保持跨页面主题切换一致性）
+            localStorage.setItem(getDynamicBackgroundKey(), 'true');
+            localStorage.setItem(getUnlockedBackgroundsKey(), 'true');
+            
+            showAlert('兑换成功！已获得' + codeInfo.rewardName + '奖励');
+            document.getElementById('redeemCodeInput').value = '';
+            loadRedeemHistory();
         }
         
         function loadRedeemHistory() {
