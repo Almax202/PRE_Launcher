@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // 阻止touchmove事件冒泡，防止mui.js阻止滚动
+            // 阻止touchmove事件冒泡，避免移动端菜单滚动穿透
             mobileNavMenu.addEventListener('touchmove', function(e) {
                 e.stopPropagation();
             }, { passive: true });

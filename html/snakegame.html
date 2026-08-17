@@ -16,6 +16,67 @@
     <link rel="stylesheet" href="../css/achievement.css">
     <link rel="stylesheet" href="../css/snakegame.css">
     <script src="../js/versionManager.js" defer></script>
+    <!-- ===== UI 框架：Tailwind CSS + GSAP + Lenis（替换原 MUI） ===== -->
+    <!-- Tailwind CSS (Play CDN) - 关闭 preflight 避免重置样式破坏现有 CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (window.tailwind) {
+            tailwind.config = {
+                corePlugins: { preflight: false },
+                theme: { extend: { colors: { 'pre-primary': '#d45d79', 'pre-accent': '#f0a050' } } }
+            };
+        }
+    </script>
+    <!-- GSAP (动画引擎) + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" onerror="this.onerror=null; console.warn('GSAP 加载失败')"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" onerror="this.onerror=null; console.warn('ScrollTrigger 加载失败')"></script>
+    <!-- Lenis (平滑滚动) -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onerror="this.onerror=null; console.warn('Lenis 加载失败')"></script>
+    <script>
+        // 仅在 window 真正可滚动时启用 Lenis，否则保留原生滚动
+        (function () {
+            function initLenis() {
+                if (typeof Lenis === 'undefined') return;
+                var bodyStyle = window.getComputedStyle(document.body || document.documentElement);
+                var docEl = document.documentElement;
+                if (bodyStyle.overflowY === 'hidden' || bodyStyle.overflow === 'hidden' ||
+                    docEl.scrollHeight <= docEl.clientHeight + 2) {
+                    return;
+                }
+                try {
+                    var lenis = new Lenis({
+                        duration: 1.1, smoothWheel: true,
+                        prevent: function (node) {
+                            var cur = node;
+                            while (cur && cur !== document.body) {
+                                var st = window.getComputedStyle(cur);
+                                if ((st.overflowY === 'auto' || st.overflowY === 'scroll') &&
+                                    cur.scrollHeight > cur.clientHeight + 1) {
+                                    return true;
+                                }
+                                cur = cur.parentElement;
+                            }
+                            return false;
+                        }
+                    });
+                    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+                    requestAnimationFrame(raf);
+                    if (window.gsap && window.ScrollTrigger) {
+                        lenis.on('scroll', ScrollTrigger.update);
+                        gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+                        gsap.ticker.lagSmoothing(0);
+                    }
+                    window.__lenis = lenis;
+                } catch (e) { console.warn('Lenis 初始化失败，已降级到原生滚动:', e); }
+            }
+            if (document.readyState === 'complete') {
+                setTimeout(initLenis, 0);
+            } else {
+                window.addEventListener('load', function () { setTimeout(initLenis, 0); });
+            }
+        })();
+    </script>
+    <!-- ===== /UI 框架 ===== -->
 </head>
 <body>
     <div class="settings-container">

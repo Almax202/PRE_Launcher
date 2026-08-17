@@ -511,6 +511,61 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260817",
+            title: "RC 3.0.1.0 开发日志",
+            date: "2026-08-17",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 3.0.1.0 重要版本更新！本次更新围绕启动器前端框架的整体升级展开，将全部 9 个 HTML 页面从 MUI 完整替换为 Tailwind CSS + GSAP + Lenis 三剑客组合，并全新设计登录页玻璃拟态样式与底部信息栏，配以 GSAP 入场动画编排，带来了更现代的视觉体验和更强大的动画能力！",
+                "[color:#d45d79]【框架整体升级（核心变更）】[/color]",
+                "• 启动器全部 9 个 HTML 页面（首页、游戏大厅、系统设置、五子棋、数独、飞行棋、颜色匹配、记忆翻牌、贪吃蛇）的前端框架从 MUI 完整替换为：Tailwind CSS（UI 现代化）+ GSAP（高性能动画引擎）+ Lenis（平滑滚动）三剑客组合，技术栈更现代、动画能力更强、体积更轻",
+                "• 移除 MUI 框架文件：删除 css/mui.css、css/mui.min.css、js/mui.js、js/mui.min.js、fonts/mui.ttf 共 5 个旧框架文件，fonts 目录仅保留项目实际使用的 HarmonyOS_Sans_SC_Regular.ttf 字体",
+                "• Tailwind CSS：通过 Play CDN 引入并预配置主题色（pre-primary: #d45d79 / pre-accent: #f0a050 / pre-deep: #2a1b3d / pre-dark: #0f0a1e），关闭 preflight 重置避免破坏现有 CSS 体系，支持在 HTML 中直接使用 utility classes 写样式",
+                "• GSAP 3.12.5：通过 CDN 引入 gsap.min.js 与 ScrollTrigger 插件，提供时间轴、滚动驱动、数值计数、缓动函数等业界最强动画能力，支持页面级滚动触发与入场动画编排",
+                "• Lenis 1.0.42：通过 UNPKG CDN 引入，接管滚轮实现物理惯性平滑滚动，并接入 GSAP ticker 驱动 raf() 保证与 ScrollTrigger 无缝协同；对登录页、系统设置页等 overflow:hidden 页面自动智能跳过，避免滚轮失效",
+                "• 容错处理：每个 CDN 均添加 onerror 回退，加载失败时降级为原生滚动 + 无动画模式，不影响页面功能；Lenis 初始化被 try/catch 包裹，初始化异常自动降级；Tailwind 全局对象访问前做 window.tailwind 守卫检查",
+                "• 更新首页版权声明：原 MUI 版权按钮替换为 Tailwind CSS / GSAP / Lenis 三个版权按钮，showFrontendFrameworkModal(type) 函数分别展示三套框架的完整版权、许可协议与官网链接",
+                "[color:#d45d79]【新增功能】[/color]",
+                "• 登录页向下滑动后平滑滚动出现底部信息栏：平时不显示滚动条与向下滚动提示，用户自然向下滑动时页面平滑滚动，底部栏以 GSAP 淡入+交错动画优雅出现，不破坏登录页整体美观度",
+                "• 底部信息栏四列网格布局（响应式：≤1024px 切 2 列、≤768px 切单列），包含版权信息、技术栈、社交链接、额外推荐四个分区，各分区标题带图标 + 渐变分割线",
+                "• 版权信息区：显示 © 2014-2026 PREAlmax. All rights reserved. 版权声明，下方动态填充当前版本号、内部版本号、最后更新日期（均从 versionManager.js 实时获取）",
+                "• 技术栈区：Tailwind CSS（v3 Play CDN）、GSAP（v3.12.5）、Lenis（v1.0.42）三套框架以彩色渐变图标卡片形式展示（Tailwind 蓝色 / GSAP 绿色 / Lenis 橙粉色），一行两个排列，点击卡片跳转至对应 GitHub 仓库",
+                "• 社交链接区：GitHub（https://github.com/Almax202）与哔哩哔哩（https://space.bilibili.com/554489149）以与技术栈相同的卡片样式展示，一行两个排列，GitHub 深灰渐变图标、Bilibili 粉色渐变图标，悬停时边框变为对应品牌色",
+                "• 额外推荐区：新增「PRE Launcher 新框架演示」入口，点击跳转至 html/prelauncherdemo.html 展示页，一行一个排列，金色渐变图标配播放图标",
+                "• 底部栏 Powered by PREAlmax 脚标 + 动态版本文字（PRE Launcher · 版本号 · Build 日期）",
+                "• 展示页采用深色 #0f0a1e 背景 + 三色模糊光斑浮动（d45d79/f0a050/9b6dff）+ 50px 网格纹理，玻璃拟态卡片、发光边框流动动画、渐变文字、脉冲圆点等高级视觉元素，完整呈现新框架能力",
+                "• 登录页卡片（登录/注册表单容器）升级为玻璃拟态样式：rgba(255,255,255,0.05) 背景 + backdrop-filter: blur(20px) + 半透明白色边框 + 深色阴影，表单输入框、复选框、协议勾选、验证码区等元素同步适配",
+                "• 登录页登录按钮从毛玻璃白色改为暖橙粉渐变（linear-gradient 135deg #f0a050 → #d45d79），配粉色外发光阴影，hover 时按钮上移并加深阴影；注册面板下一步/确认注册按钮同步采用同一渐变",
+                "• 登录页装饰圆圈与粒子颜色改为暖色系（rgba(240,160,80)），添加粉色发光 box-shadow，与背景光斑配色呼应",
+                "• 登录页添加入场 GSAP 动画序列：光斑依次淡入并持续浮动、左右面板从两侧滑入、品牌卡片缩放+淡入+回弹、品牌图标从 -180° 旋转入场、名言卡片淡入、欢迎语整体缩放淡入、副标题淡入、输入框交错右滑入场、登录按钮从下方弹入、装饰圆圈从 0 放大入场、粒子交错放大入场、版权文字淡入",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 清理过时注释：account-settings.js 第 192 行注释从「防止mui.js阻止滚动」更新为「避免移动端菜单滚动穿透」，与当前技术栈一致",
+                "• 框架切换兼容性保障：Tailwind 关闭 preflight CSS 重置，确保 denglu.css / homepage.css / account-settings.css 等项目既有自定义样式不受原子化 CSS 影响；登录页/系统设置页等原本 overflow:hidden 的页面通过智能检测 documentElement.scrollHeight 与 body overflow 属性，自动跳过 Lenis，保留原生滚轮",
+                "• Lenis prevent 策略优化：对 .custom-alert / .modal / .settings-sidebar / .content-area / .settings-container 等元素级滚动容器自动跳过 Lenis 接管，改为遍历祖先链自动检测 overflow-y:auto/scroll 且内容溢出的容器并交给原生滚动，避免模态框与侧边栏内部滚轮失效",
+                "• 登录页动画时序稳定性优化：采用单一 gsap.timeline 统一管理所有入场动画，防重入标志 isAnimating + lastState 状态机 + MutationObserver 400ms 防抖；每次重新进入登录模式前先 clearProps 清理所有内联样式再 gsap.set 设置初始态，彻底避免 killTweensOf 后 fromTo 把元素卡到 opacity:0 的问题",
+                "• 底部栏字体统一：移除版本信息（当前版本/内部版本/最后更新）与技术栈版本号的 font-family: 'Consolas', 'Monaco', monospace，全部统一为页面默认字体，视觉一致性更强",
+                "• 底部栏链接智能路由：JS 统一拦截底部栏所有 a 标签点击，http(s) 链接走 showLeaveConfirmModal 跳转确认弹窗，内部页面链接（如 ./html/prelauncherdemo.html）通过 JS 计算完整路径后 window.location.href 跳转，确保各类链接均正确生效",
+                "• 底部栏框架卡片添加 pointer-events: auto，确保 GSAP 动画不阻止点击事件",
+                "• prelauncherdemo.html 字体替换为鸿蒙字体：新增 @font-face 声明引用 ../fonts/HarmonyOS_Sans_SC_Regular.ttf，body font-family 从 'Segoe UI' 改为 'HarmonyOS Sans' 优先，全页文字统一使用鸿蒙字体",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复登录页与系统设置页鼠标滚轮失效的问题：根因为 Lenis 默认接管 window 滚动并 preventDefault 了 wheel 事件，但上述页面 body overflow:hidden / 实际滚动发生在内部 overflow-y:auto 容器，导致 Lenis 拦截 wheel 后无处可滚；已在初始化前自动检测 body overflow 与 documentElement.scrollHeight，不可滚动页面完全跳过 Lenis 并保留原生滚动",
+                "• 修复登录页动画连续卡顿 2-3 次的问题：根因为 MutationObserver 未防抖，页面加载 class 连续变化触发多次 initLoginAnimations 叠加 tween；已添加 400ms debounce + lastState 状态机（login→other→login 才触发重播）+ 防重入 isAnimating 标志位",
+                "• 修复登录页动画完成后登录卡片文本和登录按钮不显示的问题：根因为 killTweensOf 旧动画后 fromTo 再次将元素立即设为 opacity:0；已改为 gsap.set 硬设初始态 + gsap.timeline.to() 纯动画，并在每次重放前 clearProps 清除所有被动画属性的内联样式，确保动画结束后元素回到 CSS 默认可见态（opacity:1）",
+                "• 修复欢迎语「欢迎来到 PRE Launcher」渐变文字渲染异常的问题：原实现将 h1 拆分为多个 span 做逐字动画，导致每个 span 独立渲染 background-clip:text 使渐变断裂；已改为整体 scale+opacity 入场动画，保持 h1 完整结构让渐变正确渲染",
+                "• 修复 Hero 标题「界面体验」四个字不显示的问题：根因为 heroTitle2 同时携带 .gradient-text 类（-webkit-text-fill-color: transparent + background-clip: text）和 JS splitText() 拆分字符（每个字包成 <span class=\"char\">），拆分后父级 span 文本内容为空导致 background-clip:text 无处裁剪、子级 .char 继承透明色但无自身背景，四个字符全部透明不可见；已为 .gradient-text .char 新增独立的渐变背景 + background-clip:text 规则，每个字符级 span 独立渲染渐变",
+                "• 修复特性卡片区三张卡片只有第一张会跟随鼠标 3D 倾斜的问题：根因为卡片 2、3 带了内联 style=\"transition-delay:0.1s/0.2s\"（入场错峰用），mousemove 每帧通过内联 transform 更新倾斜角度时，CSS .glow-card { transition: transform 0.4s } + 内联 transition-delay 叠加生效，导致新 transform 值被延迟 0.1s/0.2s 才开始过渡、鼠标持续移动旧过渡被中断，肉眼看到卡片被「卡住」不动；已改为 mouseenter 时保存并清空 transition + transitionDelay（设为 none/空），mousemove 实时写 transform 无过渡干扰，mouseleave 时恢复带 cubic-bezier 缓动的 transition 并 500ms 后还原原有内联属性，三张卡片倾斜响应完全一致",
+                "• 修复底部栏「新框架演示」点击后不跳转的问题：根因为 JS 链接拦截逻辑只匹配 a[href^=\"http\"]，非 http 的内部链接（./html/prelauncherdemo.html）未被处理；已扩大选择范围为底部栏所有 a 标签，内部链接通过 JS 计算完整路径跳转",
+                "[color:#d45d79]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！本次版本更新完成了启动器前端框架的现代化重构，引入了 Tailwind CSS / GSAP / Lenis 三套业界领先的框架组合，全面升级了登录页与底部信息栏的视觉与动画体验，希望能为您带来更现代、更流畅的使用体验。",
+                "如果您在使用过程中发现任何问题，或有任何想法和建议，欢迎通过 Github 仓库提交 Issue 与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260807",
             title: "RC 3.0.0.1 开发日志",
             date: "2026-08-08",
@@ -2127,14 +2182,18 @@ function initializeAnnouncementNavigation() {
                 tag.style.display = 'none';
             });
             
-            // 显示当前项的子按钮（如果有）
+            // 显示当前项的子按钮（如果有且子按钮中有可见按钮）
             var subButtons = this.querySelector('.sub-buttons');
             if (subButtons) {
-                subButtons.style.display = 'block';
-                // 旋转箭头图标
-                var arrow = this.querySelector('.nav-arrow');
-                if (arrow) {
-                    arrow.style.transform = 'rotate(90deg)';
+                var hasVisibleButtons = Array.from(subButtons.querySelectorAll('.sub-button')).some(function(btn) {
+                    return btn.style.display !== 'none';
+                });
+                if (hasVisibleButtons) {
+                    subButtons.style.display = 'block';
+                    var arrow = this.querySelector('.nav-arrow');
+                    if (arrow) {
+                        arrow.style.transform = 'rotate(90deg)';
+                    }
                 }
             }
             
@@ -2191,15 +2250,7 @@ function loadAnnouncementContent(navId) {
             loadAnnouncementList(announcementData.normalAnnouncements);
             break;
         case 'devLogNav':
-            contentArea.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                    <div style="font-size: 48px; margin-bottom: 20px; color: #d45d79;">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <p style="font-style: normal; text-align: center; padding: 0; margin: 0;">请选择要查看的开发日志分类</p>
-                    <p style="font-style: normal; text-align: center; padding: 0; margin: 10px 0 0; color: #999; font-size: 14px;">选择左侧"启动器更新"或"主页面更新"查看详细内容</p>
-                </div>
-            `;
+            loadAnnouncementByType('dev_launcher');
             break;
         default:
             contentArea.innerHTML = `
@@ -3282,13 +3333,13 @@ function generateAnnouncementModal() {
                             <span>开发日志<ul>Dev Logs</ul></span>
                             <i class="fas fa-chevron-right nav-arrow"></i>
                         </div>
-                        <div class="sub-buttons" id="devLogSubButtons">
-                            <button class="sub-button" data-type="dev_launcher">
+                        <div class="sub-buttons" id="devLogSubButtons" style="display: none;">
+                            <button class="sub-button" data-type="dev_launcher" style="display: none;">
                                 <i class="fas fa-rocket"></i>
                                 <span>启动器更新</span>
                                 <span class="viewing-tag" style="display:none;">查看中</span>
                             </button>
-                            <button class="sub-button" data-type="dev_game_hall">
+                            <button class="sub-button" data-type="dev_game_hall" style="display: none;">
                                 <i class="fas fa-gamepad"></i>
                                 <span>主页面更新</span>
                                 <span class="viewing-tag" style="display:none;">查看中</span>

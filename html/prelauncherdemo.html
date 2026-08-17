@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRE Launcher 新框架效果展示</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS (Play CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pre-primary': '#d45d79',
+                        'pre-accent': '#f0a050',
+                        'pre-deep': '#2a1b3d',
+                        'pre-dark': '#0f0a1e'
+                    },
+                    fontFamily: {
+                        'display': ['HarmonyOS Sans', 'system-ui', 'sans-serif']
+                    }
+                    
+                }
+            }
+        }
+    </script>
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Lenis -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <style>
+        /* HarmonyOS 鸿蒙字体 */
+        @font-face {
+            font-family: 'HarmonyOS Sans';
+            src: url('../fonts/HarmonyOS_Sans_SC_Regular.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            background: #0f0a1e;
+            color: #fff;
+            font-family: 'HarmonyOS Sans', 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1130; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d45d79, #f0a050);
+            border-radius: 4px;
+        }
+
+        /* 渐变文字 */
+        .gradient-text {
+            background: linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 修复 gradient-text 内拆分字符的可见性 */
+        .gradient-text .char {
+            background: linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 玻璃拟态 */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 发光边框卡片 */
+        .glow-card {
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+        }
+        .glow-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            padding: 2px;
+            background: linear-gradient(135deg, #f0a050, #d45d79, #9b6dff, #f0a050);
+            background-size: 300% 300%;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            animation: borderFlow 3s linear infinite;
+        }
+        .glow-card:hover::before { opacity: 1; }
+        .glow-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px -10px rgba(212, 93, 121, 0.4);
+        }
+        @keyframes borderFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 浮动光斑 */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Hero 标题字符动画初始态 */
+        .char {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(100px) rotate(12deg);
+        }
+
+        /* 磁吸按钮 */
+        .magnetic-btn {
+            transition: transform 0.2s ease;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f0a050, #d45d79);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 滚动指示器 */
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #f0a050, #d45d79, #9b6dff);
+            z-index: 1000;
+            width: 0%;
+        }
+
+        /* 横向滚动容器 */
+        .horizontal-track {
+            display: flex;
+            gap: 2rem;
+            will-change: transform;
+        }
+
+        /* 倾斜卡片 */
+        .tilt-card {
+            transition: transform 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        /* 数字翻转 */
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 脉冲点 */
+        .pulse-dot {
+            position: relative;
+        }
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: inherit;
+            animation: pulse 2s ease-out infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        /* 网格背景 */
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 滚动进度指示器 -->
+    <div class="scroll-indicator" id="scrollIndicator"></div>
+
+    <!-- 固定导航 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-pre-accent to-pre-primary flex items-center justify-center">
+                    <i class="fas fa-bolt text-white text-lg"></i>
+                </div>
+                <span class="font-bold text-lg">PRE Launcher 新框架演示</span>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-300">
+                <a href="#hero" class="hover:text-pre-accent transition">首页</a>
+                <a href="#features" class="hover:text-pre-accent transition">特性</a>
+                <a href="#showcase" class="hover:text-pre-accent transition">展示</a>
+                <a href="#stats" class="hover:text-pre-accent transition">数据</a>
+                <a href="#cta" class="hover:text-pre-accent transition">开始</a>
+            </div>
+            <a href="../index.html" class="px-4 py-2 rounded-lg glass hover:bg-white/10 transition text-sm flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> 返回
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero 区 -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden grid-bg">
+        <!-- 浮动光斑 -->
+        <div class="blob bg-pre-primary" style="width:500px;height:500px;top:-100px;left:-100px;"></div>
+        <div class="blob bg-pre-accent" style="width:400px;height:400px;bottom:-50px;right:-50px;"></div>
+        <div class="blob" style="width:300px;height:300px;top:40%;left:50%;background:#9b6dff;"></div>
+
+        <div class="relative z-10 text-center px-6 max-w-5xl">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 reveal-up">
+                <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
+                <span class="text-sm text-gray-300">Tailwind CSS · GSAP · Lenis 三合一</span>
+            </div>
+
+            <h1 class="text-6xl md:text-8xl font-black mb-6 leading-tight">
+                <span class="block" id="heroTitle1">下一代</span>
+                <span class="block gradient-text" id="heroTitle2">界面体验</span>
+            </h1>
+
+            <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto reveal-up">
+                原子化样式、高性能动画、丝滑滚动 —— 三套现代前端工具协同工作，
+                打造令人难忘的视觉与交互体验。
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-4 reveal-up">
+                <button class="magnetic-btn px-8 py-4 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold text-lg hover:shadow-2xl hover:shadow-pre-primary/50 transition-all" id="ctaBtn">
+                    <i class="fas fa-rocket mr-2"></i>立即体验
+                </button>
+                <button class="magnetic-btn px-8 py-4 rounded-xl glass hover:bg-white/10 font-bold text-lg transition-all" id="learnBtn">
+                    <i class="fas fa-book mr-2"></i>了解详情
+                </button>
+            </div>
+        </div>
+
+        <!-- 向下滚动提示 -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-gray-500 text-sm flex flex-col items-center gap-2">
+            <span>向下滚动</span>
+            <i class="fas fa-chevron-down animate-bounce"></i>
+        </div>
+    </section>
+
+    <!-- 特性卡片区 -->
+    <section id="features" class="py-32 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20">
+                <span class="text-pre-accent font-semibold tracking-widest text-sm reveal-up">FEATURES</span>
+                <h2 class="text-5xl md:text-6xl font-black mt-4 mb-6 reveal-up">三件套，各司其职</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto reveal-up">每一套工具都在自己的领域做到极致</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Tailwind 卡片 -->
+                <div class="glow-card glass rounded-3xl p-8 reveal-up" data-tilt>
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mb-6">
+                        <i class="fas fa-palette text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Tailwind CSS</h3>
+                    <p class="text-gray-400 mb-6">原子化 CSS 框架，用 utility classes 快速构建任意 UI，无需离开 HTML。</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="text-xs px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300">响应式</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300">暗色模式</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300">JIT</span>
+                    </div>
+                </div>
+
+                <!-- GSAP 卡片 -->
+                <div class="glow-card glass rounded-3xl p-8 reveal-up" data-tilt style="transition-delay:0.1s">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center mb-6">
+                        <i class="fas fa-bolt text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">GSAP</h3>
+                    <p class="text-gray-400 mb-6">业界最强 JavaScript 动画引擎，支持复杂时间轴、物理效果与滚动驱动动画。</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-300">ScrollTrigger</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-300">时间轴</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-300">高性能</span>
+                    </div>
+                </div>
+
+                <!-- Lenis 卡片 -->
+                <div class="glow-card glass rounded-3xl p-8 reveal-up" data-tilt style="transition-delay:0.2s">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center mb-6">
+                        <i class="fas fa-arrows-alt-v text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Lenis</h3>
+                    <p class="text-gray-400 mb-6">轻量级平滑滚动库，让页面滚动如丝般顺滑，与 GSAP 完美集成。</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-300">平滑滚动</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-300">6KB</span>
+                        <span class="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-300">零依赖</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 横向滚动展示区 -->
+    <section id="showcase" class="py-32 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 mb-16">
+            <span class="text-pre-accent font-semibold tracking-widest text-sm reveal-up">SHOWCASE</span>
+            <h2 class="text-5xl md:text-6xl font-black mt-4 reveal-up">横向滚动 · 滚动驱动</h2>
+            <p class="text-gray-400 text-lg mt-4 reveal-up">向下滚动页面，卡片将横向移动 —— ScrollTrigger 的经典用法</p>
+        </div>
+
+        <!-- 横向轨道（由 GSAP 控制位移） -->
+        <div class="horizontal-track px-6" id="horizontalTrack">
+            <div class="flex-shrink-0 w-80 h-96 rounded-3xl glass p-8 flex flex-col justify-between" style="background:linear-gradient(135deg,rgba(240,160,80,0.15),rgba(212,93,121,0.15));">
+                <div>
+                    <div class="text-6xl font-black gradient-text mb-4">01</div>
+                    <h3 class="text-2xl font-bold mb-3">入场动画</h3>
+                    <p class="text-gray-400">元素从下方淡入，配合缓动函数营造高级感。</p>
+                </div>
+                <i class="fas fa-arrow-right text-3xl text-pre-accent"></i>
+            </div>
+            <div class="flex-shrink-0 w-80 h-96 rounded-3xl glass p-8 flex flex-col justify-between" style="background:linear-gradient(135deg,rgba(155,109,255,0.15),rgba(240,160,80,0.15));">
+                <div>
+                    <div class="text-6xl font-black gradient-text mb-4">02</div>
+                    <h3 class="text-2xl font-bold mb-3">视差效果</h3>
+                    <p class="text-gray-400">不同图层以不同速度移动，产生空间纵深感。</p>
+                </div>
+                <i class="fas fa-layer-group text-3xl text-purple-400"></i>
+            </div>
+            <div class="flex-shrink-0 w-80 h-96 rounded-3xl glass p-8 flex flex-col justify-between" style="background:linear-gradient(135deg,rgba(212,93,121,0.15),rgba(155,109,255,0.15));">
+                <div>
+                    <div class="text-6xl font-black gradient-text mb-4">03</div>
+                    <h3 class="text-2xl font-bold mb-3">钉住滚动</h3>
+                    <p class="text-gray-400">将元素固定在视口，滚动转化为其他属性变化。</p>
+                </div>
+                <i class="fas fa-thumbtack text-3xl text-pink-400"></i>
+            </div>
+            <div class="flex-shrink-0 w-80 h-96 rounded-3xl glass p-8 flex flex-col justify-between" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(155,109,255,0.15));">
+                <div>
+                    <div class="text-6xl font-black gradient-text mb-4">04</div>
+                    <h3 class="text-2xl font-bold mb-3">数值动画</h3>
+                    <p class="text-gray-400">数字从 0 平滑增长到目标值，吸引注意力。</p>
+                </div>
+                <i class="fas fa-chart-line text-3xl text-green-400"></i>
+            </div>
+            <div class="flex-shrink-0 w-80 h-96 rounded-3xl glass p-8 flex flex-col justify-between" style="background:linear-gradient(135deg,rgba(6,182,212,0.15),rgba(212,93,121,0.15));">
+                <div>
+                    <div class="text-6xl font-black gradient-text mb-4">05</div>
+                    <h3 class="text-2xl font-bold mb-3">平滑滚动</h3>
+                    <p class="text-gray-400">Lenis 接管滚动惯性，鼠标滚轮也能丝滑如触控板。</p>
+                </div>
+                <i class="fas fa-mouse text-3xl text-cyan-400"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- 数据统计区 -->
+    <section id="stats" class="py-32 px-6 relative grid-bg">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-20">
+                <span class="text-pre-accent font-semibold tracking-widest text-sm reveal-up">STATS</span>
+                <h2 class="text-5xl md:text-6xl font-black mt-4 reveal-up">数字会说话</h2>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center reveal-up">
+                    <div class="stat-number text-6xl md:text-7xl font-black gradient-text" data-count="100">0</div>
+                    <div class="text-gray-400 mt-2">% 原子化样式</div>
+                </div>
+                <div class="text-center reveal-up" style="transition-delay:0.1s">
+                    <div class="stat-number text-6xl md:text-7xl font-black gradient-text" data-count="60">0</div>
+                    <div class="text-gray-400 mt-2">+ FPS 动画流畅度</div>
+                </div>
+                <div class="text-center reveal-up" style="transition-delay:0.2s">
+                    <div class="stat-number text-6xl md:text-7xl font-black gradient-text" data-count="6">0</div>
+                    <div class="text-gray-400 mt-2">KB Lenis 体积</div>
+                </div>
+                <div class="text-center reveal-up" style="transition-delay:0.3s">
+                    <div class="stat-number text-6xl md:text-7xl font-black gradient-text" data-count="0">0</div>
+                    <div class="text-gray-400 mt-2">依赖 也能工作</div>
+                </div>
+            </div>
+
+            <!-- 进度条组 -->
+            <div class="mt-20 grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+                <div class="reveal-up">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-300">视觉冲击力</span>
+                        <span class="text-sm text-pre-accent">98%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" data-progress="98"></div></div>
+                </div>
+                <div class="reveal-up" style="transition-delay:0.1s">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-300">交互流畅度</span>
+                        <span class="text-sm text-pre-accent">95%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" data-progress="95"></div></div>
+                </div>
+                <div class="reveal-up" style="transition-delay:0.2s">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-300">开发效率</span>
+                        <span class="text-sm text-pre-accent">92%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" data-progress="92"></div></div>
+                </div>
+                <div class="reveal-up" style="transition-delay:0.3s">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-300">兼容性</span>
+                        <span class="text-sm text-pre-accent">99%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" data-progress="99"></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 文字滚动视差区 -->
+    <section class="py-32 overflow-hidden relative">
+        <div class="text-center">
+            <h2 class="text-7xl md:text-9xl font-black opacity-10 whitespace-nowrap" id="parallaxText">
+                TAILWIND · GSAP · LENIS · TAILWIND · GSAP · LENIS ·
+            </h2>
+        </div>
+    </section>
+
+    <!-- CTA 区 -->
+    <section id="cta" class="py-32 px-6 relative overflow-hidden">
+        <div class="blob bg-pre-primary" style="width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.3;"></div>
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="glass rounded-3xl p-12 md:p-20 reveal-up">
+                <i class="fas fa-rocket text-6xl gradient-text mb-6 block"></i>
+                <h2 class="text-4xl md:text-6xl font-black mb-6">准备好了吗？</h2>
+                <p class="text-gray-400 text-lg mb-10 max-w-xl mx-auto">
+                    这套框架组合已应用到本项目全部 9 个页面。立即体验，感受现代前端的力量。
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                    <a href="../index.html" class="magnetic-btn px-8 py-4 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold text-lg hover:shadow-2xl hover:shadow-pre-primary/50 transition-all">
+                        <i class="fas fa-home mr-2"></i>返回首页
+                    </a>
+                    <a href="homepage4.0.html" class="magnetic-btn px-8 py-4 rounded-xl glass hover:bg-white/10 font-bold text-lg transition-all">
+                        <i class="fas fa-gamepad mr-2"></i>进入游戏中心
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="py-12 px-6 border-t border-white/10">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-sm text-gray-500">
+            <div>© 2014-2026 PREAlmax. All rights reserved. · PRE Launcher 新框架效果演示页</div>
+            <div class="flex items-center gap-6">
+                <span><i class="fab fa-css3-alt mr-1 text-cyan-400"></i>Tailwind CSS</span>
+                <span><i class="fas fa-bolt mr-1 text-green-400"></i>GSAP 3.12.5</span>
+                <span><i class="fas fa-arrows-alt-v mr-1 text-purple-400"></i>Lenis 1.0.42</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== 脚本 ===== -->
+    <script>
+        // ===== Lenis 平滑滚动初始化 =====
+        var lenis;
+        if (typeof Lenis !== 'undefined') {
+            lenis = new Lenis({
+                duration: 1.2,
+                smoothWheel: true,
+                wheelMultiplier: 1,
+                touchMultiplier: 2
+            });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+            requestAnimationFrame(raf);
+            window.__lenis = lenis;
+        }
+
+        // ===== GSAP 动画 =====
+        window.addEventListener('load', function () {
+            if (typeof gsap === 'undefined') {
+                // GSAP 加载失败时的降级：直接显示所有元素
+                document.querySelectorAll('.reveal-up, .char').forEach(function (el) {
+                    el.style.opacity = '1';
+                    el.style.transform = 'none';
+                });
+                return;
+            }
+            gsap.registerPlugin(ScrollTrigger);
+
+            // 把 Lenis 接入 ScrollTrigger
+            if (lenis) {
+                lenis.on('scroll', ScrollTrigger.update);
+                gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+                gsap.ticker.lagSmoothing(0);
+            }
+
+            // ===== 1. Hero 标题字符动画 =====
+            function splitText(el) {
+                var text = el.textContent;
+                el.textContent = '';
+                text.split('').forEach(function (c) {
+                    if (c === ' ') {
+                        el.appendChild(document.createTextNode(' '));
+                    } else {
+                        var span = document.createElement('span');
+                        span.className = 'char';
+                        span.textContent = c;
+                        el.appendChild(span);
+                    }
+                });
+            }
+            var t1 = document.getElementById('heroTitle1');
+            var t2 = document.getElementById('heroTitle2');
+            splitText(t1); splitText(t2);
+
+            gsap.to('.char', {
+                opacity: 1,
+                y: 0,
+                rotation: 0,
+                duration: 1,
+                stagger: 0.03,
+                ease: 'back.out(1.7)',
+                delay: 0.2
+            });
+
+            // Hero 其他元素
+            gsap.from('.reveal-up', {
+                opacity: 0,
+                y: 40,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: 'power2.out',
+                delay: 0.5
+            });
+
+            // ===== 2. 滚动进度条 =====
+            var indicator = document.getElementById('scrollIndicator');
+            ScrollTrigger.create({
+                trigger: 'body',
+                start: 'top top',
+                end: 'bottom bottom',
+                onUpdate: function (self) {
+                    indicator.style.width = (self.progress * 100) + '%';
+                }
+            });
+
+            // ===== 3. reveal-up 滚动入场动画 =====
+            gsap.utils.toArray('section .reveal-up').forEach(function (el) {
+                gsap.fromTo(el,
+                    { opacity: 0, y: 60 },
+                    {
+                        opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: el,
+                            start: 'top 85%',
+                            toggleActions: 'play none none reverse'
+                        }
+                    }
+                );
+            });
+
+            // ===== 4. 横向滚动展示 =====
+            var track = document.getElementById('horizontalTrack');
+            if (track) {
+                var trackWidth = track.scrollWidth;
+                gsap.to(track, {
+                    x: -(trackWidth - window.innerWidth + 48),
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: '#showcase',
+                        start: 'top top',
+                        end: '+=2000',
+                        scrub: 1,
+                        pin: true,
+                        anticipatePin: 1,
+                        invalidateOnRefresh: true
+                    }
+                });
+            }
+
+            // ===== 5. 数字计数动画 =====
+            gsap.utils.toArray('.stat-number').forEach(function (el) {
+                var target = parseInt(el.getAttribute('data-count'), 10);
+                var obj = { val: 0 };
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: 'top 80%',
+                    once: true,
+                    onEnter: function () {
+                        gsap.to(obj, {
+                            val: target,
+                            duration: 2,
+                            ease: 'power2.out',
+                            onUpdate: function () {
+                                el.textContent = Math.round(obj.val);
+                            }
+                        });
+                    }
+                });
+            });
+
+            // ===== 6. 进度条动画 =====
+            gsap.utils.toArray('.progress-fill').forEach(function (el) {
+                var target = el.getAttribute('data-progress');
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: 'top 85%',
+                    once: true,
+                    onEnter: function () {
+                        el.style.width = target + '%';
+                    }
+                });
+            });
+
+            // ===== 7. 视差文字 =====
+            var parallaxText = document.getElementById('parallaxText');
+            if (parallaxText) {
+                gsap.to(parallaxText, {
+                    x: -300,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: parallaxText,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 1
+                    }
+                });
+            }
+
+            // ===== 8. 3D 倾斜卡片 =====
+            document.querySelectorAll('[data-tilt]').forEach(function (card) {
+                var storedTransition = '';
+                var storedDelay = '';
+                card.addEventListener('mouseenter', function () {
+                    storedTransition = card.style.transition;
+                    storedDelay = card.style.transitionDelay;
+                    card.style.transition = 'none';
+                    card.style.transitionDelay = '';
+                    card.style.boxShadow = '0 20px 60px -10px rgba(212, 93, 121, 0.4)';
+                });
+                card.addEventListener('mousemove', function (e) {
+                    var rect = card.getBoundingClientRect();
+                    var x = e.clientX - rect.left;
+                    var y = e.clientY - rect.top;
+                    var centerX = rect.width / 2;
+                    var centerY = rect.height / 2;
+                    var rotateX = (y - centerY) / 20;
+                    var rotateY = (centerX - x) / 20;
+                    card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-8px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function () {
+                    card.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease';
+                    card.style.transitionDelay = storedDelay;
+                    card.style.transform = '';
+                    card.style.boxShadow = '';
+                    setTimeout(function () {
+                        if (card && !card.matches(':hover')) {
+                            card.style.transition = storedTransition;
+                            card.style.transitionDelay = storedDelay;
+                        }
+                    }, 500);
+                });
+            });
+
+            // ===== 9. 磁吸按钮 =====
+            document.querySelectorAll('.magnetic-btn').forEach(function (btn) {
+                btn.addEventListener('mousemove', function (e) {
+                    var rect = btn.getBoundingClientRect();
+                    var x = e.clientX - rect.left - rect.width / 2;
+                    var y = e.clientY - rect.top - rect.height / 2;
+                    btn.style.transform = 'translate(' + (x * 0.3) + 'px, ' + (y * 0.3) + 'px)';
+                });
+                btn.addEventListener('mouseleave', function () {
+                    btn.style.transform = '';
+                });
+            });
+
+            // ===== 10. 锚点平滑滚动（走 Lenis） =====
+            document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+                a.addEventListener('click', function (e) {
+                    var target = document.querySelector(a.getAttribute('href'));
+                    if (target) {
+                        e.preventDefault();
+                        if (lenis) {
+                            lenis.scrollTo(target, { offset: -80, duration: 1.5 });
+                        } else {
+                            target.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                });
+            });
+
+            // CTA 按钮跳转到 #features
+            var ctaBtn = document.getElementById('ctaBtn');
+            var learnBtn = document.getElementById('learnBtn');
+            if (ctaBtn) ctaBtn.addEventListener('click', function () {
+                var f = document.getElementById('features');
+                if (lenis && f) lenis.scrollTo(f, { offset: -80, duration: 1.5 });
+                else if (f) f.scrollIntoView({ behavior: 'smooth' });
+            });
+            if (learnBtn) learnBtn.addEventListener('click', function () {
+                var s = document.getElementById('showcase');
+                if (lenis && s) lenis.scrollTo(s, { offset: -80, duration: 1.5 });
+                else if (s) s.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
