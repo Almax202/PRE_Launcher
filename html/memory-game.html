@@ -182,8 +182,9 @@
         })();
     </script>
     <!-- ===== /UI 框架 ===== -->
+<script src="../js/game-stats.js"></script>
 </head>
-<body>
+<body data-game-id="game_memory">
     <div class="settings-container">
         <div class="settings-sidebar">
             <div class="sidebar-header">
@@ -440,6 +441,14 @@
                 gameStarted = false;
                 clearInterval(gameInterval);
                 
+                // 记录到新的游戏统计系统
+                if (window.GameStatsManager) {
+                    window.GameStatsManager.recordScore('game_memory', score);
+                    if (window.gameTimer) {
+                        window.gameTimer.stop();
+                    }
+                }
+                
                 const gameMessage = document.getElementById('gameMessage');
                 gameMessage.textContent = `游戏结束！得分: ${score}, 尝试次数: ${attempts}, 用时: ${gameTime}秒`;
             }
@@ -450,6 +459,14 @@
             if (gameStarted) return;
             
             gameStarted = true;
+            
+            // 启动游戏计时器
+            if (window.GameStatsManager && window.GameTimer) {
+                if (!window.gameTimer) {
+                    window.gameTimer = new window.GameTimer('game_memory');
+                }
+                window.gameTimer.start();
+            }
             
             // 开始计时
             gameInterval = setInterval(() => {

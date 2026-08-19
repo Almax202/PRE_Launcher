@@ -116,7 +116,8 @@ body.glass-mode.dark-mode .sidebar-backdrop.show {
     .settings-main {
         flex: 1;
         width: 100%;
-        overflow-y: auto;
+        min-height: 0;
+        overflow: hidden;
     }
     
     .settings-header {
@@ -602,7 +603,11 @@ body.glass-mode.dark-mode .sidebar-backdrop.show {
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
     background: #f8fafc;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .settings-header {
@@ -971,7 +976,9 @@ body.dark-mode .mobile-nav-footer {
 
 .settings-content {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 30px 40px;
 }
 

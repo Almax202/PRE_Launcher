@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>光影恐龙 - 跳跃跑酷</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pre-primary': '#d45d79',
+                        'pre-accent': '#f0a050',
+                        'pre-deep': '#2a1b3d',
+                        'pre-dark': '#0f0a1e',
+                        'pre-purple': '#9b6dff'
+                    },
+                    fontFamily: { 'display': ['HarmonyOS Sans', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    
+    <link rel="stylesheet" href="../css/dinojump.css">
+<script src="../js/game-stats.js"></script>
+</head>
+<body data-game-id="game_dino">
+    <div class="blob" style="width:520px;height:520px;top:-120px;left:-120px;background:#d45d79;"></div>
+    <div class="blob" style="width:420px;height:420px;bottom:-80px;right:-60px;background:#f0a050;"></div>
+    <div class="blob" style="width:320px;height:320px;top:45%;left:48%;background:#9b6dff;"></div>
+    
+    <canvas id="bgCanvas"></canvas>
+    
+    <div class="app-layout">
+        <aside class="sidebar glass">
+            <div class="sidebar-header">
+                <div class="sidebar-avatar">
+                    <i class="fas fa-bone"></i>
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-username">光影恐龙</div>
+                    <div class="sidebar-subtitle">跳跃跑酷挑战</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">游戏控制</div>
+                <div class="menu-item" id="sidebarStartBtn">
+                    <i class="fas fa-play-circle"></i>
+                    <span>开始游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarResetBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>重置游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarPauseBtn">
+                    <i class="fas fa-pause"></i>
+                    <span>暂停 / 继续</span>
+                </div>
+                <div class="menu-item" id="sidebarAchievementBtn">
+                    <i class="fas fa-trophy"></i>
+                    <span>成就</span>
+                    <span class="badge" id="achvBadge">0</span>
+                </div>
+                <a href="../index.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>返回首页</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">难度选择</div>
+                <div class="difficulty-list">
+                    <div class="diff-item active" data-diff="easy">
+                        <div class="diff-label"><span class="diff-icon">🐣</span>简单</div>
+                        <div class="diff-desc">1.0倍速 · 少障碍</div>
+                    </div>
+                    <div class="diff-item" data-diff="medium">
+                        <div class="diff-label"><span class="diff-icon">⚡</span>中等</div>
+                        <div class="diff-desc">2.0倍速 · 双障碍</div>
+                    </div>
+                    <div class="diff-item" data-diff="hard">
+                        <div class="diff-label"><span class="diff-icon">🔥</span>困难</div>
+                        <div class="diff-desc">2.5倍速 · 密集障碍</div>
+                    </div>
+                    <div class="diff-item" data-diff="nightmare">
+                        <div class="diff-label"><span class="diff-icon">💀</span>噩梦</div>
+                        <div class="diff-desc">3.0倍速 · 极限挑战</div>
+                    </div>
+                    <div class="diff-item" data-diff="custom" id="customDiffBtn">
+                        <div class="diff-label"><span class="diff-icon">🎨</span>自定义</div>
+                        <div class="diff-desc" id="customDiffDesc">自由调整</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-center">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">未登录</div>
+                        <div class="user-id" id="userId">ID: ---</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="main-area">
+            <div class="info-bar glass">
+                <div class="info-chip">
+                    <i class="fas fa-star text-pre-accent"></i>
+                    <span>分数</span>
+                    <span class="font-bold stat-num" id="scoreVal">0</span>
+                </div>
+                <div class="info-chip">
+                    <i class="fas fa-stopwatch text-pre-primary"></i>
+                    <span>时间</span>
+                    <span class="font-bold stat-num" id="timeVal">0.0s</span>
+                </div>
+                <div class="info-chip">
+                    <i class="fas fa-feather-pointed text-pre-purple"></i>
+                    <span>跳跃</span>
+                    <span class="font-bold stat-num" id="jumpVal">0</span>
+                </div>
+                <div class="info-chip">
+                    <i class="fas fa-skull text-red-400"></i>
+                    <span>躲避</span>
+                    <span class="font-bold stat-num" id="dodgeVal">0</span>
+                </div>
+                <div class="info-chip" id="diffChip">
+                    <i class="fas fa-gauge-high text-pre-accent"></i>
+                    <span>难度</span>
+                    <span class="font-bold" id="diffVal">简单</span>
+                </div>
+                <div class="info-chip" id="multiplierChip">
+                    <i class="fas fa-bolt text-yellow-300"></i>
+                    <span>倍速</span>
+                    <span class="font-bold" id="multiplierVal">1.0x</span>
+                </div>
+            </div>
+            
+            <div class="game-area glass">
+                <canvas id="gameCanvas"></canvas>
+                <div class="game-overlay" id="gameOverlay">
+                    <div class="overlay-content">
+                        <h1 class="text-5xl md:text-6xl font-black mb-4 gradient-text">光影恐龙</h1>
+                        <p class="text-lg text-gray-300 mb-6">跳跃跑酷挑战 · 躲避障碍 · 高分记录</p>
+                        <div class="glass rounded-2xl px-6 py-4 mb-6 text-sm text-gray-300 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                            <span><kbd class="px-2 py-0.5 rounded bg-white/10">空格</kbd> / <kbd class="px-2 py-0.5 rounded bg-white/10">↑</kbd> 跳跃</span>
+                            <span><kbd class="px-2 py-0.5 rounded bg-white/10">↓</kbd> 下蹲</span>
+                            <span><kbd class="px-2 py-0.5 rounded bg-white/10">P</kbd> 暂停</span>
+                        </div>
+                        <button class="glow-btn px-10 py-4 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold text-xl" id="startBtn">
+                            <i class="fas fa-play mr-2"></i>开始游戏
+                        </button>
+                        <div class="mt-6 text-sm text-gray-500" id="bestInfo"></div>
+                    </div>
+                </div>
+                
+                <div class="pause-overlay hidden-overlay" id="pauseOverlay">
+                    <h2 class="text-4xl font-black mb-6 gradient-text">已暂停</h2>
+                    <div class="flex gap-3">
+                        <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="resumeBtn">
+                            <i class="fas fa-play mr-2"></i>继续
+                        </button>
+                        <button class="glass px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition" id="restartFromPauseBtn">
+                            <i class="fas fa-rotate-right mr-2"></i>重新开始
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="gameover-overlay hidden-overlay" id="gameoverOverlay">
+                    <div class="text-6xl mb-2"><i class="fas fa-skull-crossbones text-pre-primary"></i></div>
+                    <h2 class="text-4xl font-black mb-6 gradient-text">游戏结束</h2>
+                    <div class="glass rounded-2xl px-8 py-5 mb-6 flex gap-8">
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">得分</div>
+                            <div class="text-3xl font-black stat-num gradient-text" id="finalScore">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">时间</div>
+                            <div class="text-3xl font-black stat-num" id="finalTime">0.0s</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">跳跃</div>
+                            <div class="text-3xl font-black stat-num" id="finalJumps">0</div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400 mb-4" id="bestLine"></div>
+                    <div class="flex gap-3">
+                        <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="restartBtn">
+                            <i class="fas fa-rotate-right mr-2"></i>再来一局
+                        </button>
+                        <a href="../index.html" class="glass px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition">
+                            <i class="fas fa-home mr-2"></i>返回主页
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-section">
+                <div class="controls-hint glass">
+                    <h3><i class="fas fa-gamepad text-pre-accent"></i> 操作提示</h3>
+                    <div class="hint-grid">
+                        <div class="hint-item"><kbd>空格</kbd>/<kbd>↑</kbd> 跳跃</div>
+                        <div class="hint-item"><kbd>↓</kbd> 下蹲躲避</div>
+                        <div class="hint-item"><kbd>P</kbd> 暂停 / 继续</div>
+                        <div class="hint-item"><kbd>点击</kbd> 屏幕跳跃</div>
+                    </div>
+                </div>
+                
+                <div class="obstacle-legend glass">
+                    <h3><i class="fas fa-tree text-pre-purple"></i> 障碍说明</h3>
+                    <div class="obstacle-grid">
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">🌵</span><div><div class="pu-name">仙人掌</div><div class="pu-desc">跳过地面障碍</div></div></div>
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">🦖</span><div><div class="pu-name">翼龙</div><div class="pu-desc">下蹲躲避飞行障碍</div></div></div>
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">🪨</span><div><div class="pu-name">巨石</div><div class="pu-desc">大障碍需连跳</div></div></div>
+                    </div>
+                </div>
+                
+                <div class="ranking-panel glass">
+                    <div class="ranking-header">
+                        <h3><i class="fas fa-ranking-star text-pre-accent"></i> 排行榜</h3>
+                        <button class="ranking-reset-btn" id="dinoResetBtn" title="重置排行榜">
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
+                    </div>
+                    <div class="ranking-highscore">
+                        <span class="hs-label"><i class="fas fa-trophy text-yellow-400"></i> 历史最高分</span>
+                        <span class="hs-value" id="dinoHistoricalHigh">0</span>
+                    </div>
+                    <div class="ranking-content" id="rankingContent">
+                        <div class="ranking-empty">暂无记录</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="touch-controls" id="touchControls">
+                <div class="touch-pad">
+                    <div class="tbtn" id="tbtnJump"><i class="fas fa-arrow-up"></i></div>
+                    <div class="tbtn" id="tbtnDuck"><i class="fas fa-arrow-down"></i></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="achv-toast-container" id="toastBox"></div>
+    
+    <div class="achv-banner" id="achvBanner">
+        <div class="banner-icon"><i class="fas fa-trophy"></i></div>
+        <div class="banner-text" id="achvBannerText">成就解锁！</div>
+    </div>
+    
+    <div class="achv-sidebar" id="achvSidebar">
+        <div class="achv-header">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background:linear-gradient(135deg,#f0a050,#d45d79);">
+                    <i class="fas fa-trophy text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold">光影恐龙成就</h2>
+                    <div class="text-xs text-gray-400"><span id="achvUnlockedCount">0</span> / <span id="achvTotalCount">10</span> 已解锁</div>
+                </div>
+            </div>
+            <button class="text-gray-400 hover:text-white text-xl" id="closeAchvBtn"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="achv-list" id="achvList"></div>
+    </div>
+    
+    <div class="modal-overlay hidden-overlay" id="customModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold"><i class="fas fa-palette text-pre-accent mr-2"></i>自定义倍速设置</h2>
+                <button class="text-gray-400 hover:text-white text-xl" id="closeCustomBtn"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="speed-display">
+                    <div class="speed-value" id="speedValueDisplay">1.0x</div>
+                    <div class="speed-label">当前倍速</div>
+                </div>
+                <div class="speed-slider-container">
+                    <input type="range" id="speedSlider" min="0.5" max="5" step="0.1" value="1.0" class="speed-slider">
+                    <div class="slider-labels">
+                        <span>0.5x</span>
+                        <span>2.5x</span>
+                        <span>5.0x</span>
+                    </div>
+                </div>
+                <div class="speed-hint">
+                    <i class="fas fa-info-circle text-pre-accent"></i>
+                    <span>游戏开始时为设置的倍速，随时间推进速度会逐渐提升至该难度的最大值</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="glass px-6 py-2 rounded-lg hover:bg-white/10 transition" id="cancelCustomBtn">取消</button>
+                <button class="glow-btn px-6 py-2 rounded-lg bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="confirmCustomBtn">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay hidden-overlay" id="dinoResetModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold"><i class="fas fa-triangle-exclamation text-yellow-400 mr-2"></i>确认重置</h2>
+                <button class="text-gray-400 hover:text-white text-xl" id="dinoResetClose"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-gray-300">确定要清除所有历史记录吗？此操作不可撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="glass px-6 py-2 rounded-lg hover:bg-white/10 transition" id="dinoResetCancel">取消</button>
+                <button class="glow-btn px-6 py-2 rounded-lg bg-gradient-to-r from-red-500 to-orange-500 font-bold" id="dinoResetConfirm">确认重置</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (!currentUser.username) {
+            window.location.href = '../index.html';
+        }
+        
+        function findUser() {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            return users.find(u => u.username === currentUser.username);
+        }
+        function saveUser(user) {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const idx = users.findIndex(u => u.username === currentUser.username);
+            if (idx !== -1) { users[idx] = user; localStorage.setItem('registeredUsers', JSON.stringify(users)); }
+        }
+        function getUserGameData(key, def) {
+            const u = findUser();
+            if (!u || !u.gameData || u.gameData[key] === undefined) return def;
+            return u.gameData[key];
+        }
+        function setUserGameData(key, val) {
+            const u = findUser();
+            if (!u) return;
+            if (!u.gameData) u.gameData = {};
+            u.gameData[key] = val;
+            saveUser(u);
+        }
+        function saveAchievementTime(id) {
+            const u = findUser();
+            if (!u) return;
+            if (!u.achievementTimes) u.achievementTimes = {};
+            if (!u.achievementTimes[id]) { u.achievementTimes[id] = Date.now(); saveUser(u); }
+        }
+        
+        function roundRect(ctx, x, y, width, height, radius) {
+            if (typeof ctx.roundRect === 'function') {
+                ctx.beginPath();
+                ctx.roundRect(x, y, width, height, radius);
+                ctx.closePath();
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                ctx.lineTo(x + radius, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+            }
+        }
+        
+        const DIFFICULTY_CONFIG = {
+            easy:       { baseSpeed: 2.5, initialMultiplier: 1.0, minSpawnInterval: 1400, maxSpeedMultiplier: 3.0, obstacleTypes: ['cactus_small', 'cactus_small', 'cactus_large', 'rock_small'] },
+            medium:     { baseSpeed: 2.5, initialMultiplier: 2.0, minSpawnInterval: 1200, maxSpeedMultiplier: 4.0, obstacleTypes: ['cactus_small', 'cactus_large', 'cactus_double', 'bird', 'rock_small'] },
+            hard:       { baseSpeed: 2.5, initialMultiplier: 2.5, minSpawnInterval: 1050, maxSpeedMultiplier: 4.5, obstacleTypes: ['cactus_small', 'cactus_large', 'cactus_double', 'bird', 'bird_low', 'rock', 'rock_small'] },
+            nightmare:  { baseSpeed: 2.5, initialMultiplier: 3.0, minSpawnInterval: 900, maxSpeedMultiplier: 5.0, obstacleTypes: ['cactus_small', 'cactus_large', 'cactus_double', 'cactus_cluster', 'bird', 'bird_low', 'bird_high', 'rock', 'rock_small'] },
+            custom:     { baseSpeed: 2.5, initialMultiplier: 1.0, minSpawnInterval: 1200, maxSpeedMultiplier: 5.0, obstacleTypes: ['cactus_small', 'cactus_large', 'cactus_double', 'bird', 'rock', 'rock_small'] }
+        };
+        
+        let game = {
+            running: false,
+            paused: false,
+            score: 0,
+            scoreRaw: 0,
+            time: 0,
+            speed: 2.5,
+            baseSpeed: 2.5,
+            speedMultiplier: 1.0,
+            difficulty: 'easy',
+            customMultiplier: 1.0,
+            jumps: 0,
+            dodges: 0,
+            obstaclesDodged: 0,
+            isJumping: false,
+            isDucking: false,
+            jumpVelocity: 0,
+            jumpHeight: 0,
+            groundY: 0,
+            obstacles: [],
+            clouds: [],
+            groundOffset: 0,
+            spawnTimer: 0,
+            spawnInterval: 1800,
+            gameOver: false,
+            invincible: false,
+            lastTime: 0,
+            perfectGame: true
+        };
+        
+        let canvas, ctx;
+        let animationId = null;
+        
+        function openCustomModal() {
+            const modal = document.getElementById('customModal');
+            const slider = document.getElementById('speedSlider');
+            const display = document.getElementById('speedValueDisplay');
+            
+            slider.value = game.customMultiplier;
+            display.textContent = game.customMultiplier.toFixed(1) + 'x';
+            
+            modal.classList.remove('hidden-overlay');
+            if (window.gsap) {
+                gsap.fromTo('#customModal .modal-content', { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(1.5)' });
+            }
+        }
+        
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.add('hidden-overlay');
+        }
+        
+        let dinoHighScore = getUserGameData('dinoHighScore', 0);
+        let dinoHistoricalHigh = getUserGameData('dinoHistoricalHigh', 0);
+        let dinoTotalScore = getUserGameData('dinoTotalScore', 0);
+        let dinoGamesPlayed = getUserGameData('dinoGamesPlayed', 0);
+        let dinoTotalJumps = getUserGameData('dinoTotalJumps', 0);
+        let dinoTotalDodges = getUserGameData('dinoTotalDodges', 0);
+        let dinoAchievements = getUserGameData('dinoAchievements', []);
+        
+        const dinoAchievementDefs = [
+            { id: 'dino_first_game', name: '初次尝试', desc: '完成第一局跳跃游戏', icon: 'fa-gamepad', target: 1, field: 'gamesPlayed' },
+            { id: 'dino_score_100', name: '初级跳跃者', desc: '单局得分达到100分', icon: 'fa-star', target: 100, field: 'highScore' },
+            { id: 'dino_score_300', name: '中级跳跃者', desc: '单局得分达到300分', icon: 'fa-medal', target: 300, field: 'highScore' },
+            { id: 'dino_score_500', name: '高级跳跃者', desc: '单局得分达到500分', icon: 'fa-trophy', target: 500, field: 'highScore' },
+            { id: 'dino_games_5', name: '跳跃爱好者', desc: '累计完成5局游戏', icon: 'fa-apple-whole', target: 5, field: 'gamesPlayed' },
+            { id: 'dino_games_10', name: '跳跃达人', desc: '累计完成10局游戏', icon: 'fa-chess-knight', target: 10, field: 'gamesPlayed' },
+            { id: 'dino_jumps_100', name: '跳跃高手', desc: '单局跳跃100次', icon: 'fa-feather', target: 100, field: 'jumps' },
+            { id: 'dino_total_1000', name: '累计得分王', desc: '累计得分达到1000分', icon: 'fa-chart-line', target: 1000, field: 'totalScore' },
+            { id: 'dino_dodger', name: '躲避大师', desc: '单局躲避50个障碍', icon: 'fa-shield', target: 50, field: 'dodges' },
+            { id: 'dino_survivor', name: '生存大师', desc: '单局存活超过60秒', icon: 'fa-clock', target: 60, field: 'time' }
+        ];
+        
+        function initBackground() {
+            const bgCanvas = document.getElementById('bgCanvas');
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+            
+            const bgCtx = bgCanvas.getContext('2d');
+            const particles = [];
+            const particleCount = 100;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    size: Math.random() * 3 + 1,
+                    speedX: (Math.random() - 0.5) * 0.5,
+                    speedY: (Math.random() - 0.5) * 0.5,
+                    color: ['#f0a050', '#d45d79', '#9b6dff', '#ffd700'][Math.floor(Math.random() * 4)]
+                });
+            }
+            
+            function animateBg() {
+                bgCtx.fillStyle = 'rgba(15, 10, 30, 0.1)';
+                bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+                
+                particles.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    
+                    if (p.x < 0) p.x = bgCanvas.width;
+                    if (p.x > bgCanvas.width) p.x = 0;
+                    if (p.y < 0) p.y = bgCanvas.height;
+                    if (p.y > bgCanvas.height) p.y = 0;
+                    
+                    bgCtx.beginPath();
+                    bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    bgCtx.fillStyle = p.color;
+                    bgCtx.globalAlpha = 0.6;
+                    bgCtx.fill();
+                });
+                
+                bgCtx.globalAlpha = 1;
+                requestAnimationFrame(animateBg);
+            }
+            
+            animateBg();
+            
+            window.addEventListener('resize', () => {
+                bgCanvas.width = window.innerWidth;
+                bgCanvas.height = window.innerHeight;
+            });
+        }
+        
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            const rect = wrapper.getBoundingClientRect();
+            canvas.width = rect.width - 32;
+            canvas.height = Math.min(400, rect.height - 32);
+            canvas.style.width = canvas.width + 'px';
+            canvas.style.height = canvas.height + 'px';
+        }
+        
+        function initGame() {
+            game.score = 0;
+            game.scoreRaw = 0;
+            game.time = 0;
+            game.jumps = 0;
+            game.dodges = 0;
+            game.obstaclesDodged = 0;
+            game.isJumping = false;
+            game.isDucking = false;
+            game.jumpVelocity = 0;
+            game.jumpHeight = 0;
+            game.obstacles = [];
+            game.clouds = [];
+            game.groundOffset = 0;
+            game.spawnTimer = 0;
+            game.gameOver = false;
+            game.invincible = false;
+            game.perfectGame = true;
+            
+            const config = DIFFICULTY_CONFIG[game.difficulty];
+            game.baseSpeed = config.baseSpeed;
+            
+            if (game.difficulty === 'custom') {
+                game.speedMultiplier = game.customMultiplier;
+            } else {
+                game.speedMultiplier = config.initialMultiplier;
+            }
+            game.speed = game.baseSpeed * game.speedMultiplier;
+            game.spawnInterval = config.minSpawnInterval;
+            
+            const groundHeight = 50;
+            game.groundY = canvas.height - groundHeight;
+            
+            for (let i = 0; i < 3; i++) {
+                game.clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: 30 + Math.random() * 80,
+                    width: 60 + Math.random() * 40,
+                    speed: 0.3 + Math.random() * 0.5
+                });
+            }
+            
+            document.getElementById('scoreVal').textContent = '0';
+            document.getElementById('timeVal').textContent = '0.0s';
+            document.getElementById('jumpVal').textContent = '0';
+            document.getElementById('dodgeVal').textContent = '0';
+            
+            const diffNames = { easy: '简单', medium: '中等', hard: '困难', nightmare: '噩梦', custom: '自定义' };
+            document.getElementById('diffVal').textContent = diffNames[game.difficulty];
+            document.getElementById('multiplierVal').textContent = game.speedMultiplier.toFixed(1) + 'x';
+        }
+        
+        function jump() {
+            if (!game.running || game.paused || game.gameOver) return;
+            if (game.isJumping) return;
+            
+            game.isJumping = true;
+            game.jumpVelocity = -9;
+            game.jumps++;
+            document.getElementById('jumpVal').textContent = game.jumps;
+        }
+        
+        function duck(isDucking) {
+            if (!game.running || game.paused || game.gameOver) return;
+            game.isDucking = isDucking;
+        }
+        
+        function startGame() {
+            initGame();
+            game.running = true;
+            game.paused = false;
+            game.lastTime = performance.now();
+            
+            document.getElementById('gameOverlay').classList.add('hidden-overlay');
+            document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+            document.getElementById('gameoverOverlay').classList.add('hidden-overlay');
+            
+            // 启动游戏计时器
+            if (window.GameStatsManager && window.GameTimer) {
+                if (!window.gameTimer) {
+                    window.gameTimer = new window.GameTimer('game_dino');
+                }
+                window.gameTimer.start();
+            }
+            
+            if (window.gsap) {
+                gsap.fromTo('.game-area', { boxShadow: '0 0 20px rgba(240,160,80,0.3)' }, {
+                    boxShadow: '0 0 40px rgba(240,160,80,0.6)',
+                    duration: 0.6,
+                    repeat: -1,
+                    yoyo: true
+                });
+            }
+            
+            loop();
+        }
+        
+        function pauseGame() {
+            if (!game.running || game.paused) return;
+            game.paused = true;
+            document.getElementById('pauseOverlay').classList.remove('hidden-overlay');
+            if (window.gameTimer) {
+                window.gameTimer.pause();
+            }
+        }
+        
+        function resumeGame() {
+            if (!game.running || !game.paused) return;
+            game.paused = false;
+            game.lastTime = performance.now();
+            document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+            if (window.gameTimer) {
+                window.gameTimer.resume();
+            }
+            loop();
+        }
+        
+        function togglePause() {
+            if (game.paused) resumeGame();
+            else pauseGame();
+        }
+        
+        function gameOver() {
+            game.running = false;
+            game.paused = false;
+            game.gameOver = true;
+            
+            // 记录到新的游戏统计系统
+            if (window.GameStatsManager) {
+                window.GameStatsManager.recordScore('game_dino', game.score);
+                if (window.gameTimer) {
+                    window.gameTimer.stop();
+                }
+            }
+            
+            dinoGamesPlayed++;
+            dinoTotalScore += game.score;
+            dinoTotalJumps += game.jumps;
+            dinoTotalDodges += game.obstaclesDodged;
+            if (game.score > dinoHighScore) dinoHighScore = game.score;
+            
+            setUserGameData('dinoGamesPlayed', dinoGamesPlayed);
+            setUserGameData('dinoHighScore', dinoHighScore);
+            setUserGameData('dinoTotalScore', dinoTotalScore);
+            setUserGameData('dinoTotalJumps', dinoTotalJumps);
+            setUserGameData('dinoTotalDodges', dinoTotalDodges);
+            
+            document.getElementById('finalScore').textContent = game.score;
+            document.getElementById('finalTime').textContent = game.time.toFixed(1) + 's';
+            document.getElementById('finalJumps').textContent = game.jumps;
+            
+            const isNewHigh = game.score >= dinoHighScore && game.score > 0;
+            document.getElementById('bestLine').textContent = isNewHigh
+                ? '🎉 新纪录！历史最高: ' + dinoHighScore
+                : '历史最高: ' + dinoHighScore + ' · 累计: ' + dinoTotalScore;
+            
+            document.getElementById('gameoverOverlay').classList.remove('hidden-overlay');
+            
+            checkAchievements();
+            saveRanking();
+            updateRanking();
+            
+            if (window.gsap) {
+                gsap.fromTo('#gameoverOverlay', { opacity: 0 }, { opacity: 1, duration: 0.4 });
+                gsap.fromTo('#gameoverOverlay .glass', { scale: 0.8, y: 30 }, { scale: 1, y: 0, duration: 0.5, ease: 'back.out(1.7)' });
+            }
+        }
+        
+        function checkAchievements() {
+            const newAchievements = [];
+            const conds = {
+                dino_first_game: dinoGamesPlayed >= 1,
+                dino_score_100: game.score >= 100 || dinoHighScore >= 100,
+                dino_score_300: game.score >= 300 || dinoHighScore >= 300,
+                dino_score_500: game.score >= 500 || dinoHighScore >= 500,
+                dino_games_5: dinoGamesPlayed >= 5,
+                dino_games_10: dinoGamesPlayed >= 10,
+                dino_jumps_100: game.jumps >= 100,
+                dino_total_1000: dinoTotalScore >= 1000,
+                dino_dodger: game.obstaclesDodged >= 50,
+                dino_survivor: game.time >= 60
+            };
+            
+            dinoAchievementDefs.forEach(a => {
+                if (!dinoAchievements.includes(a.id) && conds[a.id]) {
+                    dinoAchievements.push(a.id);
+                    newAchievements.push(a);
+                    saveAchievementTime(a.id);
+                }
+            });
+            
+            if (newAchievements.length > 0) {
+                setUserGameData('dinoAchievements', dinoAchievements);
+                newAchievements.forEach(a => showAchievementToast(a));
+            }
+            
+            if (dinoAchievements.length >= 10) {
+                const sp = getUserGameData('specialAchievements', []) || [];
+                if (!sp.includes('dino_complete')) {
+                    sp.push('dino_complete');
+                    setUserGameData('specialAchievements', sp);
+                    showAchievementToast({ id: 'dino_complete', name: '光影恐龙大师', desc: '解锁光影恐龙所有成就', icon: 'fa-crown' });
+                }
+            }
+            
+            updateAchvBadge();
+            renderAchievements();
+        }
+        
+        function showAchievementToast(a) {
+            const box = document.getElementById('toastBox');
+            const el = document.createElement('div');
+            el.className = 'achv-toast glass rounded-xl p-3 flex items-center gap-3';
+            el.innerHTML = `
+                <div class="w-11 h-11 rounded-lg flex items-center justify-center text-xl shrink-0" style="background:linear-gradient(135deg,#f0a050,#d45d79);">
+                    <i class="fas ${a.icon} text-white"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[11px] text-pre-accent font-bold tracking-wide">成就解锁</div>
+                    <div class="font-bold text-sm truncate">${a.name}</div>
+                    <div class="text-xs text-gray-400 truncate">${a.desc}</div>
+                </div>`;
+            box.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            if (window.gsap) {
+                gsap.from(el, { y: 20, duration: 0.5, ease: 'back.out(1.7)' });
+            }
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 500);
+            }, 3600);
+            
+            const banner = document.getElementById('achvBanner');
+            document.getElementById('achvBannerText').textContent = a.name + ' 已解锁！';
+            banner.classList.add('show');
+            setTimeout(() => banner.classList.remove('show'), 2500);
+        }
+        
+        function updateAchvBadge() {
+            const badge = document.getElementById('achvBadge');
+            if (badge) badge.textContent = dinoAchievements.length;
+        }
+        
+        function renderAchievements() {
+            const list = document.getElementById('achvList');
+            if (!list) return;
+            list.innerHTML = '';
+            
+            document.getElementById('achvUnlockedCount').textContent = dinoAchievements.length;
+            document.getElementById('achvTotalCount').textContent = dinoAchievementDefs.length;
+            
+            const dataMap = {
+                gamesPlayed: dinoGamesPlayed,
+                highScore: dinoHighScore,
+                totalScore: dinoTotalScore,
+                jumps: game.jumps,
+                dodges: game.obstaclesDodged,
+                time: game.time
+            };
+            
+            dinoAchievementDefs.forEach(a => {
+                const unlocked = dinoAchievements.includes(a.id);
+                let progress = 0;
+                let progressText = '';
+                
+                if (unlocked) {
+                    progress = 100;
+                    progressText = '已完成';
+                } else {
+                    const val = dataMap[a.field] || 0;
+                    progress = Math.min((val / a.target) * 100, 99);
+                    progressText = val + '/' + a.target;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'achv-card' + (unlocked ? ' unlocked' : '');
+                card.innerHTML = `
+                    <div class="achv-progress-ring">
+                        <svg width="48" height="48">
+                            <defs>
+                                <linearGradient id="achvGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#f0a050"/>
+                                    <stop offset="50%" stop-color="#d45d79"/>
+                                    <stop offset="100%" stop-color="#9b6dff"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="ring-bg" cx="24" cy="24" r="20" fill="none" stroke-width="3"/>
+                            <circle class="ring-fg" cx="24" cy="24" r="20" fill="none" stroke-width="3"
+                                stroke-dasharray="${2 * Math.PI * 20}"
+                                stroke-dashoffset="${2 * Math.PI * 20 * (1 - progress / 100)}"/>
+                        </svg>
+                        <div class="achv-progress-text">${Math.round(progress)}%</div>
+                    </div>
+                    <div class="achv-icon"><i class="fas ${a.icon}"></i></div>
+                    <div class="achv-info">
+                        <div class="achv-name">${a.name}</div>
+                        <div class="achv-desc">${a.desc}</div>
+                    </div>
+                    <div class="achv-status">${progressText}</div>`;
+                list.appendChild(card);
+            });
+        }
+        
+        function saveRanking() {
+            const key = 'dinoRanking';
+            let ranking = getUserGameData(key, []);
+            ranking.push({ score: game.score, time: game.time, jumps: game.jumps, date: Date.now() });
+            ranking.sort((a, b) => b.score - a.score);
+            ranking = ranking.slice(0, 10);
+            setUserGameData(key, ranking);
+            
+            if (game.score > dinoHistoricalHigh) {
+                dinoHistoricalHigh = game.score;
+                setUserGameData('dinoHistoricalHigh', dinoHistoricalHigh);
+            }
+        }
+        
+        function updateRanking() {
+            const ranking = getUserGameData('dinoRanking', []);
+            const container = document.getElementById('rankingContent');
+            const hsEl = document.getElementById('dinoHistoricalHigh');
+            if (hsEl) hsEl.textContent = dinoHistoricalHigh;
+            if (!container) return;
+            
+            if (ranking.length === 0) {
+                container.innerHTML = '<div class="ranking-empty">暂无记录，快去创造纪录吧！</div>';
+                return;
+            }
+            
+            container.innerHTML = ranking.map((r, i) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const rank = i < 3 ? medals[i] : `#${i + 1}`;
+                const date = new Date(r.date);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+                return `<div class="ranking-item">
+                    <span class="r-rank">${rank}</span>
+                    <span class="r-score">${r.score}</span>
+                    <span class="r-meta">跳${r.jumps} · ${r.time.toFixed(1)}s · ${dateStr}</span>
+                </div>`;
+            }).join('');
+        }
+        
+        function showBestInfo() {
+            const el = document.getElementById('bestInfo');
+            if (el) {
+                el.textContent = `最高分: ${dinoHighScore} · 累计: ${dinoTotalScore} · 场次: ${dinoGamesPlayed}`;
+            }
+        }
+        
+        function spawnObstacle() {
+            const config = DIFFICULTY_CONFIG[game.difficulty];
+            const types = config.obstacleTypes;
+            const type = types[Math.floor(Math.random() * types.length)];
+            
+            const obstacle = {
+                type: type,
+                x: canvas.width + 20,
+                passed: false
+            };
+            
+            switch (type) {
+                case 'cactus_small':
+                    obstacle.width = 20;
+                    obstacle.height = 30;
+                    obstacle.y = game.groundY - obstacle.height;
+                    obstacle.color = '#22c55e';
+                    break;
+                case 'cactus_large':
+                    obstacle.width = 28;
+                    obstacle.height = 42;
+                    obstacle.y = game.groundY - obstacle.height;
+                    obstacle.color = '#16a34a';
+                    break;
+                case 'cactus_double':
+                    obstacle.width = 50;
+                    obstacle.height = 35;
+                    obstacle.y = game.groundY - obstacle.height;
+                    obstacle.color = '#16a34a';
+                    break;
+                case 'cactus_cluster':
+                    obstacle.width = 68;
+                    obstacle.height = 30;
+                    obstacle.y = game.groundY - obstacle.height;
+                    obstacle.color = '#15803d';
+                    break;
+                case 'bird':
+                    obstacle.width = 38;
+                    obstacle.height = 24;
+                    obstacle.y = game.groundY - 75;
+                    obstacle.color = '#ef4444';
+                    break;
+                case 'bird_low':
+                    obstacle.width = 38;
+                    obstacle.height = 24;
+                    obstacle.y = game.groundY - 50;
+                    obstacle.color = '#ef4444';
+                    break;
+                case 'bird_high':
+                    obstacle.width = 38;
+                    obstacle.height = 24;
+                    obstacle.y = game.groundY - 115;
+                    obstacle.color = '#ef4444';
+                    break;
+                case 'rock':
+                    obstacle.width = 42;
+                    obstacle.height = 30;
+                    obstacle.y = game.groundY - obstacle.height;
+                    obstacle.color = '#78716c';
+                    break;
+                case 'rock_small':
+                    obstacle.width = 26;
+                    obstacle.height = 22;
+                    obstacle.y = game.groundY - obstacle.height;
+                    obstacle.color = '#78716c';
+                    break;
+            }
+            
+            game.obstacles.push(obstacle);
+        }
+        
+        function update(dt) {
+            if (!game.running || game.paused || game.gameOver) return;
+            
+            game.time += dt / 1000;
+            game.scoreRaw += dt * 0.003 * game.speedMultiplier;
+            game.score = Math.floor(game.scoreRaw);
+            
+            const config = DIFFICULTY_CONFIG[game.difficulty];
+            const initialMult = game.difficulty === 'custom' ? game.customMultiplier : config.initialMultiplier;
+            const maxMult = config.maxSpeedMultiplier;
+            
+            const speedProgress = Math.min(game.time / 60, 1);
+            const speedIncrease = (maxMult - initialMult) * speedProgress;
+            game.speedMultiplier = initialMult + speedIncrease;
+            game.speed = game.baseSpeed * game.speedMultiplier;
+            
+            game.spawnInterval = config.minSpawnInterval / (1 + speedProgress * 0.4) / Math.max(1, game.speedMultiplier * 0.6);
+            
+            document.getElementById('timeVal').textContent = game.time.toFixed(1) + 's';
+            document.getElementById('scoreVal').textContent = game.score;
+            document.getElementById('multiplierVal').textContent = game.speedMultiplier.toFixed(1) + 'x';
+            
+            if (game.isJumping) {
+                game.jumpHeight += game.jumpVelocity;
+                game.jumpVelocity += 0.38;
+                
+                if (game.jumpHeight >= 0) {
+                    game.isJumping = false;
+                    game.jumpHeight = 0;
+                    game.jumpVelocity = 0;
+                }
+            }
+            
+            game.groundOffset = (game.groundOffset + game.speed) % 40;
+            
+            game.clouds.forEach(cloud => {
+                cloud.x -= cloud.speed;
+                if (cloud.x + cloud.width < 0) {
+                    cloud.x = canvas.width + 50;
+                    cloud.y = 30 + Math.random() * 80;
+                }
+            });
+            
+            game.obstacles.forEach(obs => {
+                obs.x -= game.speed;
+            });
+            
+            game.obstacles = game.obstacles.filter(obs => obs.x + obs.width > -20);
+            
+            game.spawnTimer += dt;
+            if (game.spawnTimer >= game.spawnInterval) {
+                const lastObs = game.obstacles[game.obstacles.length - 1];
+                const minGap = 160 + game.speed * 8;
+                const canSpawn = !lastObs || (canvas.width - lastObs.x) >= minGap;
+                
+                if (canSpawn && game.obstacles.length < 6) {
+                    game.spawnTimer = 0;
+                    spawnObstacle();
+                }
+            }
+            
+            checkCollisions();
+        }
+        
+        function checkCollisions() {
+            const dinoWidth = 35;
+            const dinoHeight = game.isDucking ? 25 : 40;
+            const dinoX = 60;
+            let dinoY;
+            if (game.isDucking) {
+                dinoY = game.groundY - 25;
+            } else {
+                dinoY = game.groundY - dinoHeight - Math.abs(game.jumpHeight);
+            }
+            
+            for (const obs of game.obstacles) {
+                const obsLeft = obs.x;
+                const obsRight = obs.x + obs.width;
+                const obsTop = obs.y;
+                const obsBottom = obs.y + obs.height;
+                
+                const dinoLeft = dinoX + 5;
+                const dinoRight = dinoX + dinoWidth - 5;
+                const dinoTop = dinoY + 5;
+                const dinoBottom = dinoY + dinoHeight - 5;
+                
+                if (dinoRight > obsLeft && dinoLeft < obsRight &&
+                    dinoBottom > obsTop && dinoTop < obsBottom) {
+                    gameOver();
+                    return;
+                }
+                
+                if (!obs.passed && obs.x + obs.width < dinoX) {
+                    obs.passed = true;
+                    game.obstaclesDodged++;
+                    document.getElementById('dodgeVal').textContent = game.obstaclesDodged;
+                }
+            }
+        }
+        
+        function render() {
+            if (!ctx) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, '#1a1030');
+            grad.addColorStop(0.5, '#2a1b3d');
+            grad.addColorStop(1, '#0f0a1e');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            game.clouds.forEach(cloud => {
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.beginPath();
+                ctx.ellipse(cloud.x, cloud.y, cloud.width / 2, cloud.width / 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cloud.x - cloud.width / 4, cloud.y + 5, cloud.width / 3, cloud.width / 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cloud.x + cloud.width / 4, cloud.y + 3, cloud.width / 3, cloud.width / 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            ctx.fillStyle = '#4a3a5a';
+            ctx.fillRect(0, game.groundY, canvas.width, canvas.height - game.groundY);
+            
+            ctx.strokeStyle = '#6a5a7a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, game.groundY);
+            ctx.lineTo(canvas.width, game.groundY);
+            ctx.stroke();
+            
+            for (let x = -game.groundOffset; x < canvas.width; x += 40) {
+                ctx.fillStyle = '#5a4a6a';
+                ctx.fillRect(x, game.groundY + 5, 20, 3);
+                ctx.fillRect(x + 15, game.groundY + 15, 10, 2);
+            }
+            
+            game.obstacles.forEach(obs => {
+                drawObstacle(obs);
+            });
+            
+            drawDino();
+        }
+        
+        function drawDino() {
+            const dinoX = 60;
+            const dinoY = game.groundY - 40 - Math.abs(game.jumpHeight);
+            const dinoWidth = 35;
+            const dinoHeight = game.isDucking ? 25 : 40;
+            
+            let y = dinoY;
+            let height = dinoHeight;
+            
+            if (game.isDucking) {
+                y = game.groundY - 25;
+                height = 25;
+            }
+            
+            ctx.fillStyle = '#f0a050';
+            roundRect(ctx, dinoX, y, dinoWidth, height, 8);
+            ctx.fill();
+            
+            ctx.fillStyle = '#d45d79';
+            roundRect(ctx, dinoX + 10, y - 12, 25, 20, 6);
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(dinoX + 28, y - 5, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(dinoX + 29, y - 4, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#9b6dff';
+            if (game.isJumping) {
+                ctx.fillRect(dinoX + 5, y + height, 6, 8);
+                ctx.fillRect(dinoX + 20, y + height, 6, 8);
+            } else {
+                const legOffset = Math.sin(game.time * 10) * 3;
+                ctx.fillRect(dinoX + 5, y + height, 6, 8 + legOffset);
+                ctx.fillRect(dinoX + 20, y + height, 6, 8 - legOffset);
+            }
+        }
+        
+        function drawObstacle(obs) {
+            ctx.fillStyle = obs.color;
+            
+            switch (obs.type) {
+                case 'cactus_small':
+                case 'cactus_large':
+                    ctx.fillStyle = '#22c55e';
+                    roundRect(ctx, obs.x + obs.width * 0.2, obs.y, obs.width * 0.6, obs.height, 5);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#16a34a';
+                    roundRect(ctx, obs.x, obs.y + obs.height * 0.3, obs.width * 0.3, obs.height * 0.4, 3);
+                    ctx.fill();
+                    
+                    roundRect(ctx, obs.x + obs.width * 0.7, obs.y + obs.height * 0.2, obs.width * 0.3, obs.height * 0.5, 3);
+                    ctx.fill();
+                    break;
+                    
+                case 'cactus_double':
+                    ctx.fillStyle = '#22c55e';
+                    roundRect(ctx, obs.x + 3, obs.y, 16, obs.height, 4);
+                    ctx.fill();
+                    roundRect(ctx, obs.x + 28, obs.y - 3, 18, obs.height + 3, 4);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#16a34a';
+                    roundRect(ctx, obs.x, obs.y + obs.height * 0.4, 8, obs.height * 0.3, 2);
+                    ctx.fill();
+                    roundRect(ctx, obs.x + 36, obs.y + obs.height * 0.3, 8, obs.height * 0.4, 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'cactus_cluster':
+                    ctx.fillStyle = '#22c55e';
+                    roundRect(ctx, obs.x + 2, obs.y + 5, 14, obs.height - 5, 3);
+                    ctx.fill();
+                    roundRect(ctx, obs.x + 20, obs.y, 16, obs.height, 4);
+                    ctx.fill();
+                    roundRect(ctx, obs.x + 42, obs.y + 8, 12, obs.height - 8, 3);
+                    ctx.fill();
+                    roundRect(ctx, obs.x + 56, obs.y + 3, 10, obs.height - 3, 3);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#15803d';
+                    roundRect(ctx, obs.x + 18, obs.y + obs.height * 0.5, 6, 8, 2);
+                    ctx.fill();
+                    roundRect(ctx, obs.x + 50, obs.y + obs.height * 0.4, 5, 6, 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'bird':
+                case 'bird_low':
+                case 'bird_high':
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.ellipse(obs.x + obs.width / 2, obs.y + obs.height / 2, obs.width / 2, obs.height / 3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    const wingOffset = Math.sin(game.time * 15) * 10;
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + obs.width / 2, obs.y + obs.height / 2);
+                    ctx.lineTo(obs.x - 5, obs.y + obs.height / 2 - wingOffset);
+                    ctx.lineTo(obs.x + 5, obs.y + obs.height / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + obs.width / 2, obs.y + obs.height / 2);
+                    ctx.lineTo(obs.x + obs.width + 5, obs.y + obs.height / 2 - wingOffset);
+                    ctx.lineTo(obs.x + obs.width - 5, obs.y + obs.height / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(obs.x + obs.width * 0.75, obs.y + obs.height * 0.4, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(obs.x + obs.width * 0.78, obs.y + obs.height * 0.4, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'rock':
+                    ctx.fillStyle = '#78716c';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + obs.width / 2, obs.y);
+                    ctx.lineTo(obs.x + obs.width, obs.y + obs.height * 0.6);
+                    ctx.lineTo(obs.x + obs.width * 0.8, obs.y + obs.height);
+                    ctx.lineTo(obs.x + obs.width * 0.2, obs.y + obs.height);
+                    ctx.lineTo(obs.x, obs.y + obs.height * 0.6);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#a8a29e';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + obs.width / 2, obs.y);
+                    ctx.lineTo(obs.x + obs.width * 0.6, obs.y + obs.height * 0.3);
+                    ctx.lineTo(obs.x + obs.width * 0.3, obs.y + obs.height * 0.3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'rock_small':
+                    ctx.fillStyle = '#78716c';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + obs.width / 2, obs.y);
+                    ctx.lineTo(obs.x + obs.width, obs.y + obs.height * 0.5);
+                    ctx.lineTo(obs.x + obs.width * 0.7, obs.y + obs.height);
+                    ctx.lineTo(obs.x + obs.width * 0.3, obs.y + obs.height);
+                    ctx.lineTo(obs.x, obs.y + obs.height * 0.5);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#a8a29e';
+                    ctx.beginPath();
+                    ctx.arc(obs.x + obs.width / 2, obs.y + obs.height * 0.4, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+            }
+        }
+        
+        function loop() {
+            const now = performance.now();
+            const dt = Math.min(now - game.lastTime, 50);
+            game.lastTime = now;
+            
+            update(dt);
+            render();
+            
+            if (game.running && !game.paused) {
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+        
+        function openResetModal() {
+            document.getElementById('dinoResetModal').classList.remove('hidden-overlay');
+        }
+        
+        function closeResetModal() {
+            document.getElementById('dinoResetModal').classList.add('hidden-overlay');
+        }
+        
+        function resetRanking() {
+            setUserGameData('dinoRanking', []);
+            dinoHighScore = 0;
+            setUserGameData('dinoHighScore', 0);
+            dinoTotalScore = 0;
+            setUserGameData('dinoTotalScore', 0);
+            updateRanking();
+            showBestInfo();
+            closeResetModal();
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            const user = findUser();
+            if (user) {
+                document.getElementById('userName').textContent = user.username;
+                document.getElementById('userId').textContent = 'ID: ' + (user.userId || '---');
+            }
+            
+            resizeCanvas();
+            initBackground();
+            showBestInfo();
+            updateAchvBadge();
+            renderAchievements();
+            updateRanking();
+            
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('sidebarStartBtn').addEventListener('click', startGame);
+            document.getElementById('restartBtn').addEventListener('click', startGame);
+            document.getElementById('restartFromPauseBtn').addEventListener('click', startGame);
+            
+            document.getElementById('sidebarResetBtn').addEventListener('click', () => {
+                if (game.running) {
+                    game.running = false;
+                    cancelAnimationFrame(animationId);
+                }
+                document.getElementById('gameoverOverlay').classList.add('hidden-overlay');
+                document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+                document.getElementById('gameOverlay').classList.remove('hidden-overlay');
+            });
+            
+            document.getElementById('resumeBtn').addEventListener('click', resumeGame);
+            document.getElementById('sidebarPauseBtn').addEventListener('click', togglePause);
+            
+            document.getElementById('sidebarAchievementBtn').addEventListener('click', () => {
+                document.getElementById('achvSidebar').classList.add('open');
+            });
+            document.getElementById('closeAchvBtn').addEventListener('click', () => {
+                document.getElementById('achvSidebar').classList.remove('open');
+            });
+            
+            document.querySelectorAll('.diff-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const diff = item.dataset.diff;
+                    
+                    if (diff === 'custom') {
+                        openCustomModal();
+                    } else {
+                        document.querySelectorAll('.diff-item').forEach(i => i.classList.remove('active'));
+                        item.classList.add('active');
+                        game.difficulty = diff;
+                        if (!game.running) {
+                            initGame();
+                        }
+                    }
+                });
+            });
+            
+            document.getElementById('customDiffBtn').addEventListener('dblclick', () => {
+                openCustomModal();
+            });
+            
+            const speedSlider = document.getElementById('speedSlider');
+            const speedValueDisplay = document.getElementById('speedValueDisplay');
+            
+            speedSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                speedValueDisplay.textContent = val.toFixed(1) + 'x';
+            });
+            
+            document.getElementById('closeCustomBtn').addEventListener('click', closeCustomModal);
+            document.getElementById('cancelCustomBtn').addEventListener('click', closeCustomModal);
+            document.getElementById('confirmCustomBtn').addEventListener('click', () => {
+                const val = parseFloat(speedSlider.value);
+                game.customMultiplier = val;
+                
+                document.querySelectorAll('.diff-item').forEach(i => i.classList.remove('active'));
+                document.getElementById('customDiffBtn').classList.add('active');
+                game.difficulty = 'custom';
+                
+                document.getElementById('customDiffDesc').textContent = val.toFixed(1) + '倍速 · 自由调整';
+                
+                closeCustomModal();
+                if (!game.running) {
+                    initGame();
+                }
+            });
+            
+            document.getElementById('dinoResetBtn').addEventListener('click', openResetModal);
+            document.getElementById('dinoResetClose').addEventListener('click', closeResetModal);
+            document.getElementById('dinoResetCancel').addEventListener('click', closeResetModal);
+            document.getElementById('dinoResetConfirm').addEventListener('click', resetRanking);
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!game.running) startGame();
+                    else jump();
+                } else if (e.code === 'ArrowDown') {
+                    e.preventDefault();
+                    duck(true);
+                } else if (e.code === 'KeyP') {
+                    e.preventDefault();
+                    togglePause();
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'ArrowDown') {
+                    duck(false);
+                }
+            });
+            
+            canvas.addEventListener('click', () => {
+                if (!game.running) startGame();
+                else jump();
+            });
+            
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (!game.running) startGame();
+                else jump();
+            });
+            
+            const tbtnJump = document.getElementById('tbtnJump');
+            const tbtnDuck = document.getElementById('tbtnDuck');
+            
+            if (tbtnJump) {
+                tbtnJump.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (!game.running) startGame();
+                    else jump();
+                });
+                tbtnJump.addEventListener('click', () => {
+                    if (!game.running) startGame();
+                    else jump();
+                });
+            }
+            
+            if (tbtnDuck) {
+                tbtnDuck.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    duck(true);
+                });
+                tbtnDuck.addEventListener('touchend', () => {
+                    duck(false);
+                });
+                tbtnDuck.addEventListener('mousedown', () => {
+                    duck(true);
+                });
+                tbtnDuck.addEventListener('mouseup', () => {
+                    duck(false);
+                });
+                tbtnDuck.addEventListener('mouseleave', () => {
+                    duck(false);
+                });
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+        });
+    </script>
+</body>
+</html>

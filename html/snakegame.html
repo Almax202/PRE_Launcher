@@ -2,127 +2,111 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="贪吃蛇小游戏 - PRE Launcher">
-    <meta name="theme-color" content="#667eea">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>贪吃蛇小游戏</title>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link rel="stylesheet" href="../css/homepage.css">
-    <link rel="stylesheet" href="../css/achievement.css">
-    <link rel="stylesheet" href="../css/snakegame.css">
-    <script src="../js/versionManager.js" defer></script>
-    <!-- ===== UI 框架：Tailwind CSS + GSAP + Lenis（替换原 MUI） ===== -->
-    <!-- Tailwind CSS (Play CDN) - 关闭 preflight 避免重置样式破坏现有 CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>光影贪吃蛇 - 50×50 极限挑战</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        if (window.tailwind) {
-            tailwind.config = {
-                corePlugins: { preflight: false },
-                theme: { extend: { colors: { 'pre-primary': '#d45d79', 'pre-accent': '#f0a050' } } }
-            };
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pre-primary': '#d45d79',
+                        'pre-accent': '#f0a050',
+                        'pre-deep': '#2a1b3d',
+                        'pre-dark': '#0f0a1e',
+                        'pre-purple': '#9b6dff'
+                    },
+                    fontFamily: { 'display': ['HarmonyOS Sans', 'system-ui', 'sans-serif'] }
+                }
+            }
         }
     </script>
-    <!-- GSAP (动画引擎) + ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" onerror="this.onerror=null; console.warn('GSAP 加载失败')"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" onerror="this.onerror=null; console.warn('ScrollTrigger 加载失败')"></script>
-    <!-- Lenis (平滑滚动) -->
-    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onerror="this.onerror=null; console.warn('Lenis 加载失败')"></script>
-    <script>
-        // 仅在 window 真正可滚动时启用 Lenis，否则保留原生滚动
-        (function () {
-            function initLenis() {
-                if (typeof Lenis === 'undefined') return;
-                var bodyStyle = window.getComputedStyle(document.body || document.documentElement);
-                var docEl = document.documentElement;
-                if (bodyStyle.overflowY === 'hidden' || bodyStyle.overflow === 'hidden' ||
-                    docEl.scrollHeight <= docEl.clientHeight + 2) {
-                    return;
-                }
-                try {
-                    var lenis = new Lenis({
-                        duration: 1.1, smoothWheel: true,
-                        prevent: function (node) {
-                            var cur = node;
-                            while (cur && cur !== document.body) {
-                                var st = window.getComputedStyle(cur);
-                                if ((st.overflowY === 'auto' || st.overflowY === 'scroll') &&
-                                    cur.scrollHeight > cur.clientHeight + 1) {
-                                    return true;
-                                }
-                                cur = cur.parentElement;
-                            }
-                            return false;
-                        }
-                    });
-                    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-                    requestAnimationFrame(raf);
-                    if (window.gsap && window.ScrollTrigger) {
-                        lenis.on('scroll', ScrollTrigger.update);
-                        gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
-                        gsap.ticker.lagSmoothing(0);
-                    }
-                    window.__lenis = lenis;
-                } catch (e) { console.warn('Lenis 初始化失败，已降级到原生滚动:', e); }
-            }
-            if (document.readyState === 'complete') {
-                setTimeout(initLenis, 0);
-            } else {
-                window.addEventListener('load', function () { setTimeout(initLenis, 0); });
-            }
-        })();
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+        }
+    }
     </script>
-    <!-- ===== /UI 框架 ===== -->
+
+    <link rel="stylesheet" href="../css/snakegame.css">
+<script src="../js/game-stats.js"></script>
 </head>
-<body>
-    <div class="settings-container">
-        <div class="settings-sidebar">
+<body data-game-id="game_snake">
+    <div class="blob" style="width:520px;height:520px;top:-120px;left:-120px;background:#d45d79;"></div>
+    <div class="blob" style="width:420px;height:420px;bottom:-80px;right:-60px;background:#f0a050;"></div>
+    <div class="blob" style="width:320px;height:320px;top:45%;left:48%;background:#9b6dff;"></div>
+
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="app-layout">
+        <aside class="sidebar glass">
             <div class="sidebar-header">
                 <div class="sidebar-avatar">
-                    <i class="fas fa-dragon"></i>
+                    <i class="fas fa-worm"></i>
                 </div>
                 <div class="sidebar-user-info">
-                    <div class="sidebar-username">贪吃蛇游戏</div>
-                    <div class="sidebar-uid" id="versionNumber">RC 1.0.0</div>
+                    <div class="sidebar-username">光影贪吃蛇</div>
+                    <div class="sidebar-subtitle">50×50 极限挑战</div>
                 </div>
             </div>
-            
-            <div class="sidebar-menu">
-                <div class="menu-item menu-header">
-                    <span>游戏控制</span>
-                </div>
-                <div class="menu-item" id="sidebarStartGameBtn">
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">游戏控制</div>
+                <div class="menu-item" id="sidebarStartBtn">
                     <i class="fas fa-play-circle"></i>
                     <span>开始游戏</span>
                 </div>
-                <div class="menu-item" id="sidebarResetGameBtn">
+                <div class="menu-item" id="sidebarResetBtn">
                     <i class="fas fa-redo"></i>
                     <span>重置游戏</span>
+                </div>
+                <div class="menu-item" id="sidebarPauseBtn">
+                    <i class="fas fa-pause"></i>
+                    <span>暂停 / 继续</span>
                 </div>
                 <div class="menu-item" id="sidebarAchievementBtn">
                     <i class="fas fa-trophy"></i>
                     <span>成就</span>
+                    <span class="badge" id="achvBadge">0</span>
                 </div>
-                <div class="menu-item" id="sidebarUpdateBtn">
-                    <i class="fas fa-bell"></i>
-                    <span>版本更新公告</span>
-                </div>
-                <div class="menu-item" id="sidebarLangSwitchBtn">
-                    <i class="fas fa-language"></i>
-                    <span>切换语言</span>
-                </div>
-                <div class="menu-item" id="sidebarBackHomeBtn">
+                <a href="../index.html" class="menu-item">
                     <i class="fas fa-home"></i>
                     <span>返回首页</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">难度选择</div>
+                <div class="difficulty-list">
+                    <div class="diff-item active" data-diff="easy">
+                        <div class="diff-label"><span class="diff-icon">🐣</span>简单</div>
+                        <div class="diff-desc">慢速 · 少障碍</div>
+                    </div>
+                    <div class="diff-item" data-diff="medium">
+                        <div class="diff-label"><span class="diff-icon">⚡</span>中等</div>
+                        <div class="diff-desc">中速 · 可穿墙</div>
+                    </div>
+                    <div class="diff-item" data-diff="hard">
+                        <div class="diff-label"><span class="diff-icon">🔥</span>困难</div>
+                        <div class="diff-desc">快速 · 有限穿墙</div>
+                    </div>
+                    <div class="diff-item" data-diff="nightmare">
+                        <div class="diff-label"><span class="diff-icon">💀</span>噩梦</div>
+                        <div class="diff-desc">极快 · 限时挑战</div>
+                    </div>
                 </div>
             </div>
-            
+
             <div class="sidebar-footer">
-                <div class="user-center" id="userCenter">
+                <div class="user-center">
                     <div class="user-avatar">
                         <i class="fas fa-user"></i>
                     </div>
@@ -132,1057 +116,1463 @@
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="game-main-content">
-            <div class="game-header">
-                <h1>贪吃蛇游戏</h1>
-                <p>经典的贪吃蛇游戏，使用WASD键或鼠标控制，吃到食物得分</p>
-            </div>
-            
-            <div class="game-body">
-                <div class="game-info-bar">
-                    <div class="game-info-item" data-lang="score">得分: <span id="score">0</span></div>
-                    <div class="game-info-item" data-lang="remainingTime">剩余时间: <span id="time">60</span>s
-                        <input type="checkbox" class="unlimited-time-checkbox" id="unlimitedTimeCheckbox" data-lang="unlimitedTime">
-                        <label for="unlimitedTimeCheckbox" data-lang="unlimitedTimeLabel">无限制</label>
-                    </div>
-                    <div class="difficulty-select-container" id="difficultyBox" data-lang="difficulty">
-                        难度: 
-                        <select class="difficulty-select" id="difficultySelect">
-                            <option value="easy" data-lang="easy">简单</option>
-                            <option value="medium" data-lang="medium">中等</option>
-                            <option value="hard" data-lang="hard">困难</option>
-                        </select>
-                    </div>
-                    <div class="custom-time-container" data-lang="customTime">
-                        自定义时间: 
-                        <input type="number" class="custom-time-input" id="customTimeInput" value="60" min="1" max="300">
-                        <span class="custom-time-tip" data-lang="customTimeTip">(最多5分钟/300秒)</span>
-                    </div>
-                </div>
+        </aside>
 
-                <div class="game-area-wrapper">
-                    <div class="game-area" id="gameArea">
-                        <div class="snake-board" id="snakeBoard">
-                            <div class="snake-grid" id="snakeGrid"></div>
-                            <div class="game-over" id="gameOver" data-lang="gameOver">游戏结束!</div>
+        <main class="main-area">
+            <div class="info-bar glass">
+                <div class="info-chip">
+                    <i class="fas fa-star text-pre-accent"></i>
+                    <span>分数</span>
+                    <span class="font-bold stat-num" id="scoreVal">0</span>
+                </div>
+                <div class="info-chip">
+                    <i class="fas fa-stopwatch text-pre-primary"></i>
+                    <span>时间</span>
+                    <span class="font-bold stat-num" id="timeVal">0.0s</span>
+                </div>
+                <div class="info-chip">
+                    <i class="fas fa-skull text-pre-purple"></i>
+                    <span>长度</span>
+                    <span class="font-bold stat-num" id="lengthVal">3</span>
+                </div>
+                <div class="info-chip" id="diffChip">
+                    <i class="fas fa-gauge-high text-pre-accent"></i>
+                    <span>难度</span>
+                    <span class="font-bold" id="diffVal">简单</span>
+                </div>
+                <div class="info-chip powerup-chip" id="powerupChip" style="display:none;">
+                    <i class="fas fa-bolt text-yellow-300"></i>
+                    <span id="powerupName">加速中</span>
+                    <span class="font-bold stat-num" id="powerupTime">0s</span>
+                </div>
+                <div class="info-chip shield-chip" id="shieldChip" style="display:none;">
+                    <i class="fas fa-shield-halved text-cyan-300"></i>
+                    <span>护盾激活</span>
+                </div>
+            </div>
+
+            <div class="game-area glass">
+                <canvas id="gameCanvas"></canvas>
+                <div class="game-overlay" id="gameOverlay">
+                    <div class="overlay-content">
+                        <h1 class="text-5xl md:text-6xl font-black mb-4 gradient-text">光影贪吃蛇</h1>
+                        <p class="text-lg text-gray-300 mb-6">50×50 极限地图 · 5 种道具 · 4 种难度</p>
+                        <div class="glass rounded-2xl px-6 py-4 mb-6 text-sm text-gray-300 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                            <span><kbd class="px-2 py-0.5 rounded bg-white/10">WASD</kbd> / <kbd class="px-2 py-0.5 rounded bg-white/10">方向键</kbd> 移动</span>
+                            <span><kbd class="px-2 py-0.5 rounded bg-white/10">P</kbd> 暂停</span>
+                            <span><kbd class="px-2 py-0.5 rounded bg-white/10">空格</kbd> 加速</span>
                         </div>
-                        <div class="game-tip" id="gameTip" data-lang="gameTip">使用WASD键或鼠标控制方向</div>
+                        <button class="glow-btn px-10 py-4 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold text-xl" id="startBtn">
+                            <i class="fas fa-play mr-2"></i>开始游戏
+                        </button>
+                        <div class="mt-6 text-sm text-gray-500" id="bestInfo"></div>
                     </div>
                 </div>
 
-                <div class="ranking-container">
-                    <div class="ranking-title" data-lang="ranking">游戏排行榜</div>
-                    <ul class="ranking-list" id="rankingList">
-                    </ul>
+                <div class="pause-overlay hidden-overlay" id="pauseOverlay">
+                    <h2 class="text-4xl font-black mb-6 gradient-text">已暂停</h2>
+                    <div class="flex gap-3">
+                        <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="resumeBtn">
+                            <i class="fas fa-play mr-2"></i>继续
+                        </button>
+                        <button class="glass px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition" id="restartFromPauseBtn">
+                            <i class="fas fa-rotate-right mr-2"></i>重新开始
+                        </button>
+                    </div>
+                </div>
+
+                <div class="gameover-overlay hidden-overlay" id="gameoverOverlay">
+                    <div class="text-6xl mb-2"><i class="fas fa-skull-crossbones text-pre-primary"></i></div>
+                    <h2 class="text-4xl font-black mb-6 gradient-text">本局结束</h2>
+                    <div class="glass rounded-2xl px-8 py-5 mb-6 flex gap-8">
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">得分</div>
+                            <div class="text-3xl font-black stat-num gradient-text" id="finalScore">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">长度</div>
+                            <div class="text-3xl font-black stat-num" id="finalLength">3</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">时间</div>
+                            <div class="text-3xl font-black stat-num" id="finalTime">0.0s</div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400 mb-4" id="bestLine"></div>
+                    <div class="flex gap-3">
+                        <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="restartBtn">
+                            <i class="fas fa-rotate-right mr-2"></i>再来一局
+                        </button>
+                        <a href="../index.html" class="glass px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition">
+                            <i class="fas fa-home mr-2"></i>返回主页
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-<!-- 成就弹窗 -->
-<div class="modal" id="achievementModal">
-    <div class="modal-content achievement-modal-content">
-        <h3 data-lang="achievements">成就</h3>
-        <div class="achievement-stats">
-            <div class="stat-item">
-                <div class="stat-value" id="achievementTotal">0</div>
-                <div class="stat-label">总成就</div>
+            <div class="bottom-section">
+                <div class="controls-hint glass">
+                    <h3><i class="fas fa-gamepad text-pre-accent"></i> 操作提示</h3>
+                    <div class="hint-grid">
+                        <div class="hint-item"><kbd>W</kbd>/<kbd>↑</kbd> 向上移动</div>
+                        <div class="hint-item"><kbd>S</kbd>/<kbd>↓</kbd> 向下移动</div>
+                        <div class="hint-item"><kbd>A</kbd>/<kbd>←</kbd> 向左移动</div>
+                        <div class="hint-item"><kbd>D</kbd>/<kbd>→</kbd> 向右移动</div>
+                        <div class="hint-item"><kbd>P</kbd> 暂停 / 继续</div>
+                        <div class="hint-item"><kbd>空格</kbd> 加速冲刺</div>
+                    </div>
+                </div>
+
+                <div class="powerup-legend glass">
+                    <h3><i class="fas fa-wand-magic-sparkles text-pre-purple"></i> 道具说明</h3>
+                    <div class="powerup-grid">
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#ffd700,#f0a050);">⚡</span><div><div class="pu-name">加速</div><div class="pu-desc">临时加速 5 秒</div></div></div>
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#7dd3fc,#38bdf8);">❄️</span><div><div class="pu-name">减速</div><div class="pu-desc">临时减速 3 秒</div></div></div>
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#22d3ee,#06b6d4);">🛡️</span><div><div class="pu-name">护盾</div><div class="pu-desc">免疫一次碰撞</div></div></div>
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#d946ef,#a855f7);">✨</span><div><div class="pu-name">双倍</div><div class="pu-desc">得分翻倍 5 秒</div></div></div>
+                        <div class="pu-item"><span class="pu-icon" style="background:linear-gradient(135deg,#6b7280,#4b5563);">👻</span><div><div class="pu-name">幽灵</div><div class="pu-desc">穿越自身 3 秒</div></div></div>
+                    </div>
+                </div>
+
+                <div class="ranking-panel glass">
+                    <div class="ranking-header">
+                        <h3><i class="fas fa-ranking-star text-pre-accent"></i> 排行榜</h3>
+                        <button class="ranking-reset-btn" id="snakeResetBtn" title="重置排行榜">
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
+                    </div>
+                    <div class="ranking-highscore">
+                        <span class="hs-label"><i class="fas fa-trophy text-yellow-400"></i> 历史最高分</span>
+                        <span class="hs-value" id="snakeHistoricalHigh">0</span>
+                    </div>
+                    <div class="ranking-content" id="rankingContent">
+                        <div class="ranking-empty">暂无记录</div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="achievementUnlocked">0</div>
-                <div class="stat-label">已解锁</div>
+
+            <div class="touch-controls" id="touchControls">
+                <div class="touch-pad">
+                    <div class="tbtn" id="tbtnUp"><i class="fas fa-chevron-up"></i></div>
+                    <div class="tbtn-row">
+                        <div class="tbtn" id="tbtnLeft"><i class="fas fa-chevron-left"></i></div>
+                        <div class="tbtn tbtn-center" id="tbtnBoost"><i class="fas fa-bolt"></i></div>
+                        <div class="tbtn" id="tbtnRight"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div class="tbtn" id="tbtnDown"><i class="fas fa-chevron-down"></i></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="achv-toast-container" id="toastBox"></div>
+
+    <div class="achv-banner" id="achvBanner">
+        <div class="banner-icon"><i class="fas fa-trophy"></i></div>
+        <div class="banner-text" id="achvBannerText">成就解锁！</div>
+    </div>
+
+    <div class="achv-sidebar" id="achvSidebar">
+        <div class="achv-header">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background:linear-gradient(135deg,#f0a050,#d45d79);">
+                    <i class="fas fa-trophy text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold">光影贪吃蛇成就</h2>
+                    <div class="text-xs text-gray-400"><span id="achvUnlockedCount">0</span> / <span id="achvTotalCount">10</span> 已解锁</div>
+                </div>
+            </div>
+            <button class="text-gray-400 hover:text-white text-xl" id="closeAchvBtn"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="achv-list" id="achvList"></div>
+    </div>
+
+    <div class="modal-overlay hidden-overlay" id="snakeResetModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold"><i class="fas fa-triangle-exclamation text-yellow-400 mr-2"></i>确认重置</h2>
+                <button class="text-gray-400 hover:text-white text-xl" id="snakeResetClose"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-gray-300">确定要清除所有历史记录吗？此操作不可撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="glass px-6 py-2 rounded-lg hover:bg-white/10 transition" id="snakeResetCancel">取消</button>
+                <button class="glow-btn px-6 py-2 rounded-lg bg-gradient-to-r from-red-500 to-orange-500 font-bold" id="snakeResetConfirm">确认重置</button>
             </div>
         </div>
-        <div class="achievement-list" id="achievementList">
-        </div>
-        <button class="close-btn" id="closeAchievementModal" data-lang="close">关闭</button>
     </div>
-</div>
 
-<!-- 排行榜弹窗 -->
-<div class="modal" id="rankingModal">
-    <div class="modal-content">
-        <h3 data-lang="congratulations">恭喜你完成游戏！</h3>
-        <p data-lang="finalScore">你的最终得分: <span id="finalScore">0</span></p>
-        <input type="text" class="modal-input" id="playerName" placeholder="请输入你的名字" maxlength="6" data-lang="enterName">
-        <div class="modal-btn-group">
-            <button class="confirm-btn" id="confirmBtn" data-lang="confirmAdd">确认添加</button>
-            <button class="cancel-btn" id="cancelBtn" data-lang="cancel">取消</button>
-        </div>
-    </div>
-</div>
+    <script type="module">
+        import * as THREE from 'three';
+        import * as CANNON from 'cannon-es';
 
-<!-- 版本更新公告弹窗 -->
-<div class="modal" id="updateModal">
-    <div class="modal-content update-modal-content">
-        <h3 data-lang="updateAnnouncement">版本更新公告</h3>
-        <!-- 翻页控制器 -->
-        <div class="update-pagination">
-            <button class="pagination-btn" id="prevPage" data-lang="prevPage">上一页</button>
-            <span class="page-info" id="pageInfo" data-lang="pageInfo">第 1 / 1 页</span>
-            <button class="pagination-btn" id="nextPage" data-lang="nextPage">下一页</button>
-        </div>
-        <!-- 公告内容容器 -->
-        <div class="update-content" id="updateContent">
-            <div class="update-page" data-page="1" data-version="release">
-                <p>本次更新时间：2026-04-02</p>
-                <p>版本号：RC 1.0.0</p>
-                <p>核心更新内容：</p>
-                <ul>
-                    <li>新增 贪吃蛇游戏</li>
-                    <li>新增 WASD键和鼠标控制</li>
-                    <li>新增 成就系统</li>
-                    <li>优化 界面风格统一</li>
-                </ul>
-                <p>© 2014-2026 GPY Basically Games</p>
-            </div>
-        </div>
-        <div class="modal-btn-group">
-            <button class="close-btn" id="closeUpdateModal" data-lang="close">关闭</button>
-        </div>
-    </div>
-</div>
-
-<script>
-var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-
-if (!currentUser.username) {
-    window.location.href = '../index.html';
-}
-
-// 更新用户中心信息
-function updateUserCenter() {
-    if (currentUser.username) {
-        document.getElementById('userName').textContent = currentUser.username;
-        document.getElementById('userId').textContent = 'ID: ' + (currentUser.userId || '---');
-    }
-}
-
-// 初始化用户中心
-updateUserCenter();
-
-// 初始化版本号显示
-document.addEventListener('DOMContentLoaded', function() {
-    updateVersionDisplay('snakegame');
-});
-
-// 用户中心点击事件
-(document.getElementById('userCenter') || { addEventListener: function() {} }).addEventListener('click', function() {
-    if (!currentUser.username) {
-        alert('请先登录');
-        return;
-    }
-    window.open('account-settings.html', '_blank');
-});
-
-function getUserGameData(gameKey, defaultValue) {
-    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    var user = users.find(function(u) {
-        return u.username === currentUser.username;
-    });
-    
-    if (user && user.gameData && user.gameData[gameKey] !== undefined) {
-        return user.gameData[gameKey];
-    }
-    
-    return defaultValue;
-}
-
-function setUserGameData(gameKey, value) {
-    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    var userIndex = users.findIndex(function(u) {
-        return u.username === currentUser.username;
-    });
-    
-    if (userIndex !== -1) {
-        if (!users[userIndex].gameData) {
-            users[userIndex].gameData = {};
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (!currentUser.username) {
+            window.location.href = '../index.html';
         }
-        users[userIndex].gameData[gameKey] = value;
-        localStorage.setItem('registeredUsers', JSON.stringify(users));
-    }
-}
 
-// 多语言配置
-const langConfig = {
-    zh: {
-        score: '得分: ',
-        remainingTime: '剩余时间: ',
-        difficulty: '难度: ',
-        easy: '简单',
-        medium: '中等',
-        hard: '困难',
-        customTime: '自定义时间: ',
-        customTimeTip: '(最多5分钟/300秒)',
-        gameOver: '游戏结束!',
-        startGame: '开始游戏',
-        resetGame: '重置游戏',
-        backHome: '返回首页',
-        ranking: '游戏排行榜',
-        gameVersion: '游戏版本：RC 1.0.0',
-        moreGames: '更多游戏',
-        updateAnnouncement: '版本更新公告',
-        congratulations: '恭喜你完成游戏！',
-        finalScore: '你的最终得分: ',
-        enterName: '请输入你的名字',
-        confirmAdd: '确认添加',
-        cancel: '取消',
-        close: '关闭',
-        anonymousPlayer: '匿名玩家',
-        scoreUnit: ' 分',
-        moreGamesTip: '更多游戏即将上线！',
-        backHomeTip: '即将返回首页！',
-        importantUpdate: '重要更新',
-        gameTip: '使用WASD键或鼠标控制方向',
-        achievements: '成就',
-        achievementUnlocked: '成就解锁！',
-        unlimitedTime: '',
-        unlimitedTimeLabel: '无限制'
-    },
-    en: {
-        score: 'Score: ',
-        remainingTime: 'Remaining Time: ',
-        difficulty: 'Difficulty: ',
-        easy: 'Easy',
-        medium: 'Medium',
-        hard: 'Hard',
-        customTime: 'Custom Time: ',
-        customTimeTip: '(Max 5 mins/300 sec)',
-        gameOver: 'Game Over!',
-        startGame: 'Start Game',
-        resetGame: 'Reset Game',
-        backHome: 'Back to Home',
-        ranking: 'Game Ranking',
-        gameVersion: 'Game Version: RC 1.0.0',
-        moreGames: 'More Games',
-        updateAnnouncement: 'Version Update Notice',
-        congratulations: 'Congratulations on completing the game!',
-        finalScore: 'Your final score: ',
-        enterName: 'Please enter your name',
-        confirmAdd: 'Confirm Add',
-        cancel: 'Cancel',
-        close: 'Close',
-        anonymousPlayer: 'Anonymous Player',
-        scoreUnit: ' pts',
-        moreGamesTip: 'More games coming soon!',
-        backHomeTip: 'Returning to home page soon!',
-        importantUpdate: 'Important Update',
-        gameTip: 'Use WASD keys or mouse to control',
-        achievements: 'Achievements',
-        achievementUnlocked: 'Achievement Unlocked!',
-        unlimitedTime: '',
-        unlimitedTimeLabel: 'Unlimited'
-    }
-};
-
-// 当前语言状态
-let currentLang = 'zh';
-
-// 切换语言函数
-function switchLanguage() {
-    // 切换语言标识
-    currentLang = currentLang === 'zh' ? 'en' : 'zh';
-    
-    // 更新语言切换按钮文本
-    const langBtn = document.getElementById('sidebarLangSwitchBtn');
-    langBtn.querySelector('span').textContent = currentLang === 'zh' ? 'English' : '中文';
-    
-    // 更新页面标题
-    document.title = currentLang === 'zh' ? '贪吃蛇小游戏' : 'Snake Mini Game';
-    
-    // 更新所有带data-lang属性的元素
-    document.querySelectorAll('[data-lang]').forEach(el => {
-        const langKey = el.dataset.lang;
-        const originalHtml = el.dataset.originalHtml || el.innerHTML;
-        
-        // 存储原始HTML（首次切换时）
-        if (!el.dataset.originalHtml) {
-            el.dataset.originalHtml = originalHtml;
+        function findUser() {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            return users.find(u => u.username === currentUser.username);
         }
-        
-        // 替换文本（保留变量/动态内容）
-        let newHtml = langConfig[currentLang][langKey];
-        // 保留动态内容（如分数、输入框等）
-        if (originalHtml.includes('<span') || originalHtml.includes('<input') || originalHtml.includes('<select') || originalHtml.includes('<label')) {
-            // 提取原始HTML中的动态部分
-            const dynamicPart = originalHtml.replace(/[^<]*<[^>]*>.*<\/[^>]*>[^<]*/, match => match);
-            newHtml = newHtml + dynamicPart.substring(dynamicPart.indexOf('<'));
+        function saveUser(user) {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const idx = users.findIndex(u => u.username === currentUser.username);
+            if (idx !== -1) { users[idx] = user; localStorage.setItem('registeredUsers', JSON.stringify(users)); }
         }
-        el.innerHTML = newHtml;
-        
-        // 特殊处理placeholder
-        if (el.tagName === 'INPUT' && el.placeholder) {
-            el.placeholder = langConfig[currentLang][langKey];
+        function getUserGameData(key, def) {
+            const u = findUser();
+            if (!u || !u.gameData || u.gameData[key] === undefined) return def;
+            return u.gameData[key];
         }
-        
-        // 特殊处理option选项
-        if (el.tagName === 'OPTION') {
-            el.textContent = langConfig[currentLang][langKey];
+        function setUserGameData(key, val) {
+            const u = findUser();
+            if (!u) return;
+            if (!u.gameData) u.gameData = {};
+            u.gameData[key] = val;
+            saveUser(u);
         }
-        
-        // 特殊处理label标签
-        if (el.tagName === 'LABEL' && el.dataset.lang) {
-            el.textContent = langConfig[currentLang][langKey];
+        function saveAchievementTime(id) {
+            const u = findUser();
+            if (!u) return;
+            if (!u.achievementTimes) u.achievementTimes = {};
+            if (!u.achievementTimes[id]) { u.achievementTimes[id] = Date.now(); saveUser(u); }
         }
-    });
-    
-    // 更新重要更新文本
-    document.querySelectorAll('.important-update').forEach(el => {
-        el.textContent = langConfig[currentLang].importantUpdate;
-    });
-    
-    // 更新排行榜已有项的分数单位
-    document.querySelectorAll('.ranking-item').forEach(item => {
-        const scoreText = item.querySelector('span:last-child').textContent;
-        const num = scoreText.replace(/[^0-9]/g, '');
-        item.querySelector('span:last-child').textContent = num + langConfig[currentLang].scoreUnit;
-    });
-}
 
-// 绑定语言切换按钮事件
-(document.getElementById('sidebarLangSwitchBtn') || { addEventListener: function() {} }).addEventListener('click', switchLanguage);
+        const GRID_SIZE = 50;
+        const VIEWPORT_SIZE = 25;
+        const CELL_SIZE = 24;
 
-// 关闭弹窗事件
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('show');
-        // 等待过渡完成后隐藏
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
-    }
-}
-
-// 打开弹窗事件
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'flex';
-        // 延迟添加show类触发过渡
-        setTimeout(() => {
-            modal.classList.add('show');
-        }, 10);
-    }
-}
-
-// 版本更新按钮点击事件
-(document.getElementById('sidebarUpdateBtn') || { addEventListener: function() {} }).addEventListener('click', () => {
-    openModal('updateModal');
-    showUpdatePage(1);
-});
-
-// 关闭版本更新弹窗
-(document.getElementById('closeUpdateModal') || { addEventListener: function() {} }).addEventListener('click', () => {
-    closeModal('updateModal');
-});
-
-// 版本更新公告翻页功能
-let currentPage = 1;
-let totalPages = 1;
-
-function showUpdatePage(page) {
-    const updatePages = document.querySelectorAll('.update-page');
-    const pageInfo = document.getElementById('pageInfo');
-    
-    if (updatePages.length === 0) return;
-    
-    totalPages = updatePages.length;
-    
-    // 确保页码在有效范围内
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    currentPage = page;
-    
-    // 隐藏所有页面
-    updatePages.forEach(pageEl => {
-        pageEl.classList.remove('active');
-    });
-    
-    // 显示当前页面
-    const currentPageEl = document.querySelector(`.update-page[data-page="${currentPage}"]`);
-    if (currentPageEl) {
-        currentPageEl.classList.add('active');
-    }
-    
-    // 更新页面信息
-    if (pageInfo) {
-        pageInfo.textContent = `第 ${currentPage} / ${totalPages} 页`;
-    }
-}
-
-// 上一页按钮
-(document.getElementById('prevPage') || { addEventListener: function() {} }).addEventListener('click', () => {
-    showUpdatePage(currentPage - 1);
-});
-
-// 下一页按钮
-(document.getElementById('nextPage') || { addEventListener: function() {} }).addEventListener('click', () => {
-    showUpdatePage(currentPage + 1);
-});
-
-// 成就按钮点击事件
-(document.getElementById('sidebarAchievementBtn') || { addEventListener: function() {} }).addEventListener('click', () => {
-    openModal('achievementModal');
-    loadAchievements();
-});
-
-// 关闭成就弹窗
-(document.getElementById('closeAchievementModal') || { addEventListener: function() {} }).addEventListener('click', () => {
-    closeModal('achievementModal');
-});
-
-// 点击弹窗外部关闭
-window.addEventListener('click', (e) => {
-    const modals = ['updateModal', 'achievementModal', 'rankingModal'];
-    modals.forEach(modalId => {
-        const modal = document.getElementById(modalId);
-        if (e.target === modal) {
-            closeModal(modalId);
-        }
-    });
-});
-
-// 难度切换样式同步
-(document.getElementById('difficultySelect') || { addEventListener: function() {} }).addEventListener('change', function() {
-    const difficultyBox = document.getElementById('difficultyBox');
-    if (difficultyBox) {
-        // 移除所有难度类
-        difficultyBox.classList.remove('easy', 'medium', 'hard');
-        // 添加当前难度类
-        difficultyBox.classList.add(this.value);
-    }
-});
-
-// 取消排行榜弹窗
-(document.getElementById('cancelBtn') || { addEventListener: function() {} }).addEventListener('click', function() {
-    closeModal('rankingModal');
-});
-
-// 确认添加排行榜
-(document.getElementById('confirmBtn') || { addEventListener: function() {} }).addEventListener('click', function() {
-    const playerNameInput = document.getElementById('playerName');
-    const finalScoreElement = document.getElementById('finalScore');
-    const rankingList = document.getElementById('rankingList');
-    
-    if (playerNameInput && finalScoreElement && rankingList) {
-        const name = playerNameInput.value.trim() || langConfig[currentLang].anonymousPlayer;
-        const score = finalScoreElement.textContent;
-        
-        // 创建新的排行榜项
-        const li = document.createElement('li');
-        li.className = 'ranking-item';
-        li.innerHTML = `<span>${name}</span><span>${score}${langConfig[currentLang].scoreUnit}</span>`;
-        
-        // 添加到排行榜
-        rankingList.appendChild(li);
-        
-        // 关闭弹窗
-        closeModal('rankingModal');
-        
-        // 清空输入框
-        playerNameInput.value = '';
-    }
-});
-
-// 自定义时间输入限制
-(document.getElementById('customTimeInput') || { addEventListener: function() {} }).addEventListener('change', function() {
-    const unlimitedTimeCheckbox = document.getElementById('unlimitedTimeCheckbox');
-    const timeDisplay = document.getElementById('time');
-    
-    if (unlimitedTimeCheckbox && unlimitedTimeCheckbox.checked) return;
-    
-    let value = parseInt(this.value);
-    if (isNaN(value)) value = 60;
-    if (value < 1) value = 1;
-    if (value > 300) value = 300;
-    this.value = value;
-    // 同步到剩余时间显示
-    if (timeDisplay) {
-        timeDisplay.textContent = value;
-    }
-});
-
-// 无时间限制复选框事件
-(document.getElementById('unlimitedTimeCheckbox') || { addEventListener: function() {} }).addEventListener('change', function() {
-    const customTimeInput = document.getElementById('customTimeInput');
-    const timeDisplay = document.getElementById('time');
-    
-    if (customTimeInput && timeDisplay) {
-        if (this.checked) {
-            // 启用无时间限制
-            customTimeInput.disabled = true;
-            customTimeInput.style.opacity = 0.5;
-            timeDisplay.textContent = '∞';
-            // 如果游戏正在运行，停止计时
-            if (gameRunning) {
-                clearInterval(gameTimer);
-                gameTimer = null;
-            }
-        } else {
-            // 禁用无时间限制
-            customTimeInput.disabled = false;
-            customTimeInput.style.opacity = 1;
-            timeDisplay.textContent = customTimeInput.value;
-            // 如果游戏正在运行，重新开始计时
-            if (gameRunning) {
-                clearInterval(gameTimer);
-                timeLeft = parseInt(customTimeInput.value);
-                gameTimer = setInterval(updateTimer, 1000);
-            }
-        }
-    }
-});
-
-// 贪吃蛇核心逻辑
-let gameTimer = null;
-let gameRunning = false;
-let score = 0;
-let timeLeft = 60;
-
-// 贪吃蛇变量
-let snake = [{x: 10, y: 10}];
-let food = {x: 15, y: 10};
-let direction = 'right';
-let nextDirection = 'right';
-const GRID_SIZE = 20;
-const BOARD_SIZE = 30;
-
-// 成就系统
-let snakeAchievements = getUserGameData('snakeAchievements', []);
-let snakeGamesPlayed = getUserGameData('snakeGamesPlayed', 0);
-let snakeHighScore = getUserGameData('snakeHighScore', 0);
-let snakeTotalScore = getUserGameData('snakeTotalScore', 0);
-
-// 贪吃蛇成就定义
-const snakeAchievementDefs = [
-    {
-        id: 'snake_first_game',
-        name: '初次尝试',
-        desc: '完成第一局贪吃蛇游戏',
-        icon: 'fa-gamepad',
-        condition: () => snakeGamesPlayed >= 1
-    },
-    {
-        id: 'snake_score_50',
-        name: '初级贪吃蛇',
-        desc: '单局得分达到50分',
-        icon: 'fa-star',
-        condition: () => score >= 50
-    },
-    {
-        id: 'snake_score_100',
-        name: '中级贪吃蛇',
-        desc: '单局得分达到100分',
-        icon: 'fa-medal',
-        condition: () => score >= 100
-    },
-    {
-        id: 'snake_score_200',
-        name: '高级贪吃蛇',
-        desc: '单局得分达到200分',
-        icon: 'fa-trophy',
-        condition: () => score >= 200
-    },
-    {
-        id: 'snake_games_5',
-        name: '贪吃蛇爱好者',
-        desc: '累计完成5局游戏',
-        icon: 'fa-apple-alt',
-        condition: () => snakeGamesPlayed >= 5
-    },
-    {
-        id: 'snake_games_10',
-        name: '贪吃蛇达人',
-        desc: '累计完成10局游戏',
-        icon: 'fa-gamepad',
-        condition: () => snakeGamesPlayed >= 10
-    },
-    {
-        id: 'snake_total_100',
-        name: '累计得分王',
-        desc: '累计得分达到100分',
-        icon: 'fa-chart-line',
-        condition: () => snakeTotalScore >= 100
-    },
-    {
-        id: 'snake_total_500',
-        name: '贪吃蛇大师',
-        desc: '累计得分达到500分',
-        icon: 'fa-crown',
-        condition: () => snakeTotalScore >= 500
-    },
-    {
-        id: 'snake_perfect_game',
-        name: '完美游戏',
-        desc: '在一局游戏中没有撞到任何墙壁或自己',
-        icon: 'fa-check-circle',
-        condition: () => false
-    },
-    {
-        id: 'snake_survivor',
-        name: '生存大师',
-        desc: '在一局游戏中存活超过2分钟',
-        icon: 'fa-clock',
-        condition: () => false
-    }
-];
-
-// 初始化游戏网格
-function initGameGrid() {
-    const grid = document.getElementById('snakeGrid');
-    grid.innerHTML = '';
-    
-    // 创建网格
-    for (let y = 0; y < BOARD_SIZE; y++) {
-        for (let x = 0; x < BOARD_SIZE; x++) {
-            const cell = document.createElement('div');
-            cell.className = 'grid-cell';
-            cell.dataset.x = x;
-            cell.dataset.y = y;
-            grid.appendChild(cell);
-        }
-    }
-}
-
-// 绘制游戏
-function drawGame() {
-    const grid = document.getElementById('snakeGrid');
-    
-    // 清空网格
-    const cells = grid.querySelectorAll('.grid-cell');
-    cells.forEach(cell => {
-        cell.className = 'grid-cell';
-    });
-    
-    // 绘制蛇
-    snake.forEach(segment => {
-        const cell = grid.querySelector(`.grid-cell[data-x="${segment.x}"][data-y="${segment.y}"]`);
-        if (cell) {
-            cell.classList.add('snake');
-        }
-    });
-    
-    // 绘制食物
-    const foodCell = grid.querySelector(`.grid-cell[data-x="${food.x}"][data-y="${food.y}"]`);
-    if (foodCell) {
-        foodCell.classList.add('food');
-    }
-}
-
-// 生成食物
-function generateFood() {
-    let newFood;
-    do {
-        newFood = {
-            x: Math.floor(Math.random() * BOARD_SIZE),
-            y: Math.floor(Math.random() * BOARD_SIZE)
+        const POWERUP_TYPES = {
+            SPEED: 'speed',
+            SLOW: 'slow',
+            SHIELD: 'shield',
+            DOUBLE: 'double',
+            GHOST: 'ghost'
         };
-    } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
-    food = newFood;
-}
 
-// 移动蛇
-function moveSnake() {
-    direction = nextDirection;
-    
-    // 计算新头部位置
-    const head = { ...snake[0] };
-    switch (direction) {
-        case 'up':
-            head.y -= 1;
-            break;
-        case 'down':
-            head.y += 1;
-            break;
-        case 'left':
-            head.x -= 1;
-            break;
-        case 'right':
-            head.x += 1;
-            break;
-    }
-    
-    // 检查边界碰撞
-    if (head.x < 0 || head.x >= BOARD_SIZE || head.y < 0 || head.y >= BOARD_SIZE) {
-        gameOver();
-        return;
-    }
-    
-    // 检查自身碰撞
-    if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-        gameOver();
-        return;
-    }
-    
-    // 添加新头部
-    snake.unshift(head);
-    
-    // 检查是否吃到食物
-    if (head.x === food.x && head.y === food.y) {
-        score += 1;
-        document.getElementById('score').textContent = score;
-        generateFood();
-    } else {
-        // 移除尾部
-        snake.pop();
-    }
-    
-    // 绘制游戏
-    drawGame();
-}
+        const DIFFICULTY_CONFIG = {
+            easy:       { speed: 180, obstacles: 0.03, wrap: false, timeLimit: 0 },
+            medium:     { speed: 120, obstacles: 0.06, wrap: true,  timeLimit: 0 },
+            hard:       { speed: 80,  obstacles: 0.10, wrap: 'limited', timeLimit: 0 },
+            nightmare:  { speed: 55,  obstacles: 0.15, wrap: 'limited', timeLimit: 120 }
+        };
 
-// 游戏结束
-function gameOver() {
-    gameRunning = false;
-    clearInterval(gameTimer);
-    clearInterval(snakeTimer);
-    
-    // 更新游戏数据
-    snakeGamesPlayed += 1;
-    snakeTotalScore += score;
-    if (score > snakeHighScore) {
-        snakeHighScore = score;
-    }
-    
-    // 保存游戏数据
-    setUserGameData('snakeGamesPlayed', snakeGamesPlayed);
-    setUserGameData('snakeHighScore', snakeHighScore);
-    setUserGameData('snakeTotalScore', snakeTotalScore);
-    
-    // 显示游戏结束
-    const gameOverElement = document.getElementById('gameOver');
-    gameOverElement.style.display = 'block';
-    
-    // 检查成就
-    checkAndSaveAchievements();
-    
-    // 显示排行榜弹窗
-    document.getElementById('finalScore').textContent = score;
-    openModal('rankingModal');
-}
+        let game = {
+            snake: [],
+            direction: { x: 1, y: 0 },
+            nextDirection: { x: 1, y: 0 },
+            food: null,
+            specialFood: null,
+            powerups: [],
+            obstacles: [],
+            score: 0,
+            time: 0,
+            running: false,
+            paused: false,
+            snakeLength: 3,
+            difficulty: 'easy',
+            activePowerups: {},
+            shieldActive: false,
+            perfectGame: true,
+            startPos: { x: 25, y: 25 },
+            timeLimit: 0,
+            lastTime: 0,
+            accumulator: 0,
+            moveInterval: 180,
+            moveTimer: 0,
+            boostActive: false,
+            cameraOffset: { x: 0, y: 0 }
+        };
 
-// 开始游戏
-function startGame() {
-    // 重置游戏状态
-    snake = [{x: 10, y: 10}];
-    direction = 'right';
-    nextDirection = 'right';
-    score = 0;
-    timeLeft = parseInt(document.getElementById('customTimeInput').value);
-    
-    // 重置UI
-    document.getElementById('score').textContent = score;
-    document.getElementById('time').textContent = timeLeft;
-    document.getElementById('gameOver').style.display = 'none';
-    
-    // 生成食物
-    generateFood();
-    
-    // 绘制游戏
-    drawGame();
-    
-    // 开始游戏
-    gameRunning = true;
-    
-    // 开始计时
-    if (!document.getElementById('unlimitedTimeCheckbox').checked) {
-        gameTimer = setInterval(updateTimer, 1000);
-    }
-    
-    // 开始移动蛇
-    const difficulty = document.getElementById('difficultySelect').value;
-    let speed = 150;
-    switch (difficulty) {
-        case 'easy':
-            speed = 200;
-            break;
-        case 'medium':
-            speed = 150;
-            break;
-        case 'hard':
-            speed = 100;
-            break;
-    }
-    snakeTimer = setInterval(moveSnake, speed);
-}
+        let canvas, ctx;
+        let bgScene, bgCamera, bgRenderer, bgParticles;
+        let world;
 
-// 更新计时器
-function updateTimer() {
-    timeLeft -= 1;
-    document.getElementById('time').textContent = timeLeft;
-    
-    if (timeLeft <= 0) {
-        gameOver();
-    }
-}
+        let snakeHighScore = getUserGameData('snakeHighScore', 0);
+        let snakeHistoricalHigh = getUserGameData('snakeHistoricalHigh', 0);
+        let snakeTotalScore = getUserGameData('snakeTotalScore', 0);
+        let snakeGamesPlayed = getUserGameData('snakeGamesPlayed', 0);
+        let snakeAchievements = getUserGameData('snakeAchievements', []);
 
-// 成就系统函数
-function loadAchievements() {
-    snakeAchievements = getUserGameData('snakeAchievements', []);
-    snakeGamesPlayed = getUserGameData('snakeGamesPlayed', 0);
-    snakeHighScore = getUserGameData('snakeHighScore', 0);
-    snakeTotalScore = getUserGameData('snakeTotalScore', 0);
-    renderAchievements();
-}
+        const snakeAchievementDefs = [
+            { id: 'snake_first_game', name: '初次尝试', desc: '完成第一局贪吃蛇游戏', icon: 'fa-gamepad', target: 1, field: 'gamesPlayed' },
+            { id: 'snake_score_50', name: '初级贪吃蛇', desc: '单局得分达到50分', icon: 'fa-star', target: 50, field: 'highScore' },
+            { id: 'snake_score_100', name: '中级贪吃蛇', desc: '单局得分达到100分', icon: 'fa-medal', target: 100, field: 'highScore' },
+            { id: 'snake_score_200', name: '高级贪吃蛇', desc: '单局得分达到200分', icon: 'fa-trophy', target: 200, field: 'highScore' },
+            { id: 'snake_games_5', name: '贪吃蛇爱好者', desc: '累计完成5局游戏', icon: 'fa-apple-alt', target: 5, field: 'gamesPlayed' },
+            { id: 'snake_games_10', name: '贪吃蛇达人', desc: '累计完成10局游戏', icon: 'fa-chess-knight', target: 10, field: 'gamesPlayed' },
+            { id: 'snake_total_100', name: '累计得分王', desc: '累计得分达到100分', icon: 'fa-chart-line', target: 100, field: 'totalScore' },
+            { id: 'snake_total_500', name: '贪吃蛇大师', desc: '累计得分达到500分', icon: 'fa-crown', target: 500, field: 'totalScore' },
+            { id: 'snake_perfect_game', name: '完美游戏', desc: '无碰撞完成一局游戏', icon: 'fa-check-circle', target: 1, field: 'perfect' },
+            { id: 'snake_survivor', name: '生存大师', desc: '单局存活超过2分钟', icon: 'fa-clock', target: 120, field: 'time' }
+        ];
 
-function checkAndSaveAchievements() {
-    let newAchievements = [];
-    
-    snakeAchievementDefs.forEach(achievement => {
-        if (!snakeAchievements.includes(achievement.id) && achievement.condition()) {
-            newAchievements.push(achievement);
-            snakeAchievements.push(achievement.id);
-            showAchievementPopup(achievement);
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            const size = Math.min(wrapper.clientWidth, wrapper.clientHeight);
+            canvas.width = size;
+            canvas.height = size;
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
         }
-    });
-    
-    // 检查分数相关成就
-    if (score >= 50 && !snakeAchievements.includes('snake_score_50')) {
-        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_score_50');
-        newAchievements.push(achievement);
-        snakeAchievements.push('snake_score_50');
-        showAchievementPopup(achievement);
-    }
-    
-    if (score >= 100 && !snakeAchievements.includes('snake_score_100')) {
-        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_score_100');
-        newAchievements.push(achievement);
-        snakeAchievements.push('snake_score_100');
-        showAchievementPopup(achievement);
-    }
-    
-    if (score >= 200 && !snakeAchievements.includes('snake_score_200')) {
-        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_score_200');
-        newAchievements.push(achievement);
-        snakeAchievements.push('snake_score_200');
-        showAchievementPopup(achievement);
-    }
-    
-    if (snakeGamesPlayed >= 5 && !snakeAchievements.includes('snake_games_5')) {
-        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_games_5');
-        newAchievements.push(achievement);
-        snakeAchievements.push('snake_games_5');
-        showAchievementPopup(achievement);
-    }
-    
-    if (snakeGamesPlayed >= 10 && !snakeAchievements.includes('snake_games_10')) {
-        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_games_10');
-        newAchievements.push(achievement);
-        snakeAchievements.push('snake_games_10');
-        showAchievementPopup(achievement);
-    }
-    
-    if (snakeTotalScore >= 100 && !snakeAchievements.includes('snake_total_100')) {
-        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_total_100');
-        newAchievements.push(achievement);
-        snakeAchievements.push('snake_total_100');
-        showAchievementPopup(achievement);
-    }
-    
-    if (snakeTotalScore >= 500 && !snakeAchievements.includes('snake_total_500')) {
-        const achievement = snakeAchievementDefs.find(a => a.id === 'snake_total_500');
-        newAchievements.push(achievement);
-        snakeAchievements.push('snake_total_500');
-        showAchievementPopup(achievement);
-    }
-    
-    if (newAchievements.length > 0) {
-        setUserGameData('snakeAchievements', snakeAchievements);
-    }
-}
 
-function renderAchievements() {
-    const achievementList = document.getElementById('achievementList');
-    achievementList.innerHTML = '';
-    
-    snakeAchievementDefs.forEach(achievement => {
-        const isUnlocked = snakeAchievements.includes(achievement.id) || DeveloperConfig.getAchievementsUnlocked();
-        const isCompleted = achievement.condition();
-        
-        const achievementItem = document.createElement('div');
-        let className = 'achievement-item' + (isUnlocked ? ' unlocked' : ' locked');
-        achievementItem.className = className;
-        
-        let progressPercent = 0;
-        let progressText = '';
-        
-        if (isUnlocked) {
-            progressPercent = 100;
-            progressText = '已完成';
-        } else if (achievement.id === 'snake_first_game') {
-            progressPercent = snakeGamesPlayed >= 1 ? 100 : 0;
-            progressText = snakeGamesPlayed >= 1 ? '1/1' : '0/1';
-        } else if (achievement.id === 'snake_score_50') {
-            progressPercent = Math.min((score / 50) * 100, 100);
-            progressText = score + '/50';
-        } else if (achievement.id === 'snake_score_100') {
-            progressPercent = Math.min((score / 100) * 100, 100);
-            progressText = score + '/100';
-        } else if (achievement.id === 'snake_score_200') {
-            progressPercent = Math.min((score / 200) * 100, 100);
-            progressText = score + '/200';
-        } else if (achievement.id === 'snake_games_5') {
-            progressPercent = Math.min((snakeGamesPlayed / 5) * 100, 100);
-            progressText = snakeGamesPlayed + '/5';
-        } else if (achievement.id === 'snake_games_10') {
-            progressPercent = Math.min((snakeGamesPlayed / 10) * 100, 100);
-            progressText = snakeGamesPlayed + '/10';
-        } else if (achievement.id === 'snake_total_100') {
-            progressPercent = Math.min((snakeTotalScore / 100) * 100, 100);
-            progressText = snakeTotalScore + '/100';
-        } else if (achievement.id === 'snake_total_500') {
-            progressPercent = Math.min((snakeTotalScore / 500) * 100, 100);
-            progressText = snakeTotalScore + '/500';
-        } else {
-            progressPercent = isCompleted ? 100 : 0;
-            progressText = isCompleted ? '已完成' : '未完成';
+        function initBackground() {
+            const bgCanvas = document.getElementById('bgCanvas');
+            bgScene = new THREE.Scene();
+            bgCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            bgCamera.position.z = 50;
+
+            bgRenderer = new THREE.WebGLRenderer({ canvas: bgCanvas, antialias: true, alpha: true });
+            bgRenderer.setSize(window.innerWidth, window.innerHeight);
+            bgRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            const particleCount = 400;
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+
+            const palette = [
+                new THREE.Color('#f0a050'),
+                new THREE.Color('#d45d79'),
+                new THREE.Color('#9b6dff'),
+                new THREE.Color('#ffd700'),
+                new THREE.Color('#ff6b6b')
+            ];
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 200;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 200;
+                const c = palette[Math.floor(Math.random() * palette.length)];
+                colors[i * 3] = c.r;
+                colors[i * 3 + 1] = c.g;
+                colors[i * 3 + 2] = c.b;
+                sizes[i] = Math.random() * 2 + 0.5;
+            }
+
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const mat = new THREE.PointsMaterial({
+                size: 0.8,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            bgParticles = new THREE.Points(geo, mat);
+            bgScene.add(bgParticles);
+
+            window.addEventListener('resize', () => {
+                bgCamera.aspect = window.innerWidth / window.innerHeight;
+                bgCamera.updateProjectionMatrix();
+                bgRenderer.setSize(window.innerWidth, window.innerHeight);
+            });
         }
-        
-        achievementItem.innerHTML = `
-            <div class="achievement-icon">
-                <i class="fas ${achievement.icon}"></i>
-            </div>
-            <div class="achievement-info">
-                <div class="achievement-name">${achievement.name}</div>
-                <div class="achievement-desc">${achievement.desc}</div>
-                <div class="achievement-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                    </div>
-                    <span class="progress-text">${progressText}</span>
+
+        let bgTime = 0;
+        function startBgLoop() {
+            function animate() {
+                requestAnimationFrame(animate);
+                bgTime += 0.005;
+                if (bgParticles) {
+                    bgParticles.rotation.x = bgTime * 0.3;
+                    bgParticles.rotation.y = bgTime * 0.5;
+                }
+                bgRenderer.render(bgScene, bgCamera);
+            }
+            animate();
+        }
+
+        function initPhysics() {
+            world = new CANNON.World({ gravity: new CANNON.Vec3(0, 0, 0) });
+            world.broadphase = new CANNON.SAPBroadphase(world);
+            world.allowSleeping = true;
+        }
+
+        function gridToPhysics(gx, gy) {
+            return { x: gx * CELL_SIZE + CELL_SIZE / 2, y: gy * CELL_SIZE + CELL_SIZE / 2 };
+        }
+
+        function createHeadBody(x, y) {
+            const shape = new CANNON.Box(new CANNON.Vec3(CELL_SIZE * 0.4, CELL_SIZE * 0.4, 1));
+            const body = new CANNON.Body({ mass: 1, shape });
+            const p = gridToPhysics(x, y);
+            body.position.set(p.x, p.y, 0);
+            body.allowSleep = false;
+            return body;
+        }
+
+        function createObstacleBody(x, y) {
+            const shape = new CANNON.Box(new CANNON.Vec3(CELL_SIZE * 0.45, CELL_SIZE * 0.45, 1));
+            const body = new CANNON.Body({ mass: 0, shape, type: CANNON.Body.STATIC });
+            const p = gridToPhysics(x, y);
+            body.position.set(p.x, p.y, 0);
+            return body;
+        }
+
+        function checkPhysicsCollision(bodyA, bodyB) {
+            const shapeA = bodyA.shapes[0];
+            const shapeB = bodyB.shapes[0];
+            const halfA = shapeA.halfExtents;
+            const halfB = shapeB.halfExtents;
+            const dx = Math.abs(bodyA.position.x - bodyB.position.x);
+            const dy = Math.abs(bodyA.position.y - bodyB.position.y);
+            return dx < halfA.x + halfB.x && dy < halfA.y + halfB.y;
+        }
+
+        function initGame() {
+            if (world) {
+                world.bodies.forEach(b => world.removeBody(b));
+            }
+
+            game.snake = [
+                { x: 25, y: 25 },
+                { x: 24, y: 25 },
+                { x: 23, y: 25 }
+            ];
+            game.direction = { x: 1, y: 0 };
+            game.nextDirection = { x: 1, y: 0 };
+            game.score = 0;
+            game.time = 0;
+            game.snakeLength = 3;
+            game.activePowerups = {};
+            game.shieldActive = false;
+            game.perfectGame = true;
+            game.boostActive = false;
+            game.cameraOffset = { x: 0, y: 0 };
+
+            game.obstacleBodies = [];
+            game.headBody = createHeadBody(25, 25);
+            if (world) world.addBody(game.headBody);
+
+            spawnFood();
+            spawnSpecialFood();
+            game.powerups = [];
+            game.obstacles = [];
+
+            const cfg = DIFFICULTY_CONFIG[game.difficulty];
+            game.moveInterval = cfg.speed;
+            game.timeLimit = cfg.timeLimit;
+
+            document.getElementById('scoreVal').textContent = '0';
+            document.getElementById('lengthVal').textContent = '3';
+            document.getElementById('timeVal').textContent = '0.0s';
+        }
+
+        function spawnFood() {
+            let pos;
+            let attempts = 0;
+            do {
+                pos = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
+                attempts++;
+                if (attempts > 500) break;
+            } while (isOccupied(pos));
+            game.food = pos;
+        }
+
+        function spawnSpecialFood() {
+            if (game.specialFood) return;
+            let pos;
+            let attempts = 0;
+            do {
+                pos = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
+                attempts++;
+                if (attempts > 500) break;
+            } while (isOccupied(pos));
+            game.specialFood = { ...pos, timer: 0, duration: 8000 };
+        }
+
+        function spawnPowerup() {
+            if (game.powerups.length >= 3) return;
+            let pos;
+            let attempts = 0;
+            do {
+                pos = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
+                attempts++;
+                if (attempts > 500) return;
+            } while (isOccupied(pos));
+
+            const types = Object.values(POWERUP_TYPES);
+            const type = types[Math.floor(Math.random() * types.length)];
+            game.powerups.push({ ...pos, type, timer: 0, duration: 15000 });
+        }
+
+        function spawnObstacle() {
+            const cfg = DIFFICULTY_CONFIG[game.difficulty];
+            const maxObstacles = Math.floor(GRID_SIZE * GRID_SIZE * cfg.obstacles * 0.5);
+            if (game.obstacles.length >= maxObstacles) return;
+
+            let pos;
+            let attempts = 0;
+            const head = game.snake[0];
+            do {
+                pos = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
+                attempts++;
+                if (attempts > 100) return;
+                if (Math.abs(pos.x - head.x) < 5 && Math.abs(pos.y - head.y) < 5) continue;
+            } while (isOccupied(pos) || isNearSnake(pos, 2));
+
+            const obsBody = createObstacleBody(pos.x, pos.y);
+            if (world) world.addBody(obsBody);
+            game.obstacleBodies.push(obsBody);
+            game.obstacles.push({ ...pos, body: obsBody });
+        }
+
+        function isOccupied(pos) {
+            if (game.snake.some(s => s.x === pos.x && s.y === pos.y)) return true;
+            if (game.food && game.food.x === pos.x && game.food.y === pos.y) return true;
+            if (game.specialFood && game.specialFood.x === pos.x && game.specialFood.y === pos.y) return true;
+            if (game.obstacles.some(o => o.x === pos.x && o.y === pos.y)) return true;
+            if (game.powerups.some(p => p.x === pos.x && p.y === pos.y)) return true;
+            return false;
+        }
+
+        function isNearSnake(pos, range) {
+            return game.snake.some(s => Math.abs(s.x - pos.x) <= range && Math.abs(s.y - pos.y) <= range);
+        }
+
+        function startGame() {
+            initGame();
+            game.running = true;
+            game.paused = false;
+            game.lastTime = performance.now();
+            game.accumulator = 0;
+            game.moveTimer = 0;
+
+            // 启动游戏计时器
+            if (window.GameStatsManager && window.GameTimer) {
+                if (!window.gameTimer) {
+                    window.gameTimer = new window.GameTimer('game_snake');
+                }
+                window.gameTimer.start();
+            }
+
+            document.getElementById('gameOverlay').classList.add('hidden-overlay');
+            document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+            document.getElementById('gameoverOverlay').classList.add('hidden-overlay');
+
+            for (let i = 0; i < 5; i++) spawnObstacle();
+            spawnPowerup();
+
+            if (window.gsap) {
+                gsap.fromTo('.game-area', { boxShadow: '0 0 20px rgba(240,160,80,0.3)' }, {
+                    boxShadow: '0 0 40px rgba(240,160,80,0.6)',
+                    duration: 0.6,
+                    repeat: -1,
+                    yoyo: true
+                });
+            }
+        }
+
+        function pauseGame() {
+            if (!game.running || game.paused) return;
+            game.paused = true;
+            document.getElementById('pauseOverlay').classList.remove('hidden-overlay');
+            // 暂停计时器
+            if (window.gameTimer) {
+                window.gameTimer.pause();
+            }
+        }
+
+        function resumeGame() {
+            if (!game.running || !game.paused) return;
+            game.paused = false;
+            game.lastTime = performance.now();
+            document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+            // 恢复计时器
+            if (window.gameTimer) {
+                window.gameTimer.resume();
+            }
+        }
+
+        function togglePause() {
+            if (game.paused) resumeGame();
+            else pauseGame();
+        }
+
+        function gameOver(cause) {
+            game.running = false;
+            game.paused = false;
+
+            snakeGamesPlayed += 1;
+            snakeTotalScore += game.score;
+            if (game.score > snakeHighScore) snakeHighScore = game.score;
+
+            setUserGameData('snakeGamesPlayed', snakeGamesPlayed);
+            setUserGameData('snakeHighScore', snakeHighScore);
+            setUserGameData('snakeTotalScore', snakeTotalScore);
+
+            // 记录到新的游戏统计系统
+            if (window.GameStatsManager) {
+                window.GameStatsManager.recordScore('game_snake', game.score);
+                if (window.gameTimer) {
+                    window.gameTimer.stop();
+                }
+            }
+
+            document.getElementById('finalScore').textContent = game.score;
+            document.getElementById('finalLength').textContent = game.snakeLength;
+            document.getElementById('finalTime').textContent = game.time.toFixed(1) + 's';
+
+            const isNewHigh = game.score >= snakeHighScore && game.score > 0;
+            document.getElementById('bestLine').textContent = isNewHigh
+                ? '🎉 新纪录！历史最高: ' + snakeHighScore
+                : '历史最高: ' + snakeHighScore + ' · 累计: ' + snakeTotalScore;
+
+            document.getElementById('gameoverOverlay').classList.remove('hidden-overlay');
+
+            checkAchievements();
+            saveRanking();
+            updateRanking();
+
+            if (window.gsap) {
+                gsap.fromTo('#gameoverOverlay', { opacity: 0 }, { opacity: 1, duration: 0.4 });
+                gsap.fromTo('#gameoverOverlay .glass', { scale: 0.8, y: 30 }, { scale: 1, y: 0, duration: 0.5, ease: 'back.out(1.7)' });
+            }
+        }
+
+        function checkAchievements() {
+            const newAchievements = [];
+            const conds = {
+                snake_first_game: snakeGamesPlayed >= 1,
+                snake_score_50: game.score >= 50 || snakeHighScore >= 50,
+                snake_score_100: game.score >= 100 || snakeHighScore >= 100,
+                snake_score_200: game.score >= 200 || snakeHighScore >= 200,
+                snake_games_5: snakeGamesPlayed >= 5,
+                snake_games_10: snakeGamesPlayed >= 10,
+                snake_total_100: snakeTotalScore >= 100,
+                snake_total_500: snakeTotalScore >= 500,
+                snake_perfect_game: game.perfectGame && snakeGamesPlayed >= 1,
+                snake_survivor: game.time >= 120
+            };
+
+            snakeAchievementDefs.forEach(a => {
+                if (!snakeAchievements.includes(a.id) && conds[a.id]) {
+                    snakeAchievements.push(a.id);
+                    newAchievements.push(a);
+                    saveAchievementTime(a.id);
+                }
+            });
+
+            if (newAchievements.length > 0) {
+                setUserGameData('snakeAchievements', snakeAchievements);
+                newAchievements.forEach(a => showAchievementToast(a));
+            }
+
+            if (snakeAchievements.length >= 10) {
+                const sp = getUserGameData('specialAchievements', []) || [];
+                if (!sp.includes('snake_complete')) {
+                    sp.push('snake_complete');
+                    setUserGameData('specialAchievements', sp);
+                    showAchievementToast({ id: 'snake_complete', name: '贪吃蛇大师', desc: '解锁贪吃蛇所有成就', icon: 'fa-crown' });
+                }
+            }
+
+            updateAchvBadge();
+            renderAchievements();
+        }
+
+        function showAchievementToast(a) {
+            const box = document.getElementById('toastBox');
+            const el = document.createElement('div');
+            el.className = 'achv-toast glass rounded-xl p-3 flex items-center gap-3';
+            el.innerHTML = `
+                <div class="w-11 h-11 rounded-lg flex items-center justify-center text-xl shrink-0" style="background:linear-gradient(135deg,#f0a050,#d45d79);">
+                    <i class="fas ${a.icon} text-white"></i>
                 </div>
-            </div>
-        `;
+                <div class="min-w-0">
+                    <div class="text-[11px] text-pre-accent font-bold tracking-wide">成就解锁</div>
+                    <div class="font-bold text-sm truncate">${a.name}</div>
+                    <div class="text-xs text-gray-400 truncate">${a.desc}</div>
+                </div>`;
+            box.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            if (window.gsap) {
+                gsap.from(el, { y: 20, duration: 0.5, ease: 'back.out(1.7)' });
+            }
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 500);
+            }, 3600);
+
+            const banner = document.getElementById('achvBanner');
+            document.getElementById('achvBannerText').textContent = a.name + ' 已解锁！';
+            banner.classList.add('show');
+            setTimeout(() => banner.classList.remove('show'), 2500);
+        }
+
+        function updateAchvBadge() {
+            const badge = document.getElementById('achvBadge');
+            if (badge) badge.textContent = snakeAchievements.length;
+        }
+
+        function renderAchievements() {
+            const list = document.getElementById('achvList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            document.getElementById('achvUnlockedCount').textContent = snakeAchievements.length;
+            document.getElementById('achvTotalCount').textContent = snakeAchievementDefs.length;
+
+            const dataMap = {
+                gamesPlayed: snakeGamesPlayed,
+                highScore: snakeHighScore,
+                totalScore: snakeTotalScore,
+                perfect: game.perfectGame && snakeGamesPlayed >= 1 ? 1 : 0,
+                time: game.time
+            };
+
+            snakeAchievementDefs.forEach(a => {
+                const unlocked = snakeAchievements.includes(a.id);
+                let progress = 0;
+                let progressText = '';
+
+                if (unlocked) {
+                    progress = 100;
+                    progressText = '已完成';
+                } else {
+                    const val = dataMap[a.field] || 0;
+                    progress = Math.min((val / a.target) * 100, 99);
+                    progressText = val + '/' + a.target;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'achv-card' + (unlocked ? ' unlocked' : '');
+                card.innerHTML = `
+                    <div class="achv-progress-ring">
+                        <svg width="48" height="48">
+                            <circle class="ring-bg" cx="24" cy="24" r="20" fill="none" stroke-width="3"/>
+                            <circle class="ring-fg" cx="24" cy="24" r="20" fill="none" stroke-width="3"
+                                stroke-dasharray="${2 * Math.PI * 20}"
+                                stroke-dashoffset="${2 * Math.PI * 20 * (1 - progress / 100)}"/>
+                        </svg>
+                        <div class="achv-progress-text">${Math.round(progress)}%</div>
+                    </div>
+                    <div class="achv-icon"><i class="fas ${a.icon}"></i></div>
+                    <div class="achv-info">
+                        <div class="achv-name">${a.name}</div>
+                        <div class="achv-desc">${a.desc}</div>
+                    </div>
+                    <div class="achv-status">${progressText}</div>`;
+                list.appendChild(card);
+            });
+        }
+
+        function saveRanking() {
+            const key = 'snakeRanking';
+            let ranking = getUserGameData(key, []);
+            ranking.push({ score: game.score, length: game.snakeLength, time: game.time, date: Date.now() });
+            ranking.sort((a, b) => b.score - a.score);
+            ranking = ranking.slice(0, 10);
+            setUserGameData(key, ranking);
+            
+            if (game.score > snakeHistoricalHigh) {
+                snakeHistoricalHigh = game.score;
+                setUserGameData('snakeHistoricalHigh', snakeHistoricalHigh);
+            }
+        }
+
+        function updateRanking() {
+            const ranking = getUserGameData('snakeRanking', []);
+            const container = document.getElementById('rankingContent');
+            if (!container) return;
+
+            const hsEl = document.getElementById('snakeHistoricalHigh');
+            if (hsEl) hsEl.textContent = snakeHistoricalHigh;
+
+            if (ranking.length === 0) {
+                container.innerHTML = '<div class="ranking-empty">暂无记录，快去创造纪录吧！</div>';
+                return;
+            }
+
+            container.innerHTML = ranking.map((r, i) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const rank = i < 3 ? medals[i] : `#${i + 1}`;
+                const date = new Date(r.date);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+                return `<div class="ranking-item">
+                    <span class="r-rank">${rank}</span>
+                    <span class="r-score">${r.score}</span>
+                    <span class="r-meta">长${r.length} · ${r.time.toFixed(1)}s · ${dateStr}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function showBestInfo() {
+            const el = document.getElementById('bestInfo');
+            if (el) {
+                el.textContent = `最高分: ${snakeHighScore} · 累计: ${snakeTotalScore} · 场次: ${snakeGamesPlayed}`;
+            }
+        }
+
+        function moveSnake() {
+            if (!game.running || game.paused) return;
+
+            game.direction = game.nextDirection;
+            const head = game.snake[0];
+            let newHead = { x: head.x + game.direction.x, y: head.y + game.direction.y };
+
+            const cfg = DIFFICULTY_CONFIG[game.difficulty];
+
+            if (cfg.wrap === true) {
+                newHead.x = (newHead.x + GRID_SIZE) % GRID_SIZE;
+                newHead.y = (newHead.y + GRID_SIZE) % GRID_SIZE;
+            } else if (cfg.wrap === 'limited') {
+                if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+                    if (game.snakeLength > 10) {
+                        game.snake.pop();
+                        game.perfectGame = false;
+                        newHead.x = (newHead.x + GRID_SIZE) % GRID_SIZE;
+                        newHead.y = (newHead.y + GRID_SIZE) % GRID_SIZE;
+                    } else {
+                        gameOver('wall');
+                        return;
+                    }
+                }
+            } else {
+                if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+                    gameOver('wall');
+                    return;
+                }
+            }
+
+            const isGhost = game.activePowerups[POWERUP_TYPES.GHOST];
+            if (!isGhost) {
+                for (let i = 0; i < game.snake.length - 1; i++) {
+                    if (game.snake[i].x === newHead.x && game.snake[i].y === newHead.y) {
+                        gameOver('self');
+                        return;
+                    }
+                }
+            }
+
+            if (game.headBody && world) {
+                const hp = gridToPhysics(newHead.x, newHead.y);
+                game.headBody.position.set(hp.x, hp.y, 0);
+
+                for (let i = game.obstacles.length - 1; i >= 0; i--) {
+                    const obs = game.obstacles[i];
+                    if (obs.x === newHead.x && obs.y === newHead.y) {
+                        if (game.shieldActive) {
+                            game.shieldActive = false;
+                            if (obs.body && world) world.removeBody(obs.body);
+                            game.obstacles.splice(i, 1);
+                            showShieldBreakEffect(newHead);
+                            return;
+                        }
+                        gameOver('obstacle');
+                        return;
+                    }
+                }
+            } else {
+                for (let i = game.obstacles.length - 1; i >= 0; i--) {
+                    const obs = game.obstacles[i];
+                    if (obs.x === newHead.x && obs.y === newHead.y) {
+                        if (game.shieldActive) {
+                            game.shieldActive = false;
+                            game.obstacles.splice(i, 1);
+                            showShieldBreakEffect(newHead);
+                            return;
+                        }
+                        gameOver('obstacle');
+                        return;
+                    }
+                }
+            }
+
+            game.snake.unshift(newHead);
+
+            let grew = false;
+
+            if (game.food && newHead.x === game.food.x && newHead.y === game.food.y) {
+                const multiplier = game.activePowerups[POWERUP_TYPES.DOUBLE] ? 2 : 1;
+                game.score += 10 * multiplier;
+                grew = true;
+                spawnFood();
+                spawnObstacle();
+            }
+
+            if (game.specialFood && newHead.x === game.specialFood.x && newHead.y === game.specialFood.y) {
+                const multiplier = game.activePowerups[POWERUP_TYPES.DOUBLE] ? 2 : 1;
+                game.score += 50 * multiplier;
+                grew = true;
+                game.specialFood = null;
+                for (let i = 0; i < 3; i++) spawnObstacle();
+                spawnSpecialFood();
+            }
+
+            const puIdx = game.powerups.findIndex(p => p.x === newHead.x && p.y === newHead.y);
+            if (puIdx !== -1) {
+                const pu = game.powerups[puIdx];
+                applyPowerup(pu);
+                game.powerups.splice(puIdx, 1);
+                if (Math.random() < 0.3) spawnPowerup();
+            }
+
+            if (!grew) {
+                game.snake.pop();
+            } else {
+                game.snakeLength = game.snake.length;
+            }
+
+            document.getElementById('scoreVal').textContent = game.score;
+            document.getElementById('lengthVal').textContent = game.snakeLength;
+
+            updateCamera();
+        }
+
+        function showShieldBreakEffect(pos) {
+            if (window.gsap) {
+                gsap.fromTo('.game-area', { boxShadow: '0 0 20px rgba(34,211,238,0.8)' }, {
+                    boxShadow: '0 0 5px rgba(34,211,238,0.2)',
+                    duration: 0.4
+                });
+            }
+        }
+
+        function applyPowerup(pu) {
+            switch (pu.type) {
+                case POWERUP_TYPES.SPEED:
+                    game.activePowerups[POWERUP_TYPES.SPEED] = 5000;
+                    break;
+                case POWERUP_TYPES.SLOW:
+                    game.activePowerups[POWERUP_TYPES.SLOW] = 3000;
+                    break;
+                case POWERUP_TYPES.SHIELD:
+                    game.shieldActive = true;
+                    break;
+                case POWERUP_TYPES.DOUBLE:
+                    game.activePowerups[POWERUP_TYPES.DOUBLE] = 5000;
+                    break;
+                case POWERUP_TYPES.GHOST:
+                    game.activePowerups[POWERUP_TYPES.GHOST] = 3000;
+                    break;
+            }
+            updatePowerupUI();
+        }
+
+        function updatePowerupUI() {
+            const chip = document.getElementById('powerupChip');
+            const shieldChip = document.getElementById('shieldChip');
+
+            const activeKeys = Object.keys(game.activePowerups).filter(k => game.activePowerups[k] > 0);
+
+            if (activeKeys.length > 0) {
+                chip.style.display = 'flex';
+                const type = activeKeys[0];
+                const names = {
+                    [POWERUP_TYPES.SPEED]: '加速',
+                    [POWERUP_TYPES.SLOW]: '减速',
+                    [POWERUP_TYPES.DOUBLE]: '双倍',
+                    [POWERUP_TYPES.GHOST]: '幽灵'
+                };
+                document.getElementById('powerupName').textContent = names[type] || '道具';
+            } else {
+                chip.style.display = 'none';
+            }
+
+            shieldChip.style.display = game.shieldActive ? 'flex' : 'none';
+        }
+
+        function updatePowerups(dt) {
+            for (const key of Object.keys(game.activePowerups)) {
+                if (game.activePowerups[key] > 0) {
+                    game.activePowerups[key] -= dt;
+                    if (game.activePowerups[key] <= 0) {
+                        delete game.activePowerups[key];
+                    }
+                }
+            }
+
+            for (let i = game.powerups.length - 1; i >= 0; i--) {
+                game.powerups[i].timer += dt;
+                if (game.powerups[i].timer >= game.powerups[i].duration) {
+                    game.powerups.splice(i, 1);
+                }
+            }
+
+            if (game.specialFood) {
+                game.specialFood.timer += dt;
+                if (game.specialFood.timer >= game.specialFood.duration) {
+                    game.specialFood = null;
+                }
+            }
+
+            updatePowerupUI();
+        }
+
+        function updateCamera() {
+            const head = game.snake[0];
+            game.cameraOffset.x = head.x - VIEWPORT_SIZE / 2;
+            game.cameraOffset.y = head.y - VIEWPORT_SIZE / 2;
+
+            game.cameraOffset.x = Math.max(0, Math.min(GRID_SIZE - VIEWPORT_SIZE, game.cameraOffset.x));
+            game.cameraOffset.y = Math.max(0, Math.min(GRID_SIZE - VIEWPORT_SIZE, game.cameraOffset.y));
+        }
+
+        function gameLoop(timestamp) {
+            const dt = timestamp - (game.lastTime || timestamp);
+            game.lastTime = timestamp;
+
+            if (game.running && !game.paused) {
+                game.time += dt / 1000;
+                document.getElementById('timeVal').textContent = game.time.toFixed(1) + 's';
+
+                if (game.timeLimit > 0 && game.time >= game.timeLimit) {
+                    gameOver('timeout');
+                    return;
+                }
+
+                game.moveTimer += dt;
+
+                let interval = game.moveInterval;
+                if (game.activePowerups[POWERUP_TYPES.SPEED]) interval *= 0.5;
+                if (game.activePowerups[POWERUP_TYPES.SLOW]) interval *= 1.8;
+                if (game.boostActive) interval *= 0.6;
+
+                while (game.moveTimer >= interval) {
+                    game.moveTimer -= interval;
+                    moveSnake();
+                    if (!game.running) return;
+                }
+
+                updatePowerups(dt);
+
+                if (world) world.step(1 / 60);
+
+                if (Math.random() < 0.002) spawnPowerup();
+                if (Math.random() < 0.001) spawnObstacle();
+
+                if (!game.specialFood && Math.random() < 0.003) spawnSpecialFood();
+
+                updateCamera();
+            }
+
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function render() {
+            if (!ctx) return;
+            const w = canvas.width;
+            const h = canvas.height;
+            const cellW = w / VIEWPORT_SIZE;
+            const cellH = h / VIEWPORT_SIZE;
+
+            ctx.fillStyle = '#0f0a1e';
+            ctx.fillRect(0, 0, w, h);
+
+            const grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+            grad.addColorStop(0, 'rgba(240,160,80,0.08)');
+            grad.addColorStop(1, 'rgba(15,10,30,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+            ctx.lineWidth = 1;
+            const offX = game.cameraOffset.x * cellW;
+            const offY = game.cameraOffset.y * cellH;
+            for (let x = 0; x <= VIEWPORT_SIZE; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * cellW - offX % cellW, 0);
+                ctx.lineTo(x * cellW - offX % cellW, h);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= VIEWPORT_SIZE; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * cellH - offY % cellH);
+                ctx.lineTo(w, y * cellH - offY % cellH);
+                ctx.stroke();
+            }
+
+            const startX = Math.floor(game.cameraOffset.x);
+            const startY = Math.floor(game.cameraOffset.y);
+
+            for (const obs of game.obstacles) {
+                if (obs.x < startX - 1 || obs.x > startX + VIEWPORT_SIZE + 1 ||
+                    obs.y < startY - 1 || obs.y > startY + VIEWPORT_SIZE + 1) continue;
+                const sx = (obs.x - game.cameraOffset.x) * cellW;
+                const sy = (obs.y - game.cameraOffset.y) * cellH;
+                ctx.fillStyle = '#4a3a5a';
+                ctx.fillRect(sx + 1, sy + 1, cellW - 2, cellH - 2);
+                ctx.fillStyle = '#6a5a7a';
+                ctx.fillRect(sx + 2, sy + 2, cellW - 4, 3);
+            }
+
+            for (const pu of game.powerups) {
+                if (pu.x < startX - 1 || pu.x > startX + VIEWPORT_SIZE + 1 ||
+                    pu.y < startY - 1 || pu.y > startY + VIEWPORT_SIZE + 1) continue;
+                const sx = (pu.x - game.cameraOffset.x) * cellW + cellW / 2;
+                const sy = (pu.y - game.cameraOffset.y) * cellH + cellH / 2;
+                const pulse = Math.sin(performance.now() / 300) * 2;
+                const r = cellW / 2 - 3 + pulse;
+
+                const colors = {
+                    [POWERUP_TYPES.SPEED]: '#ffd700',
+                    [POWERUP_TYPES.SLOW]: '#7dd3fc',
+                    [POWERUP_TYPES.SHIELD]: '#22d3ee',
+                    [POWERUP_TYPES.DOUBLE]: '#d946ef',
+                    [POWERUP_TYPES.GHOST]: '#9ca3af'
+                };
+                const icons = {
+                    [POWERUP_TYPES.SPEED]: '⚡',
+                    [POWERUP_TYPES.SLOW]: '❄️',
+                    [POWERUP_TYPES.SHIELD]: '🛡️',
+                    [POWERUP_TYPES.DOUBLE]: '✨',
+                    [POWERUP_TYPES.GHOST]: '👻'
+                };
+
+                ctx.beginPath();
+                ctx.arc(sx, sy, r + 3, 0, Math.PI * 2);
+                ctx.fillStyle = colors[pu.type] + '44';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(sx, sy, r, 0, Math.PI * 2);
+                ctx.fillStyle = colors[pu.type];
+                ctx.fill();
+
+                ctx.font = `${cellW * 0.6}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(icons[pu.type], sx, sy);
+            }
+
+            if (game.food) {
+                const sx = (game.food.x - game.cameraOffset.x) * cellW + cellW / 2;
+                const sy = (game.food.y - game.cameraOffset.y) * cellH + cellH / 2;
+                const pulse = Math.sin(performance.now() / 200) * 2;
+                const r = cellW / 2 - 4 + pulse;
+
+                ctx.beginPath();
+                ctx.arc(sx, sy, r + 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,107,107,0.3)';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(sx, sy, r, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(sx - r * 0.3, sy - r * 0.3, r * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+            }
+
+            if (game.specialFood) {
+                const sx = (game.specialFood.x - game.cameraOffset.x) * cellW + cellW / 2;
+                const sy = (game.specialFood.y - game.cameraOffset.y) * cellH + cellH / 2;
+                const pulse = Math.sin(performance.now() / 150) * 3;
+                const r = cellW / 2 - 3 + pulse;
+
+                const alpha = Math.min(1, game.specialFood.timer < 1500 ? game.specialFood.timer / 1500 :
+                    game.specialFood.timer > game.specialFood.duration - 1500 ? (game.specialFood.duration - game.specialFood.timer) / 1500 : 1);
+
+                ctx.globalAlpha = alpha;
+                ctx.beginPath();
+                ctx.arc(sx, sy, r + 6, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,215,0,0.3)';
+                ctx.fill();
+
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                    const px = sx + Math.cos(angle) * r;
+                    const py = sy + Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                    const innerAngle = angle + (2 * Math.PI) / 5;
+                    const ir = r * 0.45;
+                    ctx.lineTo(sx + Math.cos(innerAngle) * ir, sy + Math.sin(innerAngle) * ir);
+                }
+                ctx.closePath();
+                ctx.fillStyle = '#ffd700';
+                ctx.fill();
+                ctx.strokeStyle = '#f0a050';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            const ghostActive = game.activePowerups[POWERUP_TYPES.GHOST];
+            const shieldActive = game.shieldActive;
+            const doubleActive = game.activePowerups[POWERUP_TYPES.DOUBLE];
+
+            for (let i = game.snake.length - 1; i >= 0; i--) {
+                const seg = game.snake[i];
+                const sx = (seg.x - game.cameraOffset.x) * cellW;
+                const sy = (seg.y - game.cameraOffset.y) * cellH;
+
+                if (seg.x < startX - 1 || seg.x > startX + VIEWPORT_SIZE + 1 ||
+                    seg.y < startY - 1 || seg.y > startY + VIEWPORT_SIZE + 1) continue;
+
+                const isHead = i === 0;
+                const t = i / game.snake.length;
+
+                if (ghostActive) {
+                    ctx.globalAlpha = 0.3;
+                }
+
+                let r, g, b;
+                if (doubleActive) {
+                    r = 217; g = 70; b = 239;
+                } else {
+                    r = Math.round(240 - t * 40);
+                    g = Math.round(160 - t * 60);
+                    b = Math.round(80 + t * 60);
+                }
+
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+
+                const pad = isHead ? 1 : 2;
+                const radius = isHead ? 6 : 4;
+                roundRect(ctx, sx + pad, sy + pad, cellW - pad * 2, cellH - pad * 2, radius);
+                ctx.fill();
+
+                if (isHead) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    roundRect(ctx, sx + pad + 2, sy + pad + 2, cellW - pad * 2 - 4, (cellH - pad * 2) * 0.35, 3);
+                    ctx.fill();
+
+                    const eyeSize = Math.max(2, cellW * 0.12);
+                    const dir = game.direction;
+                    let ex1, ey1, ex2, ey2;
+                    if (dir.x !== 0) {
+                        ex1 = sx + cellW / 2 + dir.x * cellW * 0.25;
+                        ey1 = sy + cellH * 0.3;
+                        ex2 = sx + cellW / 2 + dir.x * cellW * 0.25;
+                        ey2 = sy + cellH * 0.7;
+                    } else {
+                        ex1 = sx + cellW * 0.3;
+                        ey1 = sy + cellH / 2 + dir.y * cellH * 0.25;
+                        ex2 = sx + cellW * 0.7;
+                        ey2 = sy + cellH / 2 + dir.y * cellH * 0.25;
+                    }
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(ex1, ey1, eyeSize, 0, Math.PI * 2);
+                    ctx.arc(ex2, ey2, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#0f0a1e';
+                    ctx.beginPath();
+                    ctx.arc(ex1, ey1, eyeSize * 0.5, 0, Math.PI * 2);
+                    ctx.arc(ex2, ey2, eyeSize * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (shieldActive) {
+                        ctx.strokeStyle = 'rgba(34,211,238,0.8)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(sx + cellW / 2, sy + cellH / 2, cellW * 0.65, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        const shieldPulse = Math.sin(performance.now() / 200) * 0.3 + 0.7;
+                        ctx.strokeStyle = `rgba(34,211,238,${shieldPulse * 0.4})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.arc(sx + cellW / 2, sy + cellH / 2, cellW * 0.8, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                }
+
+                if (isHead && game.score > 0) {
+                    ctx.strokeStyle = `rgba(240,160,80,${0.3 + Math.sin(performance.now() / 300) * 0.2})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(sx + cellW / 2, sy + cellH / 2, cellW * 0.7, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                ctx.globalAlpha = 1;
+            }
+
+            ctx.strokeStyle = 'rgba(240,160,80,0.2)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, w, h);
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        function bindControls() {
+            window.addEventListener('keydown', e => {
+                const key = e.key.toLowerCase();
+                if (key === 'p') { togglePause(); e.preventDefault(); return; }
+                if (key === ' ') { game.boostActive = true; e.preventDefault(); return; }
+                if (!game.running || game.paused) return;
+
+                switch (key) {
+                    case 'w': case 'arrowup':
+                        if (game.direction.y !== 1) game.nextDirection = { x: 0, y: -1 };
+                        e.preventDefault(); break;
+                    case 's': case 'arrowdown':
+                        if (game.direction.y !== -1) game.nextDirection = { x: 0, y: 1 };
+                        e.preventDefault(); break;
+                    case 'a': case 'arrowleft':
+                        if (game.direction.x !== 1) game.nextDirection = { x: -1, y: 0 };
+                        e.preventDefault(); break;
+                    case 'd': case 'arrowright':
+                        if (game.direction.x !== -1) game.nextDirection = { x: 1, y: 0 };
+                        e.preventDefault(); break;
+                }
+            });
+
+            window.addEventListener('keyup', e => {
+                if (e.key === ' ') game.boostActive = false;
+            });
+
+            const tbtnBoost = document.getElementById('tbtnBoost');
+            if (tbtnBoost) {
+                const down = e => { e.preventDefault(); game.boostActive = true; };
+                const up = e => { e.preventDefault(); game.boostActive = false; };
+                tbtnBoost.addEventListener('touchstart', down, { passive: false });
+                tbtnBoost.addEventListener('touchend', up);
+                tbtnBoost.addEventListener('mousedown', down);
+                tbtnBoost.addEventListener('mouseup', up);
+                tbtnBoost.addEventListener('mouseleave', up);
+            }
+        }
+
+        function bindSidebarEvents() {
+            document.getElementById('startBtn')?.addEventListener('click', startGame);
+            document.getElementById('sidebarStartBtn')?.addEventListener('click', startGame);
+            document.getElementById('sidebarResetBtn')?.addEventListener('click', () => startGame());
+            document.getElementById('restartBtn')?.addEventListener('click', () => startGame());
+            document.getElementById('restartFromPauseBtn')?.addEventListener('click', () => startGame());
+            document.getElementById('sidebarPauseBtn')?.addEventListener('click', togglePause);
+            document.getElementById('resumeBtn')?.addEventListener('click', resumeGame);
+            document.getElementById('sidebarAchievementBtn')?.addEventListener('click', () => {
+                document.getElementById('achvSidebar').classList.add('open');
+                renderAchievements();
+            });
+            document.getElementById('closeAchvBtn')?.addEventListener('click', () => {
+                document.getElementById('achvSidebar').classList.remove('open');
+            });
+            document.querySelectorAll('.diff-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.diff-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    game.difficulty = item.dataset.diff;
+                    const cfg = DIFFICULTY_CONFIG[game.difficulty];
+                    game.moveInterval = cfg.speed;
+                    game.timeLimit = cfg.timeLimit;
+                    const diffNames = { easy: '简单', medium: '中等', hard: '困难', nightmare: '噩梦' };
+                    document.getElementById('diffVal').textContent = diffNames[game.difficulty];
+                });
+            });
+        }
+
+        function initTouchControls() {
+            const bindDir = (id, dx, dy) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const handler = e => {
+                    e.preventDefault();
+                    if (!game.running || game.paused) return;
+                    if (dx !== 0 && game.direction.x !== -dx) game.nextDirection = { x: dx, y: 0 };
+                    else if (dy !== 0 && game.direction.y !== -dy) game.nextDirection = { x: 0, y: dy };
+                };
+                el.addEventListener('touchstart', handler, { passive: false });
+                el.addEventListener('mousedown', handler);
+            };
+            bindDir('tbtnUp', 0, -1);
+            bindDir('tbtnDown', 0, 1);
+            bindDir('tbtnLeft', -1, 0);
+            bindDir('tbtnRight', 1, 0);
+
+            const tb = document.getElementById('tbtnBoost');
+            if (tb) {
+                const onDown = e => { e.preventDefault(); game.boostActive = true; };
+                const onUp = e => { e.preventDefault(); game.boostActive = false; };
+                tb.addEventListener('touchstart', onDown, { passive: false });
+                tb.addEventListener('touchend', onUp);
+                tb.addEventListener('mousedown', onDown);
+                tb.addEventListener('mouseup', onUp);
+                tb.addEventListener('mouseleave', onUp);
+            }
+        }
+
+        function openResetModal() {
+            document.getElementById('snakeResetModal').classList.remove('hidden-overlay');
+        }
         
-        achievementList.appendChild(achievementItem);
-    });
-    
-    // 更新统计
-    document.getElementById('achievementTotal').textContent = snakeAchievementDefs.length;
-    document.getElementById('achievementUnlocked').textContent = snakeAchievements.length;
-}
-
-function showAchievementPopup(achievement) {
-    const achievementPopup = document.createElement('div');
-    achievementPopup.className = 'achievement-popup';
-    achievementPopup.innerHTML = `
-        <div class="achievement-popup-content">
-            <div class="achievement-popup-icon">
-                <i class="fas ${achievement.icon}"></i>
-            </div>
-            <div class="achievement-popup-text">
-                <div class="achievement-popup-title">${langConfig[currentLang].achievementUnlocked}</div>
-                <div class="achievement-popup-name">${achievement.name}</div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(achievementPopup);
-    
-    setTimeout(() => {
-        achievementPopup.classList.add('show');
-    }, 10);
-    
-    setTimeout(() => {
-        achievementPopup.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(achievementPopup);
-        }, 300);
-    }, 3000);
-}
-
-// 键盘控制
-window.addEventListener('keydown', function(e) {
-    switch (e.key) {
-        case 'w':
-        case 'W':
-            if (direction !== 'down') {
-                nextDirection = 'up';
-            }
-            break;
-        case 's':
-        case 'S':
-            if (direction !== 'up') {
-                nextDirection = 'down';
-            }
-            break;
-        case 'a':
-        case 'A':
-            if (direction !== 'right') {
-                nextDirection = 'left';
-            }
-            break;
-        case 'd':
-        case 'D':
-            if (direction !== 'left') {
-                nextDirection = 'right';
-            }
-            break;
-    }
-});
-
-// 鼠标控制
-(document.getElementById('snakeBoard') || { addEventListener: function() {} }).addEventListener('click', function(e) {
-    const rect = this.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const boardWidth = rect.width;
-    const boardHeight = rect.height;
-    
-    // 计算点击位置相对于蛇头的方向
-    const head = snake[0];
-    const headX = (head.x * boardWidth) / BOARD_SIZE;
-    const headY = (head.y * boardHeight) / BOARD_SIZE;
-    
-    // 计算水平和垂直距离
-    const dx = x - headX;
-    const dy = y - headY;
-    
-    // 确定主要方向
-    if (Math.abs(dx) > Math.abs(dy)) {
-        // 水平方向
-        if (dx > 0 && direction !== 'left') {
-            nextDirection = 'right';
-        } else if (dx < 0 && direction !== 'right') {
-            nextDirection = 'left';
+        function closeResetModal() {
+            document.getElementById('snakeResetModal').classList.add('hidden-overlay');
         }
-    } else {
-        // 垂直方向
-        if (dy > 0 && direction !== 'up') {
-            nextDirection = 'down';
-        } else if (dy < 0 && direction !== 'down') {
-            nextDirection = 'up';
+        
+        function resetRanking() {
+            setUserGameData('snakeRanking', []);
+            snakeHighScore = 0;
+            setUserGameData('snakeHighScore', 0);
+            snakeTotalScore = 0;
+            setUserGameData('snakeTotalScore', 0);
+            updateRanking();
+            showBestInfo();
+            closeResetModal();
         }
-    }
-});
 
-// 开始游戏按钮
-(document.getElementById('sidebarStartGameBtn') || { addEventListener: function() {} }).addEventListener('click', startGame);
+        window.addEventListener('load', () => {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            initBackground();
+            initPhysics();
+            initGame();
+            bindControls();
+            initTouchControls();
+            bindSidebarEvents();
 
-// 重置游戏按钮
-(document.getElementById('sidebarResetGameBtn') || { addEventListener: function() {} }).addEventListener('click', startGame);
+            document.getElementById('snakeResetBtn').addEventListener('click', openResetModal);
+            document.getElementById('snakeResetClose').addEventListener('click', closeResetModal);
+            document.getElementById('snakeResetCancel').addEventListener('click', closeResetModal);
+            document.getElementById('snakeResetConfirm').addEventListener('click', resetRanking);
 
-// 返回首页按钮
-(document.getElementById('sidebarBackHomeBtn') || { addEventListener: function() {} }).addEventListener('click', function() {
-    window.location.href = 'homepage4.0.html';
-});
+            if (currentUser.username) {
+                document.getElementById('userName').textContent = currentUser.username;
+                document.getElementById('userId').textContent = 'ID: ' + (currentUser.userId || '---');
+            }
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 初始化游戏
-    initGameGrid();
-    drawGame();
-    loadAchievements();
-    
-    // 更新版本号显示
-    if (typeof updateVersionDisplay === 'function') {
-        updateVersionDisplay('snakegame');
-    }
-});
-</script>
+            showBestInfo();
+            updateAchvBadge();
+            renderAchievements();
+            updateRanking();
+
+            if (window.Lenis) {
+                const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+                if (window.gsap) {
+                    gsap.ticker.add(time => lenis.raf(time * 1000));
+                    gsap.ticker.lagSmoothing(0);
+                } else {
+                    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+                    requestAnimationFrame(raf);
+                }
+            }
+
+            if (window.gsap) {
+                gsap.from('.sidebar', { x: -100, opacity: 0, duration: 0.8, ease: 'power3.out' });
+                gsap.from('.info-bar', { y: -30, opacity: 0, duration: 0.6, delay: 0.2 });
+                gsap.from('.game-area', { scale: 0.95, opacity: 0, duration: 0.8, delay: 0.3, ease: 'back.out(1.2)' });
+                gsap.from('.bottom-section > div', { y: 30, opacity: 0, duration: 0.6, stagger: 0.1, delay: 0.4 });
+            }
+
+            startBgLoop();
+            requestAnimationFrame(gameLoop);
+        });
+    </script>
 </body>
 </html>

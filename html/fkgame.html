@@ -79,8 +79,9 @@
         })();
     </script>
     <!-- ===== /UI 框架 ===== -->
+<script src="../js/game-stats.js"></script>
 </head>
-<body>
+<body data-game-id="game_fk">
     <div class="settings-container">
         <div class="settings-sidebar">
             <div class="sidebar-header">
@@ -710,6 +711,15 @@
                 clearInterval(gameTimer);
                 gameRunning = false;
                 document.getElementById('gameOver').style.display = 'block';
+                
+                // 记录到新的游戏统计系统
+                if (window.GameStatsManager) {
+                    window.GameStatsManager.recordScore('game_fk', score);
+                    if (window.gameTimer) {
+                        window.gameTimer.stop();
+                    }
+                }
+                
                 showRankingModal();
                 saveGameData();
             }
@@ -777,6 +787,14 @@
             if (targetElement) {
                 targetElement.remove();
                 targetElement = null;
+            }
+            
+            // 启动游戏计时器
+            if (window.GameStatsManager && window.GameTimer) {
+                if (!window.gameTimer) {
+                    window.gameTimer = new window.GameTimer('game_fk');
+                }
+                window.gameTimer.start();
             }
             
             clearInterval(gameTimer);

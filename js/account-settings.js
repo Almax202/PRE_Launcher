@@ -1086,7 +1086,6 @@ document.addEventListener('DOMContentLoaded', function() {
             'section-account': '账户信息',
             'section-security': '安全设置',
             'section-privacy': '隐私设置',
-            'section-game-stats': '统计数据',
             'section-achievements': '成就系统',
             'section-notifications': '通知设置',
             'section-devices': '设备管理',
@@ -1215,7 +1214,6 @@ document.addEventListener('DOMContentLoaded', function() {
             'section-account': '账户信息',
             'section-security': '安全设置',
             'section-privacy': '隐私设置',
-            'section-game-stats': '统计数据',
             'section-achievements': '成就系统',
             'section-notifications': '通知设置',
             'section-devices': '设备管理',
@@ -1392,7 +1390,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 'account': { title: texts.accountInfo, desc: texts.accountInfoDesc },
                 'security': { title: texts.password, desc: texts.passwordDesc },
                 'privacy': { title: texts.visibility, desc: texts.visibilityDesc },
-                'game-stats': { title: texts.gameStats, desc: texts.gameStatsDesc },
                 'achievements': { title: texts.achievements, desc: texts.achievementsDesc },
                 'notifications': { title: texts.notifications, desc: texts.notificationsDesc },
                 'devices': { title: texts.devices, desc: texts.devicesDesc },
@@ -1408,10 +1405,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titles[sectionId]) {
                 document.getElementById('settingsTitle').textContent = titles[sectionId].title;
                 document.getElementById('settingsDesc').textContent = titles[sectionId].desc;
-            }
-            
-            if (sectionId === 'game-stats') {
-                loadGameStats();
             }
             
             if (sectionId === 'achievements') {
@@ -6060,28 +6053,48 @@ document.addEventListener('DOMContentLoaded', function() {
         var colorHighScore = getUserGameData('colorHighScore', 0);
         var colorTotalScore = getUserGameData('colorTotalScore', 0);
         var colorMaxCombo = getUserGameData('colorMaxCombo', 0);
-        
-        var totalGames = fkGamesPlayed + fxqGamesPlayed + wzqGamesPlayed + snakeGamesPlayed + memoryGamesPlayed + colorGamesPlayed;
-        var totalScore = fkHighScore + fxqHighScore + wzqWins * 100 + snakeTotalScore + memoryHighScore + colorTotalScore;
-        var totalWins = fkAchievements.length + fxqAchievements.length + wzqAchievements.length + snakeAchievements.length + memoryAchievements.length + colorAchievements.length;
+
+        var cube3dGamesPlayed = getUserGameData('cube3dGamesPlayed', 0);
+        var cube3dAchievements = getUserGameData('cube3dAchievements', []);
+        var cube3dHighScore = getUserGameData('cube3dHighScore', 0);
+        var cube3dMaxOrbs = getUserGameData('cube3dMaxOrbs', 0);
+        var cube3dMaxTime = getUserGameData('cube3dMaxTime', 0);
+
+        var dinoGamesPlayed = getUserGameData('dinoGamesPlayed', 0);
+        var dinoAchievements = getUserGameData('dinoAchievements', []);
+        var dinoHighScore = getUserGameData('dinoHighScore', 0);
+        var dinoTotalScore = getUserGameData('dinoTotalScore', 0);
+        var dinoTotalJumps = getUserGameData('dinoTotalJumps', 0);
+        var dinoTotalDodges = getUserGameData('dinoTotalDodges', 0);
+
+        var totalGames = fkGamesPlayed + fxqGamesPlayed + wzqGamesPlayed + snakeGamesPlayed + memoryGamesPlayed + colorGamesPlayed + cube3dGamesPlayed + dinoGamesPlayed;
+        var totalScore = fkHighScore + fxqHighScore + wzqWins * 100 + snakeTotalScore + memoryHighScore + colorTotalScore + cube3dHighScore + dinoTotalScore;
+        var totalWins = fkAchievements.length + fxqAchievements.length + wzqAchievements.length + snakeAchievements.length + memoryAchievements.length + colorAchievements.length + cube3dAchievements.length + dinoAchievements.length;
         var totalPlayTime = Math.floor(totalGames * 0.5);
-        
-        document.getElementById('totalPlayTime').textContent = totalPlayTime + 'h';
-        document.getElementById('totalGames').textContent = totalGames;
-        document.getElementById('totalWins').textContent = totalWins;
-        document.getElementById('totalScore').textContent = totalScore;
-        
+
+        // 更新已存在的统计元素（部分可能已移除）
+        var elTotalPlayTime = document.getElementById('totalPlayTime');
+        if (elTotalPlayTime) elTotalPlayTime.textContent = totalPlayTime + 'h';
+        var elTotalGames = document.getElementById('totalGames');
+        if (elTotalGames) elTotalGames.textContent = totalGames;
+        var elTotalWins = document.getElementById('totalWins');
+        if (elTotalWins) elTotalWins.textContent = totalWins;
+        var elTotalScore = document.getElementById('totalScore');
+        if (elTotalScore) elTotalScore.textContent = totalScore;
+
         loadCheckinStats();
-        
-        var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements);
+
+        var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements);
         updateGameProgress(fkAchievements, 10, 'fk');
         updateGameProgress(fxqAchievements, 10, 'fxq');
         updateGameProgress(wzqAchievements, 10, 'wzq');
         updateGameProgress(snakeAchievements, 10, 'snake');
         updateGameProgress(memoryAchievements, 10, 'memory');
         updateGameProgress(colorAchievements, 10, 'color');
-        updateGameProgress(allAchievements, 60, 'all');
-        
+        updateGameProgress(cube3dAchievements, 10, 'cube3d');
+        updateGameProgress(dinoAchievements, 10, 'dino');
+        updateGameProgress(allAchievements, 80, 'all');
+
         fkAchievements.forEach(function(achievementId) {
             saveAchievementTime(achievementId);
         });
@@ -6100,7 +6113,13 @@ document.addEventListener('DOMContentLoaded', function() {
         colorAchievements.forEach(function(achievementId) {
             saveAchievementTime(achievementId);
         });
-        
+        cube3dAchievements.forEach(function(achievementId) {
+            saveAchievementTime(achievementId);
+        });
+        dinoAchievements.forEach(function(achievementId) {
+            saveAchievementTime(achievementId);
+        });
+
         var specialAchievements = [];
         if (fkAchievements.length >= 10) {
             specialAchievements.push('fk_complete');
@@ -6120,10 +6139,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (colorAchievements.length >= 9) {
             specialAchievements.push('cm_complete');
         }
-        updateGameProgress(specialAchievements, 6, 'special');
-        
-        updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, specialAchievements);
-        
+        if (cube3dAchievements.length >= 10) {
+            specialAchievements.push('cube3d_complete');
+        }
+        if (dinoAchievements.length >= 10) {
+            specialAchievements.push('dino_complete');
+        }
+        updateGameProgress(specialAchievements, 8, 'special');
+
+        updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialAchievements);
+
         setupGameSelector();
     }
     
@@ -6150,6 +6175,11 @@ document.addEventListener('DOMContentLoaded', function() {
             'fk': '点击方块',
             'fxq': '飞行器',
             'wzq': '五子棋',
+            'snake': '贪吃蛇',
+            'memory': '记忆卡牌',
+            'color': '颜色匹配',
+            'cube3d': '光影冲刺',
+            'dino': '光影恐龙',
             'special': '特殊成就'
         };
         return gameNames[gameCode] || gameCode;
@@ -6252,16 +6282,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 var colorHighScore = getUserGameData('colorHighScore', 0);
                 var colorTotalScore = getUserGameData('colorTotalScore', 0);
                 var colorMaxCombo = getUserGameData('colorMaxCombo', 0);
-                
-                var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements);
+
+                var cube3dGamesPlayed = getUserGameData('cube3dGamesPlayed', 0);
+                var cube3dAchievements = getUserGameData('cube3dAchievements', []);
+                var cube3dHighScore = getUserGameData('cube3dHighScore', 0);
+                var cube3dMaxOrbs = getUserGameData('cube3dMaxOrbs', 0);
+                var cube3dMaxTime = getUserGameData('cube3dMaxTime', 0);
+
+                var dinoGamesPlayed = getUserGameData('dinoGamesPlayed', 0);
+                var dinoAchievements = getUserGameData('dinoAchievements', []);
+                var dinoHighScore = getUserGameData('dinoHighScore', 0);
+                var dinoTotalScore = getUserGameData('dinoTotalScore', 0);
+                var dinoTotalJumps = getUserGameData('dinoTotalJumps', 0);
+                var dinoTotalDodges = getUserGameData('dinoTotalDodges', 0);
+
+                var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements);
                 updateGameProgress(fkAchievements, 10, 'fk');
                 updateGameProgress(fxqAchievements, 10, 'fxq');
                 updateGameProgress(wzqAchievements, 10, 'wzq');
                 updateGameProgress(snakeAchievements, 10, 'snake');
                 updateGameProgress(memoryAchievements, 10, 'memory');
                 updateGameProgress(colorAchievements, 10, 'color');
-                updateGameProgress(allAchievements, 60, 'all');
-                
+                updateGameProgress(cube3dAchievements, 10, 'cube3d');
+                updateGameProgress(dinoAchievements, 10, 'dino');
+                updateGameProgress(allAchievements, 80, 'all');
+
                 var specialAchievements = [];
                 if (fkAchievements.length >= 10) {
                     specialAchievements.push('fk_complete');
@@ -6281,16 +6326,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (colorAchievements.length >= 9) {
                     specialAchievements.push('cm_complete');
                 }
-                updateGameProgress(specialAchievements, 6, 'special');
-                
-                updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, specialAchievements);
+                if (cube3dAchievements.length >= 10) {
+                    specialAchievements.push('cube3d_complete');
+                }
+                if (dinoAchievements.length >= 10) {
+                    specialAchievements.push('dino_complete');
+                }
+                updateGameProgress(specialAchievements, 8, 'special');
+
+                updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialAchievements);
             });
         });
         
         gameSelectorInitialized = true;
     }
     
-    function updateAchievements(fkUnlockedAchievements, fkGamesPlayed, fkHighScore, fxqUnlockedAchievements, fxqGamesPlayed, fxqHighScore, wzqUnlockedAchievements, wzqGamesPlayed, wzqWins, snakeUnlockedAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryUnlockedAchievements, memoryGamesPlayed, memoryHighScore, colorUnlockedAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, specialUnlockedAchievements) {
+    function updateAchievements(fkUnlockedAchievements, fkGamesPlayed, fkHighScore, fxqUnlockedAchievements, fxqGamesPlayed, fxqHighScore, wzqUnlockedAchievements, wzqGamesPlayed, wzqWins, snakeUnlockedAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryUnlockedAchievements, memoryGamesPlayed, memoryHighScore, colorUnlockedAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dUnlockedAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoUnlockedAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialUnlockedAchievements) {
         var allAchievements = [
             {
                 id: 'fk_complete',
@@ -6819,10 +6870,186 @@ document.addEventListener('DOMContentLoaded', function() {
                 icon: 'fa-crown',
                 game: 'special',
                 condition: () => colorUnlockedAchievements.length >= 10
+            },
+            {
+                id: 'cube3d_complete',
+                name: '光影之王',
+                desc: '解锁光影冲刺所有成就',
+                icon: 'fa-crown',
+                game: 'special',
+                condition: () => cube3dUnlockedAchievements.length >= 10
+            },
+            {
+                id: 'dino_complete',
+                name: '恐龙之王',
+                desc: '解锁光影恐龙所有成就',
+                icon: 'fa-crown',
+                game: 'special',
+                condition: () => dinoUnlockedAchievements.length >= 10
+            },
+            {
+                id: 'cube3d_first_game',
+                name: '初入光廊',
+                desc: '完成第一局光影冲刺',
+                icon: 'fa-gamepad',
+                game: 'cube3d',
+                condition: () => cube3dGamesPlayed >= 1
+            },
+            {
+                id: 'cube3d_score_100',
+                name: '微光初现',
+                desc: '单局得分达到100分',
+                icon: 'fa-star',
+                game: 'cube3d',
+                condition: () => cube3dHighScore >= 100
+            },
+            {
+                id: 'cube3d_score_300',
+                name: '流光溢彩',
+                desc: '单局得分达到300分',
+                icon: 'fa-medal',
+                game: 'cube3d',
+                condition: () => cube3dHighScore >= 300
+            },
+            {
+                id: 'cube3d_score_600',
+                name: '极速辉光',
+                desc: '单局得分达到600分',
+                icon: 'fa-trophy',
+                game: 'cube3d',
+                condition: () => cube3dHighScore >= 600
+            },
+            {
+                id: 'cube3d_games_5',
+                name: '常客',
+                desc: '累计完成5局游戏',
+                icon: 'fa-fire',
+                game: 'cube3d',
+                condition: () => cube3dGamesPlayed >= 5
+            },
+            {
+                id: 'cube3d_games_15',
+                name: '光影行者',
+                desc: '累计完成15局游戏',
+                icon: 'fa-route',
+                game: 'cube3d',
+                condition: () => cube3dGamesPlayed >= 15
+            },
+            {
+                id: 'cube3d_orbs_10',
+                name: '能量收集者',
+                desc: '单局收集10个能量球',
+                icon: 'fa-gem',
+                game: 'cube3d',
+                condition: () => cube3dMaxOrbs >= 10
+            },
+            {
+                id: 'cube3d_orbs_25',
+                name: '能量狂热者',
+                desc: '单局收集25个能量球',
+                icon: 'fa-bolt',
+                game: 'cube3d',
+                condition: () => cube3dMaxOrbs >= 25
+            },
+            {
+                id: 'cube3d_survivor_30',
+                name: '坚持之心',
+                desc: '单局存活30秒',
+                icon: 'fa-shield-halved',
+                game: 'cube3d',
+                condition: () => cube3dMaxTime >= 30
+            },
+            {
+                id: 'cube3d_survivor_60',
+                name: '光之意志',
+                desc: '单局存活60秒',
+                icon: 'fa-crown',
+                game: 'cube3d',
+                condition: () => cube3dMaxTime >= 60
+            },
+            {
+                id: 'dino_first_game',
+                name: '初次尝试',
+                desc: '完成第一局跳跃游戏',
+                icon: 'fa-gamepad',
+                game: 'dino',
+                condition: () => dinoGamesPlayed >= 1
+            },
+            {
+                id: 'dino_score_100',
+                name: '初级跳跃者',
+                desc: '单局得分达到100分',
+                icon: 'fa-star',
+                game: 'dino',
+                condition: () => dinoHighScore >= 100
+            },
+            {
+                id: 'dino_score_300',
+                name: '中级跳跃者',
+                desc: '单局得分达到300分',
+                icon: 'fa-medal',
+                game: 'dino',
+                condition: () => dinoHighScore >= 300
+            },
+            {
+                id: 'dino_score_500',
+                name: '高级跳跃者',
+                desc: '单局得分达到500分',
+                icon: 'fa-trophy',
+                game: 'dino',
+                condition: () => dinoHighScore >= 500
+            },
+            {
+                id: 'dino_games_5',
+                name: '跳跃爱好者',
+                desc: '累计完成5局游戏',
+                icon: 'fa-apple-whole',
+                game: 'dino',
+                condition: () => dinoGamesPlayed >= 5
+            },
+            {
+                id: 'dino_games_10',
+                name: '跳跃达人',
+                desc: '累计完成10局游戏',
+                icon: 'fa-chess-knight',
+                game: 'dino',
+                condition: () => dinoGamesPlayed >= 10
+            },
+            {
+                id: 'dino_jumps_100',
+                name: '跳跃高手',
+                desc: '单局跳跃100次',
+                icon: 'fa-feather',
+                game: 'dino',
+                condition: () => dinoTotalJumps >= 100
+            },
+            {
+                id: 'dino_total_1000',
+                name: '累计得分王',
+                desc: '累计得分达到1000分',
+                icon: 'fa-chart-line',
+                game: 'dino',
+                condition: () => dinoTotalScore >= 1000
+            },
+            {
+                id: 'dino_dodger',
+                name: '躲避大师',
+                desc: '单局躲避50个障碍',
+                icon: 'fa-shield',
+                game: 'dino',
+                condition: () => dinoTotalDodges >= 50
+            },
+            {
+                id: 'dino_survivor',
+                name: '生存大师',
+                desc: '单局存活超过60秒',
+                icon: 'fa-clock',
+                game: 'dino',
+                condition: () => false
             }
         ];
-        
-        var allUnlocked = fkUnlockedAchievements.concat(fxqUnlockedAchievements, wzqUnlockedAchievements, snakeUnlockedAchievements, memoryUnlockedAchievements, colorUnlockedAchievements);
+
+        var allUnlocked = fkUnlockedAchievements.concat(fxqUnlockedAchievements, wzqUnlockedAchievements, snakeUnlockedAchievements, memoryUnlockedAchievements, colorUnlockedAchievements, cube3dUnlockedAchievements, dinoUnlockedAchievements);
         if (specialUnlockedAchievements) {
             allUnlocked = allUnlocked.concat(specialUnlockedAchievements);
         }
@@ -6941,6 +7168,72 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (achievement.id === 'snake_complete') {
                 progressPercent = Math.min((snakeUnlockedAchievements.length / 10) * 100, 100);
                 progressText = snakeUnlockedAchievements.length + '/10';
+            } else if (achievement.id === 'cube3d_first_game') {
+                progressPercent = cube3dGamesPlayed >= 1 ? 100 : 0;
+                progressText = cube3dGamesPlayed >= 1 ? '1/1' : '0/1';
+            } else if (achievement.id === 'cube3d_score_100') {
+                progressPercent = Math.min((cube3dHighScore / 100) * 100, 100);
+                progressText = cube3dHighScore + '/100';
+            } else if (achievement.id === 'cube3d_score_300') {
+                progressPercent = Math.min((cube3dHighScore / 300) * 100, 100);
+                progressText = cube3dHighScore + '/300';
+            } else if (achievement.id === 'cube3d_score_600') {
+                progressPercent = Math.min((cube3dHighScore / 600) * 100, 100);
+                progressText = cube3dHighScore + '/600';
+            } else if (achievement.id === 'cube3d_games_5') {
+                progressPercent = Math.min((cube3dGamesPlayed / 5) * 100, 100);
+                progressText = cube3dGamesPlayed + '/5';
+            } else if (achievement.id === 'cube3d_games_15') {
+                progressPercent = Math.min((cube3dGamesPlayed / 15) * 100, 100);
+                progressText = cube3dGamesPlayed + '/15';
+            } else if (achievement.id === 'cube3d_orbs_10') {
+                progressPercent = Math.min((cube3dMaxOrbs / 10) * 100, 100);
+                progressText = cube3dMaxOrbs + '/10';
+            } else if (achievement.id === 'cube3d_orbs_25') {
+                progressPercent = Math.min((cube3dMaxOrbs / 25) * 100, 100);
+                progressText = cube3dMaxOrbs + '/25';
+            } else if (achievement.id === 'cube3d_survivor_30') {
+                progressPercent = Math.min((cube3dMaxTime / 30) * 100, 100);
+                progressText = cube3dMaxTime + '/30';
+            } else if (achievement.id === 'cube3d_survivor_60') {
+                progressPercent = Math.min((cube3dMaxTime / 60) * 100, 100);
+                progressText = cube3dMaxTime + '/60';
+            } else if (achievement.id === 'cube3d_complete') {
+                progressPercent = Math.min((cube3dUnlockedAchievements.length / 10) * 100, 100);
+                progressText = cube3dUnlockedAchievements.length + '/10';
+            } else if (achievement.id === 'dino_first_game') {
+                progressPercent = dinoGamesPlayed >= 1 ? 100 : 0;
+                progressText = dinoGamesPlayed >= 1 ? '1/1' : '0/1';
+            } else if (achievement.id === 'dino_score_100') {
+                progressPercent = Math.min((dinoHighScore / 100) * 100, 100);
+                progressText = dinoHighScore + '/100';
+            } else if (achievement.id === 'dino_score_300') {
+                progressPercent = Math.min((dinoHighScore / 300) * 100, 100);
+                progressText = dinoHighScore + '/300';
+            } else if (achievement.id === 'dino_score_500') {
+                progressPercent = Math.min((dinoHighScore / 500) * 100, 100);
+                progressText = dinoHighScore + '/500';
+            } else if (achievement.id === 'dino_games_5') {
+                progressPercent = Math.min((dinoGamesPlayed / 5) * 100, 100);
+                progressText = dinoGamesPlayed + '/5';
+            } else if (achievement.id === 'dino_games_10') {
+                progressPercent = Math.min((dinoGamesPlayed / 10) * 100, 100);
+                progressText = dinoGamesPlayed + '/10';
+            } else if (achievement.id === 'dino_jumps_100') {
+                progressPercent = Math.min((dinoTotalJumps / 100) * 100, 100);
+                progressText = dinoTotalJumps + '/100';
+            } else if (achievement.id === 'dino_total_1000') {
+                progressPercent = Math.min((dinoTotalScore / 1000) * 100, 100);
+                progressText = dinoTotalScore + '/1000';
+            } else if (achievement.id === 'dino_dodger') {
+                progressPercent = Math.min((dinoTotalDodges / 50) * 100, 100);
+                progressText = dinoTotalDodges + '/50';
+            } else if (achievement.id === 'dino_survivor') {
+                progressPercent = 0;
+                progressText = '0/60';
+            } else if (achievement.id === 'dino_complete') {
+                progressPercent = Math.min((dinoUnlockedAchievements.length / 10) * 100, 100);
+                progressText = dinoUnlockedAchievements.length + '/10';
             } else {
                 progressPercent = isCompleted ? 100 : 0;
                 progressText = isCompleted ? '已完成' : '未完成';
@@ -7391,6 +7684,10 @@ document.addEventListener('DOMContentLoaded', function() {
             achievementArrayName = 'memoryAchievements';
         } else if (game === 'color') {
             achievementArrayName = 'colorAchievements';
+        } else if (game === 'cube3d') {
+            achievementArrayName = 'cube3dAchievements';
+        } else if (game === 'dino') {
+            achievementArrayName = 'dinoAchievements';
         } else if (game === 'special') {
             achievementArrayName = 'specialAchievements';
         }
@@ -7418,8 +7715,10 @@ document.addEventListener('DOMContentLoaded', function() {
         var wzqAchievements = user.gameData.wzqAchievements || [];
         var snakeAchievements = user.gameData.snakeAchievements || [];
         var memoryAchievements = user.gameData.memoryAchievements || [];
-        var colorAchievements = user.gameData.achievements || [];
-        
+        var colorAchievements = user.gameData.colorAchievements || [];
+        var cube3dAchievements = user.gameData.cube3dAchievements || [];
+        var dinoAchievements = user.gameData.dinoAchievements || [];
+
         var specialAchievements = [];
         if (fkAchievements.length >= 10) {
             specialAchievements.push('fk_complete');
@@ -7438,6 +7737,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (colorAchievements.length >= 9) {
             specialAchievements.push('cm_complete');
+        }
+        if (cube3dAchievements.length >= 10) {
+            specialAchievements.push('cube3d_complete');
+        }
+        if (dinoAchievements.length >= 10) {
+            specialAchievements.push('dino_complete');
         }
         
         user.gameData.specialAchievements = specialAchievements;
@@ -7465,18 +7770,22 @@ document.addEventListener('DOMContentLoaded', function() {
         var snakeAchievements = user.gameData && user.gameData.snakeAchievements ? user.gameData.snakeAchievements : [];
         var memoryAchievements = user.gameData && user.gameData.memoryAchievements ? user.gameData.memoryAchievements : [];
         var colorAchievements = user.gameData && user.gameData.colorAchievements ? user.gameData.colorAchievements : [];
-        
-        var allUnlocked = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements);
-        
+        var cube3dAchievements = user.gameData && user.gameData.cube3dAchievements ? user.gameData.cube3dAchievements : [];
+        var dinoAchievements = user.gameData && user.gameData.dinoAchievements ? user.gameData.dinoAchievements : [];
+
+        var allUnlocked = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements);
+
         var allFkAchievements = ['first_game', 'score_100', 'score_200', 'games_10', 'combo_master', 'speed_king', 'perfect_start', 'total_score_1000', 'games_100', 'extreme_challenge'];
         var allFxqAchievements = ['fxq_first_game', 'fxq_score_50', 'fxq_score_100', 'fxq_score_200', 'fxq_games_5', 'fxq_games_10', 'fxq_easy_master', 'fxq_hard_master', 'fxq_nightmare_survivor', 'fxq_perfect_score'];
         var allWzqAchievements = ['wzq_first_game', 'wzq_first_win', 'wzq_win_5', 'wzq_win_10', 'wzq_games_20', 'wzq_quick_win', 'wzq_long_game', 'wzq_perfect_win', 'wzq_ai_master', 'wzq_veteran'];
         var allSnakeAchievements = ['snake_first_game', 'snake_score_50', 'snake_score_100', 'snake_score_200', 'snake_games_5', 'snake_games_10', 'snake_total_100', 'snake_total_500', 'snake_perfect_game', 'snake_survivor'];
         var allMemoryAchievements = ['memory_first_game', 'memory_score_50', 'memory_score_100', 'memory_score_200', 'memory_games_5', 'memory_games_10', 'memory_perfect_game', 'memory_speed_master', 'memory_games_20', 'memory_score_300'];
         var allColorAchievements = ['color_first_game', 'color_score_100', 'color_score_200', 'color_games_10', 'color_perfect_match', 'color_speed_master', 'color_total_score_1000', 'color_games_50', 'color_games_100', 'color_total_score_2000'];
-        
-        var totalAchievements = allFkAchievements.length + allFxqAchievements.length + allWzqAchievements.length + allSnakeAchievements.length + allMemoryAchievements.length + allColorAchievements.length;
-        
+        var allCube3dAchievements = ['cube3d_first_game', 'cube3d_score_100', 'cube3d_score_300', 'cube3d_score_600', 'cube3d_games_5', 'cube3d_games_15', 'cube3d_orbs_10', 'cube3d_orbs_25', 'cube3d_survivor_30', 'cube3d_survivor_60'];
+        var allDinoAchievements = ['dino_first_game', 'dino_score_100', 'dino_score_300', 'dino_score_500', 'dino_games_5', 'dino_games_10', 'dino_jumps_100', 'dino_total_1000', 'dino_dodger', 'dino_survivor'];
+
+        var totalAchievements = allFkAchievements.length + allFxqAchievements.length + allWzqAchievements.length + allSnakeAchievements.length + allMemoryAchievements.length + allColorAchievements.length + allCube3dAchievements.length + allDinoAchievements.length;
+
         if (allUnlocked.length >= totalAchievements) {
             user.gameData.achievements = [];
             user.gameData.fxqAchievements = [];
@@ -7484,6 +7793,7 @@ document.addEventListener('DOMContentLoaded', function() {
             user.gameData.snakeAchievements = [];
             user.gameData.memoryAchievements = [];
             user.gameData.colorAchievements = [];
+            user.gameData.cube3dAchievements = [];
             user.gameData.specialAchievements = [];
             user.gameData.gamesPlayed = 0;
             user.gameData.highScore = 0;
@@ -7500,6 +7810,17 @@ document.addEventListener('DOMContentLoaded', function() {
             user.gameData.colorHighScore = 0;
             user.gameData.colorTotalScore = 0;
             user.gameData.colorMaxCombo = 0;
+            user.gameData.cube3dGamesPlayed = 0;
+            user.gameData.cube3dHighScore = 0;
+            user.gameData.cube3dTotalScore = 0;
+            user.gameData.cube3dMaxOrbs = 0;
+            user.gameData.cube3dMaxTime = 0;
+            user.gameData.dinoAchievements = [];
+            user.gameData.dinoGamesPlayed = 0;
+            user.gameData.dinoHighScore = 0;
+            user.gameData.dinoTotalScore = 0;
+            user.gameData.dinoTotalJumps = 0;
+            user.gameData.dinoTotalDodges = 0;
             showAlert('所有成就已关闭');
         } else {
             user.gameData.achievements = allFkAchievements;
@@ -7508,7 +7829,9 @@ document.addEventListener('DOMContentLoaded', function() {
             user.gameData.snakeAchievements = allSnakeAchievements;
             user.gameData.memoryAchievements = allMemoryAchievements;
             user.gameData.colorAchievements = allColorAchievements;
-            
+            user.gameData.cube3dAchievements = allCube3dAchievements;
+            user.gameData.dinoAchievements = allDinoAchievements;
+
             // 计算特殊成就
             var specialAchievements = [];
             if (allFkAchievements.length >= 10) {
@@ -7529,8 +7852,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (allColorAchievements.length >= 8) {
                 specialAchievements.push('cm_complete');
             }
+            if (allCube3dAchievements.length >= 10) {
+                specialAchievements.push('cube3d_complete');
+            }
+            if (allDinoAchievements.length >= 10) {
+                specialAchievements.push('dino_complete');
+            }
             user.gameData.specialAchievements = specialAchievements;
-            
+
             showAlert('所有成就已激活');
         }
         
@@ -7749,10 +8078,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadCheckinStats() {
         var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         if (!currentUser.username) {
-            document.getElementById('totalCheckinDays').textContent = '0';
-            document.getElementById('checkinPoints').textContent = '0';
-            document.getElementById('consecutiveDays').textContent = '0';
-            document.getElementById('monthCheckinDays').textContent = '0';
+            var elTotalCheckinDays = document.getElementById('totalCheckinDays');
+            if (elTotalCheckinDays) elTotalCheckinDays.textContent = '0';
+            var elCheckinPoints = document.getElementById('checkinPoints');
+            if (elCheckinPoints) elCheckinPoints.textContent = '0';
+            var elConsecutiveDays = document.getElementById('consecutiveDays');
+            if (elConsecutiveDays) elConsecutiveDays.textContent = '0';
+            var elMonthCheckinDays = document.getElementById('monthCheckinDays');
+            if (elMonthCheckinDays) elMonthCheckinDays.textContent = '0';
             return;
         }
         
@@ -7831,10 +8164,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         monthCheckinDays = Object.keys(checkinData).length;
         
-        document.getElementById('totalCheckinDays').textContent = totalCheckinDays;
-        document.getElementById('checkinPoints').textContent = totalPoints;
-        document.getElementById('consecutiveDays').textContent = consecutiveDays;
-        document.getElementById('monthCheckinDays').textContent = monthCheckinDays;
+        var elTotalCheckinDays = document.getElementById('totalCheckinDays');
+        if (elTotalCheckinDays) elTotalCheckinDays.textContent = totalCheckinDays;
+        var elCheckinPoints = document.getElementById('checkinPoints');
+        if (elCheckinPoints) elCheckinPoints.textContent = totalPoints;
+        var elConsecutiveDays = document.getElementById('consecutiveDays');
+        if (elConsecutiveDays) elConsecutiveDays.textContent = consecutiveDays;
+        var elMonthCheckinDays = document.getElementById('monthCheckinDays');
+        if (elMonthCheckinDays) elMonthCheckinDays.textContent = monthCheckinDays;
     }
     
     function initializeTermsNavigation() {

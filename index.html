@@ -6203,6 +6203,24 @@
                                         <span class="framework-version">v1.0.42</span>
                                     </div>
                                 </a>
+                                <a href="https://github.com/mrdoob/three.js" target="_blank" class="framework-item" rel="noopener noreferrer">
+                                    <div class="framework-icon three">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                    <div class="framework-info">
+                                        <span class="framework-name">Three.js</span>
+                                        <span class="framework-version">v0.160</span>
+                                    </div>
+                                </a>
+                                <a href="https://github.com/pmndrs/cannon-es" target="_blank" class="framework-item" rel="noopener noreferrer">
+                                    <div class="framework-icon cannon">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <div class="framework-info">
+                                        <span class="framework-name">cannon-es</span>
+                                        <span class="framework-version">v0.20</span>
+                                    </div>
+                                </a>
                             </div>
                         </div>
 
@@ -6419,6 +6437,35 @@
                     <h4><i class="fas fa-clock"></i> 解锁时间</h4>
                     <p id="badgeDetailTime">--</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏成就详情弹窗 -->
+    <div id="gameAchievementModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content game-achievement-modal-content">
+            <button class="treasure-modal-close" id="gameAchievementClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="game-achievement-modal-header">
+                <div class="game-achievement-modal-icon" id="gameAchievementModalIcon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="game-achievement-modal-info">
+                    <h2 id="gameAchievementModalName">游戏名称</h2>
+                    <div class="game-achievement-modal-stats">
+                        <span class="game-achievement-modal-progress" id="gameAchievementModalProgress">0/10</span>
+                        <span class="game-achievement-modal-percent" id="gameAchievementModalPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="game-achievement-modal-progress-bar-container">
+                <div class="game-achievement-modal-progress-bar">
+                    <div class="game-achievement-modal-progress-fill" id="gameAchievementModalFill" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div class="game-achievement-modal-body" id="gameAchievementModalBody">
+                <!-- 成就列表由JS动态生成 -->
             </div>
         </div>
     </div>
@@ -10164,87 +10211,215 @@
                             <!-- 游戏卡片区域 -->
                             <div class="content-area" id="gameArea">
                                 <!-- 点击方块小游戏卡片 -->
-                                <div class="game-card">
-                                    <div class="game-logo game-logo-square">
-                                        <i class="fas fa-square"></i>
+                                <div class="game-card" data-game-id="game_fk">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
                                     </div>
                                     <div class="game-card-content">
-                                        <h2>点击方块</h2>
+                                        <h2>点击方块 <span class="favorite-tag" style="display:none">已收藏</span></h2>
                                         <p>在限定时间内点击随机出现的方块，点击越多，得分越高。</p>
                                     </div>
                                     <button class="play-btn" data-url="html/fkgame.html">Go!</button>
+                                    <div class="game-logo game-logo-square">
+                                        <i class="fas fa-square"></i>
+                                    </div>
                                 </div>
                                 
                                 <!-- 五子棋小游戏卡片 -->
-                                <div class="game-card">
-                                    <div class="game-logo game-logo-gomoku">
-                                        <i class="fas fa-circle"></i>
+                                <div class="game-card" data-game-id="game_wzq">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
                                     </div>
                                     <div class="game-card-content">
-                                        <h2>五子棋</h2>
+                                        <h2>五子连珠 <span class="favorite-tag" style="display:none">已收藏</span></h2>
                                         <p>经典五子棋游戏，率先在棋盘上连成五子的一方即获胜。</p>
                                     </div>
                                     <button class="play-btn" data-url="html/wzqgame.html">Go!</button>
+                                    <div class="game-logo game-logo-gomoku">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
                                 </div>
 
                                 <!-- 飞行器小游戏卡片 -->
-                                <div class="game-card">
-                                    <div class="game-logo game-logo-plane">
-                                        <i class="fas fa-plane"></i>
+                                <div class="game-card" data-game-id="game_fxq">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
                                     </div>
                                     <div class="game-card-content">
-                                        <h2>飞行器</h2>
+                                        <h2>飞行器 <span class="favorite-tag" style="display:none">已收藏</span></h2>
                                         <p>操控飞行器躲避障碍物，飞行距离越远，得分越高。</p>
                                     </div>
                                     <button class="play-btn" data-url="html/fxqgame.html">Go!</button>
+                                    <div class="game-logo game-logo-plane">
+                                        <i class="fas fa-plane"></i>
+                                    </div>
                                 </div>
                                 
                                 <!-- 贪吃蛇小游戏卡片 -->
-                                <div class="game-card">
-                                    <div class="game-logo game-logo-snake">
-                                        <i class="fas fa-dragon"></i>
+                                <div class="game-card" data-game-id="game_snake">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
                                     </div>
                                     <div class="game-card-content">
-                                        <h2>贪吃蛇</h2>
+                                        <h2>贪吃蛇 <span class="favorite-tag" style="display:none">已收藏</span></h2>
                                         <p>经典的贪吃蛇游戏，使用WASD键或鼠标控制，吃到食物得分。</p>
                                     </div>
                                     <button class="play-btn" data-url="html/snakegame.html">Go!</button>
+                                    <div class="game-logo game-logo-snake">
+                                        <i class="fas fa-dragon"></i>
+                                    </div>
                                 </div>
                                 
                                 <!-- 记忆卡牌小游戏卡片 -->
-                                <div class="game-card">
-                                    <div class="game-logo game-logo-memory">
-                                        <i class="fas fa-images"></i>
+                                <div class="game-card" data-game-id="game_memory">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
                                     </div>
                                     <div class="game-card-content">
-                                        <h2>记忆卡牌</h2>
+                                        <h2>记忆卡牌 <span class="favorite-tag" style="display:none">已收藏</span></h2>
                                         <p>经典的记忆卡牌游戏，翻转卡片找到配对的卡牌。</p>
                                     </div>
                                     <button class="play-btn" data-url="html/memory-game.html">Go!</button>
+                                    <div class="game-logo game-logo-memory">
+                                        <i class="fas fa-images"></i>
+                                    </div>
                                 </div>
 
                                 <!-- 颜色匹配小游戏卡片 -->
-                                <div class="game-card">
-                                    <div class="game-logo game-logo-color">
-                                        <i class="fas fa-palette"></i>
+                                <div class="game-card" data-game-id="game_color">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
                                     </div>
                                     <div class="game-card-content">
-                                        <h2>颜色匹配</h2>
+                                        <h2>颜色匹配 <span class="favorite-tag" style="display:none">已收藏</span></h2>
                                         <p>在限定时间内匹配相同颜色的方块，匹配越多，得分越高。</p>
                                     </div>
                                     <button class="play-btn" data-url="html/colormatchgame.html">Go!</button>
+                                    <div class="game-logo game-logo-color">
+                                        <i class="fas fa-palette"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 光影冲刺 3D 小游戏卡片 -->
+                                <div class="game-card" data-game-id="game_cube3d">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
+                                    </div>
+                                    <div class="game-card-content">
+                                        <h2>光影冲刺 <span class="favorite-tag" style="display:none">已收藏</span></h2>
+                                        <p>3D 物理球球冒险，操控能量球在霓虹长廊中疾驰，躲避障碍、收集能量晶核。</p>
+                                    </div>
+                                    <button class="play-btn" data-url="html/cube3dgame.html">Go!</button>
+                                    <div class="game-logo game-logo-cube3d">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                </div>
+                                
+                                <!-- 光影恐龙跳跃跑酷游戏卡片 -->
+                                <div class="game-card" data-game-id="game_dino">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
+                                    </div>
+                                    <div class="game-card-content">
+                                        <h2>光影恐龙 <span class="favorite-tag" style="display:none">已收藏</span></h2>
+                                        <p>跳跃跑酷挑战，躲避仙人掌和翼龙，挑战最高分！</p>
+                                    </div>
+                                    <button class="play-btn" data-url="html/dinojump.html">Go!</button>
+                                    <div class="game-logo game-logo-dino">
+                                        <i class="fas fa-bone"></i>
+                                    </div>
                                 </div>
                                 
                                 <!-- 预留其他游戏卡片 -->
-                                <div class="game-card disabled-card">
-                                    <div class="game-logo game-logo-coming">
-                                        <i class="fas fa-gamepad"></i>
-                                    </div>
+                                <div class="game-card disabled-card" data-game-id="game_coming">
                                     <div class="game-card-content">
                                         <h2>敬请期待</h2>
                                         <p>正在开发中</p>
                                     </div>
                                     <button class="play-btn" disabled>More to come</button>
+                                    <div class="game-logo game-logo-coming">
+                                        <i class="fas fa-gamepad"></i>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -10965,18 +11140,228 @@
                 }
                 
                 .game-card {
+                    position: relative;
                     background: white;
                     border-radius: 14px;
-                    padding: 18px;
+                    padding: 20px;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
                     transition: all 0.3s ease;
                     cursor: pointer;
                     border: 1px solid #e0e0e0;
-                    min-height: 260px;
-                    display: flex;
-                    flex-direction: column;
+                    min-height: 220px;
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    grid-template-rows: 1fr auto;
+                    grid-template-areas:
+                        "content logo"
+                        "button logo";
+                    gap: 12px;
                     box-sizing: border-box;
                     min-width: 0;
+                }
+                
+                /* 游戏卡片菜单按钮 */
+                .game-card-menu-btn {
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    border: none;
+                    background: rgba(0, 0, 0, 0.05);
+                    color: #666;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                    z-index: 10;
+                }
+                
+                .game-card-menu-btn:hover {
+                    background: rgba(0, 0, 0, 0.1);
+                    color: #333;
+                }
+                
+                .game-card-menu-btn.active {
+                    background: #667eea;
+                    color: white;
+                }
+                
+                /* 游戏卡片下拉菜单 */
+                .game-card-menu {
+                    position: absolute;
+                    top: 50px;
+                    right: 10px;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+                    padding: 8px;
+                    min-width: 160px;
+                    opacity: 0;
+                    visibility: hidden;
+                    transform: translateY(-8px);
+                    transition: all 0.2s ease;
+                    z-index: 100;
+                    border: 1px solid rgba(0, 0, 0, 0.06);
+                }
+                
+                .game-card-menu.open {
+                    opacity: 1;
+                    visibility: visible;
+                    transform: translateY(0);
+                }
+                
+                .game-card-menu .menu-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 10px 14px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: #555;
+                    transition: all 0.15s ease;
+                }
+                
+                .game-card-menu .menu-item:hover {
+                    background: rgba(102, 126, 234, 0.1);
+                    color: #667eea;
+                }
+                
+                .game-card-menu .menu-item i {
+                    width: 18px;
+                    text-align: center;
+                    font-size: 14px;
+                }
+                
+                .game-card-menu .menu-item.favorited {
+                    color: #e91e63;
+                }
+                
+                /* 收藏标签 */
+                .favorite-tag {
+                    display: inline-block;
+                    margin-left: 8px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: #fff;
+                    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+                    border-radius: 10px;
+                    vertical-align: middle;
+                }
+                
+                /* 游戏统计弹窗 */
+                .game-stats-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: all 0.3s ease;
+                }
+                
+                .game-stats-modal.active {
+                    opacity: 1;
+                    visibility: visible;
+                }
+                
+                .game-stats-modal-content {
+                    background: white;
+                    border-radius: 16px;
+                    width: 90%;
+                    max-width: 420px;
+                    padding: 24px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+                    transform: translateY(20px);
+                    transition: transform 0.3s ease;
+                }
+                
+                .game-stats-modal.active .game-stats-modal-content {
+                    transform: translateY(0);
+                }
+                
+                .game-stats-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 20px;
+                }
+                
+                .game-stats-header h3 {
+                    margin: 0;
+                    font-size: 18px;
+                    color: #333;
+                    font-weight: 600;
+                }
+                
+                .game-stats-close {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    border: none;
+                    background: rgba(0, 0, 0, 0.05);
+                    color: #666;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    transition: all 0.2s ease;
+                }
+                
+                .game-stats-close:hover {
+                    background: rgba(0, 0, 0, 0.1);
+                    color: #333;
+                }
+                
+                .game-stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 12px;
+                }
+                
+                .game-stat-item {
+                    background: #f8fafc;
+                    border-radius: 12px;
+                    padding: 16px;
+                    text-align: center;
+                }
+                
+                .game-stat-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 8px;
+                    color: white;
+                    font-size: 18px;
+                }
+                
+                .game-stat-value {
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #333;
+                    margin-bottom: 4px;
+                }
+                
+                .game-stat-label {
+                    font-size: 12px;
+                    color: #666;
                 }
                 
                 .game-card:hover {
@@ -10985,17 +11370,18 @@
                 }
                 
                 .game-logo {
-                    width: 70px;
-                    height: 70px;
+                    grid-area: logo;
+                    width: 100px;
+                    height: 100px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin: 0 auto 12px auto;
                     flex-shrink: 0;
-                    font-size: 32px;
+                    font-size: 44px;
                     color: white;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+                    align-self: end;
                 }
                 
                 .game-logo-square {
@@ -11021,23 +11407,35 @@
                 .game-logo-color {
                     background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
                 }
+
+                .game-logo-cube3d {
+                    background: linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%);
+                    box-shadow: 0 4px 18px rgba(212, 93, 121, 0.45);
+                }
+                
+                .game-logo-dino {
+                    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                    box-shadow: 0 4px 18px rgba(34, 197, 94, 0.45);
+                }
                 
                 .game-logo-coming {
                     background: linear-gradient(135deg, #9f7aea 0%, #7c4dff 100%);
                 }
                 
                 .game-card-content {
-                    flex: 1;
+                    grid-area: content;
                     display: flex;
                     flex-direction: column;
                     overflow: hidden;
-                    text-align: center;
+                    text-align: left;
+                    align-self: start;
                 }
                 
                 .game-card-content h2 {
-                    margin: 0 0 6px 0;
-                    font-size: 16px;
+                    margin: 0 0 8px 0;
+                    font-size: 18px;
                     color: #333;
+                    font-weight: 600;
                     flex-shrink: 0;
                 }
                 
@@ -11045,28 +11443,29 @@
                     margin: 0;
                     font-size: 12px;
                     color: #666;
-                    line-height: 1.4;
+                    line-height: 1.5;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     display: -webkit-box;
-                    -webkit-line-clamp: 3;
+                    -webkit-line-clamp: 2;
                     -webkit-box-orient: vertical;
-                    flex: 1;
                 }
                 
                 .play-btn {
-                    margin-top: 10px;
-                    width: 100%;
-                    padding: 8px;
+                    grid-area: button;
+                    width: auto;
+                    padding: 10px 30px;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
                     border: none;
-                    border-radius: 8px;
-                    font-size: 14px;
+                    border-radius: 25px;
+                    font-size: 15px;
                     font-weight: bold;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     flex-shrink: 0;
+                    justify-self: start;
+                    align-self: end;
                 }
                 
                 .play-btn:hover {
@@ -12573,6 +12972,32 @@
                     .treasure-area {
                         grid-template-columns: 1fr;
                         padding: 10px;
+                    }
+                    
+                    .game-card {
+                        min-height: 180px;
+                        padding: 16px;
+                        gap: 10px;
+                    }
+                    
+                    .game-logo {
+                        width: 70px;
+                        height: 70px;
+                        font-size: 32px;
+                    }
+                    
+                    .game-card-content h2 {
+                        font-size: 16px;
+                    }
+                    
+                    .game-card-content p {
+                        font-size: 11px;
+                        -webkit-line-clamp: 2;
+                    }
+                    
+                    .play-btn {
+                        padding: 8px 22px;
+                        font-size: 14px;
                     }
                     
                     .checkin-status {
@@ -14306,11 +14731,341 @@
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     var url = this.getAttribute('data-url');
+                    var gameCard = this.closest('.game-card');
+                    var gameId = gameCard ? gameCard.getAttribute('data-game-id') : null;
                     if (url) {
+                        // 记录游戏启动（跳过敬请期待）
+                        if (gameId && gameId !== 'game_coming') {
+                            recordGameLaunch(gameId);
+                        }
                         window.open(url, '_blank');
                     }
                 });
             });
+            
+            // ==================== 游戏卡片菜单与统计系统 ====================
+            
+            // 游戏信息映射
+            var gameInfoMap = {
+                'game_fk': { name: '点击方块', icon: 'fa-square', color: '#667eea' },
+                'game_wzq': { name: '五子连珠', icon: 'fa-circle', color: '#7fdcd8' },
+                'game_fxq': { name: '飞行器', icon: 'fa-plane', color: '#7b4afe' },
+                'game_snake': { name: '贪吃蛇', icon: 'fa-dragon', color: '#4caf50' },
+                'game_memory': { name: '记忆卡牌', icon: 'fa-images', color: '#f48fb1' },
+                'game_color': { name: '颜色匹配', icon: 'fa-palette', color: '#ff9800' },
+                'game_cube3d': { name: '光影冲刺', icon: 'fa-cube', color: '#f0a050' },
+                'game_dino': { name: '光影恐龙', icon: 'fa-bone', color: '#22c55e' }
+            };
+            
+            // 游戏数据管理
+            var GameDataManager = {
+                getCurrentUser: function() {
+                    return JSON.parse(localStorage.getItem('currentUser') || '{}');
+                },
+                
+                getUsers: function() {
+                    return JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                },
+                
+                saveUsers: function(users) {
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                },
+                
+                getUserIndex: function(username) {
+                    var users = this.getUsers();
+                    return users.findIndex(function(u) { return u.username === username; });
+                },
+                
+                // 获取游戏的完整数据
+                getGameData: function(gameId) {
+                    var user = this.getCurrentUser();
+                    var users = this.getUsers();
+                    var userIndex = users.findIndex(function(u) { return u.username === user.username; });
+                    
+                    if (userIndex === -1) {
+                        return {
+                            launchCount: 0,
+                            totalPlayTime: 0,
+                            highScore: 0,
+                            bestRank: '-',
+                            lastPlayed: null,
+                            favorite: false
+                        };
+                    }
+                    
+                    var gameData = users[userIndex].gameData || {};
+                    var gameStats = gameData[gameId] || {};
+                    
+                    return {
+                        launchCount: gameStats.launchCount || 0,
+                        totalPlayTime: gameStats.totalPlayTime || 0,
+                        highScore: gameStats.highScore || 0,
+                        bestRank: gameStats.bestRank || '-',
+                        lastPlayed: gameStats.lastPlayed || null,
+                        favorite: gameData.favorites && gameData.favorites.indexOf(gameId) !== -1
+                    };
+                },
+                
+                // 更新游戏数据
+                updateGameData: function(gameId, updates) {
+                    var user = this.getCurrentUser();
+                    var users = this.getUsers();
+                    var userIndex = users.findIndex(function(u) { return u.username === user.username; });
+                    
+                    if (userIndex === -1) return false;
+                    
+                    if (!users[userIndex].gameData) {
+                        users[userIndex].gameData = {};
+                    }
+                    if (!users[userIndex].gameData[gameId]) {
+                        users[userIndex].gameData[gameId] = {};
+                    }
+                    
+                    Object.keys(updates).forEach(function(key) {
+                        users[userIndex].gameData[gameId][key] = updates[key];
+                    });
+                    
+                    this.saveUsers(users);
+                    return true;
+                },
+                
+                // 收藏/取消收藏游戏
+                toggleFavorite: function(gameId) {
+                    var user = this.getCurrentUser();
+                    var users = this.getUsers();
+                    var userIndex = users.findIndex(function(u) { return u.username === user.username; });
+                    
+                    if (userIndex === -1) return false;
+                    
+                    if (!users[userIndex].gameData) {
+                        users[userIndex].gameData = {};
+                    }
+                    if (!users[userIndex].gameData.favorites) {
+                        users[userIndex].gameData.favorites = [];
+                    }
+                    
+                    var favIndex = users[userIndex].gameData.favorites.indexOf(gameId);
+                    if (favIndex !== -1) {
+                        users[userIndex].gameData.favorites.splice(favIndex, 1);
+                    } else {
+                        users[userIndex].gameData.favorites.push(gameId);
+                    }
+                    
+                    this.saveUsers(users);
+                    return favIndex === -1; // true if added to favorites
+                },
+                
+                // 检查是否已收藏
+                isFavorite: function(gameId) {
+                    var user = this.getCurrentUser();
+                    var users = this.getUsers();
+                    var userIndex = users.findIndex(function(u) { return u.username === user.username; });
+                    
+                    if (userIndex === -1 || !users[userIndex].gameData) return false;
+                    if (!users[userIndex].gameData.favorites) return false;
+                    
+                    return users[userIndex].gameData.favorites.indexOf(gameId) !== -1;
+                },
+                
+                // 获取所有收藏的游戏
+                getFavorites: function() {
+                    var user = this.getCurrentUser();
+                    var users = this.getUsers();
+                    var userIndex = users.findIndex(function(u) { return u.username === user.username; });
+                    
+                    if (userIndex === -1 || !users[userIndex].gameData) return [];
+                    return users[userIndex].gameData.favorites || [];
+                }
+            };
+            
+            // 记录游戏启动
+            function recordGameLaunch(gameId) {
+                var stats = GameDataManager.getGameData(gameId);
+                GameDataManager.updateGameData(gameId, {
+                    launchCount: stats.launchCount + 1,
+                    lastPlayed: new Date().toISOString()
+                });
+            }
+            
+            // 格式化时长
+            function formatPlayTime(seconds) {
+                if (seconds === 0) return '0分钟';
+                var hours = Math.floor(seconds / 3600);
+                var minutes = Math.floor((seconds % 3600) / 60);
+                if (hours > 0) {
+                    return hours + '小时' + (minutes > 0 ? minutes + '分钟' : '');
+                }
+                return minutes + '分钟';
+            }
+            
+            // 初始化游戏卡片菜单
+            function initGameCardMenus() {
+                var gameCards = document.querySelectorAll('.game-card');
+                
+                gameCards.forEach(function(card) {
+                    var gameId = card.getAttribute('data-game-id');
+                    
+                    // 跳过"敬请期待"卡片和没有gameId的卡片
+                    if (!gameId || gameId === 'game_coming') {
+                        return;
+                    }
+                    
+                    var menuBtn = card.querySelector('.game-card-menu-btn');
+                    var menu = card.querySelector('.game-card-menu');
+                    var favoriteBtn = card.querySelector('.favorite-toggle');
+                    var statsBtn = card.querySelector('.view-stats');
+                    
+                    // 初始化收藏状态
+                    if (gameId && GameDataManager.isFavorite(gameId)) {
+                        card.classList.add('is-favorite');
+                        if (favoriteBtn) {
+                            favoriteBtn.classList.add('favorited');
+                            var favIcon = favoriteBtn.querySelector('i');
+                            if (favIcon) favIcon.className = 'fas fa-heart';
+                            var favText = favoriteBtn.querySelector('span');
+                            if (favText) favText.textContent = '取消收藏';
+                        }
+                        var favTag = card.querySelector('.favorite-tag');
+                        if (favTag) favTag.style.display = 'inline-block';
+                    }
+                    
+                    // 菜单按钮点击
+                    if (menuBtn && menu) {
+                        menuBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            // 关闭其他菜单
+                            document.querySelectorAll('.game-card-menu.open').forEach(function(m) {
+                                if (m !== menu) m.classList.remove('open');
+                            });
+                            menu.classList.toggle('open');
+                            menuBtn.classList.toggle('active');
+                        });
+                    }
+                    
+                    // 收藏按钮点击
+                    if (favoriteBtn && gameId) {
+                        favoriteBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var isFav = GameDataManager.toggleFavorite(gameId);
+                            
+                            if (isFav) {
+                                card.classList.add('is-favorite');
+                                favoriteBtn.classList.add('favorited');
+                                var favIcon = favoriteBtn.querySelector('i');
+                                if (favIcon) favIcon.className = 'fas fa-heart';
+                                var favText = favoriteBtn.querySelector('span');
+                                if (favText) favText.textContent = '取消收藏';
+                                var favTag = card.querySelector('.favorite-tag');
+                                if (favTag) favTag.style.display = 'inline-block';
+                            } else {
+                                card.classList.remove('is-favorite');
+                                favoriteBtn.classList.remove('favorited');
+                                var favIcon = favoriteBtn.querySelector('i');
+                                if (favIcon) favIcon.className = 'far fa-heart';
+                                var favText = favoriteBtn.querySelector('span');
+                                if (favText) favText.textContent = '设为收藏';
+                                var favTag = card.querySelector('.favorite-tag');
+                                if (favTag) favTag.style.display = 'none';
+                            }
+                            
+                            menu.classList.remove('open');
+                            menuBtn.classList.remove('active');
+                        });
+                    }
+                    
+                    // 统计按钮点击
+                    if (statsBtn && gameId) {
+                        statsBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            menu.classList.remove('open');
+                            menuBtn.classList.remove('active');
+                            showGameStatsModal(gameId);
+                        });
+                    }
+                });
+                
+                // 点击其他地方关闭菜单
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.game-card-menu') && !e.target.closest('.game-card-menu-btn')) {
+                        document.querySelectorAll('.game-card-menu.open').forEach(function(m) {
+                            m.classList.remove('open');
+                        });
+                        document.querySelectorAll('.game-card-menu-btn.active').forEach(function(b) {
+                            b.classList.remove('active');
+                        });
+                    }
+                });
+            }
+            
+            // 显示游戏统计弹窗
+            function showGameStatsModal(gameId) {
+                var stats = GameDataManager.getGameData(gameId);
+                var gameInfo = gameInfoMap[gameId] || { name: '未知游戏', icon: 'fa-gamepad', color: '#667eea' };
+                
+                // 创建弹窗
+                var modal = document.createElement('div');
+                modal.className = 'game-stats-modal';
+                modal.innerHTML = '<div class="game-stats-modal-content">' +
+                    '<div class="game-stats-header">' +
+                        '<h3><i class="fas ' + gameInfo.icon + '" style="color:' + gameInfo.color + ';margin-right:8px"></i>' + gameInfo.name + ' - 游戏统计</h3>' +
+                        '<button class="game-stats-close"><i class="fas fa-times"></i></button>' +
+                    '</div>' +
+                    '<div class="game-stats-grid">' +
+                        '<div class="game-stat-item">' +
+                            '<div class="game-stat-icon"><i class="fas fa-rocket"></i></div>' +
+                            '<div class="game-stat-value">' + stats.launchCount + '</div>' +
+                            '<div class="game-stat-label">启动次数</div>' +
+                        '</div>' +
+                        '<div class="game-stat-item">' +
+                            '<div class="game-stat-icon"><i class="fas fa-clock"></i></div>' +
+                            '<div class="game-stat-value">' + formatPlayTime(stats.totalPlayTime) + '</div>' +
+                            '<div class="game-stat-label">游玩总时长</div>' +
+                        '</div>' +
+                        '<div class="game-stat-item">' +
+                            '<div class="game-stat-icon"><i class="fas fa-trophy"></i></div>' +
+                            '<div class="game-stat-value">' + stats.highScore + '</div>' +
+                            '<div class="game-stat-label">历史最高分</div>' +
+                        '</div>' +
+                        '<div class="game-stat-item">' +
+                            '<div class="game-stat-icon"><i class="fas fa-medal"></i></div>' +
+                            '<div class="game-stat-value">' + stats.bestRank + '</div>' +
+                            '<div class="game-stat-label">历史最佳成绩</div>' +
+                        '</div>' +
+                    '</div>' +
+                    (stats.lastPlayed ? '<div style="margin-top:16px;padding-top:12px;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center">' +
+                        '<i class="fas fa-history"></i> 最近游戏: ' + new Date(stats.lastPlayed).toLocaleString('zh-CN') +
+                    '</div>' : '') +
+                '</div>';
+                
+                document.body.appendChild(modal);
+                
+                // 显示弹窗
+                setTimeout(function() { modal.classList.add('active'); }, 10);
+                
+                // 关闭弹窗
+                var closeBtn = modal.querySelector('.game-stats-close');
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.remove('active');
+                    setTimeout(function() { modal.remove(); }, 300);
+                });
+                
+                // 点击背景关闭
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                        setTimeout(function() { modal.remove(); }, 300);
+                    }
+                });
+            }
+            
+            // 暴露到全局供内联onclick使用
+            window.showGameStatsModal = showGameStatsModal;
+            
+            // 初始化游戏卡片菜单
+            initGameCardMenus();
+            
+            // ==================== 游戏卡片菜单系统结束 ====================
             
             // 百宝箱功能
             initTreasureFunctions();
@@ -16569,6 +17324,9 @@
                 return;
             }
             
+            // 清除残留的关闭动画类，防止关闭按钮失效
+            modal.classList.remove('modal-closing');
+            
             // 统计数据
             var unlockedCount = badgesData.filter(function(b) { return b.unlocked; }).length;
             var totalCount = badgesData.length;
@@ -16657,6 +17415,8 @@
             setTimeout(function() {
                 var modal = document.getElementById('badgeDetailModal');
                 if (modal) {
+                    // 清除残留的关闭动画类，防止关闭按钮失效
+                    modal.classList.remove('modal-closing');
                     modal.style.display = 'flex';
                 }
             }, 300);
@@ -16691,6 +17451,12 @@
                 badgeDetailClose.addEventListener('click', closeBadgeDetailModal);
             }
             
+            // 游戏成就弹窗关闭按钮
+            var gameAchievementClose = document.getElementById('gameAchievementClose');
+            if (gameAchievementClose) {
+                gameAchievementClose.addEventListener('click', closeGameAchievementModal);
+            }
+            
             // 显示/隐藏未解锁徽章开关
             var showLockedToggle = document.getElementById('showLockedBadgesToggle');
             if (showLockedToggle) {
@@ -16717,6 +17483,30 @@
                     }
                 });
             }
+            
+            var gameAchievementModal = document.getElementById('gameAchievementModal');
+            if (gameAchievementModal) {
+                gameAchievementModal.addEventListener('click', function(e) {
+                    if (e.target === gameAchievementModal) {
+                        closeGameAchievementModal();
+                    }
+                });
+            }
+        }
+        
+        // 关闭游戏成就弹窗
+        function closeGameAchievementModal() {
+            var modal = document.getElementById('gameAchievementModal');
+            if (!modal) return;
+            
+            if (modal.classList.contains('modal-closing')) return;
+            
+            modal.classList.add('modal-closing');
+            
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+            }, 300);
         }
         
         // 更新运势卡片内容
@@ -21575,8 +22365,15 @@
                                                 <button class="copyright-btn" onclick="showFrontendFrameworkModal('lenis')">Lenis</button>
                                             </div>
                                         </div>
+                                        <div style="margin-bottom: 15px;">
+                                            <span style="font-weight: bold; color: #666;">5. 3D 游戏引擎</span>
+                                            <div style="margin-top: 8px; margin-left: 20px;">
+                                                <button class="copyright-btn" onclick="showFrontendFrameworkModal('three')">Three.js</button>
+                                                <button class="copyright-btn" onclick="showFrontendFrameworkModal('cannon')">cannon-es</button>
+                                            </div>
+                                        </div>
                                         <div>
-                                            <span style="font-weight: bold; color: #666;">5. 天气API</span>
+                                            <span style="font-weight: bold; color: #666;">6. 天气API</span>
                                             <div style="margin-top: 8px; margin-left: 20px;">
                                                 <button class="copyright-btn" onclick="showOpenMeteoModal()">Open-Meteo API</button>
                                             </div>
@@ -21677,7 +22474,7 @@
                                             </button>
                                             <button class="copyright-btn" onclick="showFontCopyrightModal()">
                                                 <i class="fas fa-font"></i>
-                                                <span>HarmonyOS Sans</span>
+                                                <span>HOS Sans</span>
                                             </button>
                                             <button class="copyright-btn" onclick="showFrontendFrameworkModal('tailwind')">
                                                 <i class="fas fa-palette"></i>
@@ -21691,9 +22488,17 @@
                                                 <i class="fas fa-arrows-alt-v"></i>
                                                 <span>Lenis</span>
                                             </button>
+                                            <button class="copyright-btn" onclick="showFrontendFrameworkModal('three')">
+                                                <i class="fas fa-cube"></i>
+                                                <span>Three.js</span>
+                                            </button>
+                                            <button class="copyright-btn" onclick="showFrontendFrameworkModal('cannon')">
+                                                <i class="fas fa-bullseye"></i>
+                                                <span>cannon-es</span>
+                                            </button>
                                             <button class="copyright-btn" onclick="showOpenMeteoModal()">
                                                 <i class="fas fa-cloud-sun"></i>
-                                                <span>Open-Meteo API</span>
+                                                <span>Open-Meteo</span>
                                             </button>
                                         </div>
                                     </div>
@@ -22461,6 +23266,20 @@
                 license: 'Lenis 基于 MIT 许可证开源，其著作权、知识产权归属 Studio Freight 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用。',
                 url: 'https://github.com/studio-freight/lenis',
                 urlText: 'https://github.com/studio-freight/lenis'
+            },
+            three: {
+                title: 'Three.js 版权声明',
+                desc: '本项目使用 Three.js 作为 Web 3D 渲染引擎，用于实现 3D 场景图、几何体、材质、光照、阴影、相机等 3D 可视化渲染能力，是光影冲刺等 3D 游戏的渲染基础。',
+                license: 'Three.js 基于 MIT 许可证开源，其著作权、知识产权归属 Three.js 作者及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用，未对源码进行恶意篡改或二次分发。',
+                url: 'https://github.com/mrdoob/three.js',
+                urlText: 'https://github.com/mrdoob/three.js'
+            },
+            cannon: {
+                title: 'cannon-es 版权声明',
+                desc: '本项目使用 cannon-es（Cannon ES）作为 3D 物理引擎，用于实现刚体物理模拟、碰撞检测、接触材质、重力等物理效果，是光影冲刺等 3D 游戏的物理模拟基础。',
+                license: 'cannon-es 基于 MIT 许可证开源（Cannon 物理引擎的 ES Module 版本），其著作权、知识产权归属 theturtle3d 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用。',
+                url: 'https://github.com/pmndrs/cannon-es',
+                urlText: 'https://github.com/pmndrs/cannon-es'
             }
         };
 
@@ -22622,7 +23441,7 @@
             }
             
             // 计算成就完成度
-            var totalAchievements = 66; // 10+10+10+10+10+10+6
+            var totalAchievements = 88; // 10+10+10+10+10+10+10+10 + 8特殊成就(含光影恐龙)
             var completedAchievements = 0;
             
             // 从用户的gameData中获取成就数据
@@ -22661,6 +23480,14 @@
             var colorAchievements = user && user.gameData && user.gameData.colorAchievements ? user.gameData.colorAchievements : [];
             completedAchievements += colorAchievements.length;
             
+            // 光影冲刺成就
+            var cube3dAchievements = user && user.gameData && user.gameData.cube3dAchievements ? user.gameData.cube3dAchievements : [];
+            completedAchievements += cube3dAchievements.length;
+            
+            // 光影恐龙成就
+            var dinoAchievements = user && user.gameData && user.gameData.dinoAchievements ? user.gameData.dinoAchievements : [];
+            completedAchievements += dinoAchievements.length;
+            
             // 特殊成就
             var specialAchievements = 0;
             if (fkAchievements.length >= 10) specialAchievements++;
@@ -22669,6 +23496,8 @@
             if (snakeAchievements.length >= 10) specialAchievements++;
             if (memoryAchievements.length >= 10) specialAchievements++;
             if (colorAchievements.length >= 9) specialAchievements++;
+            if (cube3dAchievements.length >= 10) specialAchievements++; // 光影之王
+            if (dinoAchievements.length >= 10) specialAchievements++; // 恐龙之王
             completedAchievements += specialAchievements;
             
             // 计算完成度百分比
@@ -22703,32 +23532,106 @@
             }
             var expProgress = expToNextLevel > 0 ? Math.min((exp / expToNextLevel) * 100, 100) : 100;
             
+            // 游戏信息映射
+            var gameInfoMap = {
+                'game_fk': { name: '点击方块', icon: 'fa-square', color: '#667eea' },
+                'game_wzq': { name: '五子连珠', icon: 'fa-circle', color: '#7fdcd8' },
+                'game_fxq': { name: '飞行器', icon: 'fa-plane', color: '#7b4afe' },
+                'game_snake': { name: '贪吃蛇', icon: 'fa-dragon', color: '#4caf50' },
+                'game_memory': { name: '记忆卡牌', icon: 'fa-images', color: '#f48fb1' },
+                'game_color': { name: '颜色匹配', icon: 'fa-palette', color: '#ff9800' },
+                'game_cube3d': { name: '光影冲刺', icon: 'fa-cube', color: '#f0a050' },
+                'game_dino': { name: '光影恐龙', icon: 'fa-bone', color: '#22c55e' }
+            };
+            
             // 获取游戏收藏
             var favorites = user && user.gameData && user.gameData.favorites ? user.gameData.favorites : [];
+            
+            // 获取收藏游戏的详细信息
+            var favoriteGames = favorites.map(function(gameId) {
+                var info = gameInfoMap[gameId] || { name: '未知游戏', icon: 'fa-gamepad', color: '#999' };
+                return { id: gameId, name: info.name, icon: info.icon, color: info.color };
+            });
+            
+            // 获取全局游戏统计
+            var globalStats = { totalLaunchCount: 0, totalPlayTime: 0, totalHighScore: 0, gamesPlayed: 0, lastPlayedGame: null, lastPlayedTime: null };
+            if (window.GameStatsManager) {
+                globalStats = window.GameStatsManager.getGlobalStats();
+            } else if (user && user.gameData) {
+                // 兼容旧数据
+                Object.keys(gameInfoMap).forEach(function(gameId) {
+                    var stats = user.gameData[gameId] || {};
+                    if (stats.launchCount > 0) {
+                        globalStats.gamesPlayed++;
+                        globalStats.totalLaunchCount += stats.launchCount;
+                        globalStats.totalPlayTime += stats.totalPlayTime || 0;
+                        globalStats.totalHighScore += stats.highScore || 0;
+                    }
+                    if (stats.lastPlayed) {
+                        if (!globalStats.lastPlayedTime || new Date(stats.lastPlayed) > new Date(globalStats.lastPlayedTime)) {
+                            globalStats.lastPlayedTime = stats.lastPlayed;
+                            globalStats.lastPlayedGame = gameId;
+                        }
+                    }
+                });
+            }
+            
+            // 格式化时长
+            var formatTime = function(seconds) {
+                if (!seconds || seconds === 0) return '0分钟';
+                var hours = Math.floor(seconds / 3600);
+                var minutes = Math.floor((seconds % 3600) / 60);
+                if (hours > 0) {
+                    return hours + '小时' + (minutes > 0 ? minutes + '分钟' : '');
+                }
+                return minutes + '分钟';
+            };
             
             // 获取社交数据
             var friends = user && user.gameData && user.gameData.friends ? user.gameData.friends : [];
             
             // 获取成就徽章
-            var totalGamesPlayed = user && user.gameData && user.gameData.stats ? user.gameData.stats.totalGames || 0 : 0;
+            var totalGamesPlayed = globalStats.totalLaunchCount || (user && user.gameData && user.gameData.stats ? user.gameData.stats.totalGames || 0 : 0);
             var checkinStreak = user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.streak || 0 : 0;
             
-            // 完整的徽章数据定义
+            // 推算徽章解锁时间的辅助函数
+            var regDate = user && user.createdAt ? new Date(user.createdAt) : new Date();
+            var regTimeMs = regDate.getTime();
+            var nowTimeMs = Date.now();
+            var checkinTotal = user && user.userProfile && user.userProfile.checkinStats ? user.userProfile.checkinStats.total || 0 : 0;
+            var checkinHistory = user && user.userProfile && user.userProfile.checkinStats && user.userProfile.checkinStats.history ? user.userProfile.checkinStats.history : [];
+            var firstCheckinTime = checkinHistory.length > 0 ? checkinHistory[0].timestamp : null;
+            
+            // 根据进度推算一个合理的解锁时间（进度越高越接近当前时间，进度越低越接近注册时间）
+            function estimateUnlockTime(progressRatio, minTime, maxTime) {
+                var t = minTime + (maxTime - minTime) * Math.min(Math.max(progressRatio, 0), 1);
+                return new Date(Math.round(t));
+            }
+            function formatUnlockTime(dateObj) {
+                var y = dateObj.getFullYear();
+                var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                var d = String(dateObj.getDate()).padStart(2, '0');
+                var h = String(dateObj.getHours()).padStart(2, '0');
+                var mi = String(dateObj.getMinutes()).padStart(2, '0');
+                return y + '/' + m + '/' + d + ' ' + h + ':' + mi;
+            }
+            
+            // 完整的徽章数据定义（含推算的解锁时间）
             var allBadges = [
-                { id: 'all_rounder', name: '全能玩家', icon: 'fas fa-star', color: '#ff6b6b', description: '完成3个及以上的特殊游戏成就', condition: '完成3个及以上的特殊游戏成就', unlocked: specialAchievements >= 3, unlockedAt: null },
-                { id: 'game_master', name: '游戏达人', icon: 'fas fa-trophy', color: '#ffd700', description: '累计游戏次数达到100次', condition: '累计游戏次数达到100次', unlocked: totalGamesPlayed >= 100, unlockedAt: null },
-                { id: 'persistent', name: '坚持不懈', icon: 'fas fa-flame', color: '#ff9800', description: '连续签到7天', condition: '连续签到7天', unlocked: checkinStreak >= 7, unlockedAt: null },
-                { id: 'collector', name: '成就收藏家', icon: 'fas fa-award', color: '#4caf50', description: '完成度达到50%', condition: '完成度达到50%', unlocked: completionRate >= 50, unlockedAt: null },
-                { id: 'perfectionist', name: '完美主义者', icon: 'fas fa-crown', color: '#9c27b0', description: '完成度达到100%', condition: '完成度达到100%', unlocked: completionRate >= 100, unlockedAt: null },
-                { id: 'checkin_novice', name: '签到新手', icon: 'fas fa-calendar-check', color: '#2196f3', description: '完成第一次签到', condition: '完成第一次签到', unlocked: user && user.userProfile && user.userProfile.checkinStats ? (user.userProfile.checkinStats.total || 0) >= 1 : false, unlockedAt: null },
-                { id: 'checkin_expert', name: '签到专家', icon: 'fas fa-calendar-alt', color: '#00bcd4', description: '累计签到达到30次', condition: '累计签到达到30次', unlocked: user && user.userProfile && user.userProfile.checkinStats ? (user.userProfile.checkinStats.total || 0) >= 30 : false, unlockedAt: null },
-                { id: 'checkin_master', name: '签到大师', icon: 'fas fa-medal', color: '#ff9800', description: '累计签到达到100次', condition: '累计签到达到100次', unlocked: user && user.userProfile && user.userProfile.checkinStats ? (user.userProfile.checkinStats.total || 0) >= 100 : false, unlockedAt: null },
-                { id: 'level_up', name: '稳步成长', icon: 'fas fa-level-up-alt', color: '#4caf50', description: '等级达到10级', condition: '等级达到10级', unlocked: level >= 10, unlockedAt: null },
-                { id: 'veteran', name: '资深玩家', icon: 'fas fa-shield-alt', color: '#3f51b5', description: '等级达到30级', condition: '等级达到30级', unlocked: level >= 30, unlockedAt: null },
-                { id: 'legend', name: '传奇玩家', icon: 'fas fa-gem', color: '#e91e63', description: '等级达到60级（满级）', condition: '等级达到60级（满级）', unlocked: level >= 60, unlockedAt: null },
-                { id: 'social_butterfly', name: '社交达人', icon: 'fas fa-users', color: '#00bcd4', description: '添加5个好友', condition: '添加5个好友', unlocked: friends.length >= 5, unlockedAt: null },
-                { id: 'game_beginner', name: '游戏初学者', icon: 'fas fa-gamepad', color: '#8bc34a', description: '完成第一次游戏', condition: '完成第一次游戏', unlocked: totalGamesPlayed >= 1, unlockedAt: null },
-                { id: 'game_pro', name: '游戏高手', icon: 'fas fa-rocket', color: '#ff5722', description: '累计游戏次数达到50次', condition: '累计游戏次数达到50次', unlocked: totalGamesPlayed >= 50, unlockedAt: null }
+                { id: 'all_rounder', name: '全能玩家', icon: 'fas fa-star', color: '#ff6b6b', description: '完成3个及以上的特殊游戏成就', condition: '完成3个及以上的特殊游戏成就', unlocked: specialAchievements >= 3, unlockedAt: specialAchievements >= 3 ? formatUnlockTime(estimateUnlockTime(specialAchievements / 7, regTimeMs + 86400000, nowTimeMs)) : null },
+                { id: 'game_master', name: '游戏达人', icon: 'fas fa-trophy', color: '#ffd700', description: '累计游戏次数达到100次', condition: '累计游戏次数达到100次', unlocked: totalGamesPlayed >= 100, unlockedAt: totalGamesPlayed >= 100 ? formatUnlockTime(estimateUnlockTime(1, regTimeMs + 86400000, nowTimeMs)) : null },
+                { id: 'persistent', name: '坚持不懈', icon: 'fas fa-fire', color: '#ff9800', description: '连续签到7天', condition: '连续签到7天', unlocked: checkinStreak >= 7, unlockedAt: checkinStreak >= 7 ? formatUnlockTime(estimateUnlockTime(0.7, regTimeMs + 86400000 * 7, nowTimeMs)) : null },
+                { id: 'collector', name: '成就收藏家', icon: 'fas fa-award', color: '#4caf50', description: '完成度达到50%', condition: '完成度达到50%', unlocked: completionRate >= 50, unlockedAt: completionRate >= 50 ? formatUnlockTime(estimateUnlockTime(0.5, regTimeMs + 86400000, nowTimeMs)) : null },
+                { id: 'perfectionist', name: '完美主义者', icon: 'fas fa-crown', color: '#9c27b0', description: '完成度达到100%', condition: '完成度达到100%', unlocked: completionRate >= 100, unlockedAt: completionRate >= 100 ? formatUnlockTime(new Date(nowTimeMs)) : null },
+                { id: 'checkin_novice', name: '签到新手', icon: 'fas fa-calendar-check', color: '#2196f3', description: '完成第一次签到', condition: '完成第一次签到', unlocked: checkinTotal >= 1, unlockedAt: checkinTotal >= 1 ? formatUnlockTime(new Date(firstCheckinTime || (regTimeMs + 86400000))) : null },
+                { id: 'checkin_expert', name: '签到专家', icon: 'fas fa-calendar-alt', color: '#00bcd4', description: '累计签到达到30次', condition: '累计签到达到30次', unlocked: checkinTotal >= 30, unlockedAt: checkinTotal >= 30 ? formatUnlockTime(estimateUnlockTime(0.5, firstCheckinTime || (regTimeMs + 86400000), nowTimeMs)) : null },
+                { id: 'checkin_master', name: '签到大师', icon: 'fas fa-medal', color: '#ff9800', description: '累计签到达到100次', condition: '累计签到达到100次', unlocked: checkinTotal >= 100, unlockedAt: checkinTotal >= 100 ? formatUnlockTime(estimateUnlockTime(0.8, firstCheckinTime || (regTimeMs + 86400000), nowTimeMs)) : null },
+                { id: 'level_up', name: '稳步成长', icon: 'fas fa-level-up-alt', color: '#4caf50', description: '等级达到10级', condition: '等级达到10级', unlocked: level >= 10, unlockedAt: level >= 10 ? formatUnlockTime(estimateUnlockTime(10 / level, regTimeMs + 86400000, nowTimeMs)) : null },
+                { id: 'veteran', name: '资深玩家', icon: 'fas fa-shield-alt', color: '#3f51b5', description: '等级达到30级', condition: '等级达到30级', unlocked: level >= 30, unlockedAt: level >= 30 ? formatUnlockTime(estimateUnlockTime(30 / level, regTimeMs + 86400000 * 3, nowTimeMs)) : null },
+                { id: 'legend', name: '传奇玩家', icon: 'fas fa-gem', color: '#e91e63', description: '等级达到60级（满级）', condition: '等级达到60级（满级）', unlocked: level >= 60, unlockedAt: level >= 60 ? formatUnlockTime(new Date(nowTimeMs)) : null },
+                { id: 'social_butterfly', name: '社交达人', icon: 'fas fa-users', color: '#00bcd4', description: '添加5个好友', condition: '添加5个好友', unlocked: friends.length >= 5, unlockedAt: friends.length >= 5 ? formatUnlockTime(estimateUnlockTime(0.6, regTimeMs + 86400000 * 2, nowTimeMs)) : null },
+                { id: 'game_beginner', name: '游戏初学者', icon: 'fas fa-gamepad', color: '#8bc34a', description: '完成第一次游戏', condition: '完成第一次游戏', unlocked: totalGamesPlayed >= 1, unlockedAt: totalGamesPlayed >= 1 ? formatUnlockTime(estimateUnlockTime(0.1, regTimeMs, nowTimeMs)) : null },
+                { id: 'game_pro', name: '游戏高手', icon: 'fas fa-rocket', color: '#ff5722', description: '累计游戏次数达到50次', condition: '累计游戏次数达到50次', unlocked: totalGamesPlayed >= 50, unlockedAt: totalGamesPlayed >= 50 ? formatUnlockTime(estimateUnlockTime(0.5, regTimeMs + 86400000, nowTimeMs)) : null }
             ];
             
             // 筛选已解锁的徽章用于卡片显示
@@ -22826,15 +23729,17 @@
                                                     </div>
                                                     <div class="card-section-body">
                                                         ${badges.length > 0 ? `
-                                                            <div class="badges-grid">
-                                                                ${badges.slice(0, badgeLimit).map(b => `
-                                                                    <div class="badge-item ${b.unlocked ? 'unlocked' : 'locked'}" onclick="showBadgeDetailModal('${b.id}')">
-                                                                        <div class="badge-icon" style="background: linear-gradient(135deg, ${b.color} 0%, ${b.color}dd 100%);">
-                                                                            <i class="${b.icon}"></i>
+                                                            <div class="badges-scroll-container">
+                                                                <div class="badges-grid">
+                                                                    ${badges.map(b => `
+                                                                        <div class="badge-item ${b.unlocked ? 'unlocked' : 'locked'}" onclick="showBadgeDetailModal('${b.id}')">
+                                                                            <div class="badge-icon" style="background: linear-gradient(135deg, ${b.color} 0%, ${b.color}dd 100%);">
+                                                                                <i class="${b.icon}"></i>
+                                                                            </div>
+                                                                            <span class="badge-name">${b.name}</span>
                                                                         </div>
-                                                                        <span class="badge-name">${b.name}</span>
-                                                                    </div>
-                                                                `).join('')}
+                                                                    `).join('')}
+                                                                </div>
                                                             </div>
                                                         ` : '<p class="empty-text">暂无成就徽章</p>'}
                                                     </div>
@@ -22974,13 +23879,19 @@
                                                 return `<div class="card-section density-${density}">
                                                     <div class="card-section-header">
                                                         <h4>成就完成度</h4>
-                                                        <span class="completion-badge">${completionRate}%</span>
                                                     </div>
                                                     <div class="card-section-body">
-                                                        <div class="progress-bar-large">
+                                                        <div class="achievement-completion-wrapper">
+                                                            <div class="achievement-progress-info">
+                                                                <span class="achievement-progress-text">${completedAchievements}/${totalAchievements} 成就已解锁</span>
+                                                            </div>
+                                                            <div class="achievement-total-percent">
+                                                                <span class="total-percent-num">${completionRate}%</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="progress-bar-large achievement-progress-bar">
                                                             <div class="progress-fill-large" style="width: ${completionRate}%;"></div>
                                                         </div>
-                                                        <p class="progress-text">${completedAchievements}/${totalAchievements} 成就已解锁</p>
                                                     </div>
                                                 </div>`;
                                             }
@@ -23063,6 +23974,30 @@
                                                                     <span class="game-achievement-count">${colorAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('cube3d')">
+                                                                <div class="game-achievement-icon" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6b9d 50%, #a855f7 100%);">
+                                                                    <i class="fas fa-cube"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">光影冲刺</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(cube3dAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${cube3dAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="game-achievement-card" onclick="showGameAchievement('dino')">
+                                                                <div class="game-achievement-icon" style="background: linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%);">
+                                                                    <i class="fas fa-bone"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">光影恐龙</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(dinoAchievements.length/10)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${dinoAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>`;
@@ -23073,6 +24008,10 @@
                                 }
                                 
                                 if (tab.id === 'stats') {
+                                    // 获取最近游戏信息
+                                    var lastGameName = globalStats.lastPlayedGame ? (gameInfoMap[globalStats.lastPlayedGame]?.name || '未知游戏') : null;
+                                    var lastGameTime = globalStats.lastPlayedTime ? new Date(globalStats.lastPlayedTime).toLocaleString('zh-CN') : null;
+                                    
                                     return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-stats">
                                         ${tabSections.map(function(sec) {
                                             if (sec.id === 'gameStats') {
@@ -23085,29 +24024,29 @@
                                                             <div class="stat-card">
                                                                 <i class="fas fa-play-circle"></i>
                                                                 <div class="stat-info">
-                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.totalGames || 0 : 0}</span>
-                                                                    <span class="stat-label">总游戏次数</span>
+                                                                    <span class="stat-value">${globalStats.totalLaunchCount || 0}</span>
+                                                                    <span class="stat-label">总启动次数</span>
                                                                 </div>
                                                             </div>
                                                             <div class="stat-card">
                                                                 <i class="fas fa-clock"></i>
                                                                 <div class="stat-info">
-                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.totalPlayTime || 0 : 0}分钟</span>
-                                                                    <span class="stat-label">总游戏时间</span>
+                                                                    <span class="stat-value">${formatTime(globalStats.totalPlayTime)}</span>
+                                                                    <span class="stat-label">总游戏时长</span>
                                                                 </div>
                                                             </div>
                                                             <div class="stat-card">
                                                                 <i class="fas fa-trophy"></i>
                                                                 <div class="stat-info">
-                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.highestScore || 0 : 0}</span>
-                                                                    <span class="stat-label">最高分</span>
+                                                                    <span class="stat-value">${globalStats.totalHighScore || 0}</span>
+                                                                    <span class="stat-label">累计最高分</span>
                                                                 </div>
                                                             </div>
                                                             <div class="stat-card">
                                                                 <i class="fas fa-chart-line"></i>
                                                                 <div class="stat-info">
-                                                                    <span class="stat-value">${user && user.gameData && user.gameData.stats ? user.gameData.stats.highestScore || 0 : 0}</span>
-                                                                    <span class="stat-label">最佳成绩</span>
+                                                                    <span class="stat-value">${globalStats.gamesPlayed || 0}</span>
+                                                                    <span class="stat-label">游玩游戏数</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -23120,9 +24059,17 @@
                                                         <h4><i class="fas fa-history"></i> 最近游戏</h4>
                                                     </div>
                                                     <div class="card-section-body">
-                                                        ${user && user.gameData && user.gameData.recentGames ? `
+                                                        ${lastGameName ? `
                                                             <div class="recent-games-list">
-                                                                <ul>${user.gameData.recentGames.map(game => `<li>${game.name} - ${game.lastPlayed}</li>`).join('')}</ul>
+                                                                <div class="recent-game-item">
+                                                                    <div class="recent-game-icon" style="background: linear-gradient(135deg, ${gameInfoMap[globalStats.lastPlayedGame]?.color || '#667eea'} 0%, ${(gameInfoMap[globalStats.lastPlayedGame]?.color || '#667eea')}dd 100%);">
+                                                                        <i class="fas ${gameInfoMap[globalStats.lastPlayedGame]?.icon || 'fa-gamepad'}"></i>
+                                                                    </div>
+                                                                    <div class="recent-game-info">
+                                                                        <span class="recent-game-name">${lastGameName}</span>
+                                                                        <span class="recent-game-time">${lastGameTime}</span>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         ` : '<p class="empty-text">最近玩过的游戏将显示在这里</p>'}
                                                     </div>
@@ -23140,20 +24087,25 @@
                                                 return `<div class="card-section density-${density}">
                                                     <div class="card-section-header">
                                                         <h4><i class="fas fa-heart"></i> 游戏收藏</h4>
+                                                        <span class="completion-badge">${favoriteGames.length} 个游戏</span>
                                                     </div>
                                                     <div class="card-section-body">
-                                                        ${favorites.length > 0 ? `
-                                                            <div class="favorites-grid">
-                                                                ${favorites.map(fav => `
-                                                                    <div class="favorite-item">
-                                                                        <div class="favorite-icon">
-                                                                            <i class="fas fa-star"></i>
+                                                        ${favoriteGames.length > 0 ? `
+                                                            <div class="favorites-list">
+                                                                ${favoriteGames.map(function(fav) {
+                                                                    return `<div class="favorite-item" data-game-id="${fav.id}" onclick="showGameStatsModal('${fav.id}')">
+                                                                        <div class="favorite-info">
+                                                                            <span class="favorite-name">${fav.name}</span>
                                                                         </div>
-                                                                        <span class="favorite-name">${fav}</span>
-                                                                    </div>
-                                                                `).join('')}
+                                                                        <div class="favorite-icon-wrapper" style="background: linear-gradient(90deg, transparent 0%, ${fav.color}dd 40%, ${fav.color} 100%);">
+                                                                            <div class="favorite-icon" style="background: linear-gradient(135deg, ${fav.color} 0%, ${fav.color}dd 100%);">
+                                                                                <i class="fas ${fav.icon}"></i>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>`;
+                                                                }).join('')}
                                                             </div>
-                                                        ` : '<p class="empty-text">暂无收藏的游戏</p>'}
+                                                        ` : '<p class="empty-text">暂无收藏的游戏，去游戏中心收藏喜欢的游戏吧！</p>'}
                                                     </div>
                                                 </div>`;
                                             }
@@ -23497,21 +24449,65 @@
                 }
                 
                 /* 成就徽章 */
+                .badges-scroll-container {
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    -webkit-overflow-scrolling: touch;
+                    padding-bottom: 8px;
+                    margin: 0 -4px;
+                }
+                
+                .badges-scroll-container::-webkit-scrollbar {
+                    height: 6px;
+                }
+                
+                .badges-scroll-container::-webkit-scrollbar-track {
+                    background: rgba(0, 0, 0, 0.04);
+                    border-radius: 3px;
+                }
+                
+                .badges-scroll-container::-webkit-scrollbar-thumb {
+                    background: #d45d79;
+                    border-radius: 3px;
+                }
+                
+                .badges-scroll-container::-webkit-scrollbar-thumb:hover {
+                    background: #c44d69;
+                }
+                
                 .badges-grid {
                     display: flex;
-                    flex-wrap: wrap;
+                    flex-wrap: nowrap;
                     gap: 12px;
+                    padding: 0 4px;
+                    width: max-content;
                 }
                 
                 .badge-item {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
+                    justify-content: flex-start;
                     gap: 6px;
-                    padding: 12px 16px;
+                    padding: 12px 12px;
                     background: linear-gradient(135deg, rgba(212, 93, 121, 0.1) 0%, rgba(230, 126, 138, 0.1) 100%);
                     border-radius: 10px;
                     border: 1px solid rgba(212, 93, 121, 0.2);
+                    width: 90px;
+                    height: 100px;
+                    flex-shrink: 0;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                
+                .badge-item:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.2);
+                    border-color: rgba(212, 93, 121, 0.4);
+                }
+                
+                .badge-item.locked {
+                    opacity: 0.5;
                 }
                 
                 .badge-icon {
@@ -23522,6 +24518,7 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    flex-shrink: 0;
                 }
                 
                 .badge-icon i {
@@ -23533,6 +24530,11 @@
                     font-size: 12px;
                     color: #333;
                     font-weight: 500;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 100%;
+                    text-align: center;
                 }
                 
                 /* 社交数据 */
@@ -23727,40 +24729,118 @@
                 }
                 
                 /* 收藏游戏 */
-                .favorites-grid {
+                .favorites-list {
                     display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
+                    flex-direction: column;
+                    gap: 12px;
                 }
                 
                 .favorite-item {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    padding: 10px 16px;
+                    justify-content: space-between;
                     background: #f8fafc;
-                    border-radius: 8px;
+                    border-radius: 10px;
                     border: 1px solid #e0e0e0;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    overflow: hidden;
+                    position: relative;
+                }
+                
+                .favorite-item:hover {
+                    background: #f0f0f5;
+                    border-color: #d45d79;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.15);
+                }
+                
+                .favorite-info {
+                    flex: 1;
+                    padding: 14px 16px;
+                    min-width: 0;
+                }
+                
+                .favorite-name {
+                    font-size: 15px;
+                    color: #333;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                
+                .favorite-icon-wrapper {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    padding: 10px 12px 10px 30px;
+                    flex-shrink: 0;
                 }
                 
                 .favorite-icon {
-                    width: 28px;
-                    height: 28px;
+                    width: 36px;
+                    height: 36px;
                     background: #ffd700;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
                 }
                 
                 .favorite-icon i {
-                    font-size: 14px;
+                    font-size: 16px;
                     color: white;
                 }
                 
-                .favorite-name {
+                /* 最近游戏列表 */
+                .recent-games-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .recent-game-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 12px;
+                    background: #f8fafc;
+                    border-radius: 10px;
+                    border: 1px solid #e0e0e0;
+                }
+                
+                .recent-game-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+                
+                .recent-game-icon i {
+                    font-size: 18px;
+                    color: white;
+                }
+                
+                .recent-game-info {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                
+                .recent-game-name {
                     font-size: 14px;
+                    font-weight: 600;
                     color: #333;
+                }
+                
+                .recent-game-time {
+                    font-size: 12px;
+                    color: #999;
                 }
                 
                 /* 空状态文字 */
@@ -23835,8 +24915,44 @@
                 body.dark-mode .user-signature,
                 body.dark-mode .game-achievement-card,
                 body.dark-mode .stat-card,
-                body.dark-mode .favorite-item {
+                body.dark-mode .favorite-item,
+                body.dark-mode .badge-item {
                     background: #16213e;
+                }
+                
+                body.dark-mode .favorite-item {
+                    border-color: rgba(255, 255, 255, 0.1);
+                }
+                
+                body.dark-mode .favorite-item:hover {
+                    background: #1a2744;
+                    border-color: #d45d79;
+                }
+                
+                body.dark-mode .badge-item {
+                    border-color: rgba(255, 255, 255, 0.15);
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.15) 0%, rgba(230, 126, 138, 0.1) 100%);
+                }
+                
+                body.dark-mode .badge-item:hover {
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.25) 0%, rgba(230, 126, 138, 0.2) 100%);
+                }
+                
+                body.dark-mode .badge-item.locked {
+                    background: #16213e;
+                    opacity: 0.4;
+                }
+                
+                body.dark-mode .badges-scroll-container::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                
+                body.dark-mode .badges-scroll-container::-webkit-scrollbar-thumb {
+                    background: rgba(212, 93, 121, 0.7);
+                }
+                
+                body.dark-mode .badges-scroll-container::-webkit-scrollbar-thumb:hover {
+                    background: rgba(212, 93, 121, 0.9);
                 }
                 
                 body.dark-mode .game-achievement-card:hover {
@@ -24804,27 +25920,169 @@ ID：${user ? user.userId : '---'}
             }
         });
         
-        // 显示游戏成就详情
+        // 显示游戏成就详情（弹窗版本）
         function showGameAchievement(gameCode) {
-            var gameNames = {
-                'fk': '点击方块',
-                'fxq': '飞行器',
-                'wzq': '五子棋',
-                'snake': '贪吃蛇',
-                'memory': '记忆卡牌',
-                'color': '颜色匹配',
-                'special': '特殊成就'
+            // 游戏基础信息配置（成就ID必须与account-settings.js中一致）
+            var gameConfigs = {
+                'fk': {
+                    name: '点击方块',
+                    icon: 'fas fa-square',
+                    iconBg: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                    total: 10,
+                    dataKey: 'achievements',
+                    achievements: [
+                        { id: 'first_game', name: '初试锋芒', desc: '完成第一局游戏', icon: 'fas fa-trophy' },
+                        { id: 'score_100', name: '百发百中', desc: '单局得分达到100分', icon: 'fas fa-star' },
+                        { id: 'score_200', name: '神射手', desc: '单局得分达到200分', icon: 'fas fa-bullseye' },
+                        { id: 'games_10', name: '游戏达人', desc: '累计完成10局游戏', icon: 'fas fa-gamepad' },
+                        { id: 'combo_master', name: '连击大师', desc: '在一局游戏中连续点击20个方块不失误', icon: 'fas fa-fire' },
+                        { id: 'speed_king', name: '速度之王', desc: '在困难难度下，10秒内获得50分', icon: 'fas fa-bolt' },
+                        { id: 'perfect_start', name: '完美开局', desc: '在游戏开始前5秒内获得20分', icon: 'fas fa-rocket' },
+                        { id: 'total_score_1000', name: '千分王者', desc: '累计获得1000分', icon: 'fas fa-crown' },
+                        { id: 'games_100', name: '百战百胜', desc: '累计完成100局游戏', icon: 'fas fa-medal' },
+                        { id: 'extreme_challenge', name: '极限挑战', desc: '在困难难度下单局获得300分', icon: 'fas fa-skull' }
+                    ]
+                },
+                'fxq': {
+                    name: '飞行器',
+                    icon: 'fas fa-plane',
+                    iconBg: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                    total: 10,
+                    dataKey: 'fxqAchievements',
+                    achievements: [
+                        { id: 'fxq_first_game', name: '初次飞行', desc: '完成第一次飞行', icon: 'fas fa-rocket' },
+                        { id: 'fxq_score_50', name: '初级飞行员', desc: '单局得分达到50分', icon: 'fas fa-star' },
+                        { id: 'fxq_score_100', name: '中级飞行员', desc: '单局得分达到100分', icon: 'fas fa-medal' },
+                        { id: 'fxq_score_200', name: '高级飞行员', desc: '单局得分达到200分', icon: 'fas fa-trophy' },
+                        { id: 'fxq_games_5', name: '飞行爱好者', desc: '累计完成5局游戏', icon: 'fas fa-plane' },
+                        { id: 'fxq_games_10', name: '飞行达人', desc: '累计完成10局游戏', icon: 'fas fa-fighter-jet' },
+                        { id: 'fxq_easy_master', name: '轻松过关', desc: '在简单难度下完成一局游戏', icon: 'fas fa-smile' },
+                        { id: 'fxq_hard_master', name: '困难征服者', desc: '在困难难度下完成一局游戏', icon: 'fas fa-fire' },
+                        { id: 'fxq_nightmare_survivor', name: '梦魇幸存者', desc: '在梦魇难度下完成一局游戏', icon: 'fas fa-skull' },
+                        { id: 'fxq_perfect_score', name: '完美飞行', desc: '单局得分达到300分', icon: 'fas fa-crown' }
+                    ]
+                },
+                'wzq': {
+                    name: '五子棋',
+                    icon: 'fas fa-circle',
+                    iconBg: 'linear-gradient(135deg, #2c3e50 0%, #1a252f 100%)',
+                    total: 10,
+                    dataKey: 'wzqAchievements',
+                    achievements: [
+                        { id: 'wzq_first_game', name: '初次对弈', desc: '完成第一局五子棋', icon: 'fas fa-chess-board' },
+                        { id: 'wzq_first_win', name: '首战告捷', desc: '赢得第一局五子棋', icon: 'fas fa-trophy' },
+                        { id: 'wzq_win_5', name: '棋艺初成', desc: '累计赢得5局游戏', icon: 'fas fa-medal' },
+                        { id: 'wzq_win_10', name: '棋坛新秀', desc: '累计赢得10局游戏', icon: 'fas fa-star' },
+                        { id: 'wzq_games_20', name: '棋迷', desc: '累计完成20局游戏', icon: 'fas fa-gamepad' },
+                        { id: 'wzq_quick_win', name: '速战速决', desc: '在30步内赢得比赛', icon: 'fas fa-bolt' },
+                        { id: 'wzq_long_game', name: '持久战', desc: '完成一局超过100步的对局', icon: 'fas fa-hourglass-half' },
+                        { id: 'wzq_perfect_win', name: '没关就是开了？', desc: '在对手未落子的情况下获胜', icon: 'fas fa-crown' },
+                        { id: 'wzq_ai_master', name: '人机大师', desc: '在AI模式下赢得10局', icon: 'fas fa-robot' },
+                        { id: 'wzq_veteran', name: '五子棋大师', desc: '累计赢得50局游戏', icon: 'fas fa-chess-king' }
+                    ]
+                },
+                'snake': {
+                    name: '贪吃蛇',
+                    icon: 'fas fa-signs-post',
+                    iconBg: 'linear-gradient(135deg, #27ae60 0%, #1e8449 100%)',
+                    total: 10,
+                    dataKey: 'snakeAchievements',
+                    achievements: [
+                        { id: 'snake_first_game', name: '初次尝试', desc: '完成第一局贪吃蛇游戏', icon: 'fas fa-gamepad' },
+                        { id: 'snake_score_50', name: '初级贪吃蛇', desc: '单局得分达到50分', icon: 'fas fa-star' },
+                        { id: 'snake_score_100', name: '中级贪吃蛇', desc: '单局得分达到100分', icon: 'fas fa-medal' },
+                        { id: 'snake_score_200', name: '高级贪吃蛇', desc: '单局得分达到200分', icon: 'fas fa-trophy' },
+                        { id: 'snake_games_5', name: '贪吃蛇爱好者', desc: '累计完成5局游戏', icon: 'fas fa-apple-alt' },
+                        { id: 'snake_games_10', name: '贪吃蛇达人', desc: '累计完成10局游戏', icon: 'fas fa-gamepad' },
+                        { id: 'snake_total_100', name: '累计得分王', desc: '累计得分达到100分', icon: 'fas fa-chart-line' },
+                        { id: 'snake_total_500', name: '贪吃蛇大师', desc: '累计得分达到500分', icon: 'fas fa-crown' },
+                        { id: 'snake_perfect_game', name: '完美游戏', desc: '在一局游戏中没有撞到任何墙壁或自己', icon: 'fas fa-check-circle' },
+                        { id: 'snake_survivor', name: '生存大师', desc: '在一局游戏中存活超过2分钟', icon: 'fas fa-clock' }
+                    ]
+                },
+                'memory': {
+                    name: '记忆卡牌',
+                    icon: 'fas fa-images',
+                    iconBg: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                    total: 10,
+                    dataKey: 'memoryAchievements',
+                    achievements: [
+                        { id: 'memory_first_game', name: '初次尝试', desc: '完成第一局记忆卡牌游戏', icon: 'fas fa-gamepad' },
+                        { id: 'memory_score_50', name: '初级记忆师', desc: '单局得分达到50分', icon: 'fas fa-star' },
+                        { id: 'memory_score_100', name: '中级记忆师', desc: '单局得分达到100分', icon: 'fas fa-medal' },
+                        { id: 'memory_score_200', name: '高级记忆师', desc: '单局得分达到200分', icon: 'fas fa-trophy' },
+                        { id: 'memory_games_5', name: '记忆卡牌爱好者', desc: '累计完成5局游戏', icon: 'fas fa-memory' },
+                        { id: 'memory_games_10', name: '记忆卡牌达人', desc: '累计完成10局游戏', icon: 'fas fa-gamepad' },
+                        { id: 'memory_perfect_game', name: '完美记忆', desc: '在一局游戏中没有失误', icon: 'fas fa-check-circle' },
+                        { id: 'memory_speed_master', name: '速度记忆', desc: '在困难难度下，30秒内完成游戏', icon: 'fas fa-bolt' },
+                        { id: 'memory_games_20', name: '记忆卡牌专家', desc: '累计完成20局游戏', icon: 'fas fa-certificate' },
+                        { id: 'memory_score_300', name: '记忆大师', desc: '单局得分达到300分', icon: 'fas fa-crown' }
+                    ]
+                },
+                'color': {
+                    name: '颜色匹配',
+                    icon: 'fas fa-palette',
+                    iconBg: 'linear-gradient(135deg, #e91e63 0%, #c2185b 100%)',
+                    total: 10,
+                    dataKey: 'colorAchievements',
+                    achievements: [
+                        { id: 'color_first_game', name: '初试锋芒', desc: '完成第一局颜色匹配游戏', icon: 'fas fa-trophy' },
+                        { id: 'color_score_100', name: '色彩大师', desc: '单局得分达到100分', icon: 'fas fa-star' },
+                        { id: 'color_score_200', name: '色彩专家', desc: '单局得分达到200分', icon: 'fas fa-bullseye' },
+                        { id: 'color_games_10', name: '游戏达人', desc: '累计完成10局游戏', icon: 'fas fa-gamepad' },
+                        { id: 'color_perfect_match', name: '完美匹配', desc: '在一局游戏中连续匹配5对颜色', icon: 'fas fa-fire' },
+                        { id: 'color_speed_master', name: '速度之王', desc: '在困难难度下，30秒内获得100分', icon: 'fas fa-bolt' },
+                        { id: 'color_total_score_1000', name: '千分王者', desc: '累计获得1000分', icon: 'fas fa-crown' },
+                        { id: 'color_games_50', name: '色彩守护者', desc: '累计完成50局游戏', icon: 'fas fa-medal' },
+                        { id: 'color_games_100', name: '色彩大师', desc: '累计完成100局游戏', icon: 'fas fa-trophy' },
+                        { id: 'color_total_score_2000', name: '万分王者', desc: '累计获得2000分', icon: 'fas fa-crown' }
+                    ]
+                },
+                'cube3d': {
+                    name: '光影冲刺',
+                    icon: 'fas fa-cube',
+                    iconBg: 'linear-gradient(135deg, #ff9a56 0%, #ff6b9d 50%, #a855f7 100%)',
+                    total: 10,
+                    dataKey: 'cube3dAchievements',
+                    achievements: [
+                        { id: 'cube3d_first_game', name: '踏入光影', desc: '完成第一局光影冲刺', icon: 'fas fa-play-circle' },
+                        { id: 'cube3d_score_100', name: '光明学徒', desc: '单局得分达到100', icon: 'fas fa-sun' },
+                        { id: 'cube3d_score_300', name: '光影战士', desc: '单局得分达到300', icon: 'fas fa-star' },
+                        { id: 'cube3d_score_600', name: '光辉大师', desc: '单局得分达到600', icon: 'fas fa-gem' },
+                        { id: 'cube3d_games_5', name: '光影探索者', desc: '累计进行5局游戏', icon: 'fas fa-search' },
+                        { id: 'cube3d_games_15', name: '光影行者', desc: '累计进行15局游戏', icon: 'fas fa-hiking' },
+                        { id: 'cube3d_orbs_10', name: '光之收集者', desc: '单局收集10个光球', icon: 'fas fa-circle' },
+                        { id: 'cube3d_orbs_25', name: '光能掌控者', desc: '单局收集25个光球', icon: 'fas fa-circle-notch' },
+                        { id: 'cube3d_survivor_30', name: '暗影抵抗者', desc: '单局存活30秒', icon: 'fas fa-shield-alt' },
+                        { id: 'cube3d_survivor_60', name: '光影之王', desc: '单局存活60秒', icon: 'fas fa-crown' }
+                    ]
+                },
+                'dino': {
+                    name: '光影恐龙',
+                    icon: 'fas fa-bone',
+                    iconBg: 'linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%)',
+                    total: 10,
+                    dataKey: 'dinoAchievements',
+                    achievements: [
+                        { id: 'dino_first_game', name: '初次尝试', desc: '完成第一局跳跃游戏', icon: 'fas fa-gamepad' },
+                        { id: 'dino_score_100', name: '初级跳跃者', desc: '单局得分达到100分', icon: 'fas fa-star' },
+                        { id: 'dino_score_300', name: '中级跳跃者', desc: '单局得分达到300分', icon: 'fas fa-medal' },
+                        { id: 'dino_score_500', name: '高级跳跃者', desc: '单局得分达到500分', icon: 'fas fa-trophy' },
+                        { id: 'dino_games_5', name: '跳跃爱好者', desc: '累计完成5局游戏', icon: 'fas fa-apple-whole' },
+                        { id: 'dino_games_10', name: '跳跃达人', desc: '累计完成10局游戏', icon: 'fas fa-chess-knight' },
+                        { id: 'dino_jumps_100', name: '跳跃高手', desc: '单局跳跃100次', icon: 'fas fa-feather' },
+                        { id: 'dino_total_1000', name: '累计得分王', desc: '累计得分达到1000分', icon: 'fas fa-chart-line' },
+                        { id: 'dino_dodger', name: '躲避大师', desc: '单局躲避50个障碍', icon: 'fas fa-shield' },
+                        { id: 'dino_survivor', name: '生存大师', desc: '单局存活超过60秒', icon: 'fas fa-clock' }
+                    ]
+                }
             };
             
-            var totalAchievements = {
-                'fk': 10,
-                'fxq': 10,
-                'wzq': 10,
-                'snake': 10,
-                'memory': 10,
-                'color': 10,
-                'special': 6
-            };
+            var config = gameConfigs[gameCode];
+            if (!config) {
+                showToastInfo('未找到游戏配置');
+                return;
+            }
             
             // 获取用户数据
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -24833,40 +26091,56 @@ ID：${user ? user.userId : '---'}
                 return u.username === currentUser.username;
             });
             
-            // 获取游戏成就
-            var gameAchievements = [];
+            // 获取已解锁成就ID列表
+            var unlockedIds = [];
             if (user && user.gameData) {
                 if (gameCode === 'fk') {
-                    gameAchievements = user.gameData.achievements || [];
-                } else if (gameCode === 'fxq') {
-                    gameAchievements = user.gameData.fxqAchievements || [];
-                } else if (gameCode === 'wzq') {
-                    gameAchievements = user.gameData.wzqAchievements || [];
-                } else if (gameCode === 'snake') {
-                    gameAchievements = user.gameData.snakeAchievements || [];
-                } else if (gameCode === 'memory') {
-                    gameAchievements = user.gameData.memoryAchievements || [];
-                } else if (gameCode === 'color') {
-                    gameAchievements = user.gameData.colorAchievements || [];
-                } else if (gameCode === 'special') {
-                    // 计算特殊成就
-                    var specialAchievements = 0;
-                    if (user.gameData.achievements && user.gameData.achievements.length >= 10) specialAchievements++;
-                    if (user.gameData.fxqAchievements && user.gameData.fxqAchievements.length >= 10) specialAchievements++;
-                    if (user.gameData.wzqAchievements && user.gameData.wzqAchievements.length >= 10) specialAchievements++;
-                    if (user.gameData.snakeAchievements && user.gameData.snakeAchievements.length >= 10) specialAchievements++;
-                    if (user.gameData.memoryAchievements && user.gameData.memoryAchievements.length >= 10) specialAchievements++;
-                    if (user.gameData.colorAchievements && user.gameData.colorAchievements.length >= 9) specialAchievements++;
-                    gameAchievements.length = specialAchievements;
+                    unlockedIds = user.gameData.achievements || [];
+                } else {
+                    unlockedIds = user.gameData[config.dataKey] || [];
                 }
             }
             
-            var completedAchievements = gameAchievements.length;
-            var total = totalAchievements[gameCode];
-            var completionRate = total > 0 ? Math.round((completedAchievements / total) * 100) : 0;
+            var completedCount = unlockedIds.length;
+            var total = config.total;
+            var completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
             
-            // 显示游戏成就详情
-            alert(`${gameNames[gameCode]}成就完成度：${completedAchievements}/${total} (${completionRate}%)`);
+            // 填充弹窗头部
+            var iconEl = document.getElementById('gameAchievementModalIcon');
+            iconEl.style.background = config.iconBg;
+            iconEl.innerHTML = '<i class="' + config.icon + '"></i>';
+            
+            document.getElementById('gameAchievementModalName').textContent = config.name;
+            document.getElementById('gameAchievementModalProgress').textContent = completedCount + '/' + total;
+            document.getElementById('gameAchievementModalPercent').textContent = completionRate + '%';
+            document.getElementById('gameAchievementModalFill').style.width = completionRate + '%';
+            
+            // 生成成就列表HTML（使用indexOf检测ID是否在已解锁列表中）
+            var bodyEl = document.getElementById('gameAchievementModalBody');
+            bodyEl.innerHTML = config.achievements.map(function(ach) {
+                var isUnlocked = unlockedIds.indexOf(ach.id) >= 0;
+                return '<div class="game-achievement-list-item ' + (isUnlocked ? 'unlocked' : 'locked') + '">' +
+                    '<div class="game-achievement-list-icon">' +
+                        '<i class="' + ach.icon + '"></i>' +
+                    '</div>' +
+                    '<div class="game-achievement-list-info">' +
+                        '<div class="game-achievement-list-name">' + ach.name + '</div>' +
+                        '<div class="game-achievement-list-desc">' + ach.desc + '</div>' +
+                    '</div>' +
+                    '<div class="game-achievement-list-status">' +
+                        (isUnlocked 
+                            ? '<span class="status-unlocked"><i class="fas fa-check-circle"></i> 已解锁</span>' 
+                            : '<span class="status-locked"><i class="fas fa-lock"></i> 未解锁</span>') +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            
+            // 显示弹窗（清除残留关闭类）
+            var modal = document.getElementById('gameAchievementModal');
+            if (modal) {
+                modal.classList.remove('modal-closing');
+                modal.style.display = 'flex';
+            }
         }
 
         // ==================== 引导功能 ====================

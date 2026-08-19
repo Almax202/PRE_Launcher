@@ -272,9 +272,9 @@ body {
 
 .info-chip .stat-num { font-variant-numeric: tabular-nums; }
 
-.info-chip.shield-chip {
-    background: linear-gradient(135deg, rgba(34,211,238,0.2), rgba(6,182,212,0.2));
-    border: 1px solid rgba(34,211,238,0.4);
+.speed-chip {
+    background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(217,119,6,0.2));
+    border: 1px solid rgba(245,158,11,0.4);
 }
 
 .game-area {
@@ -285,7 +285,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 500px;
+    min-height: 420px;
     overflow: hidden;
 }
 
@@ -295,6 +295,7 @@ body {
     max-height: 100%;
     border-radius: 12px;
     background: #0f0a1e;
+    cursor: pointer;
 }
 
 .game-overlay,
@@ -357,14 +358,14 @@ body {
 }
 
 .controls-hint,
-.powerup-legend,
+.obstacle-legend,
 .ranking-panel {
     border-radius: 16px;
     padding: 18px;
 }
 
 .controls-hint h3,
-.powerup-legend h3,
+.obstacle-legend h3,
 .ranking-panel h3 {
     font-size: 14px;
     font-weight: 700;
@@ -400,7 +401,7 @@ kbd {
     color: #ddd;
 }
 
-.powerup-grid {
+.obstacle-grid {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -471,10 +472,6 @@ kbd {
     margin-bottom: 12px;
 }
 
-.ranking-header h3 {
-    margin-bottom: 0;
-}
-
 .ranking-reset-btn {
     width: 32px;
     height: 32px;
@@ -519,44 +516,6 @@ kbd {
     -webkit-text-fill-color: transparent;
 }
 
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-}
-
-.modal-content {
-    width: 90%;
-    max-width: 400px;
-    border-radius: 20px;
-    padding: 24px;
-    border: 1px solid rgba(255,255,255,0.15);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-}
-
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-}
-
-.modal-body {
-    margin-bottom: 20px;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
 .touch-controls {
     display: none;
     position: fixed;
@@ -569,24 +528,18 @@ kbd {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-}
-
-.tbtn-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .tbtn {
-    width: 54px;
-    height: 54px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    background: rgba(255,255,255,0.1);
+    font-size: 20px;
+    background: linear-gradient(135deg, #f0a050, #d45d79);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.15);
     color: #fff;
@@ -599,12 +552,6 @@ kbd {
 .tbtn:active {
     background: rgba(240,160,80,0.3);
     transform: scale(0.92);
-}
-
-.tbtn-center {
-    background: linear-gradient(135deg, #f0a050, #d45d79);
-    width: 64px;
-    height: 64px;
 }
 
 .achv-toast-container {
@@ -902,7 +849,7 @@ kbd {
     }
 
     .touch-controls {
-        display: block;
+        display: flex;
     }
 
     .hint-grid {
@@ -920,4 +867,134 @@ kbd {
     .game-overlay h1 { font-size: 2rem !important; }
     .game-overlay p { font-size: 14px; }
     .glow-btn { padding: 10px 20px !important; font-size: 15px !important; }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    width: 90%;
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(42,27,61,0.98), rgba(15,10,30,0.98));
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.speed-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+}
+
+.speed-value {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.speed-label {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
+}
+
+.speed-slider-container {
+    padding: 0 16px;
+}
+
+.speed-slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(90deg, #f0a050, #d45d79, #9b6dff);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+.speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(240,160,80,0.5);
+    transition: transform 0.2s;
+}
+
+.speed-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.speed-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 12px rgba(240,160,80,0.5);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+}
+
+.speed-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(240,160,80,0.1);
+    border-radius: 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.5;
 }

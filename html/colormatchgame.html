@@ -79,8 +79,9 @@
         })();
     </script>
     <!-- ===== /UI 框架 ===== -->
+<script src="../js/game-stats.js"></script>
 </head>
-<body>
+<body data-game-id="game_color">
     <div class="settings-container">
         <div class="settings-sidebar">
             <div class="sidebar-header">
@@ -550,6 +551,15 @@
                 clearInterval(gameTimer);
                 gameRunning = false;
                 document.getElementById('gameOver').style.display = 'block';
+                
+                // 记录到新的游戏统计系统
+                if (window.GameStatsManager) {
+                    window.GameStatsManager.recordScore('game_color', score);
+                    if (window.gameTimer) {
+                        window.gameTimer.stop();
+                    }
+                }
+                
                 showRankingModal();
                 saveGameData();
             }
@@ -644,6 +654,14 @@
             document.getElementById('score').textContent = score;
             document.getElementById('time').textContent = timeLeft;
             document.getElementById('gameOver').style.display = 'none';
+            
+            // 启动游戏计时器
+            if (window.GameStatsManager && window.GameTimer) {
+                if (!window.gameTimer) {
+                    window.gameTimer = new window.GameTimer('game_color');
+                }
+                window.gameTimer.start();
+            }
             
             generateCards();
             

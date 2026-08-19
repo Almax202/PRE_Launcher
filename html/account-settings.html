@@ -42,50 +42,12 @@
     <!-- Lenis (平滑滚动) -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onerror="this.onerror=null; console.warn('Lenis 加载失败')"></script>
     <script>
-        // 初始化 Lenis 平滑滚动（仅在 window 真正可滚动时启用，否则保留原生滚动）
+        // account-settings 页面使用内部容器滚动（.settings-content），
+        // 不需要 Lenis 接管 window/body 滚动（会导致滚轮失效）
+        // 仅加载 GSAP / ScrollTrigger 供其他动画使用
         (function () {
-            function initLenis() {
-                if (typeof Lenis === 'undefined') return;
-                var bodyStyle = window.getComputedStyle(document.body || document.documentElement);
-                var docEl = document.documentElement;
-                if (bodyStyle.overflowY === 'hidden' || bodyStyle.overflow === 'hidden' ||
-                    docEl.scrollHeight <= docEl.clientHeight + 2) {
-                    return;
-                }
-                try {
-                    var lenis = new Lenis({
-                        duration: 1.1,
-                        smoothWheel: true,
-                        prevent: function (node) {
-                            var cur = node;
-                            while (cur && cur !== document.body) {
-                                var st = window.getComputedStyle(cur);
-                                if ((st.overflowY === 'auto' || st.overflowY === 'scroll') &&
-                                    cur.scrollHeight > cur.clientHeight + 1) {
-                                    return true;
-                                }
-                                cur = cur.parentElement;
-                            }
-                            return false;
-                        }
-                    });
-                    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-                    requestAnimationFrame(raf);
-                    if (window.gsap && window.ScrollTrigger) {
-                        lenis.on('scroll', ScrollTrigger.update);
-                        gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
-                        gsap.ticker.lagSmoothing(0);
-                    }
-                    window.__lenis = lenis;
-                } catch (e) {
-                    console.warn('Lenis 初始化失败，已降级到原生滚动:', e);
-                }
-            }
-            if (document.readyState === 'complete') {
-                setTimeout(initLenis, 0);
-            } else {
-                window.addEventListener('load', function () { setTimeout(initLenis, 0); });
-            }
+            // 标记本页不使用 Lenis
+            window.__lenisDisabled = true;
         })();
     </script>
     <!-- ===== /UI 框架 ===== -->
@@ -138,22 +100,9 @@
                     </div>
                 </div>
             </div>
-            <div class="ui-min-dropdown-menu" data-menu="data">
-                <div class="ui-min-nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>统计数据</span>
-                    <i class="fas fa-chevron-down ui-min-arrow"></i>
-                </div>
-                <div class="ui-min-dropdown-panel">
-                    <div class="ui-min-dropdown-item" data-nav="game-stats">
-                        <i class="fas fa-chart-line"></i>
-                        <span>统计数据</span>
-                    </div>
-                    <div class="ui-min-dropdown-item" data-nav="achievements">
-                        <i class="fas fa-trophy"></i>
-                        <span>成就系统</span>
-                    </div>
-                </div>
+            <div class="ui-min-nav-item" data-nav="achievements">
+                <i class="fas fa-trophy"></i>
+                <span>成就系统</span>
             </div>
             <div class="ui-min-dropdown-menu" data-menu="advanced">
                 <div class="ui-min-nav-item">
@@ -278,11 +227,7 @@
                 </div>
                 
                 <div class="menu-group">
-                    <div class="menu-group-title">统计数据</div>
-                    <div class="menu-item" data-section="game-stats">
-                        <i class="fas fa-chart-line"></i>
-                        <span>统计数据</span>
-                    </div>
+                    <div class="menu-group-title">成就与统计</div>
                     <div class="menu-item" data-section="achievements">
                         <i class="fas fa-trophy"></i>
                         <span>成就系统</span>
@@ -994,118 +939,6 @@
                     </div>
                 </div>
                 
-                <div class="settings-section" id="section-game-stats">
-                    <div class="section-card">
-                        <div class="card-header">
-                            <div class="card-icon">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div class="card-title">
-                                <h3>游戏统计</h3>
-                                <p>查看您的游戏数据</p>
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <div class="stats-grid">
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-clock"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="totalPlayTime">0h</div>
-                                        <div class="stat-label">总游戏时长</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-gamepad"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="totalGames">0</div>
-                                        <div class="stat-label">游戏次数</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-trophy"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="totalWins">0</div>
-                                        <div class="stat-label">获胜次数</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="totalScore">0</div>
-                                        <div class="stat-label">总积分</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section-card">
-                        <div class="card-header">
-                            <div class="card-icon">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <div class="card-title">
-                                <h3>签到统计</h3>
-                                <p>查看您的签到数据</p>
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <div class="stats-grid">
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-calendar-alt"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="totalCheckinDays">0</div>
-                                        <div class="stat-label">签到总天数</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-coins"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="checkinPoints">0</div>
-                                        <div class="stat-label">签到积分</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-fire"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="consecutiveDays">0</div>
-                                        <div class="stat-label">连续签到</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="fas fa-calendar-day"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <div class="stat-value" id="monthCheckinDays">0</div>
-                                        <div class="stat-label">本月签到</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <div class="settings-section" id="section-achievements">
                     <div class="section-card">
                         <div class="card-header">
@@ -1131,7 +964,7 @@
                                             <div class="game-progress-bar">
                                                 <div class="game-progress-fill" id="all-progress"></div>
                                             </div>
-                                            <span class="game-progress-text" id="all-progress-text">0/0</span>
+                                            <span class="game-progress-text" id="all-progress-text">0/80</span>
                                             <span class="game-progress-percent" id="all-progress-percent">0%</span>
                                         </div>
                                         <div class="selecting-indicator" id="selectingIndicator-all">
@@ -1201,7 +1034,7 @@
                                             <div class="game-progress-bar">
                                                 <div class="game-progress-fill" id="special-progress"></div>
                                             </div>
-                                            <span class="game-progress-text" id="special-progress-text">0/4</span>
+                                            <span class="game-progress-text" id="special-progress-text">0/8</span>
                                             <span class="game-progress-percent" id="special-progress-percent">0%</span>
                                         </div>
                                         <div class="selecting-indicator" id="selectingIndicator-special">
@@ -1233,6 +1066,34 @@
                                             <span class="game-progress-percent" id="color-progress-percent">0%</span>
                                         </div>
                                         <div class="selecting-indicator" id="selectingIndicator-color">
+                                            <span>选择中</span>
+                                        </div>
+                                    </button>
+                                    <button class="game-selector-btn" data-game="cube3d">
+                                        <i class="fas fa-cube"></i>
+                                        光影冲刺
+                                        <div class="game-progress">
+                                            <div class="game-progress-bar">
+                                                <div class="game-progress-fill" id="cube3d-progress"></div>
+                                            </div>
+                                            <span class="game-progress-text" id="cube3d-progress-text">0/10</span>
+                                            <span class="game-progress-percent" id="cube3d-progress-percent">0%</span>
+                                        </div>
+                                        <div class="selecting-indicator" id="selectingIndicator-cube3d">
+                                            <span>选择中</span>
+                                        </div>
+                                    </button>
+                                    <button class="game-selector-btn" data-game="dino">
+                                        <i class="fas fa-bone"></i>
+                                        光影恐龙
+                                        <div class="game-progress">
+                                            <div class="game-progress-bar">
+                                                <div class="game-progress-fill" id="dino-progress"></div>
+                                            </div>
+                                            <span class="game-progress-text" id="dino-progress-text">0/0</span>
+                                            <span class="game-progress-percent" id="dino-progress-percent">0%</span>
+                                        </div>
+                                        <div class="selecting-indicator" id="selectingIndicator-dino">
                                             <span>选择中</span>
                                         </div>
                                     </button>

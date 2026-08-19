@@ -2,1360 +2,882 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="五子棋小游戏 - PRE Launcher">
-    <meta name="theme-color" content="#667eea">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>五子棋小游戏</title>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link rel="stylesheet" href="../css/homepage.css">
-    <link rel="stylesheet" href="../css/achievement.css">
-    <link rel="stylesheet" href="../css/wzqgame.css">
-    <script src="../js/versionManager.js" defer></script>
-    <!-- ===== UI 框架：Tailwind CSS + GSAP + Lenis（替换原 MUI） ===== -->
-    <!-- Tailwind CSS (Play CDN) - 关闭 preflight 避免重置样式破坏现有 CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>五子连珠</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        if (window.tailwind) {
-            tailwind.config = {
-                corePlugins: { preflight: false },
-                theme: { extend: { colors: { 'pre-primary': '#d45d79', 'pre-accent': '#f0a050' } } }
-            };
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pre-primary': '#d45d79',
+                        'pre-accent': '#f0a050',
+                        'pre-deep': '#2a1b3d',
+                        'pre-dark': '#0f0a1e',
+                        'pre-purple': '#9b6dff'
+                    },
+                    fontFamily: { 'display': ['HarmonyOS Sans', 'system-ui', 'sans-serif'] }
+                }
+            }
         }
     </script>
-    <!-- GSAP (动画引擎) + ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" onerror="this.onerror=null; console.warn('GSAP 加载失败')"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" onerror="this.onerror=null; console.warn('ScrollTrigger 加载失败')"></script>
-    <!-- Lenis (平滑滚动) -->
-    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onerror="this.onerror=null; console.warn('Lenis 加载失败')"></script>
-    <script>
-        // 仅在 window 真正可滚动时启用 Lenis，否则保留原生滚动
-        (function () {
-            function initLenis() {
-                if (typeof Lenis === 'undefined') return;
-                var bodyStyle = window.getComputedStyle(document.body || document.documentElement);
-                var docEl = document.documentElement;
-                if (bodyStyle.overflowY === 'hidden' || bodyStyle.overflow === 'hidden' ||
-                    docEl.scrollHeight <= docEl.clientHeight + 2) {
-                    return;
-                }
-                try {
-                    var lenis = new Lenis({
-                        duration: 1.1, smoothWheel: true,
-                        prevent: function (node) {
-                            var cur = node;
-                            while (cur && cur !== document.body) {
-                                var st = window.getComputedStyle(cur);
-                                if ((st.overflowY === 'auto' || st.overflowY === 'scroll') &&
-                                    cur.scrollHeight > cur.clientHeight + 1) {
-                                    return true;
-                                }
-                                cur = cur.parentElement;
-                            }
-                            return false;
-                        }
-                    });
-                    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-                    requestAnimationFrame(raf);
-                    if (window.gsap && window.ScrollTrigger) {
-                        lenis.on('scroll', ScrollTrigger.update);
-                        gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
-                        gsap.ticker.lagSmoothing(0);
-                    }
-                    window.__lenis = lenis;
-                } catch (e) { console.warn('Lenis 初始化失败，已降级到原生滚动:', e); }
-            }
-            if (document.readyState === 'complete') {
-                setTimeout(initLenis, 0);
-            } else {
-                window.addEventListener('load', function () { setTimeout(initLenis, 0); });
-            }
-        })();
-    </script>
-    <!-- ===== /UI 框架 ===== -->
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <!-- Lenis -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <link rel="stylesheet" href="../css/wzqgame.css">
+<script src="../js/game-stats.js"></script>
 </head>
-<body>
-    <div class="settings-container">
-        <div class="settings-sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-avatar">
-                    <i class="fas fa-chess-board"></i>
-                </div>
-                <div class="sidebar-user-info">
-                    <div class="sidebar-username">五子棋游戏</div>
-                    <div class="sidebar-uid">RC 1.2.0</div>
-                </div>
+<body data-game-id="game_wzq">
+    <!-- 浮动光斑装饰 -->
+    <div class="blob" style="width:520px;height:520px;top:-120px;left:-120px;background:#d45d79;"></div>
+    <div class="blob" style="width:420px;height:420px;bottom:-80px;right:-60px;background:#f0a050;"></div>
+    <div class="blob" style="width:320px;height:320px;top:45%;left:48%;background:#9b6dff;"></div>
+
+    <!-- ===== 顶部导航栏 ===== -->
+    <div class="fixed top-0 left-0 right-0 z-40 p-4 flex items-center justify-between pointer-events-none">
+        <div class="flex items-center gap-2 flex-wrap pointer-events-auto">
+            <div class="glass hud-chip">
+                <i class="fas fa-chess-board text-pre-accent"></i>
+                <span class="font-bold gradient-text">五子棋</span>
             </div>
-            
-            <div class="sidebar-menu">
-                <div class="menu-item menu-header">
-                    <span>游戏控制</span>
-                </div>
-                <div class="menu-item" id="sidebarStartGameBtn">
-                    <i class="fas fa-play-circle"></i>
-                    <span>开始游戏</span>
-                </div>
-                <div class="menu-item" id="sidebarResetGameBtn">
-                    <i class="fas fa-redo"></i>
-                    <span>重置游戏</span>
-                </div>
-                <div class="menu-item" id="sidebarAchievementBtn">
-                    <i class="fas fa-trophy"></i>
-                    <span>成就</span>
-                </div>
-                <div class="menu-item" id="sidebarUpdateBtn">
-                    <i class="fas fa-bell"></i>
-                    <span>版本更新公告</span>
-                </div>
-                <div class="menu-item" id="sidebarLangSwitchBtn">
-                    <i class="fas fa-language"></i>
-                    <span>切换语言</span>
-                </div>
-                <div class="menu-item" id="sidebarBackHomeBtn">
-                    <i class="fas fa-home"></i>
-                    <span>返回首页</span>
-                </div>
+            <div class="glass hud-chip">
+                <i class="fas fa-trophy text-pre-accent"></i>
+                <span>得分</span>
+                <span class="font-bold stat-num" id="scoreVal">0</span>
             </div>
-            
-            <div class="sidebar-footer">
-                <div class="user-center" id="userCenter">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">未登录</div>
-                        <div class="user-id" id="userId">ID: ---</div>
-                    </div>
-                </div>
+            <div class="glass hud-chip">
+                <i class="fas fa-stopwatch text-pre-primary"></i>
+                <span class="stat-num" id="timeVal">∞</span>
+            </div>
+            <div class="glass hud-chip">
+                <i class="fas fa-chess text-pre-purple"></i>
+                <span id="turnVal">黑方先行</span>
             </div>
         </div>
-        
-        <div class="game-main-content">
-            <div class="game-header">
-                <h1>五子棋游戏</h1>
-                <p>经典的五子棋游戏，黑白轮流下棋，先连成五子者获胜</p>
-            </div>
-            
-            <div class="game-body">
-                <div class="game-info-bar">
-                    <div class="game-info-item" data-lang="score">得分: <span id="score">0</span></div>
-                    <div class="game-info-item" data-lang="remainingTime">剩余时间: <span id="time">30</span>s
-                        <input type="checkbox" class="unlimited-time-checkbox" id="unlimitedTimeCheckbox" data-lang="unlimitedTime">
-                        <label for="unlimitedTimeCheckbox" data-lang="unlimitedTimeLabel">无限制</label>
-                    </div>
-                    <div class="difficulty-select-container" id="difficultyBox" data-lang="difficulty">
-                        难度:
-                        <select class="difficulty-select" id="difficultySelect">
-                            <option value="easy" data-lang="easy">简单</option>
-                            <option value="medium" data-lang="medium">中等</option>
-                            <option value="hard" data-lang="hard">困难</option>
-                        </select>
-                    </div>
-                    <div class="custom-time-container" data-lang="customTime">
-                        自定义时间:
-                        <input type="number" class="custom-time-input" id="customTimeInput" value="30" min="1" max="300">
-                        <span class="custom-time-tip" data-lang="customTimeTip">(最多5分钟/300秒)</span>
-                    </div>
-                    <div class="ai-mode-container" data-lang="aiMode">
-                        人机对战:
-                        <label class="ai-switch">
-                            <input type="checkbox" id="aiModeSwitch">
-                            <span class="ai-slider"></span>
-                        </label>
-                    </div>
-                </div>
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <button id="achvBtn" class="glass nav-btn" title="成就">
+                <i class="fas fa-trophy text-pre-accent"></i><span>成就</span><span class="badge" id="achvBadge">0</span>
+            </button>
+            <button id="pauseBtn" class="glass hud-chip hidden-overlay" title="暂停">
+                <i class="fas fa-pause"></i>
+            </button>
+            <a href="../index.html" class="glass hud-chip" title="返回主页">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
 
-                <div class="game-area-wrapper">
-                    <div class="game-area" id="gameArea">
-                        <div class="chess-board">
-                            <div class="board-lines" id="boardLines"></div>
-                            <div class="chess-cells" id="chessCells"></div>
-                        </div>
-                        <div class="chess-tip" id="chessTip">黑方先行</div>
-                        <div class="game-over" id="gameOver" data-lang="gameOver">游戏结束!</div>
+    <!-- ===== 3D 棋盘区域 ===== -->
+    <div class="fixed inset-0 flex items-center justify-center" style="padding-top:80px;padding-bottom:120px;">
+        <div class="board-3d-container">
+            <div class="board-3d-wrapper" id="boardWrapper">
+                <div class="board-base" id="boardBase">
+                    <div class="board-surface">
+                        <div class="board-grid" id="boardGrid"></div>
                     </div>
-                </div>
-
-                <div class="ranking-container">
-                    <div class="ranking-title" data-lang="ranking">游戏排行榜</div>
-                    <ul class="ranking-list" id="rankingList">
-                    </ul>
                 </div>
             </div>
         </div>
     </div>
 
-<!-- 成就弹窗 -->
-<div class="modal" id="achievementModal">
-    <div class="modal-content achievement-modal-content">
-        <h3 data-lang="achievements">成就</h3>
-        <div class="achievement-stats">
-            <div class="stat-item">
-                <div class="stat-value" id="achievementTotal">0</div>
-                <div class="stat-label">总成就</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="achievementUnlocked">0</div>
-                <div class="stat-label">已解锁</div>
-            </div>
-        </div>
-        <div class="achievement-list" id="achievementList">
-        </div>
-        <button class="close-btn" id="closeAchievementModal" data-lang="close">关闭</button>
+    <!-- ===== 左侧缩放滑块 ===== -->
+    <div class="zoom-slider" id="zoomSlider">
+        <i class="fas fa-search-plus zoom-icon" id="zoomInIcon"></i>
+        <input type="range" id="zoomRange" min="60" max="140" value="100" step="2" orient="vertical">
+        <i class="fas fa-search-minus zoom-icon" id="zoomOutIcon"></i>
+        <span class="zoom-val" id="zoomVal">100%</span>
     </div>
-</div>
 
-<!-- 排行榜弹窗 -->
-<div class="modal" id="rankingModal">
-    <div class="modal-content">
-        <h3 data-lang="congratulations">恭喜你完成游戏！</h3>
-        <p data-lang="finalScore">你的最终得分: <span id="finalScore">0</span></p>
-        <input type="text" class="modal-input" id="playerName" placeholder="请输入你的名字" maxlength="6" data-lang="enterName">
-        <div class="modal-btn-group">
-            <button class="confirm-btn" id="confirmBtn" data-lang="confirmAdd">确认添加</button>
-            <button class="cancel-btn" id="cancelBtn" data-lang="cancel">取消</button>
-        </div>
-    </div>
-</div>
-
-<!-- 版本更新公告弹窗（带翻页+版本切换） -->
-<div class="modal" id="updateModal">
-    <div class="modal-content">
-        <h3 data-lang="updateAnnouncement">版本更新公告</h3>
-        <!-- 翻页控制器 -->
-        <div class="update-pagination" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-            <button class="pagination-btn" id="prevPage" data-lang="prevPage" style="padding: 5px 15px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px;">上一页</button>
-            <span class="page-info" id="pageInfo" data-lang="pageInfo">第 1 / 2 页</span>
-            <button class="pagination-btn" id="nextPage" data-lang="nextPage" style="padding: 5px 15px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px;">下一页</button>
-        </div>
-        <!-- 公告内容容器 -->
-        <div class="update-content" id="updateContent">
-			
-             <div class="update-page" data-page="1" data-version="release">
-			    <p>本次更新时间：2026-03-26</p>
-			    <p>版本号：RC 1.2.0</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-					<li>优化 界面风格统一</li>
-                        <li>新增 个人中心页面快捷跳转</li>
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games</p>
-			</div>
-
-            <div class="update-page" data-page="1" data-version="release">
-                				<span class="important-update">重要更新</span>
-			    <p>本次更新时间：2026-03-24</p>
-			    <p>版本号：RC 1.1.0</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-					<li>新增 成就系统</li>
-					
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games</p>
-			</div>
-
-			<div class="update-page" data-page="1" data-version="release">
-			    <p>本次更新时间：2026-02-28</p>
-			    <p>版本号：RC 1.0.2</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-					<li>删除 更多游戏按钮</li>
-					
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games</p>
-			</div>
-			
-			<div class="update-page" data-page="2" data-version="release">
-			    <p>本次更新时间：2026-02-27</p>
-			    <p>版本号：RC 1.0.1</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-					<li>优化 查看版本公告时固定窗口大小使其不会来回变动</li>
-					
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games</p>
-			</div>
-			
-			<div class="update-page" data-page="3" data-version="release">
-				<span class="important-update">重要更新</span>
-			    <p>本次更新时间：2026-02-26</p>
-			    <p>版本号：RC 1.0.0</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-					<li>新增 人机对战功能</li>
-			        <li>新增 时间无限制功能</li>
-			        <li>优化 顶部状态栏样式统一</li>
-                    <li>修复 游戏结束后卡死问题</li>
-                    <li>增强 AI对战强度</li>
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games</p>
-			</div>
-			
-			<div class="update-page" data-page="4" data-version="beta">
-			    <p>本次更新时间：2026-02-26</p>
-			    <p>版本号：Beta v0.2.0</p>
-			    <p>核心更新内容：</p>
-			    <ul>
-			        <li>优化 棋盘比例调整</li>
-			    </ul>
-			    <p>© 2014-2026 GPY Basically Games</p>
-			</div>
-			
-            <div class="update-page" data-page="5" data-version="beta">
-                <p>本次更新时间：2026-02-26</p>
-                <p>版本号：Beta v0.1.0</p>
-                <p>核心更新内容：</p>
-                <ul>
-                    <li>通告 游戏上线</li>
-                </ul>
-                <p>© 2014-2026 GPY Basically Games</p>
+    <!-- ===== 底部控制栏 ===== -->
+    <div class="fixed bottom-0 left-0 right-0 z-40 p-4">
+        <div class="bottom-bar">
+            <div class="glass custom-option difficulty-box" id="difficultyBox" style="padding:0.5rem 0.75rem;">
+                <span class="custom-option-label"><i class="fas fa-gauge mr-1 text-pre-accent"></i>难度</span>
+                <div class="seg-control" id="difficultySeg">
+                    <button class="seg-btn active" data-difficulty="easy">简单</button>
+                    <button class="seg-btn" data-difficulty="medium">中等</button>
+                    <button class="seg-btn" data-difficulty="hard">困难</button>
+                </div>
             </div>
-            
+            <div class="glass custom-option" style="padding:0.5rem 0.75rem;">
+                <span class="custom-option-label"><i class="fas fa-clock mr-1 text-pre-primary"></i>时间</span>
+                <div class="seg-control" id="timeSeg">
+                    <button class="seg-btn active" data-time="0">不限</button>
+                    <button class="seg-btn" data-time="30">30s</button>
+                    <button class="seg-btn" data-time="60">60s</button>
+                    <button class="seg-btn" data-time="120">2min</button>
+                </div>
+            </div>
+            <div class="glass custom-option" style="padding:0.5rem 0.75rem;">
+                <span class="custom-option-label"><i class="fas fa-robot mr-1 text-pre-purple"></i>人机</span>
+                <div class="ai-switch-wrap">
+                    <div class="ai-toggle" id="aiToggle">
+                        <div class="ai-knob"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="glass custom-option" style="padding:0.5rem 0.75rem;">
+                <span class="custom-option-label"><i class="fas fa-eye mr-1 text-pre-accent"></i>视角</span>
+                <div class="seg-control" id="viewSeg">
+                    <button class="seg-btn active" data-view="3d">3D</button>
+                    <button class="seg-btn" data-view="top">俯视</button>
+                </div>
+            </div>
+            <div class="glass nav-btn" id="rotateBtn">
+                <i class="fas fa-sync-alt text-pre-accent"></i>
+                <span>旋转</span>
+            </div>
+            <div class="glass nav-btn" id="resetBtn">
+                <i class="fas fa-rotate-left text-pre-primary"></i>
+                <span>重置</span>
+            </div>
         </div>
-        <div class="modal-btn-group">
-            <button class="close-btn" id="closeUpdateModal" data-lang="close" style="padding: 10px 25px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; color: white; background-color: #e53e3e;">关闭</button>
-        </div>
-        <!-- 新增：版本切换按钮 -->
-        <button class="version-switch-btn" id="versionSwitchBtn">Beta</button>
     </div>
-</div>
+
+    <!-- ===== 成就通知容器 ===== -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-80 max-w-[85vw]" id="toastBox"></div>
+
+    <!-- ===== 成就横幅 ===== -->
+    <div class="achv-banner" id="achvBanner">
+        <div class="banner-icon"><i class="fas fa-trophy"></i></div>
+        <div class="banner-text" id="achvBannerText">成就解锁！</div>
+    </div>
+
+    <!-- ===== 成就侧边栏 ===== -->
+    <div class="achv-sidebar" id="achvSidebar">
+        <div class="achv-header">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background:linear-gradient(135deg,#f0a050,#d45d79);">
+                    <i class="fas fa-trophy text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold">五子棋成就</h2>
+                    <div class="text-xs text-gray-400"><span id="achvUnlockedCount">0</span> / <span id="achvTotalCount">10</span> 已解锁</div>
+                </div>
+            </div>
+            <button class="text-gray-400 hover:text-white text-xl" id="closeAchvBtn"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="achv-list" id="achvList"></div>
+    </div>
+
+    <!-- ===== 排行榜弹窗 ===== -->
+    <div class="modal-backdrop" id="rankingBackdrop"></div>
+    <div class="overlay overlay-bg hidden-overlay" id="rankingOverlay" style="z-index:55;">
+        <div class="ranking-modal-box modal-enter">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold gradient-text"><i class="fas fa-medal mr-2"></i>游戏结束</h2>
+                <button class="text-gray-400 hover:text-white text-xl" id="closeRankingBtn"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="text-sm text-gray-400 mb-2">你的最终得分</div>
+            <div class="text-4xl font-black stat-num gradient-text mb-4" id="finalScore">0</div>
+            <input type="text" class="ranking-input" id="playerName" placeholder="请输入你的名字（最多6字）" maxlength="6">
+            <div class="flex gap-3">
+                <button class="glow-btn flex-1 py-2.5 rounded-lg bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="confirmRankingBtn">
+                    <i class="fas fa-check mr-1"></i>确认
+                </button>
+                <button class="glass flex-1 py-2.5 rounded-lg font-bold hover:bg-white/10 transition" id="cancelRankingBtn">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 重置确认弹窗 ===== -->
+    <div class="modal-backdrop" id="resetBackdrop"></div>
+    <div class="overlay hidden-overlay" id="resetOverlay" style="z-index:55;">
+        <div class="confirm-box modal-enter">
+            <div class="text-4xl mb-3"><i class="fas fa-triangle-exclamation text-pre-accent"></i></div>
+            <h3 class="text-lg font-bold mb-2">确定要重置该局吗？</h3>
+            <p class="text-sm text-gray-400 mb-5">当前进度将不会保存</p>
+            <div class="flex gap-3">
+                <button class="glow-btn flex-1 py-2.5 rounded-lg bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="confirmResetBtn">
+                    <i class="fas fa-check mr-1"></i>确定
+                </button>
+                <button class="glass flex-1 py-2.5 rounded-lg font-bold hover:bg-white/10 transition" id="cancelResetBtn">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 开始界面 ===== -->
+    <div class="overlay overlay-bg grid-bg" id="startOverlay">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
+            <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
+            <span class="text-sm text-gray-300">CSS 3D Transform · 立体棋盘</span>
+        </div>
+        <h1 class="text-6xl md:text-7xl font-black mb-4 leading-tight">
+            <span class="block">五子</span>
+            <span class="block gradient-text">连珠</span>
+        </h1>
+        <p class="text-lg text-gray-400 mb-8 max-w-xl">
+            经典五子棋，黑白对弈。在3D立体棋盘上运筹帷幄，连成五子者胜。
+        </p>
+        <div class="glass rounded-2xl px-6 py-4 mb-8 text-sm text-gray-300 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <span>黑方先行，轮流落子</span>
+            <span>横、竖、斜任意方向连五即胜</span>
+            <span>支持人机对战</span>
+        </div>
+        <button class="glow-btn px-10 py-4 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold text-xl" id="startBtn">
+            <i class="fas fa-play mr-2"></i>开始游戏
+        </button>
+    </div>
+
+    <!-- ===== 游戏结束界面 ===== -->
+    <div class="overlay overlay-bg hidden-overlay" id="overOverlay">
+        <div class="text-6xl mb-2"><i class="fas fa-crown text-pre-accent" id="overIcon"></i></div>
+        <h2 class="text-4xl font-black mb-6 gradient-text" id="overTitle">黑方获胜</h2>
+        <div class="glass rounded-2xl px-8 py-5 mb-6 flex gap-8">
+            <div class="text-center">
+                <div class="text-xs text-gray-400 mb-1">得分</div>
+                <div class="text-3xl font-black stat-num gradient-text" id="overScore">0</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs text-gray-400 mb-1">步数</div>
+                <div class="text-3xl font-black stat-num" id="overMoves">0</div>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="restartBtn">
+                <i class="fas fa-rotate-right mr-2"></i>再来一局
+            </button>
+            <a href="../index.html" class="glass px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition">
+                <i class="fas fa-home mr-2"></i>返回主页
+            </a>
+        </div>
+    </div>
 
 <script>
-var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-
-if (!currentUser.username) {
-    window.location.href = '../index.html';
-}
-
-// 更新用户中心信息
-function updateUserCenter() {
-    if (currentUser.username) {
-        document.getElementById('userName').textContent = currentUser.username;
-        document.getElementById('userId').textContent = 'ID: ' + (currentUser.userId || '---');
-    }
-}
-
-// 初始化用户中心
-updateUserCenter();
-
-// 用户中心点击事件
-document.getElementById('userCenter').addEventListener('click', function() {
+    // ===== 用户与存档 =====
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     if (!currentUser.username) {
-        alert('请先登录');
-        return;
+        window.location.href = '../index.html';
     }
-    window.open('account-settings.html', '_blank');
-});
 
-function getUserGameData(gameKey, defaultValue) {
-    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    var user = users.find(function(u) {
-        return u.username === currentUser.username;
-    });
-    
-    if (user && user.gameData && user.gameData[gameKey] !== undefined) {
-        return user.gameData[gameKey];
+    function findUser() {
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        return users.find(function(u) { return u.username === currentUser.username; });
     }
-    
-    return defaultValue;
-}
-
-function setUserGameData(gameKey, value) {
-    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    var userIndex = users.findIndex(function(u) {
-        return u.username === currentUser.username;
-    });
-    
-    if (userIndex !== -1) {
-        if (!users[userIndex].gameData) {
-            users[userIndex].gameData = {};
-        }
-        users[userIndex].gameData[gameKey] = value;
-        localStorage.setItem('registeredUsers', JSON.stringify(users));
+    function saveUser(user) {
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var idx = users.findIndex(function(u) { return u.username === currentUser.username; });
+        if (idx !== -1) { users[idx] = user; localStorage.setItem('registeredUsers', JSON.stringify(users)); }
     }
-}
-
-// 多语言配置
-const langConfig = {
-    zh: {
-        score: '得分: ',
-        remainingTime: '剩余时间: ',
-        difficulty: '难度: ',
-        easy: '简单',
-        medium: '中等',
-        hard: '困难',
-        customTime: '自定义时间: ',
-        customTimeTip: '(最多5分钟/300秒)',
-        gameOver: '游戏结束!',
-        startGame: '开始游戏',
-        resetGame: '重置游戏',
-        backHome: '返回首页',
-        ranking: '游戏排行榜',
-        gameVersion: '游戏版本：RC 1.1.0',
-        moreGames: '更多游戏',
-        updateAnnouncement: '版本更新公告',
-        congratulations: '恭喜你完成游戏！',
-        finalScore: '你的最终得分: ',
-        enterName: '请输入你的名字',
-        confirmAdd: '确认添加',
-        cancel: '取消',
-        prevPage: '上一页',
-        nextPage: '下一页',
-        pageInfo: '第 {{current}} / {{total}} 页',
-        close: '关闭',
-        anonymousPlayer: '匿名玩家',
-        scoreUnit: ' 分',
-        moreGamesTip: '更多游戏即将上线！',
-        backHomeTip: '即将返回首页！',
-        importantUpdate: '重要更新',
-        blackTurn: '黑方先行',
-        whiteTurn: '白方回合',
-        blackWin: '黑方获胜！',
-        whiteWin: '白方获胜！',
-        timeUp: '时间到！',
-        aiMode: '人机对战:',
-        unlimitedTime: '',
-        unlimitedTimeLabel: '无限制',
-        achievements: '成就',
-        achievementUnlocked: '成就解锁！'
-    },
-    en: {
-        score: 'Score: ',
-        remainingTime: 'Remaining Time: ',
-        difficulty: 'Difficulty: ',
-        easy: 'Easy',
-        medium: 'Medium',
-        hard: 'Hard',
-        customTime: 'Custom Time: ',
-        customTimeTip: '(Max 5 mins/300 sec)',
-        gameOver: 'Game Over!',
-        startGame: 'Start Game',
-        resetGame: 'Reset Game',
-        backHome: 'Back to Home',
-        ranking: 'Game Ranking',
-        gameVersion: 'Game Version: RC 1.1.0',
-        moreGames: 'More Games',
-        updateAnnouncement: 'Version Update Notice',
-        congratulations: 'Congratulations on completing the game!',
-        finalScore: 'Your final score: ',
-        enterName: 'Please enter your name',
-        confirmAdd: 'Confirm Add',
-        cancel: 'Cancel',
-        prevPage: 'Previous Page',
-        nextPage: 'Next Page',
-        pageInfo: 'Page {{current}} / {{total}}',
-        close: 'Close',
-        anonymousPlayer: 'Anonymous Player',
-        scoreUnit: ' pts',
-        moreGamesTip: 'More games coming soon!',
-        backHomeTip: 'Returning to home page soon!',
-        importantUpdate: 'Important Update',
-        blackTurn: 'Black to play first',
-        whiteTurn: 'White\'s turn',
-        blackWin: 'Black wins!',
-        whiteWin: 'White wins!',
-        timeUp: 'Time\'s up!',
-        aiMode: 'AI Mode:',
-        unlimitedTime: '',
-        unlimitedTimeLabel: 'Unlimited',
-        achievements: 'Achievements',
-        achievementUnlocked: 'Achievement Unlocked!'
+    function getGameData(key, def) {
+        var u = findUser();
+        if (!u || !u.gameData || u.gameData[key] === undefined) return def;
+        return u.gameData[key];
     }
-};
-
-// 当前语言状态
-let currentLang = 'zh';
-
-// 切换语言函数
-function switchLanguage() {
-    // 切换语言标识
-    currentLang = currentLang === 'zh' ? 'en' : 'zh';
-    
-    // 更新语言切换按钮文本
-    const langBtn = document.getElementById('sidebarLangSwitchBtn');
-    langBtn.querySelector('span').textContent = currentLang === 'zh' ? 'English' : '中文';
-    
-    // 更新页面标题
-    document.title = currentLang === 'zh' ? '五子棋小游戏' : 'Gomoku Mini Game';
-    
-    // 更新所有带data-lang属性的元素
-    document.querySelectorAll('[data-lang]').forEach(el => {
-        const langKey = el.dataset.lang;
-        const originalHtml = el.dataset.originalHtml || el.innerHTML;
-        
-        // 存储原始HTML（首次切换时）
-        if (!el.dataset.originalHtml) {
-            el.dataset.originalHtml = originalHtml;
-        }
-        
-        // 替换文本（保留变量/动态内容）
-        if (langKey === 'pageInfo') {
-            // 页码信息特殊处理
-            const currentPageNum = currentPage;
-            const totalPageNum = filteredPages.length;
-            el.textContent = langConfig[currentLang][langKey]
-                .replace('{{current}}', currentPageNum)
-                .replace('{{total}}', totalPageNum);
-        } else {
-            // 普通文本替换
-            let newHtml = langConfig[currentLang][langKey];
-            // 保留动态内容（如分数、输入框等）
-            if (originalHtml.includes('<span') || originalHtml.includes('<input') || originalHtml.includes('<select') || originalHtml.includes('<label')) {
-                // 提取原始HTML中的动态部分
-                const dynamicPart = originalHtml.replace(/[^<]*<[^>]*>.*<\/[^>]*>[^<]*/, match => match);
-                newHtml = newHtml + dynamicPart.substring(dynamicPart.indexOf('<'));
-            }
-            el.innerHTML = newHtml;
-        }
-        
-        // 特殊处理placeholder
-        if (el.tagName === 'INPUT' && el.placeholder) {
-            el.placeholder = langConfig[currentLang][langKey];
-        }
-        
-        // 特殊处理option选项
-        if (el.tagName === 'OPTION') {
-            el.textContent = langConfig[currentLang][langKey];
-        }
-        
-        // 特殊处理label标签
-        if (el.tagName === 'LABEL' && el.dataset.lang) {
-            el.textContent = langConfig[currentLang][langKey];
-        }
-    });
-    
-    // 更新重要更新文本
-    document.querySelectorAll('.important-update').forEach(el => {
-        el.textContent = langConfig[currentLang].importantUpdate;
-    });
-    
-    // 更新排行榜已有项的分数单位
-    document.querySelectorAll('.ranking-item').forEach(item => {
-        const scoreText = item.querySelector('span:last-child').textContent;
-        const num = scoreText.replace(/[^0-9]/g, '');
-        item.querySelector('span:last-child').textContent = num + langConfig[currentLang].scoreUnit;
-    });
-    
-    // 更新五子棋提示文本
-    updateChessTip();
-}
-
-// 更新下棋提示文本
-function updateChessTip() {
-    const chessTip = document.getElementById('chessTip');
-    if (currentPlayer === 'black') {
-        chessTip.textContent = langConfig[currentLang].blackTurn;
-    } else {
-        chessTip.textContent = langConfig[currentLang].whiteTurn;
+    function setGameData(key, val) {
+        var u = findUser();
+        if (!u) return;
+        if (!u.gameData) u.gameData = {};
+        u.gameData[key] = val;
+        saveUser(u);
     }
-}
 
-// 绑定语言切换按钮事件
-document.getElementById('sidebarLangSwitchBtn').addEventListener('click', switchLanguage);
+    // ===== 全局状态 =====
+    var BOARD_SIZE = 15;
+    var chessBoard = [];
+    var currentPlayer = 'black';
+    var gameRunning = false;
+    var gameWon = false;
+    var score = 0;
+    var timeLeft = 0;
+    var timeLimit = 0;
+    var gameTimer = null;
+    var aiMode = false;
+    var difficulty = 'easy';
+    var totalMoves = 0;
+    var winLine = []; // 胜利连线坐标
 
-// 翻页功能核心代码
-const updateModal = document.getElementById('updateModal');
-const prevPageBtn = document.getElementById('prevPage');
-const nextPageBtn = document.getElementById('nextPage');
-const pageInfo = document.getElementById('pageInfo');
-const updatePages = document.querySelectorAll('.update-page');
-const versionSwitchBtn = document.getElementById('versionSwitchBtn');
-let currentPage = 1;
-let currentVersion = 'release'; // 默认显示正式版(release)，可选值：release/beta
-let filteredPages = []; // 筛选后的页面列表
+    // 成就数据
+    var wzqAchievements = getGameData('wzqAchievements', []);
+    var wzqGamesPlayed = getGameData('wzqGamesPlayed', 0);
+    var wzqWins = getGameData('wzqWins', 0);
 
-// 筛选版本页面
-function filterVersionPages(version) {
-    filteredPages = Array.from(updatePages).filter(page => page.dataset.version === version);
-    // 重置页码到第一页
-    currentPage = 1;
-    // 更新页码信息
-    pageInfo.textContent = langConfig[currentLang].pageInfo
-        .replace('{{current}}', currentPage)
-        .replace('{{total}}', filteredPages.length);
-    // 切换到第一页
-    switchPage(1);
-    // 更新按钮文字
-    versionSwitchBtn.textContent = version === 'release' ? 'Beta' : 'RC';
-}
-
-// 初始化筛选正式版页面
-filterVersionPages(currentVersion);
-
-// 切换页面函数（适配筛选后的页面）
-function switchPage(targetPage) {
-    // 隐藏所有页面
-    updatePages.forEach(page => {
-        page.style.display = 'none';
-    });
-    // 显示目标页面（筛选后的列表）
-    if (filteredPages[targetPage - 1]) {
-        filteredPages[targetPage - 1].style.display = 'block';
-    }
-    // 更新当前页码
-    currentPage = targetPage;
-    // 更新页码信息
-    pageInfo.textContent = langConfig[currentLang].pageInfo
-        .replace('{{current}}', currentPage)
-        .replace('{{total}}', filteredPages.length);
-    // 禁用/启用翻页按钮
-    prevPageBtn.disabled = currentPage === 1;
-    nextPageBtn.disabled = currentPage === filteredPages.length;
-    prevPageBtn.style.opacity = currentPage === 1 ? 0.5 : 1;
-    nextPageBtn.style.opacity = currentPage === filteredPages.length ? 0.5 : 1;
-}
-
-// 绑定翻页按钮事件
-prevPageBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-        switchPage(currentPage - 1);
-    }
-});
-
-nextPageBtn.addEventListener('click', () => {
-    if (currentPage < filteredPages.length) {
-        switchPage(currentPage + 1);
-    }
-});
-
-// 新增：版本切换按钮事件
-versionSwitchBtn.addEventListener('click', () => {
-    currentVersion = currentVersion === 'release' ? 'beta' : 'release';
-    filterVersionPages(currentVersion);
-});
-
-// 关闭弹窗事件（修改为淡出效果）
-document.getElementById('closeUpdateModal').addEventListener('click', () => {
-    updateModal.classList.remove('show');
-    // 等待过渡完成后隐藏
-    setTimeout(() => {
-        updateModal.style.display = 'none';
-    }, 300);
-});
-
-// 版本更新按钮点击事件（打开弹窗并重置到第1页，添加淡入效果）
-document.getElementById('sidebarUpdateBtn').addEventListener('click', () => {
-    updateModal.style.display = 'flex';
-    // 延迟添加show类触发过渡
-    setTimeout(() => {
-        updateModal.classList.add('show');
-    }, 10);
-    // 重置为正式版第一页
-    currentVersion = 'release';
-    filterVersionPages(currentVersion);
-});
-
-// 成就按钮点击事件
-document.getElementById('sidebarAchievementBtn').addEventListener('click', () => {
-    const achievementModal = document.getElementById('achievementModal');
-    achievementModal.style.display = 'flex';
-    setTimeout(() => {
-        achievementModal.classList.add('show');
-    }, 10);
-    loadAchievements();
-});
-
-// 关闭成就弹窗
-document.getElementById('closeAchievementModal').addEventListener('click', () => {
-    const achievementModal = document.getElementById('achievementModal');
-    achievementModal.classList.remove('show');
-    setTimeout(() => {
-        achievementModal.style.display = 'none';
-    }, 300);
-});
-
-// 点击弹窗外部关闭（修改为淡出效果）
-window.addEventListener('click', (e) => {
-    const updateModal = document.getElementById('updateModal');
-    const achievementModal = document.getElementById('achievementModal');
-    const rankingModal = document.getElementById('rankingModal');
-    
-    if (e.target === updateModal) {
-        updateModal.classList.remove('show');
-        setTimeout(() => {
-            updateModal.style.display = 'none';
-        }, 300);
-    }
-    if (e.target === achievementModal) {
-        achievementModal.classList.remove('show');
-        setTimeout(() => {
-            achievementModal.style.display = 'none';
-        }, 300);
-    }
-    if (e.target === rankingModal) {
-        rankingModal.classList.remove('show');
-        setTimeout(() => {
-            rankingModal.style.display = 'none';
-        }, 300);
-    }
-});
-
-// 修复其他按钮点击事件绑定（核心新增部分）
-// 难度切换样式同步
-document.getElementById('difficultySelect').addEventListener('change', function() {
-    const difficultyBox = document.getElementById('difficultyBox');
-    // 移除所有难度类
-    difficultyBox.classList.remove('easy', 'medium', 'hard');
-    // 添加当前难度类
-    difficultyBox.classList.add(this.value);
-});
-
-// 取消排行榜弹窗
-document.getElementById('cancelBtn').addEventListener('click', function() {
-    const rankingModal = document.getElementById('rankingModal');
-    rankingModal.classList.remove('show');
-    setTimeout(() => {
-        rankingModal.style.display = 'none';
-    }, 300);
-});
-
-// 确认添加排行榜
-document.getElementById('confirmBtn').addEventListener('click', function() {
-    const name = document.getElementById('playerName').value.trim() || langConfig[currentLang].anonymousPlayer;
-    const score = document.getElementById('finalScore').textContent;
-    const rankingList = document.getElementById('rankingList');
-    
-    // 创建新的排行榜项
-    const li = document.createElement('li');
-    li.className = 'ranking-item';
-    li.innerHTML = `<span>${name}</span><span>${score}${langConfig[currentLang].scoreUnit}</span>`;
-    
-    // 添加到排行榜
-    rankingList.appendChild(li);
-    
-    // 关闭弹窗
-    const rankingModal = document.getElementById('rankingModal');
-    rankingModal.classList.remove('show');
-    setTimeout(() => {
-        rankingModal.style.display = 'none';
-    }, 300);
-    
-    // 清空输入框
-    document.getElementById('playerName').value = '';
-});
-
-// 自定义时间输入限制
-document.getElementById('customTimeInput').addEventListener('change', function() {
-    if (document.getElementById('unlimitedTimeCheckbox').checked) return;
-    
-    let value = parseInt(this.value);
-    if (isNaN(value)) value = 30;
-    if (value < 1) value = 1;
-    if (value > 300) value = 300;
-    this.value = value;
-    // 同步到剩余时间显示
-    document.getElementById('time').textContent = value;
-});
-
-// 无时间限制复选框事件
-document.getElementById('unlimitedTimeCheckbox').addEventListener('change', function() {
-    const customTimeInput = document.getElementById('customTimeInput');
-    const timeDisplay = document.getElementById('time');
-    
-    if (this.checked) {
-        // 启用无时间限制
-        customTimeInput.disabled = true;
-        customTimeInput.style.opacity = 0.5;
-        timeDisplay.textContent = '∞';
-        // 如果游戏正在运行，停止计时
-        if (gameRunning) {
-            clearInterval(gameTimer);
-            gameTimer = null;
-        }
-    } else {
-        // 禁用无时间限制
-        customTimeInput.disabled = false;
-        customTimeInput.style.opacity = 1;
-        timeDisplay.textContent = customTimeInput.value;
-        // 如果游戏正在运行，重新开始计时
-        if (gameRunning) {
-            clearInterval(gameTimer);
-            timeLeft = parseInt(customTimeInput.value);
-            gameTimer = setInterval(updateTimer, 1000);
-        }
-    }
-});
-
-// 五子棋核心逻辑
-let gameTimer = null;
-let gameRunning = false;
-let score = 0;
-let timeLeft = 30;
-
-// 五子棋变量
-let currentPlayer = 'black'; // 当前玩家：black/white
-let chessBoard = []; // 棋盘数据 15x15
-const BOARD_SIZE = 15; // 棋盘大小
-let gameWon = false; // 是否有人获胜
-let aiMode = false; // AI模式开关
-
-// 成就系统
-let wzqAchievements = getUserGameData('wzqAchievements', []);
-let wzqGamesPlayed = getUserGameData('wzqGamesPlayed', 0);
-let wzqWins = getUserGameData('wzqWins', 0);
-let wzqTotalMoves = 0;
-
-// 五子棋成就定义
-const wzqAchievementDefs = [
-    {
-        id: 'wzq_first_game',
-        name: '初次对弈',
-        desc: '完成第一局五子棋',
-        icon: 'fa-chess-board',
-        condition: () => wzqGamesPlayed >= 1
-    },
-    {
-        id: 'wzq_first_win',
-        name: '首战告捷',
-        desc: '赢得第一局五子棋',
-        icon: 'fa-trophy',
-        condition: () => wzqWins >= 1
-    },
-    {
-        id: 'wzq_win_5',
-        name: '棋艺初成',
-        desc: '累计赢得5局游戏',
-        icon: 'fa-medal',
-        condition: () => wzqWins >= 5
-    },
-    {
-        id: 'wzq_win_10',
-        name: '棋坛新秀',
-        desc: '累计赢得10局游戏',
-        icon: 'fa-star',
-        condition: () => wzqWins >= 10
-    },
-    {
-        id: 'wzq_games_20',
-        name: '棋迷',
-        desc: '累计完成20局游戏',
-        icon: 'fa-gamepad',
-        condition: () => wzqGamesPlayed >= 20
-    },
-    {
-        id: 'wzq_quick_win',
-        name: '速战速决',
-        desc: '在30步内赢得比赛',
-        icon: 'fa-bolt',
-        condition: () => false
-    },
-    {
-        id: 'wzq_long_game',
-        name: '持久战',
-        desc: '完成一局超过100步的对局',
-        icon: 'fa-hourglass-half',
-        condition: () => false
-    },
-    {
-        id: 'wzq_perfect_win',
-        name: '没关就是开了？',
-        desc: '在对手未落子的情况下获胜',
-        icon: 'fa-crown',
-        condition: () => false
-    },
-    {
-        id: 'wzq_ai_master',
-        name: '人机大师',
-        desc: '在AI模式下赢得10局',
-        icon: 'fa-robot',
-        condition: () => false
-    },
-    {
-        id: 'wzq_veteran',
-        name: '五子棋大师',
-        desc: '累计赢得50局游戏',
-        icon: 'fa-chess-king',
-        condition: () => wzqWins >= 50
-    }
-];
-
-// AI模式开关事件
-document.getElementById('aiModeSwitch').addEventListener('change', function() {
-    aiMode = this.checked;
-});
-
-// 初始化棋盘
-function initChessBoard() {
-    const gameArea = document.getElementById('gameArea');
-    const board = gameArea.querySelector('.chess-board');
-    const linesContainer = document.getElementById('boardLines');
-    const cellsContainer = document.getElementById('chessCells');
-    
-    // 清空容器
-    linesContainer.innerHTML = '';
-    cellsContainer.innerHTML = '';
-    
-    // 创建15条横线
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        const line = document.createElement('div');
-        line.className = 'horizontal-line';
-        line.style.top = (i * 6.67 + 3.33) + '%';
-        linesContainer.appendChild(line);
-    }
-    
-    // 创建15条竖线
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        const line = document.createElement('div');
-        line.className = 'vertical-line';
-        line.style.left = (i * 6.67 + 3.33) + '%';
-        linesContainer.appendChild(line);
-    }
-    
-    // 初始化棋盘数据
-    chessBoard = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(null));
-    
-    // 创建交叉点（落子点）
-    for (let y = 0; y < BOARD_SIZE; y++) {
-        for (let x = 0; x < BOARD_SIZE; x++) {
-            const cell = document.createElement('div');
-            cell.className = 'chess-cell';
-            cell.dataset.x = x;
-            cell.dataset.y = y;
-            
-            // 计算交叉点位置
-            const left = (x * 6.67 + 3.33);
-            const top = (y * 6.67 + 3.33);
-            cell.style.left = left + '%';
-            cell.style.top = top + '%';
-            
-            // 绑定点击事件
-            cell.addEventListener('click', () => placeChess(x, y));
-            
-            cellsContainer.appendChild(cell);
-        }
-    }
-    
-    // 更新下棋提示
-    updateChessTip();
-}
-
-// 成就系统函数
-function loadAchievements() {
-    wzqAchievements = getUserGameData('wzqAchievements', []);
-    renderAchievements();
-}
-
-function checkAndSaveAchievements() {
-    let newAchievements = [];
-    
-    wzqAchievementDefs.forEach(achievement => {
-        if (!wzqAchievements.includes(achievement.id) && achievement.condition()) {
-            newAchievements.push(achievement);
-            wzqAchievements.push(achievement.id);
-            showAchievementPopup(achievement);
-        }
-    });
-    
-    if (newAchievements.length > 0) {
-        setUserGameData('wzqAchievements', wzqAchievements);
-    }
-}
-
-function renderAchievements() {
-    const achievementList = document.getElementById('achievementList');
-    achievementList.innerHTML = '';
-    
-    wzqAchievementDefs.forEach(achievement => {
-        const isUnlocked = wzqAchievements.includes(achievement.id) || DeveloperConfig.getAchievementsUnlocked();
-        const isCompleted = achievement.condition();
-        
-        const achievementItem = document.createElement('div');
-        let className = 'achievement-item' + (isUnlocked ? ' unlocked' : ' locked');
-        if (achievement.game === 'special') {
-            className += ' special-achievement';
-        }
-        achievementItem.className = className;
-        
-        let progressPercent = 0;
-        let progressText = '';
-        
-        if (isUnlocked) {
-            progressPercent = 100;
-            progressText = '已完成';
-        } else if (achievement.id === 'wzq_first_game') {
-            progressPercent = wzqGamesPlayed >= 1 ? 100 : 0;
-            progressText = wzqGamesPlayed >= 1 ? '1/1' : '0/1';
-        } else if (achievement.id === 'wzq_first_win') {
-            progressPercent = Math.min((wzqWins / 1) * 100, 100);
-            progressText = wzqWins + '/1';
-        } else if (achievement.id === 'wzq_win_5') {
-            progressPercent = Math.min((wzqWins / 5) * 100, 100);
-            progressText = wzqWins + '/5';
-        } else if (achievement.id === 'wzq_win_10') {
-            progressPercent = Math.min((wzqWins / 10) * 100, 100);
-            progressText = wzqWins + '/10';
-        } else if (achievement.id === 'wzq_games_20') {
-            progressPercent = Math.min((wzqGamesPlayed / 20) * 100, 100);
-            progressText = wzqGamesPlayed + '/20';
-        } else if (achievement.id === 'wzq_veteran') {
-            progressPercent = Math.min((wzqWins / 50) * 100, 100);
-            progressText = wzqWins + '/50';
-        } else {
-            progressPercent = isCompleted ? 100 : 0;
-            progressText = isCompleted ? '已完成' : '未完成';
-        }
-        
-        achievementItem.innerHTML = `
-            <div class="achievement-icon">
-                <i class="fas ${achievement.icon}"></i>
-            </div>
-            <div class="achievement-info">
-                <div class="achievement-name">${achievement.name}</div>
-                <div class="achievement-desc">${achievement.desc}</div>
-                <div class="achievement-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                    </div>
-                    <span class="progress-text">${progressText}</span>
-                </div>
-            </div>
-        `;
-        
-        achievementList.appendChild(achievementItem);
-    });
-    
-    // 更新统计
-    document.getElementById('achievementTotal').textContent = wzqAchievementDefs.length;
-    document.getElementById('achievementUnlocked').textContent = wzqAchievements.length;
-}
-
-function showAchievementPopup(achievement) {
-    const achievementPopup = document.createElement('div');
-    achievementPopup.className = 'achievement-popup';
-    achievementPopup.innerHTML = `
-        <div class="achievement-popup-content">
-            <div class="achievement-popup-icon">
-                <i class="fas ${achievement.icon}"></i>
-            </div>
-            <div class="achievement-popup-text">
-                <div class="achievement-popup-title">${langConfig[currentLang].achievementUnlocked}</div>
-                <div class="achievement-popup-name">${achievement.name}</div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(achievementPopup);
-    
-    setTimeout(() => {
-        achievementPopup.classList.add('show');
-    }, 10);
-    
-    setTimeout(() => {
-        achievementPopup.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(achievementPopup);
-        }, 300);
-    }, 3000);
-}
-
-// 评估落子分数（增强AI核心）
-function evaluateMove(x, y, player) {
-    let score = 0;
-    
-    // 检查八个方向
-    const directions = [
-        [0, 1],  // 水平
-        [1, 0],  // 垂直
-        [1, 1],  // 对角线
-        [1, -1]  // 反对角线
+    // ===== 成就定义 =====
+    var wzqAchievementDefs = [
+        { id: 'wzq_first_game', name: '初次对弈', desc: '完成第一局五子棋', icon: 'fa-chess-board', condition: function() { return wzqGamesPlayed >= 1; } },
+        { id: 'wzq_first_win', name: '首战告捷', desc: '赢得第一局五子棋', icon: 'fa-trophy', condition: function() { return wzqWins >= 1; } },
+        { id: 'wzq_win_5', name: '棋艺初成', desc: '累计赢得5局游戏', icon: 'fa-medal', condition: function() { return wzqWins >= 5; } },
+        { id: 'wzq_win_10', name: '棋坛新秀', desc: '累计赢得10局游戏', icon: 'fa-star', condition: function() { return wzqWins >= 10; } },
+        { id: 'wzq_games_20', name: '棋迷', desc: '累计完成20局游戏', icon: 'fa-gamepad', condition: function() { return wzqGamesPlayed >= 20; } },
+        { id: 'wzq_quick_win', name: '速战速决', desc: '在30步内赢得比赛', icon: 'fa-bolt', condition: function() { return false; } },
+        { id: 'wzq_long_game', name: '持久战', desc: '完成一局超过100步的对局', icon: 'fa-hourglass-half', condition: function() { return false; } },
+        { id: 'wzq_perfect_win', name: '没关就是开了？', desc: '在对手未落子的情况下获胜', icon: 'fa-crown', condition: function() { return false; } },
+        { id: 'wzq_ai_master', name: '人机大师', desc: '在AI模式下赢得10局', icon: 'fa-robot', condition: function() { return false; } },
+        { id: 'wzq_veteran', name: '五子棋大师', desc: '累计赢得50局游戏', icon: 'fa-chess-king', condition: function() { return wzqWins >= 50; } }
     ];
-    
-    directions.forEach(([dx, dy]) => {
-        let count = 1; // 当前连子数
-        let empty = 0; // 两端空位数
-        let blocked = 0; // 两端被阻挡数
-        
-        // 正向检查
-        for (let i = 1; i < 5; i++) {
-            const nx = x + dx * i;
-            const ny = y + dy * i;
-            
-            // 边界检查
-            if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) {
-                blocked++;
-                break;
-            }
-            
-            if (chessBoard[ny][nx] === player) {
-                count++;
-            } else if (chessBoard[ny][nx] === null) {
-                empty++;
-                break;
-            } else {
-                blocked++;
-                break;
-            }
-        }
-        
-        // 反向检查
-        for (let i = 1; i < 5; i++) {
-            const nx = x - dx * i;
-            const ny = y - dy * i;
-            
-            // 边界检查
-            if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) {
-                blocked++;
-                break;
-            }
-            
-            if (chessBoard[ny][nx] === player) {
-                count++;
-            } else if (chessBoard[ny][nx] === null) {
-                empty++;
-                break;
-            } else {
-                blocked++;
-                break;
-            }
-        }
-        
-        // 根据连子数计算分数
-        if (count >= 5) {
-            score += 100000; // 五连子，最高分
-        } else if (count === 4) {
-            if (empty === 2 || (empty === 1 && blocked === 0)) {
-                score += 10000; // 活四
-            } else if (empty === 1 && blocked === 1) {
-                score += 1000; // 冲四
-            }
-        } else if (count === 3) {
-            if (empty === 2) {
-                score += 1000; // 活三
-            } else if (empty === 1 && blocked === 1) {
-                score += 100; // 冲三
-            }
-        } else if (count === 2) {
-            if (empty === 2) {
-                score += 100; // 活二
-            } else if (empty === 1 && blocked === 1) {
-                score += 10; // 冲二
-            }
-        } else if (count === 1) {
-            score += 1; // 单棋
-        }
-    });
-    
-    return score;
-}
 
-// AI落子逻辑
-function aiMove() {
-    if (!gameRunning || gameWon || !aiMode) return;
-    
-    let bestScore = -1;
-    let bestMove = null;
-    
-    // 遍历所有空位，寻找最佳落子位置
-    for (let y = 0; y < BOARD_SIZE; y++) {
-        for (let x = 0; x < BOARD_SIZE; x++) {
-            if (chessBoard[y][x] === null) {
-                // 评估白方落子分数
-                const score = evaluateMove(x, y, 'white');
-                // 同时评估阻止黑方的分数
-                const blockScore = evaluateMove(x, y, 'black');
-                const totalScore = score + blockScore * 0.8; // 防守权重稍低
-                
-                if (totalScore > bestScore) {
-                    bestScore = totalScore;
-                    bestMove = {x, y};
+    // ===== 初始化3D棋盘 =====
+    function initChessBoard() {
+        var boardGrid = document.getElementById('boardGrid');
+        boardGrid.innerHTML = '';
+
+        // 棋盘表面尺寸（百分比）
+        var surfaceSize = 100; // board-surface 的百分比
+        var padding = 6.67;   // 棋盘边距百分比
+        var step = (surfaceSize - padding * 2) / (BOARD_SIZE - 1);
+
+        // 创建网格线
+        for (var i = 0; i < BOARD_SIZE; i++) {
+            var posH = padding + i * step;
+            var posV = padding + i * step;
+
+            // 横线
+            var lineH = document.createElement('div');
+            lineH.className = 'grid-line-h';
+            lineH.style.top = posH + '%';
+            boardGrid.appendChild(lineH);
+
+            // 竖线
+            var lineV = document.createElement('div');
+            lineV.className = 'grid-line-v';
+            lineV.style.left = posV + '%';
+            boardGrid.appendChild(lineV);
+        }
+
+        // 初始化棋盘数据
+        chessBoard = [];
+        for (var y = 0; y < BOARD_SIZE; y++) {
+            chessBoard.push([]);
+            for (var x = 0; x < BOARD_SIZE; x++) {
+                chessBoard[y].push(null);
+            }
+        }
+
+        // 创建交叉点（落子点）
+        for (var yy = 0; yy < BOARD_SIZE; yy++) {
+            for (var xx = 0; xx < BOARD_SIZE; xx++) {
+                var cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.dataset.x = xx;
+                cell.dataset.y = yy;
+                cell.style.left = (padding + xx * step) + '%';
+                cell.style.top = (padding + yy * step) + '%';
+                (function(x, y) {
+                    cell.addEventListener('click', function() { placeChess(x, y); });
+                })(xx, yy);
+                boardGrid.appendChild(cell);
+            }
+        }
+
+        updateTurnDisplay();
+    }
+
+    // ===== 落子函数 =====
+    function placeChess(x, y) {
+        if (!gameRunning || gameWon || chessBoard[y][x] !== null) return;
+
+        chessBoard[y][x] = currentPlayer;
+        totalMoves++;
+
+        // 创建3D棋子 - 直接定位到 board-grid 避免嵌套 transform 偏移
+        var grid = document.getElementById('boardGrid');
+        var piece = document.createElement('div');
+        piece.className = 'chess-piece-3d ' + currentPlayer;
+        // 复用交叉点的百分比坐标
+        var surfaceSize = 100;
+        var padding = 6.67;
+        var step = (surfaceSize - padding * 2) / (BOARD_SIZE - 1);
+        piece.style.left = (padding + x * step) + '%';
+        piece.style.top = (padding + y * step) + '%';
+        piece.dataset.x = x;
+        piece.dataset.y = y;
+        grid.appendChild(piece);
+
+        // 检查胜负
+        var winResult = checkWin(x, y);
+        if (winResult) {
+            gameWon = true;
+            clearInterval(gameTimer);
+            winLine = winResult;
+
+            // 高亮胜利棋子
+            winResult.forEach(function(pos) {
+                var winPiece = document.querySelector('.chess-piece-3d[data-x="' + pos.x + '"][data-y="' + pos.y + '"]');
+                if (winPiece) winPiece.classList.add('win-highlight');
+            });
+
+            score += currentPlayer === 'black' ? 100 : 50;
+            document.getElementById('scoreVal').textContent = score;
+
+            wzqGamesPlayed++;
+            if (currentPlayer === 'black') wzqWins++;
+            setGameData('wzqGamesPlayed', wzqGamesPlayed);
+            setGameData('wzqWins', wzqWins);
+            checkAndSaveAchievements();
+
+            // 延迟显示结束界面
+            setTimeout(function() { showGameOver(currentPlayer === 'black' ? '黑方获胜' : '白方获胜'); }, 800);
+            return;
+        }
+
+        // 切换玩家
+        currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+        updateTurnDisplay();
+
+        // AI 落子
+        if (aiMode && currentPlayer === 'white' && !gameWon) {
+            setTimeout(aiMove, 500);
+        }
+    }
+
+    // ===== 检查胜负 =====
+    function checkWin(x, y) {
+        var player = chessBoard[y][x];
+        var directions = [[0,1],[1,0],[1,1],[1,-1]];
+
+        for (var d = 0; d < directions.length; d++) {
+            var dx = directions[d][0], dy = directions[d][1];
+            var line = [{x: x, y: y}];
+
+            // 正向
+            for (var i = 1; i < 5; i++) {
+                var nx = x + dx * i, ny = y + dy * i;
+                if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE && chessBoard[ny][nx] === player) {
+                    line.push({x: nx, y: ny});
+                } else break;
+            }
+            // 反向
+            for (var i2 = 1; i2 < 5; i2++) {
+                var nx2 = x - dx * i2, ny2 = y - dy * i2;
+                if (nx2 >= 0 && nx2 < BOARD_SIZE && ny2 >= 0 && ny2 < BOARD_SIZE && chessBoard[ny2][nx2] === player) {
+                    line.unshift({x: nx2, y: ny2});
+                } else break;
+            }
+
+            if (line.length >= 5) return line;
+        }
+        return null;
+    }
+
+    // ===== AI 评估落子 =====
+    function evaluateMove(x, y, player) {
+        var s = 0;
+        var directions = [[0,1],[1,0],[1,1],[1,-1]];
+
+        for (var d = 0; d < directions.length; d++) {
+            var dx = directions[d][0], dy = directions[d][1];
+            var count = 1, empty = 0, blocked = 0;
+
+            for (var i = 1; i < 5; i++) {
+                var nx = x + dx * i, ny = y + dy * i;
+                if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) { blocked++; break; }
+                if (chessBoard[ny][nx] === player) count++;
+                else if (chessBoard[ny][nx] === null) { empty++; break; }
+                else { blocked++; break; }
+            }
+            for (var i2 = 1; i2 < 5; i2++) {
+                var nx2 = x - dx * i2, ny2 = y - dy * i2;
+                if (nx2 < 0 || nx2 >= BOARD_SIZE || ny2 < 0 || ny2 >= BOARD_SIZE) { blocked++; break; }
+                if (chessBoard[ny2][nx2] === player) count++;
+                else if (chessBoard[ny2][nx2] === null) { empty++; break; }
+                else { blocked++; break; }
+            }
+
+            if (count >= 5) s += 100000;
+            else if (count === 4) {
+                if (empty === 2 || (empty === 1 && blocked === 0)) s += 10000;
+                else if (empty === 1 && blocked === 1) s += 1000;
+            } else if (count === 3) {
+                if (empty === 2) s += 1000;
+                else if (empty === 1 && blocked === 1) s += 100;
+            } else if (count === 2) {
+                if (empty === 2) s += 100;
+                else if (empty === 1 && blocked === 1) s += 10;
+            } else if (count === 1) s += 1;
+        }
+        return s;
+    }
+
+    // ===== AI 落子 =====
+    function aiMove() {
+        if (!gameRunning || gameWon || !aiMode) return;
+
+        var bestScore = -1, bestMove = null;
+        var center = Math.floor(BOARD_SIZE / 2);
+
+        for (var y = 0; y < BOARD_SIZE; y++) {
+            for (var x = 0; x < BOARD_SIZE; x++) {
+                if (chessBoard[y][x] === null) {
+                    // 只考虑已有棋子附近的位置（优化性能）
+                    if (totalMoves > 0 && !hasNeighbor(x, y, 2)) continue;
+
+                    var attackScore = evaluateMove(x, y, 'white');
+                    var defendScore = evaluateMove(x, y, 'black');
+
+                    // 难度调节
+                    var attackWeight = difficulty === 'easy' ? 0.6 : (difficulty === 'medium' ? 0.8 : 1.0);
+                    var defendWeight = difficulty === 'easy' ? 0.4 : (difficulty === 'medium' ? 0.7 : 0.9);
+
+                    var totalScore = attackScore * attackWeight + defendScore * defendWeight;
+                    // 中心倾向
+                    totalScore += (center - Math.abs(x - center) - Math.abs(y - center)) * 0.5;
+
+                    if (totalScore > bestScore) {
+                        bestScore = totalScore;
+                        bestMove = {x: x, y: y};
+                    }
                 }
             }
         }
-    }
-    
-    // 执行AI落子
-    if (bestMove) {
-        setTimeout(() => {
+
+        if (bestMove) {
             placeChess(bestMove.x, bestMove.y);
-        }, 500); // 延迟落子，模拟思考
-    }
-}
-
-// 落子函数
-function placeChess(x, y) {
-    // 检查游戏状态
-    if (!gameRunning || gameWon || chessBoard[y][x] !== null) return;
-    
-    // 记录落子
-    chessBoard[y][x] = currentPlayer;
-    
-    // 创建棋子元素
-    const cell = document.querySelector(`.chess-cell[data-x="${x}"][data-y="${y}"]`);
-    const piece = document.createElement('div');
-    piece.className = `chess-piece ${currentPlayer}`;
-    cell.appendChild(piece);
-    
-    // 检查是否获胜
-    if (checkWin(x, y)) {
-        gameWon = true;
-        clearInterval(gameTimer);
-        const gameOver = document.getElementById('gameOver');
-        gameOver.style.display = 'block';
-        gameOver.textContent = currentPlayer === 'black' ? langConfig[currentLang].blackWin : langConfig[currentLang].whiteWin;
-        
-        // 更新得分
-        score += currentPlayer === 'black' ? 100 : 50;
-        document.getElementById('score').textContent = score;
-        
-        // 更新成就数据
-        wzqGamesPlayed++;
-        if (currentPlayer === 'black') {
-            wzqWins++;
         }
-        setUserGameData('wzqGamesPlayed', wzqGamesPlayed);
-        setUserGameData('wzqWins', wzqWins);
-        checkAndSaveAchievements();
-        
-        // 显示排行榜弹窗
-const rankingModal = document.getElementById('rankingModal');
-document.getElementById('finalScore').textContent = score;
-rankingModal.style.display = 'flex';
-setTimeout(() => {
-    rankingModal.classList.add('show');
-}, 10);
-        
-        return;
     }
-    
-    // 切换玩家
-    currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
-    updateChessTip();
-    
-    // AI模式下，白方自动落子
-    if (aiMode && currentPlayer === 'white') {
-        aiMove();
-    }
-}
 
-// 检查获胜条件
-function checkWin(x, y) {
-    const player = chessBoard[y][x];
-    const directions = [
-        [0, 1],  // 水平
-        [1, 0],  // 垂直
-        [1, 1],  // 对角线
-        [1, -1]  // 反对角线
-    ];
-    
-    // 检查所有方向
-    for (const [dx, dy] of directions) {
-        let count = 1;
-        
-        // 正向检查
-        for (let i = 1; i < 5; i++) {
-            const nx = x + dx * i;
-            const ny = y + dy * i;
-            if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE && chessBoard[ny][nx] === player) {
-                count++;
-            } else {
-                break;
+    // 检查是否有邻近棋子
+    function hasNeighbor(x, y, range) {
+        for (var dy = -range; dy <= range; dy++) {
+            for (var dx = -range; dx <= range; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                var nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE && chessBoard[ny][nx] !== null) {
+                    return true;
+                }
             }
         }
-        
-        // 反向检查
-        for (let i = 1; i < 5; i++) {
-            const nx = x - dx * i;
-            const ny = y - dy * i;
-            if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE && chessBoard[ny][nx] === player) {
-                count++;
-            } else {
-                break;
-            }
-        }
-        
-        // 五连子获胜
-        if (count >= 5) {
-            return true;
+        return false;
+    }
+
+    // ===== 更新显示 =====
+    function updateTurnDisplay() {
+        var turnEl = document.getElementById('turnVal');
+        turnEl.textContent = currentPlayer === 'black' ? '黑方回合' : '白方回合';
+        turnEl.style.color = currentPlayer === 'black' ? '#f0a050' : '#9b6dff';
+    }
+
+    function updateTimer() {
+        if (timeLimit === 0) return;
+        timeLeft--;
+        document.getElementById('timeVal').textContent = timeLeft + 's';
+        if (timeLeft <= 0) {
+            clearInterval(gameTimer);
+            gameRunning = false;
+            gameWon = true;
+            showGameOver('时间到');
         }
     }
-    
-    return false;
-}
 
-// 更新计时器
-function updateTimer() {
-    if (document.getElementById('unlimitedTimeCheckbox').checked) return;
-    
-    timeLeft--;
-    document.getElementById('time').textContent = timeLeft;
-    
-    if (timeLeft <= 0) {
-        clearInterval(gameTimer);
-        gameRunning = false;
-        gameWon = true;
-        const gameOver = document.getElementById('gameOver');
-        gameOver.style.display = 'block';
-        gameOver.textContent = langConfig[currentLang].timeUp;
-        
-        // 显示排行榜弹窗
-        const rankingModal = document.getElementById('rankingModal');
+    // ===== 显示游戏结束 =====
+    function showGameOver(title) {
+        document.getElementById('overTitle').textContent = title;
+        document.getElementById('overScore').textContent = score;
+        document.getElementById('overMoves').textContent = totalMoves;
+        document.getElementById('overOverlay').classList.remove('hidden-overlay');
+
+        // 记录到新的游戏统计系统
+        if (window.GameStatsManager) {
+            window.GameStatsManager.recordScore('game_wzq', score);
+            if (window.gameTimer) {
+                window.gameTimer.stop();
+            }
+        }
+
+        // 排行榜弹窗也显示
         document.getElementById('finalScore').textContent = score;
-        rankingModal.style.display = 'flex';
-        setTimeout(() => {
-            rankingModal.classList.add('show');
-        }, 10);
+        document.getElementById('rankingBackdrop').classList.add('show');
+        setTimeout(function() {
+            document.getElementById('rankingOverlay').classList.remove('hidden-overlay');
+        }, 600);
     }
-}
 
-// 开始游戏
-document.getElementById('sidebarStartGameBtn').addEventListener('click', function() {
-    if (gameRunning) return;
+    // ===== 成就系统 =====
+    function checkAndSaveAchievements() {
+        wzqAchievementDefs.forEach(function(ach) {
+            if (!wzqAchievements.includes(ach.id) && ach.condition()) {
+                wzqAchievements.push(ach.id);
+                showAchievementToast(ach);
+            }
+        });
+        setGameData('wzqAchievements', wzqAchievements);
+        updateAchvBadge();
+    }
+
+    function showAchievementToast(a) {
+        var box = document.getElementById('toastBox');
+        var el = document.createElement('div');
+        el.className = 'achv-toast glass rounded-xl p-3 flex items-center gap-3';
+        el.innerHTML = '<div class="w-11 h-11 rounded-lg flex items-center justify-center text-xl shrink-0" style="background:linear-gradient(135deg,#f0a050,#d45d79);">' +
+            '<i class="fas ' + a.icon + ' text-white"></i></div>' +
+            '<div class="min-w-0"><div class="text-[11px] text-pre-accent font-bold tracking-wide">成就解锁</div>' +
+            '<div class="font-bold text-sm truncate">' + a.name + '</div>' +
+            '<div class="text-xs text-gray-400 truncate">' + a.desc + '</div></div>';
+        box.appendChild(el);
+        requestAnimationFrame(function() { el.classList.add('show'); });
+        if (window.gsap) {
+            gsap.from(el, { y: 20, duration: 0.5, ease: 'back.out(1.7)' });
+        }
+        setTimeout(function() {
+            el.classList.remove('show');
+            setTimeout(function() { el.remove(); }, 500);
+        }, 3600);
+        showAchievementBanner(a.name);
+    }
+
+    function showAchievementBanner(name) {
+        var banner = document.getElementById('achvBanner');
+        document.getElementById('achvBannerText').textContent = '成就解锁：' + name;
+        banner.classList.remove('hide');
+        banner.classList.add('show');
+        setTimeout(function() {
+            banner.classList.remove('show');
+            banner.classList.add('hide');
+        }, 2500);
+    }
+
+    function updateAchvBadge() {
+        document.getElementById('achvBadge').textContent = wzqAchievements.length;
+    }
+
+    function renderAchievements() {
+        var list = document.getElementById('achvList');
+        list.innerHTML = '';
+        wzqAchievementDefs.forEach(function(ach) {
+            var isUnlocked = wzqAchievements.includes(ach.id);
+            var card = document.createElement('div');
+            card.className = 'achv-card' + (isUnlocked ? ' unlocked' : '');
+            card.innerHTML = '<div class="achv-icon"><i class="fas ' + ach.icon + '"></i></div>' +
+                '<div class="achv-info"><div class="achv-name">' + ach.name + '</div>' +
+                '<div class="achv-desc">' + ach.desc + '</div></div>' +
+                '<div class="achv-status">' + (isUnlocked ? '已解锁' : '未解锁') + '</div>';
+            list.appendChild(card);
+        });
+        document.getElementById('achvUnlockedCount').textContent = wzqAchievements.length;
+        document.getElementById('achvTotalCount').textContent = wzqAchievementDefs.length;
+    }
+
+    // ===== 事件绑定 =====
+    document.getElementById('startBtn').addEventListener('click', function() {
+        document.getElementById('startOverlay').classList.add('hidden-overlay');
+        startGame();
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', function() {
+        document.getElementById('overOverlay').classList.add('hidden-overlay');
+        document.getElementById('rankingOverlay').classList.add('hidden-overlay');
+        document.getElementById('rankingBackdrop').classList.remove('show');
+        startGame();
+    });
+
+    document.getElementById('pauseBtn').addEventListener('click', function() {
+        // 简单暂停/恢复
+        if (gameRunning) {
+            clearInterval(gameTimer);
+            gameRunning = false;
+            this.innerHTML = '<i class="fas fa-play"></i>';
+            if (window.gameTimer) {
+                window.gameTimer.pause();
+            }
+        } else if (!gameWon) {
+            gameRunning = true;
+            if (timeLimit > 0) {
+                gameTimer = setInterval(updateTimer, 1000);
+            }
+            this.innerHTML = '<i class="fas fa-pause"></i>';
+            if (window.gameTimer) {
+                window.gameTimer.resume();
+            }
+        }
+    });
+
+    // 难度切换
+    document.getElementById('difficultySeg').addEventListener('click', function(e) {
+        if (e.target.classList.contains('seg-btn')) {
+            this.querySelectorAll('.seg-btn').forEach(function(b) { b.classList.remove('active'); });
+            e.target.classList.add('active');
+            difficulty = e.target.dataset.difficulty;
+        }
+    });
+
+    // 时间切换
+    document.getElementById('timeSeg').addEventListener('click', function(e) {
+        if (e.target.classList.contains('seg-btn')) {
+            this.querySelectorAll('.seg-btn').forEach(function(b) { b.classList.remove('active'); });
+            e.target.classList.add('active');
+            timeLimit = parseInt(e.target.dataset.time);
+            document.getElementById('timeVal').textContent = timeLimit === 0 ? '∞' : timeLimit + 's';
+        }
+    });
+
+    // AI 开关
+    document.getElementById('aiToggle').addEventListener('click', function() {
+        aiMode = !aiMode;
+        this.classList.toggle('on', aiMode);
+        // 控制难度选择的显示
+        document.getElementById('difficultyBox').classList.toggle('hidden-diff', !aiMode);
+    });
     
-    // 重置游戏状态
-    gameRunning = true;
-    gameWon = false;
-    score = 0;
-    timeLeft = parseInt(document.getElementById('customTimeInput').value);
-    document.getElementById('score').textContent = score;
-    document.getElementById('time').textContent = document.getElementById('unlimitedTimeCheckbox').checked ? '∞' : timeLeft;
-    document.getElementById('gameOver').style.display = 'none';
+    // 初始化：默认隐藏难度选择（因为AI默认关闭）
+    document.getElementById('difficultyBox').classList.add('hidden-diff');
+
+    // 缩放滑块
+    var zoomRange = document.getElementById('zoomRange');
+    var zoomVal = document.getElementById('zoomVal');
+    var boardWrapper = document.getElementById('boardWrapper');
     
-    // 初始化棋盘
-    initChessBoard();
+    function applyZoom(percent) {
+        var scale = percent / 100;
+        var rotateX = currentView === '3d' ? 52 : 0;
+        boardWrapper.style.transform = 'rotateX(' + rotateX + 'deg) rotateZ(' + currentRotation + 'deg) scale(' + scale + ')';
+        zoomVal.textContent = percent + '%';
+    }
     
-    // 启动计时器（非无限时间模式）
-    if (!document.getElementById('unlimitedTimeCheckbox').checked) {
+    zoomRange.addEventListener('input', function() {
+        applyZoom(parseInt(this.value));
+    });
+    
+    // 点击 +/- 图标快速调整
+    document.getElementById('zoomInIcon').addEventListener('click', function() {
+        var v = Math.min(parseInt(zoomRange.value) + 10, 140);
+        zoomRange.value = v;
+        applyZoom(v);
+    });
+    document.getElementById('zoomOutIcon').addEventListener('click', function() {
+        var v = Math.max(parseInt(zoomRange.value) - 10, 60);
+        zoomRange.value = v;
+        applyZoom(v);
+    });
+    
+    // 滚轮缩放支持
+    document.querySelector('.board-3d-container').addEventListener('wheel', function(e) {
+        e.preventDefault();
+        var delta = e.deltaY > 0 ? -4 : 4;
+        var v = Math.max(60, Math.min(140, parseInt(zoomRange.value) + delta));
+        zoomRange.value = v;
+        applyZoom(v);
+    }, { passive: false });
+
+    // 视角切换（3D ↔ 俯视）
+    var currentView = '3d';
+    var currentRotation = 0;
+    
+    function updateBoardTransform() {
+        var scale = parseInt(zoomRange.value) / 100;
+        var rotateX = currentView === '3d' ? 52 : 0;
+        boardWrapper.style.transform = 'rotateX(' + rotateX + 'deg) rotateZ(' + currentRotation + 'deg) scale(' + scale + ')';
+    }
+    
+    document.getElementById('viewSeg').addEventListener('click', function(e) {
+        if (e.target.classList.contains('seg-btn')) {
+            this.querySelectorAll('.seg-btn').forEach(function(b) { b.classList.remove('active'); });
+            e.target.classList.add('active');
+            currentView = e.target.dataset.view;
+            updateBoardTransform();
+        }
+    });
+    
+    // 旋转90°（带3D动画）
+    document.getElementById('rotateBtn').addEventListener('click', function() {
+        currentRotation = (currentRotation + 90) % 360;
+        var scale = parseInt(zoomRange.value) / 100;
+        var rotateX = currentView === '3d' ? 52 : 0;
+        boardWrapper.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        boardWrapper.style.transform = 'rotateX(' + rotateX + 'deg) rotateZ(' + currentRotation + 'deg) scale(' + scale + ')';
+        setTimeout(function() {
+            boardWrapper.style.transition = 'transform 0.5s ease';
+        }, 650);
+    });
+    
+    // 重置按钮 - 弹出确认框
+    var resetBackdrop = document.getElementById('resetBackdrop');
+    var resetOverlay = document.getElementById('resetOverlay');
+    
+    document.getElementById('resetBtn').addEventListener('click', function() {
+        resetBackdrop.classList.add('show');
+        resetOverlay.classList.remove('hidden-overlay');
+    });
+    document.getElementById('cancelResetBtn').addEventListener('click', function() {
+        resetOverlay.classList.add('hidden-overlay');
+        resetBackdrop.classList.remove('show');
+    });
+    resetBackdrop.addEventListener('click', function() {
+        resetOverlay.classList.add('hidden-overlay');
+        resetBackdrop.classList.remove('show');
+    });
+    document.getElementById('confirmResetBtn').addEventListener('click', function() {
+        resetOverlay.classList.add('hidden-overlay');
+        resetBackdrop.classList.remove('show');
+        startGame();
+    });
+
+    // 成就侧边栏
+    document.getElementById('achvBtn').addEventListener('click', function() {
+        renderAchievements();
+        document.getElementById('achvSidebar').classList.add('open');
+    });
+    document.getElementById('closeAchvBtn').addEventListener('click', function() {
+        document.getElementById('achvSidebar').classList.remove('open');
+    });
+
+    // 排行榜弹窗
+    document.getElementById('closeRankingBtn').addEventListener('click', function() {
+        document.getElementById('rankingOverlay').classList.add('hidden-overlay');
+        document.getElementById('rankingBackdrop').classList.remove('show');
+    });
+    document.getElementById('cancelRankingBtn').addEventListener('click', function() {
+        document.getElementById('rankingOverlay').classList.add('hidden-overlay');
+        document.getElementById('rankingBackdrop').classList.remove('show');
+    });
+    document.getElementById('confirmRankingBtn').addEventListener('click', function() {
+        var name = document.getElementById('playerName').value.trim() || '匿名玩家';
+        var sc = document.getElementById('finalScore').textContent;
+        console.log('排行榜：' + name + ' ' + sc + '分');
+        document.getElementById('rankingOverlay').classList.add('hidden-overlay');
+        document.getElementById('rankingBackdrop').classList.remove('show');
+        document.getElementById('playerName').value = '';
+    });
+    document.getElementById('rankingBackdrop').addEventListener('click', function() {
+        document.getElementById('rankingOverlay').classList.add('hidden-overlay');
+        this.classList.remove('show');
+    });
+
+    // ===== 开始游戏 =====
+    function startGame() {
+        gameRunning = true;
+        gameWon = false;
+        score = 0;
+        totalMoves = 0;
+        currentPlayer = 'black';
+        timeLeft = timeLimit;
+        winLine = [];
+
+        document.getElementById('scoreVal').textContent = '0';
+        document.getElementById('timeVal').textContent = timeLimit === 0 ? '∞' : timeLimit + 's';
+        document.getElementById('pauseBtn').classList.remove('hidden-overlay');
+        document.getElementById('pauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+
+        initChessBoard();
+
         clearInterval(gameTimer);
-        gameTimer = setInterval(updateTimer, 1000);
-    }
-});
+        if (timeLimit > 0) {
+            gameTimer = setInterval(updateTimer, 1000);
+        }
 
-// 重置游戏
-document.getElementById('sidebarResetGameBtn').addEventListener('click', function() {
-    // 停止计时器
-    clearInterval(gameTimer);
-    gameRunning = false;
-    gameWon = false;
-    
-    // 重置分数和时间
-    score = 0;
-    timeLeft = parseInt(document.getElementById('customTimeInput').value);
-    document.getElementById('score').textContent = score;
-    document.getElementById('time').textContent = document.getElementById('unlimitedTimeCheckbox').checked ? '∞' : timeLeft;
-    document.getElementById('gameOver').style.display = 'none';
-    
-    // 初始化棋盘
+        // 启动游戏计时器
+        if (window.GameStatsManager && window.GameTimer) {
+            if (!window.gameTimer) {
+                window.gameTimer = new window.GameTimer('game_wzq');
+            }
+            window.gameTimer.start();
+        }
+
+        // 如果AI模式且白方先行（此处黑方先行，不需要立即AI）
+    }
+
+    // ===== 初始化 =====
+    updateAchvBadge();
     initChessBoard();
-});
-
-// 返回首页
-document.getElementById('sidebarBackHomeBtn').addEventListener('click', function() {
-    window.location.href = 'homepage4.0.html';
-});
-
-// 初始化棋盘
-initChessBoard();
-
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 更新版本号显示
-    if (typeof updateVersionDisplay === 'function') {
-        updateVersionDisplay('wzqgame');
-    }
-});
 </script>
 </body>
 </html>

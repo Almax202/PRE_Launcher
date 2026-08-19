@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>光影冲刺 - 3D 球球冒险</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 既有三框架：Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pre-primary': '#d45d79',
+                        'pre-accent': '#f0a050',
+                        'pre-deep': '#2a1b3d',
+                        'pre-dark': '#0f0a1e',
+                        'pre-purple': '#9b6dff'
+                    },
+                    fontFamily: { 'display': ['HarmonyOS Sans', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <!-- 既有三框架：GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <!-- 既有三框架：Lenis -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <!-- 新增框架：Three.js + cannon-es（ESM importmap，确保无加载 bug） -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+        }
+    }
+    </script>
+
+    <style>
+        @font-face {
+            font-family: 'HarmonyOS Sans';
+            src: url('../fonts/HarmonyOS_Sans_SC_Regular.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; }
+        body {
+            background: #0f0a1e;
+            color: #fff;
+            font-family: 'HarmonyOS Sans', 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1130; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #f0a050, #d45d79); border-radius: 4px; }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .glow-btn {
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+        }
+        .glow-btn::before {
+            content: '';
+            position: absolute; inset: -2px; border-radius: inherit; padding: 2px;
+            background: linear-gradient(135deg, #f0a050, #d45d79, #9b6dff, #f0a050);
+            background-size: 300% 300%;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            opacity: 0; transition: opacity 0.4s ease;
+            animation: borderFlow 3s linear infinite;
+        }
+        .glow-btn:hover::before { opacity: 1; }
+        .glow-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 20px 60px -10px rgba(212, 93, 121, 0.45); }
+        @keyframes borderFlow { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+        #gameCanvas { display: block; width: 100%; height: 100%; }
+
+        .blob {
+            position: absolute; border-radius: 50%; filter: blur(80px);
+            opacity: 0.35; pointer-events: none; z-index: 0;
+        }
+
+        .overlay {
+            position: fixed; inset: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; text-align: center; padding: 1.5rem;
+        }
+        .overlay-bg {
+            background: radial-gradient(circle at center, rgba(42,27,61,0.85), rgba(15,10,30,0.97));
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        .hidden-overlay { display: none !important; }
+
+        .spinner {
+            width: 56px; height: 56px; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.12);
+            border-top-color: #f0a050; border-right-color: #d45d79;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hud-chip {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.9rem; border-radius: 999px;
+            font-variant-numeric: tabular-nums; font-size: 0.95rem;
+        }
+
+        .pulse-dot { position: relative; }
+        .pulse-dot::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            background: inherit; animation: pulse 2s ease-out infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2.5); opacity: 0; } }
+
+        .achv-toast {
+            transform: translateX(120%); opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+        }
+        .achv-toast.show { transform: translateX(0); opacity: 1; }
+
+        .touch-btn {
+            width: 64px; height: 64px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; user-select: none; -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .stat-num { font-variant-numeric: tabular-nums; }
+
+        /* ===== 导航栏功能按钮 ===== */
+        .nav-btn {
+            display: flex; align-items: center; gap: 0.4rem;
+            padding: 0.5rem 0.9rem; border-radius: 999px;
+            font-size: 0.85rem; font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer; user-select: none;
+        }
+        .nav-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); }
+        .nav-btn.active { background: rgba(240,160,80,0.25); border-color: rgba(240,160,80,0.6); }
+        .nav-btn .badge {
+            min-width: 18px; height: 18px; border-radius: 9px;
+            background: linear-gradient(135deg, #f0a050, #d45d79);
+            font-size: 0.65rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 5px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        /* ===== 倒计时高亮 ===== */
+        .countdown-active { animation: countdownPulse 0.5s ease; }
+        @keyframes countdownPulse {
+            0%, 100% { color: #f0a050; }
+            50% { color: #ff6b6b; transform: scale(1.1); }
+        }
+
+        /* ===== 弹窗动画 ===== */
+        .modal-enter { animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-backdrop {
+            position: fixed; inset: 0; z-index: 45;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+            opacity: 0; transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .modal-backdrop.show { opacity: 1; pointer-events: auto; }
+
+        /* ===== 自定义弹窗 ===== */
+        .custom-option {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem 1rem; border-radius: 0.75rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 0.75rem;
+        }
+        .custom-option-label { font-size: 0.9rem; color: #e0e0e0; }
+        .custom-option-value { font-size: 0.85rem; color: #f0a050; font-weight: 600; }
+        .seg-control {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            background: rgba(0,0,0,0.3); border-radius: 0.5rem; padding: 0.2rem;
+        }
+        .seg-btn {
+            padding: 0.35rem 0.75rem; border-radius: 0.4rem;
+            font-size: 0.8rem; font-weight: 600;
+            color: #aaa; cursor: pointer; transition: all 0.2s ease;
+            border: none; background: transparent;
+        }
+        .seg-btn:hover { color: #fff; }
+        .seg-btn.active {
+            background: linear-gradient(135deg, #f0a050, #d45d79);
+            color: #fff; box-shadow: 0 2px 8px rgba(212,93,121,0.4);
+        }
+
+        /* ===== 速度滑块 ===== */
+        .speed-slider-wrap {
+            padding: 0.75rem 1rem; border-radius: 0.75rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 0.75rem;
+        }
+        .speed-slider-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .speed-slider-label { font-size: 0.9rem; color: #e0e0e0; }
+        .speed-slider-value {
+            font-size: 1.1rem; font-weight: 700;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        .speed-slider {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 8px; border-radius: 4px;
+            outline: none; cursor: pointer;
+            background: linear-gradient(90deg, #f0a050 0%, #f0a050 0%, #333 0%, #333 100%);
+            transition: background 0.3s ease;
+        }
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: linear-gradient(135deg, #fff, #f5f5f5);
+            border: 3px solid var(--thumb-color, #f0a050);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            transition: border-color 0.3s ease, transform 0.2s ease;
+        }
+        .speed-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        .speed-slider::-moz-range-thumb {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: #fff; border: 3px solid #f0a050;
+            cursor: pointer;
+        }
+        .speed-ticks {
+            display: flex; justify-content: space-between;
+            font-size: 0.65rem; color: #666;
+            margin-top: 0.35rem;
+            padding: 0 1px;
+        }
+
+        /* ===== 自定义时间输入 ===== */
+        .custom-time-wrap {
+            padding: 0.75rem 1rem; border-radius: 0.75rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 0.75rem;
+        }
+        .custom-time-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .custom-time-input-row {
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .custom-time-input {
+            width: 80px; padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.3); color: #fff;
+            font-size: 0.9rem; font-weight: 600;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+        .custom-time-input::-webkit-outer-spin-button,
+        .custom-time-input::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        .custom-time-unit { font-size: 0.85rem; color: #aaa; }
+        .custom-time-err {
+            font-size: 0.75rem; color: #ff6b6b; margin-top: 0.35rem;
+            display: none;
+        }
+        .custom-time-err.show { display: block; }
+
+        /* ===== 历史记录弹窗 ===== */
+        .history-high {
+            background: linear-gradient(135deg, rgba(240,160,80,0.15), rgba(212,93,121,0.15));
+            border: 1px solid rgba(240,160,80,0.4);
+            border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .history-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.6rem 0.9rem; border-radius: 0.6rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 0.4rem;
+            transition: background 0.2s ease;
+        }
+        .history-item:hover { background: rgba(255,255,255,0.07); }
+        .history-rank {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700;
+            background: rgba(255,255,255,0.08); color: #ccc;
+            flex-shrink: 0;
+        }
+        .history-rank.top1 { background: linear-gradient(135deg, #f0a050, #d45d79); color: #fff; }
+        .history-rank.top2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #fff; }
+        .history-rank.top3 { background: linear-gradient(135deg, #cd7f32, #a05a1c); color: #fff; }
+        .history-score { font-size: 1.1rem; font-weight: 700; color: #f0a050; }
+        .history-meta { font-size: 0.75rem; color: #888; }
+        .history-empty {
+            text-align: center; padding: 2rem; color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* ===== 成就侧边栏 ===== */
+        .achv-sidebar {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 380px; max-width: 90vw; z-index: 60;
+            background: linear-gradient(180deg, rgba(42,27,61,0.98), rgba(15,10,30,0.98));
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            transform: translateX(100%);
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex; flex-direction: column;
+        }
+        .achv-sidebar.open { transform: translateX(0); }
+        .achv-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .achv-list {
+            flex: 1; overflow-y: auto; padding: 1rem 1.25rem;
+        }
+        .achv-card {
+            display: flex; align-items: center; gap: 0.85rem;
+            padding: 0.85rem; border-radius: 0.85rem; margin-bottom: 0.6rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .achv-card.unlocked {
+            background: linear-gradient(135deg, rgba(240,160,80,0.12), rgba(212,93,121,0.12));
+            border-color: rgba(240,160,80,0.35);
+        }
+        .achv-card.unlocked::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+            animation: achvShimmer 2.5s linear infinite;
+        }
+        @keyframes achvShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .achv-icon {
+            width: 44px; height: 44px; border-radius: 0.75rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem; flex-shrink: 0;
+            background: rgba(255,255,255,0.06); color: #666;
+            transition: all 0.3s ease;
+        }
+        .achv-card.unlocked .achv-icon {
+            background: linear-gradient(135deg, #f0a050, #d45d79);
+            color: #fff; box-shadow: 0 4px 12px rgba(212,93,121,0.4);
+        }
+        .achv-info { flex: 1; min-width: 0; }
+        .achv-name { font-size: 0.9rem; font-weight: 600; color: #e0e0e0; }
+        .achv-card.unlocked .achv-name { color: #f0a050; }
+        .achv-desc { font-size: 0.75rem; color: #777; margin-top: 0.15rem; }
+        .achv-status {
+            font-size: 0.7rem; font-weight: 600;
+            padding: 0.25rem 0.6rem; border-radius: 999px;
+            background: rgba(255,255,255,0.06); color: #888;
+        }
+        .achv-card.unlocked .achv-status {
+            background: rgba(240,160,80,0.2); color: #f0a050;
+        }
+        .achv-progress-ring {
+            position: relative; width: 48px; height: 48px; flex-shrink: 0;
+        }
+        .achv-progress-ring svg { transform: rotate(-90deg); }
+        .achv-progress-ring .ring-bg { stroke: rgba(255,255,255,0.1); }
+        .achv-progress-ring .ring-fg {
+            stroke: url(#achvGradient);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.6s ease;
+        }
+        .achv-progress-text {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700; color: #888;
+        }
+
+        /* ===== 成就解锁横幅通知 ===== */
+        .achv-banner {
+            position: fixed; top: 80px; left: 50%;
+            transform: translateX(-50%) translateY(-120%);
+            opacity: 0;
+            z-index: 55; pointer-events: none;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, rgba(240,160,80,0.95), rgba(212,93,121,0.95));
+            border-radius: 999px;
+            display: flex; align-items: center; gap: 0.6rem;
+            box-shadow: 0 8px 32px rgba(212,93,121,0.5);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+        }
+        .achv-banner.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .achv-banner.hide { transform: translateX(-50%) translateY(-120%); opacity: 0; }
+        .achv-banner .banner-icon {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem;
+        }
+        .achv-banner .banner-text {
+            font-size: 0.85rem; font-weight: 600; color: #fff;
+        }
+
+        /* ===== 确认弹窗 ===== */
+        .confirm-modal {
+            position: fixed; inset: 0; z-index: 70;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+        }
+        .confirm-box {
+            background: linear-gradient(180deg, #2a1b3d, #1a1130);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1rem; padding: 1.5rem;
+            width: 320px; max-width: 85vw;
+            text-align: center;
+        }
+    </style>
+<script src="../js/game-stats.js"></script>
+</head>
+<body data-game-id="game_cube3d">
+    <!-- 浮动光斑装饰 -->
+    <div class="blob" style="width:520px;height:520px;top:-120px;left:-120px;background:#d45d79;"></div>
+    <div class="blob" style="width:420px;height:420px;bottom:-80px;right:-60px;background:#f0a050;"></div>
+    <div class="blob" style="width:320px;height:320px;top:45%;left:48%;background:#9b6dff;"></div>
+
+    <!-- 3D 画布 -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- 顶部 HUD -->
+    <div class="fixed top-0 left-0 right-0 z-40 p-4 flex items-center justify-between pointer-events-none">
+        <div class="flex items-center gap-2 flex-wrap pointer-events-auto">
+            <button id="customBtn" class="glass nav-btn hover:bg-white/10 transition" title="自定义设置">
+                <i class="fas fa-sliders text-pre-accent"></i><span>自定义</span>
+            </button>
+            <button id="historyBtn" class="glass nav-btn hover:bg-white/10 transition" title="历史记录">
+                <i class="fas fa-clock-rotate-left text-pre-purple"></i><span>历史</span>
+            </button>
+            <div class="glass hud-chip"><i class="fas fa-bolt text-pre-accent"></i><span>得分</span><span class="font-bold stat-num" id="scoreVal">0</span></div>
+            <div class="glass hud-chip"><i class="fas fa-gem text-yellow-300"></i><span class="stat-num" id="orbVal">0</span></div>
+            <div class="glass hud-chip"><i class="fas fa-stopwatch text-pre-primary"></i><span class="stat-num" id="timeVal">0.0s</span></div>
+            <div class="glass hud-chip"><i class="fas fa-gauge-high text-pre-purple"></i><span class="stat-num" id="speedVal">1.0x</span></div>
+        </div>
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <button id="achvBtn" class="glass nav-btn hover:bg-white/10 transition" title="成就">
+                <i class="fas fa-trophy text-pre-accent"></i><span>成就</span><span class="badge" id="achvBadge">0</span>
+            </button>
+            <button id="pauseBtn" class="glass hud-chip hover:bg-white/10 transition" title="暂停 (P)">
+                <i class="fas fa-pause"></i>
+            </button>
+            <a href="../index.html" class="glass hud-chip hover:bg-white/10 transition" title="返回主页">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- 移动端触控按钮 -->
+    <div class="fixed bottom-6 left-0 right-0 z-40 flex items-center justify-between px-6 pointer-events-none md:hidden" id="touchControls">
+        <div class="flex items-center gap-3 pointer-events-auto">
+            <div class="glass touch-btn" id="touchLeft"><i class="fas fa-chevron-left"></i></div>
+            <div class="glass touch-btn" id="touchRight"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="glass touch-btn pointer-events-auto" id="touchJump" style="width:78px;height:78px;background:linear-gradient(135deg,#f0a050,#d45d79);">
+            <i class="fas fa-arrow-up"></i>
+        </div>
+    </div>
+
+    <!-- 成就解锁提示容器 -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-80 max-w-[85vw]" id="toastBox"></div>
+
+    <!-- 成就解锁横幅 -->
+    <div class="achv-banner" id="achvBanner">
+        <div class="banner-icon"><i class="fas fa-trophy"></i></div>
+        <div class="banner-text" id="achvBannerText">成就解锁！</div>
+    </div>
+
+    <!-- ===== 自定义设置弹窗 ===== -->
+    <div class="modal-backdrop" id="customModalBackdrop"></div>
+    <div class="overlay overlay-bg hidden-overlay" id="customModal" style="z-index:55;">
+        <div class="glass rounded-2xl p-6 w-[460px] max-w-[92vw] modal-enter">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-xl font-bold gradient-text"><i class="fas fa-sliders mr-2"></i>自定义设置</h2>
+                <button class="text-gray-400 hover:text-white text-xl" id="closeCustomBtn"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <!-- 速度滑块 -->
+            <div class="speed-slider-wrap">
+                <div class="speed-slider-header">
+                    <span class="speed-slider-label"><i class="fas fa-bolt mr-1 text-pre-accent"></i>初始速度倍率</span>
+                    <span class="speed-slider-value" id="speedValue" style="color:#f0a050;">1.0x</span>
+                </div>
+                <input type="range" class="speed-slider" id="speedSlider" min="1" max="5" step="0.5" value="1">
+                <div class="speed-ticks">
+                    <span>1x</span><span>2x</span><span>3x</span><span>4x</span><span>5x</span>
+                </div>
+            </div>
+
+            <!-- 定时挑战 -->
+            <div class="mb-2 text-xs text-gray-500 uppercase tracking-wider">单局时间上限</div>
+            <div class="custom-option">
+                <span class="custom-option-label">定时挑战</span>
+                <div class="seg-control" id="timeSeg">
+                    <button class="seg-btn active" data-time="0">不限时</button>
+                    <button class="seg-btn" data-time="60">1 分钟</button>
+                    <button class="seg-btn" data-time="120">2 分钟</button>
+                    <button class="seg-btn" data-time="180">3 分钟</button>
+                    <button class="seg-btn" data-time="-1">自定义</button>
+                </div>
+            </div>
+
+            <!-- 自定义时间输入 -->
+            <div class="custom-time-wrap hidden-overlay" id="customTimeWrap">
+                <div class="custom-time-header">
+                    <span class="custom-time-label text-sm text-gray-300">自定义时长</span>
+                </div>
+                <div class="custom-time-input-row">
+                    <input type="number" class="custom-time-input" id="customTimeMin" min="0" max="60" placeholder="分">
+                    <span class="custom-time-unit">分</span>
+                    <input type="number" class="custom-time-input" id="customTimeSec" min="0" max="59" placeholder="秒">
+                    <span class="custom-time-unit">秒</span>
+                </div>
+                <div class="custom-time-err" id="customTimeErr">请输入有效时间（最大 60 分钟）</div>
+            </div>
+
+            <div class="mt-5 p-3 rounded-lg bg-black/30 text-xs text-gray-400 border border-white/5">
+                <i class="fas fa-info-circle mr-1 text-pre-accent"></i>
+                设置将在 <span class="text-pre-accent font-bold">下一局</span> 开始时生效。进行中的游戏不会受影响。
+            </div>
+
+            <div class="flex gap-3 mt-5">
+                <button class="glow-btn flex-1 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="saveCustomBtn">
+                    <i class="fas fa-check mr-2"></i>保存设置
+                </button>
+                <button class="glass px-5 py-3 rounded-xl font-bold hover:bg-white/10 transition" id="resetCustomBtn">
+                    重置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 历史记录弹窗 ===== -->
+    <div class="modal-backdrop" id="historyModalBackdrop"></div>
+    <div class="overlay overlay-bg hidden-overlay" id="historyModal" style="z-index:55;">
+        <div class="glass rounded-2xl p-6 w-[480px] max-w-[92vw] max-h-[80vh] flex flex-col modal-enter">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold gradient-text"><i class="fas fa-clock-rotate-left mr-2"></i>历史记录</h2>
+                <button class="text-gray-400 hover:text-white text-xl" id="closeHistoryBtn"><i class="fas fa-xmark"></i></button>
+            </div>
+
+            <div class="history-high" id="historyHigh">
+                <div class="flex items-center gap-3">
+                    <div class="text-3xl">🏆</div>
+                    <div>
+                        <div class="text-xs text-gray-400">最高分</div>
+                        <div class="text-2xl font-black gradient-text" id="historyHighScore">0</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-gray-400">总游玩</div>
+                    <div class="text-lg font-bold" id="historyTotal">0 局</div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-1" id="historyListContainer">
+                <div id="historyList"></div>
+            </div>
+
+            <div class="flex gap-3 mt-4 pt-4 border-t border-white/5">
+                <div class="flex-1 text-xs text-gray-500 flex items-center">
+                    <i class="fas fa-info-circle mr-1"></i>仅保留最近 20 条记录
+                </div>
+                <button class="glass px-4 py-2 rounded-lg font-bold text-sm hover:bg-white/10 transition text-red-400" id="resetHistoryBtn">
+                    <i class="fas fa-trash mr-1"></i>重置记录
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 成就侧边栏 ===== -->
+    <div class="achv-sidebar" id="achvSidebar">
+        <!-- 全局 SVG 渐变定义 -->
+        <svg width="0" height="0" style="position:absolute">
+            <defs>
+                <linearGradient id="achvGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#f0a050"/>
+                    <stop offset="100%" style="stop-color:#d45d79"/>
+                </linearGradient>
+            </defs>
+        </svg>
+        <div class="achv-header">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background:linear-gradient(135deg,#f0a050,#d45d79);">
+                    <i class="fas fa-trophy text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold">光影冲刺成就</h2>
+                    <div class="text-xs text-gray-400" id="achvProgressText"><span id="achvUnlockedCount">0</span> / <span id="achvTotalCount">10</span> 已解锁</div>
+                </div>
+            </div>
+            <button class="text-gray-400 hover:text-white text-xl" id="closeAchvBtn"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="achv-list" id="achvList"></div>
+    </div>
+
+    <!-- ===== 确认弹窗 ===== -->
+    <div class="confirm-modal hidden-overlay" id="confirmModal">
+        <div class="confirm-box">
+            <div class="text-4xl mb-3"><i class="fas fa-triangle-exclamation text-pre-accent"></i></div>
+            <div class="text-lg font-bold mb-2" id="confirmTitle">确认操作</div>
+            <div class="text-sm text-gray-400 mb-5" id="confirmMsg">此操作不可撤销，确定继续？</div>
+            <div class="flex gap-3">
+                <button class="flex-1 py-2.5 rounded-lg font-bold bg-gradient-to-r from-pre-accent to-pre-primary" id="confirmOkBtn">确定</button>
+                <button class="glass flex-1 py-2.5 rounded-lg font-bold hover:bg-white/10 transition" id="confirmCancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载中 -->
+    <div class="overlay overlay-bg" id="loadingOverlay">
+        <div class="spinner mb-6"></div>
+        <div class="text-lg text-gray-300">加载中...</div>
+        <div class="text-sm text-gray-500 mt-2">正在初始化 3D 物理世界</div>
+    </div>
+
+    <!-- 加载失败 -->
+    <div class="overlay overlay-bg hidden-overlay" id="errorOverlay">
+        <div class="glass rounded-2xl p-8 max-w-md">
+            <i class="fas fa-triangle-exclamation text-5xl text-pre-primary mb-4"></i>
+            <div class="text-xl font-bold mb-2">加载失败</div>
+            <div class="text-sm text-gray-400 mb-6">3D 资源加载失败，请检查网络后重试。</div>
+            <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" onclick="location.reload()">
+                <i class="fas fa-rotate-right mr-2"></i>重新加载
+            </button>
+        </div>
+    </div>
+
+    <!-- 开始界面 -->
+    <div class="overlay overlay-bg grid-bg hidden-overlay" id="startOverlay">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
+            <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
+            <span class="text-sm text-gray-300">Three.js · cannon-es · 物理引擎驱动</span>
+        </div>
+        <h1 class="text-6xl md:text-7xl font-black mb-4 leading-tight">
+            <span class="block">光影</span>
+            <span class="block gradient-text">冲刺</span>
+        </h1>
+        <p class="text-lg text-gray-400 mb-8 max-w-xl">
+            操控发光能量球，在霓虹长廊中疾驰，躲避障碍、收集能量晶核。速度持续攀升，你能撑多久？
+        </p>
+        <div class="glass rounded-2xl px-6 py-4 mb-8 text-sm text-gray-300 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <span><kbd class="px-2 py-0.5 rounded bg-white/10">A</kbd> / <kbd class="px-2 py-0.5 rounded bg-white/10">←</kbd> 左移</span>
+            <span><kbd class="px-2 py-0.5 rounded bg-white/10">D</kbd> / <kbd class="px-2 py-0.5 rounded bg-white/10">→</kbd> 右移</span>
+            <span><kbd class="px-2 py-0.5 rounded bg-white/10">空格</kbd> 跳跃</span>
+            <span><kbd class="px-2 py-0.5 rounded bg-white/10">P</kbd> 暂停</span>
+        </div>
+        <button class="glow-btn px-10 py-4 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold text-xl" id="startBtn">
+            <i class="fas fa-play mr-2"></i>开始游戏
+        </button>
+        <div class="mt-6 text-sm text-gray-500" id="bestInfo"></div>
+    </div>
+
+    <!-- 暂停界面 -->
+    <div class="overlay overlay-bg hidden-overlay" id="pauseOverlay">
+        <h2 class="text-4xl font-black mb-6 gradient-text">已暂停</h2>
+        <div class="flex gap-3">
+            <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="resumeBtn">
+                <i class="fas fa-play mr-2"></i>继续
+            </button>
+            <a href="../index.html" class="glass px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition">
+                <i class="fas fa-arrow-left mr-2"></i>返回主页
+            </a>
+        </div>
+    </div>
+
+    <!-- 游戏结束界面 -->
+    <div class="overlay overlay-bg hidden-overlay" id="overOverlay">
+        <div class="text-6xl mb-2"><i class="fas fa-skull-crossbones text-pre-primary"></i></div>
+        <h2 class="text-4xl font-black mb-6 gradient-text">本局结束</h2>
+        <div class="glass rounded-2xl px-8 py-5 mb-6 flex gap-8">
+            <div class="text-center">
+                <div class="text-xs text-gray-400 mb-1">得分</div>
+                <div class="text-3xl font-black stat-num gradient-text" id="finalScore">0</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs text-gray-400 mb-1">能量球</div>
+                <div class="text-3xl font-black stat-num" id="finalOrbs">0</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs text-gray-400 mb-1">存活</div>
+                <div class="text-3xl font-black stat-num" id="finalTime">0.0s</div>
+            </div>
+        </div>
+        <div class="text-sm text-gray-400 mb-4" id="bestLine"></div>
+        <div class="flex gap-3">
+            <button class="glow-btn px-6 py-3 rounded-xl bg-gradient-to-r from-pre-accent to-pre-primary font-bold" id="restartBtn">
+                <i class="fas fa-rotate-right mr-2"></i>再来一局
+            </button>
+            <a href="../index.html" class="glass px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition">
+                <i class="fas fa-home mr-2"></i>返回主页
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import * as CANNON from 'cannon-es';
+
+        // ===== 用户与存档（与 account-settings.js 同源 localStorage 结构） =====
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (!currentUser.username) {
+            window.location.href = '../index.html';
+        }
+
+        function findUser() {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            return users.find(u => u.username === currentUser.username);
+        }
+        function saveUser(user) {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const idx = users.findIndex(u => u.username === currentUser.username);
+            if (idx !== -1) { users[idx] = user; localStorage.setItem('registeredUsers', JSON.stringify(users)); }
+        }
+        function getGameData(key, def) {
+            const u = findUser();
+            if (!u || !u.gameData || u.gameData[key] === undefined) return def;
+            return u.gameData[key];
+        }
+        function setGameData(key, val) {
+            const u = findUser();
+            if (!u) return;
+            if (!u.gameData) u.gameData = {};
+            u.gameData[key] = val;
+            saveUser(u);
+        }
+        function saveAchievementTime(id) {
+            const u = findUser();
+            if (!u) return;
+            if (!u.achievementTimes) u.achievementTimes = {};
+            if (!u.achievementTimes[id]) { u.achievementTimes[id] = Date.now(); saveUser(u); }
+        }
+
+        // ===== 成就定义（ID 与 account-settings.js 完全一致） =====
+        const cube3dAchievementDefs = [
+            { id: 'cube3d_first_game',   name: '初入光廊',   desc: '完成第一局光影冲刺',           icon: 'fa-gamepad' },
+            { id: 'cube3d_score_100',    name: '微光初现',   desc: '单局得分达到 100',             icon: 'fa-star' },
+            { id: 'cube3d_score_300',    name: '流光溢彩',   desc: '单局得分达到 300',             icon: 'fa-medal' },
+            { id: 'cube3d_score_600',    name: '极速辉光',   desc: '单局得分达到 600',             icon: 'fa-trophy' },
+            { id: 'cube3d_games_5',      name: '常客',       desc: '累计完成 5 局游戏',            icon: 'fa-fire' },
+            { id: 'cube3d_games_15',     name: '光影行者',   desc: '累计完成 15 局游戏',           icon: 'fa-route' },
+            { id: 'cube3d_orbs_10',      name: '能量收集者', desc: '单局收集 10 个能量球',         icon: 'fa-gem' },
+            { id: 'cube3d_orbs_25',      name: '能量狂热者', desc: '单局收集 25 个能量球',         icon: 'fa-bolt' },
+            { id: 'cube3d_survivor_30',  name: '坚持之心',   desc: '单局存活 30 秒',               icon: 'fa-shield-halved' },
+            { id: 'cube3d_survivor_60',  name: '光之意志',   desc: '单局存活 60 秒',               icon: 'fa-crown' }
+        ];
+
+        function cube3dConditions() {
+            return {
+                'cube3d_first_game':  getGameData('cube3dGamesPlayed', 0) >= 1,
+                'cube3d_score_100':   getGameData('cube3dHighScore', 0) >= 100,
+                'cube3d_score_300':   getGameData('cube3dHighScore', 0) >= 300,
+                'cube3d_score_600':   getGameData('cube3dHighScore', 0) >= 600,
+                'cube3d_games_5':     getGameData('cube3dGamesPlayed', 0) >= 5,
+                'cube3d_games_15':    getGameData('cube3dGamesPlayed', 0) >= 15,
+                'cube3d_orbs_10':     getGameData('cube3dMaxOrbs', 0) >= 10,
+                'cube3d_orbs_25':     getGameData('cube3dMaxOrbs', 0) >= 25,
+                'cube3d_survivor_30': getGameData('cube3dMaxTime', 0) >= 30,
+                'cube3d_survivor_60': getGameData('cube3dMaxTime', 0) >= 60
+            };
+        }
+
+        function checkCube3dAchievements() {
+            const unlocked = getGameData('cube3dAchievements', []) || [];
+            const cond = cube3dConditions();
+            cube3dAchievementDefs.forEach(a => {
+                if (!unlocked.includes(a.id) && cond[a.id]) {
+                    unlocked.push(a.id);
+                    setGameData('cube3dAchievements', unlocked);
+                    saveAchievementTime(a.id);
+                    showAchievementToast(a);
+                }
+            });
+            // 特殊成就：解锁全部 10 个
+            if (unlocked.length >= 10) {
+                const sp = getGameData('specialAchievements', []) || [];
+                if (!sp.includes('cube3d_complete')) {
+                    sp.push('cube3d_complete');
+                    setGameData('specialAchievements', sp);
+                    // 触发特殊成就通知
+                    showAchievementToast({
+                        id: 'cube3d_complete',
+                        name: '光影之王',
+                        desc: '解锁光影冲刺所有成就',
+                        icon: 'fa-crown'
+                    });
+                }
+            }
+            updateAchvBadge();
+        }
+
+        function showAchievementToast(a) {
+            const box = document.getElementById('toastBox');
+            const el = document.createElement('div');
+            el.className = 'achv-toast glass rounded-xl p-3 flex items-center gap-3';
+            el.innerHTML = `
+                <div class="w-11 h-11 rounded-lg flex items-center justify-center text-xl shrink-0" style="background:linear-gradient(135deg,#f0a050,#d45d79);">
+                    <i class="fas ${a.icon} text-white"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[11px] text-pre-accent font-bold tracking-wide">成就解锁</div>
+                    <div class="font-bold text-sm truncate">${a.name}</div>
+                    <div class="text-xs text-gray-400 truncate">${a.desc}</div>
+                </div>`;
+            box.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            if (window.__gsap) {
+                window.__gsap.from(el, { y: 20, duration: 0.5, ease: 'back.out(1.7)' });
+            }
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 500);
+            }, 3600);
+            // 顶部横幅
+            showAchievementBanner(a.name);
+        }
+
+        // ===== 全局状态 =====
+        let scene, camera, renderer, world;
+        let ballMesh, ballBody, ballLight;
+        const segments = [];     // { mesh, body, obstacles:[{mesh,body}], orbs:[{mesh}], z }
+        let trackGroup, decoGroup;
+        let input = { left: false, right: false, jump: false };
+        let gameState = 'idle';   // idle | running | paused | over
+        let score = 0, orbs = 0, elapsed = 0, distance = 0;
+        let forwardSpeed = 0;
+        const BASE_SPEED = 13;
+        const MAX_SPEED = 27;
+        const SPEED_RAMP = 0.22;   // 每秒提升
+        const LATERAL_SPEED = 9;
+        const JUMP_FORCE = 9.5;
+        const BALL_RADIUS = 0.7;
+        const TRACK_WIDTH = 11;
+        const SEG_LEN = 26;
+        const SEG_COUNT = 9;
+        const GROUND_Y = 0;
+        let onGround = true;
+        let lastTime = 0;
+        let clock;
+        let rafId = null;
+        const fixedStep = 1 / 60;
+        let accumulator = 0;
+        let thisRunUnlocked = [];
+
+        // ===== 自定义设置与历史记录 =====
+        let customSettings = { speedMultiplier: 1, timeLimit: 0, customTimeSec: 0 };
+        let countdownRemaining = 0;
+        let countdownActive = false;
+        let isModalOpen = false;
+        let modalPausedState = null; // 保存弹窗前的游戏状态以便恢复
+
+        // 物理材质
+        let ballMat, groundMat;
+
+        // ===== 初始化 =====
+        function init() {
+            // Three.js
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f0a1e);
+            scene.fog = new THREE.Fog(0x0f0a1e, 30, 120);
+
+            camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 500);
+            camera.position.set(0, 7, 11);
+            camera.lookAt(0, 1, -6);
+
+            const canvas = document.getElementById('gameCanvas');
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // 灯光
+            const ambient = new THREE.AmbientLight(0x6a5a9a, 0.7);
+            scene.add(ambient);
+            const hemi = new THREE.HemisphereLight(0xf0a050, 0x2a1b3d, 0.55);
+            scene.add(hemi);
+            const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+            dir.position.set(8, 18, 6);
+            dir.castShadow = true;
+            dir.shadow.mapSize.set(1024, 1024);
+            dir.shadow.camera.near = 1; dir.shadow.camera.far = 60;
+            dir.shadow.camera.left = -20; dir.shadow.camera.right = 20;
+            dir.shadow.camera.top = 20; dir.shadow.camera.bottom = -20;
+            scene.add(dir);
+
+            trackGroup = new THREE.Group();
+            decoGroup = new THREE.Group();
+            scene.add(trackGroup); scene.add(decoGroup);
+
+            // cannon-es
+            world = new CANNON.World({ gravity: new CANNON.Vec3(0, -32, 0) });
+            world.broadphase = new CANNON.SAPBroadphase(world);
+            world.allowSleeping = false;
+            world.defaultContactMaterial.friction = 0.35;
+            world.defaultContactMaterial.restitution = 0.2;
+            // 增加子步，防止高速穿透薄障碍
+            world.solver.iterations = 20;
+            world.solver.tolerance = 0.01;
+            ballMat = new CANNON.Material('ball');
+            groundMat = new CANNON.Material('ground');
+            world.addContactMaterial(new CANNON.ContactMaterial(ballMat, groundMat, { friction: 0.35, restitution: 0.2 }));
+
+            createBall();
+            buildInitialTrack();
+
+            clock = new THREE.Clock();
+            window.addEventListener('resize', onResize);
+            bindControls();
+
+            // 隐藏加载层
+            const loading = document.getElementById('loadingOverlay');
+            loading.style.opacity = '0';
+            setTimeout(() => { loading.classList.add('hidden-overlay'); }, 400);
+
+            // 展示开始界面
+            document.getElementById('startOverlay').classList.remove('hidden-overlay');
+            showBestInfo();
+            // 加载自定义设置与成就徽章
+            loadCustomSettings();
+            updateAchvBadge();
+            // 启动渲染（idle 时也渲染，球微微浮动）
+            lastTime = performance.now();
+            loop();
+        }
+
+        function onResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function createBall() {
+            const geo = new THREE.SphereGeometry(BALL_RADIUS, 32, 32);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xffd9a8,
+                emissive: 0xf0a050,
+                emissiveIntensity: 0.85,
+                metalness: 0.3,
+                roughness: 0.25
+            });
+            ballMesh = new THREE.Mesh(geo, mat);
+            ballMesh.castShadow = true;
+            ballMesh.position.set(0, BALL_RADIUS + 0.6, 4);
+            scene.add(ballMesh);
+
+            ballLight = new THREE.PointLight(0xf0a050, 2.2, 18, 2);
+            ballLight.position.copy(ballMesh.position);
+            scene.add(ballLight);
+
+            // 发光环
+            const ringGeo = new THREE.TorusGeometry(BALL_RADIUS * 1.35, 0.06, 12, 48);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xd45d79, transparent: true, opacity: 0.8 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            ballMesh.add(ring);
+            ballMesh.userData.ring = ring;
+
+            ballBody = new CANNON.Body({
+                mass: 1,
+                shape: new CANNON.Sphere(BALL_RADIUS),
+                material: ballMat,
+                position: new CANNON.Vec3(0, BALL_RADIUS + 0.6, 4),
+                linearDamping: 0.05,
+                angularDamping: 0.4
+            });
+            ballBody.fixedRotation = false;
+            world.addBody(ballBody);
+
+            // 碰撞监听
+            ballBody.addEventListener('collide', onCollide);
+        }
+
+        function onCollide(e) {
+            const other = e.body;
+            if (!other || !other.userData) return;
+            if (other.userData.type === 'obstacle') {
+                gameOver();
+            } else if (other.userData.type === 'wall') {
+                // 侧墙：仅反弹，不结束
+            }
+        }
+
+        // ===== 跑道与障碍 =====
+        function makeSegment(zCenter) {
+            // 地面
+            const gGeo = new THREE.BoxGeometry(TRACK_WIDTH, 0.6, SEG_LEN);
+            const gMat = new THREE.MeshStandardMaterial({
+                color: 0x1c1336, metalness: 0.2, roughness: 0.85, emissive: 0x140a26, emissiveIntensity: 0.4
+            });
+            const gMesh = new THREE.Mesh(gGeo, gMat);
+            gMesh.position.set(0, GROUND_Y - 0.3, zCenter);
+            gMesh.receiveShadow = true;
+            trackGroup.add(gMesh);
+
+            const gBody = new CANNON.Body({ mass: 0, material: groundMat, shape: new CANNON.Box(new CANNON.Vec3(TRACK_WIDTH/2, 0.3, SEG_LEN/2)) });
+            gBody.position.set(0, GROUND_Y - 0.3, zCenter);
+            gBody.userData = { type: 'ground' };
+            world.addBody(gBody);
+
+            // 霓虹边线 + 侧墙（均纳入段对象，便于随段回收移动）
+            const edgeMat = new THREE.MeshBasicMaterial({ color: 0xf0a050 });
+            const edges = [];
+            const walls = [];
+            for (const side of [-1, 1]) {
+                const eGeo = new THREE.BoxGeometry(0.18, 0.18, SEG_LEN);
+                const eMesh = new THREE.Mesh(eGeo, edgeMat);
+                eMesh.position.set(side * (TRACK_WIDTH/2 - 0.1), GROUND_Y + 0.06, zCenter);
+                trackGroup.add(eMesh);
+                edges.push(eMesh);
+
+                const wBody = new CANNON.Body({ mass: 0, material: groundMat, shape: new CANNON.Box(new CANNON.Vec3(0.3, 1.4, SEG_LEN/2)) });
+                wBody.position.set(side * (TRACK_WIDTH/2 + 0.2), GROUND_Y + 1.0, zCenter);
+                wBody.userData = { type: 'wall' };
+                world.addBody(wBody);
+                walls.push(wBody);
+            }
+
+            const seg = { mesh: gMesh, body: gBody, edges, walls, z: zCenter, obstacles: [], orbs: [] };
+            return seg;
+        }
+
+        // 为段填充障碍与能量球；safe=true 表示起跑安全段（不生成障碍）
+        function populateSegment(seg, safe) {
+            // 障碍：红色发光屏障，中间留出通行缺口（两段箱体 + 缺口）
+            const obsCount = safe ? 0 : (1 + Math.floor(Math.random() * 2)); // 1~2
+            const sharedMat = new THREE.MeshStandardMaterial({
+                color: 0xd45d79, emissive: 0xd45d79, emissiveIntensity: 0.9, metalness: 0.3, roughness: 0.4
+            });
+            for (let i = 0; i < obsCount; i++) {
+                const localZ = seg.z - 6 - i * 9 - Math.random() * 3;
+                const halfW = TRACK_WIDTH / 2;
+                const gapW = 3.6 + Math.random() * 1.0;     // 缺口宽度 3.6~4.6（球径 1.4，留足通过空间）
+                const gapCenter = (Math.random() * 2 - 1) * (halfW - gapW / 2 - 0.6); // 缺口中心，避免贴边
+                const gapL = gapCenter - gapW / 2;
+                const gapR = gapCenter + gapW / 2;
+                // 左侧屏障 [-halfW, gapL]
+                const leftW = Math.max(0.2, gapL - (-halfW));
+                const leftCenter = (-halfW + gapL) / 2;
+                // 右侧屏障 [gapR, halfW]
+                const rightW = Math.max(0.2, halfW - gapR);
+                const rightCenter = (gapR + halfW) / 2;
+                addBarrier(seg, leftCenter, leftW, localZ, sharedMat);
+                addBarrier(seg, rightCenter, rightW, localZ, sharedMat);
+            }
+
+            // 能量球：3~5 个
+            const orbN = 3 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < orbN; i++) {
+                const ox = (Math.random() * 2 - 1) * (TRACK_WIDTH / 2 - 1.2);
+                const oy = Math.random() < 0.4 ? GROUND_Y + 2.4 : GROUND_Y + 0.8; // 部分需跳跃
+                const oz = seg.z - 3 - Math.random() * (SEG_LEN - 6);
+                const geo = new THREE.IcosahedronGeometry(0.32, 0);
+                const mat = new THREE.MeshStandardMaterial({
+                    color: 0xffe27a, emissive: 0xf0a050, emissiveIntensity: 1.2, metalness: 0.4, roughness: 0.2
+                });
+                const m = new THREE.Mesh(geo, mat);
+                m.position.set(ox, oy, oz);
+                trackGroup.add(m);
+                seg.orbs.push({ mesh: m, baseY: oy, collected: false });
+            }
+        }
+
+        // 在段内添加一道屏障（可视化 + 物理体）
+        function addBarrier(seg, centerX, width, z, mat) {
+            const geo = new THREE.BoxGeometry(width, 1.6, 0.8);
+            const m = new THREE.Mesh(geo, mat);
+            m.castShadow = true;
+            m.position.set(centerX, GROUND_Y + 0.8, z);
+            trackGroup.add(m);
+            const b = new CANNON.Body({
+                mass: 0, material: groundMat,
+                shape: new CANNON.Box(new CANNON.Vec3(width / 2, 0.8, 0.4))
+            });
+            b.position.copy(m.position);
+            b.userData = { type: 'obstacle' };
+            world.addBody(b);
+            seg.obstacles.push({ mesh: m, body: b });
+        }
+
+        function buildInitialTrack() {
+            for (let i = 0; i < SEG_COUNT; i++) {
+                const z = 4 - i * SEG_LEN; // 从球前方开始向后铺设
+                const seg = makeSegment(z);
+                segments.push(seg);
+                populateSegment(seg, i < 2); // 前两段为起跑安全段
+            }
+        }
+
+        function recycleSegments() {
+            // 球不断向 -z 前进，回收已落在身后的段，补到最前方
+            const ballZ = ballBody.position.z;
+            // 找最前方（z 最小）的段
+            let minZ = Infinity;
+            segments.forEach(s => { if (s.z < minZ) minZ = s.z; });
+            // 回收 z 在球后方较远的段
+            for (let i = 0; i < segments.length; i++) {
+                const s = segments[i];
+                if (s.z > ballZ + SEG_LEN * 1.2) {
+                    clearSegment(s);
+                    const newZ = minZ - SEG_LEN;
+                    moveSegmentBy(s, newZ - s.z); // 用旧 z 计算位移
+                    s.z = newZ;                  // 先更新 z，再填充障碍/球
+                    populateSegment(s);
+                    minZ = newZ;
+                }
+            }
+        }
+
+        // 将段及其地面/边线/侧墙整体平移 dz
+        function moveSegmentBy(seg, dz) {
+            seg.mesh.position.z += dz;
+            seg.body.position.z += dz;
+            seg.edges.forEach(e => { e.position.z += dz; });
+            seg.walls.forEach(w => { w.position.z += dz; });
+        }
+
+        function clearSegment(seg) {
+            seg.obstacles.forEach(o => {
+                trackGroup.remove(o.mesh);
+                o.mesh.geometry.dispose(); o.mesh.material.dispose();
+                world.removeBody(o.body);
+            });
+            seg.orbs.forEach(o => {
+                trackGroup.remove(o.mesh);
+                o.mesh.geometry.dispose(); o.mesh.material.dispose();
+            });
+            seg.obstacles = [];
+            seg.orbs = [];
+        }
+
+        // ===== 控制 =====
+        function bindControls() {
+            window.addEventListener('keydown', e => {
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.left = true;
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = true;
+                if (e.code === 'Space') { input.jump = true; e.preventDefault(); }
+                if (e.code === 'KeyP') togglePause();
+                // ESC 关闭弹窗
+                if (e.code === 'Escape') {
+                    if (!document.getElementById('confirmModal').classList.contains('hidden-overlay')) hideConfirm();
+                    else if (!document.getElementById('customModal').classList.contains('hidden-overlay')) closeCustomModal();
+                    else if (!document.getElementById('historyModal').classList.contains('hidden-overlay')) closeHistoryModal();
+                    else if (document.getElementById('achvSidebar').classList.contains('open')) closeAchvSidebar();
+                }
+            });
+            window.addEventListener('keyup', e => {
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.left = false;
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = false;
+                if (e.code === 'Space') input.jump = false;
+            });
+
+            const bindTouch = (id, on, off) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const start = e => { e.preventDefault(); on(); };
+                const end = e => { e.preventDefault(); off(); };
+                el.addEventListener('touchstart', start, { passive: false });
+                el.addEventListener('touchend', end, { passive: false });
+                el.addEventListener('touchcancel', end, { passive: false });
+                el.addEventListener('mousedown', on);
+                el.addEventListener('mouseup', off);
+                el.addEventListener('mouseleave', off);
+            };
+            bindTouch('touchLeft', () => input.left = true, () => input.left = false);
+            bindTouch('touchRight', () => input.right = true, () => input.right = false);
+            bindTouch('touchJump', () => input.jump = true, () => input.jump = false);
+
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('restartBtn').addEventListener('click', startGame);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('resumeBtn').addEventListener('click', togglePause);
+
+            // 自定义弹窗
+            document.getElementById('customBtn').addEventListener('click', openCustomModal);
+            document.getElementById('closeCustomBtn').addEventListener('click', closeCustomModal);
+            document.getElementById('customModalBackdrop').addEventListener('click', closeCustomModal);
+            document.getElementById('saveCustomBtn').addEventListener('click', saveCustomSettings);
+            document.getElementById('resetCustomBtn').addEventListener('click', resetCustomSettings);
+            // 速度滑块
+            const speedSlider = document.getElementById('speedSlider');
+            if (speedSlider) {
+                speedSlider.addEventListener('input', () => {
+                    customSettings.speedMultiplier = parseFloat(speedSlider.value);
+                    updateSpeedSliderVisual();
+                });
+            }
+            // 时间分段
+            document.querySelectorAll('#timeSeg .seg-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    customSettings.timeLimit = parseInt(btn.dataset.time);
+                    updateCustomUI();
+                });
+            });
+
+            // 历史记录弹窗
+            document.getElementById('historyBtn').addEventListener('click', openHistoryModal);
+            document.getElementById('closeHistoryBtn').addEventListener('click', closeHistoryModal);
+            document.getElementById('historyModalBackdrop').addEventListener('click', closeHistoryModal);
+            document.getElementById('resetHistoryBtn').addEventListener('click', resetHistory);
+
+            // 成就侧边栏
+            document.getElementById('achvBtn').addEventListener('click', openAchvSidebar);
+            document.getElementById('closeAchvBtn').addEventListener('click', closeAchvSidebar);
+
+            // 确认弹窗
+            document.getElementById('confirmOkBtn').addEventListener('click', () => {
+                if (confirmCallback) confirmCallback();
+                hideConfirm();
+            });
+            document.getElementById('confirmCancelBtn').addEventListener('click', hideConfirm);
+        }
+
+        function startGame() {
+            // 重置球与状态
+            ballBody.position.set(0, BALL_RADIUS + 0.6, 4);
+            ballBody.velocity.set(0, 0, 0);
+            ballBody.angularVelocity.set(0, 0, 0);
+            ballMesh.position.copy(ballBody.position);
+            score = 0; orbs = 0; elapsed = 0; distance = 0;
+            forwardSpeed = BASE_SPEED;
+            onGround = true;
+            thisRunUnlocked = [];
+            countdownActive = false;
+            countdownRemaining = 0;
+            // 应用自定义设置
+            applyCustomSettingsToRun();
+            // 重建跑道：先清空障碍/球，再把每段复位到初始 z，最后重新填充
+            segments.forEach(clearSegment);
+            segments.forEach((s, i) => {
+                const targetZ = 4 - i * SEG_LEN;
+                moveSegmentBy(s, targetZ - s.z); // 用旧 z 计算位移
+                s.z = targetZ;                   // 先更新 z，再填充
+                populateSegment(s, i < 2); // 前两段安全
+            });
+            updateHUD();
+            document.getElementById('startOverlay').classList.add('hidden-overlay');
+            document.getElementById('overOverlay').classList.add('hidden-overlay');
+            document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+            gameState = 'running';
+            lastTime = performance.now();
+            
+            // 启动游戏计时器
+            if (window.GameStatsManager && window.GameTimer) {
+                if (!window.gameTimer) {
+                    window.gameTimer = new window.GameTimer('game_cube3d');
+                }
+                window.gameTimer.start();
+            }
+            
+            if (!rafId) loop();
+        }
+
+        function togglePause() {
+            if (gameState === 'running') {
+                gameState = 'paused';
+                document.getElementById('pauseOverlay').classList.remove('hidden-overlay');
+                if (window.gameTimer) {
+                    window.gameTimer.pause();
+                }
+            } else if (gameState === 'paused') {
+                gameState = 'running';
+                document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+                lastTime = performance.now();
+                if (window.gameTimer) {
+                    window.gameTimer.resume();
+                }
+            }
+        }
+
+        function gameOver() {
+            if (gameState !== 'running') return;
+            gameState = 'over';
+            // 保存数据
+            const gamesPlayed = getGameData('cube3dGamesPlayed', 0) + 1;
+            const high = getGameData('cube3dHighScore', 0);
+            const newHigh = Math.max(high, Math.floor(score));
+            const total = getGameData('cube3dTotalScore', 0) + Math.floor(score);
+            const maxOrbs = getGameData('cube3dMaxOrbs', 0);
+            const newMaxOrbs = Math.max(maxOrbs, orbs);
+            const maxTime = getGameData('cube3dMaxTime', 0);
+            const newMaxTime = Math.max(maxTime, elapsed);
+            setGameData('cube3dGamesPlayed', gamesPlayed);
+            setGameData('cube3dHighScore', newHigh);
+            setGameData('cube3dTotalScore', total);
+            setGameData('cube3dMaxOrbs', newMaxOrbs);
+            setGameData('cube3dMaxTime', newMaxTime);
+            // 保存历史记录
+            saveHistoryEntry(score, orbs, elapsed);
+            checkCube3dAchievements();
+            updateAchvBadge();
+
+            // 记录到新的游戏统计系统
+            if (window.GameStatsManager) {
+                window.GameStatsManager.recordScore('game_cube3d', Math.floor(score));
+                if (window.gameTimer) {
+                    window.gameTimer.stop();
+                }
+            }
+
+            document.getElementById('finalScore').textContent = Math.floor(score);
+            document.getElementById('finalOrbs').textContent = orbs;
+            document.getElementById('finalTime').textContent = elapsed.toFixed(1) + 's';
+            const isNewBest = Math.floor(score) >= newHigh && Math.floor(score) > 0;
+            document.getElementById('bestLine').textContent = isNewBest
+                ? '恭喜，创造新纪录！' : '历史最高：' + newHigh + ' 分';
+            document.getElementById('overOverlay').classList.remove('hidden-overlay');
+            countdownActive = false;
+        }
+
+        function showBestInfo() {
+            const high = getGameData('cube3dHighScore', 0);
+            const played = getGameData('cube3dGamesPlayed', 0);
+            const parts = ['历史最高 ' + high + ' 分 · 已游玩 ' + played + ' 局'];
+            if (customSettings.speedMultiplier > 1) parts.push('⚡ ' + customSettings.speedMultiplier + 'x 速度');
+            let tl = customSettings.timeLimit;
+            if (tl === -1) tl = customSettings.customTimeSec || 0;
+            if (tl > 0) parts.push('⏱ ' + tl + 's 限时');
+            document.getElementById('bestInfo').textContent = parts.join(' · ');
+        }
+
+        // ===== 主循环 =====
+        function loop() {
+            rafId = requestAnimationFrame(loop);
+            const now = performance.now();
+            let dt = (now - lastTime) / 1000;
+            lastTime = now;
+            if (dt > 0.1) dt = 0.1; // 防止卡顿后大步进
+
+            if (gameState === 'running') {
+                update(dt);
+            } else if (gameState === 'idle') {
+                // 球微微浮动展示
+                ballMesh.position.y = BALL_RADIUS + 0.6 + Math.sin(now * 0.002) * 0.15;
+                ballMesh.rotation.y += 0.01;
+                ballLight.position.copy(ballMesh.position);
+            }
+
+            // 物理步进（仅 running 时）
+            if (gameState === 'running') {
+                accumulator += dt;
+                while (accumulator >= fixedStep) {
+                    world.step(fixedStep);
+                    accumulator -= fixedStep;
+                }
+                // 同步网格
+                ballMesh.position.copy(ballBody.position);
+                ballMesh.quaternion.copy(ballBody.quaternion);
+                ballLight.position.set(ballMesh.position.x, ballMesh.position.y + 0.4, ballMesh.position.z);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function update(dt) {
+            elapsed += dt;
+            // 倒计时
+            if (countdownActive) {
+                countdownRemaining -= dt;
+                if (countdownRemaining <= 0) {
+                    countdownRemaining = 0;
+                    gameOver();
+                    return;
+                }
+            }
+            // 速度递增（平衡）—— 基于自定义倍率
+            const speedBase = BASE_SPEED * customSettings.speedMultiplier;
+            const maxSpeed = MAX_SPEED * customSettings.speedMultiplier;
+            forwardSpeed = Math.min(maxSpeed, speedBase + elapsed * SPEED_RAMP * customSettings.speedMultiplier);
+            distance += forwardSpeed * dt;
+            score = distance * 0.4 + orbs * 20;
+
+            // 横向控制：直接设定 x 速度
+            let vx = 0;
+            if (input.left) vx -= LATERAL_SPEED;
+            if (input.right) vx += LATERAL_SPEED;
+            // 比例缩放，使高速时操控更稳
+            ballBody.velocity.x = vx;
+
+            // 前进：保持 z 速度
+            ballBody.velocity.z = -forwardSpeed;
+
+            // 跳跃
+            if (input.jump && onGround) {
+                ballBody.velocity.y = JUMP_FORCE;
+                onGround = false;
+            }
+
+            // 落地检测
+            const vy = ballBody.velocity.y;
+            if (ballBody.position.y <= BALL_RADIUS + 0.12 && vy <= 0.5) {
+                onGround = true;
+            }
+            if (ballBody.position.y > BALL_RADIUS + 0.3) onGround = false;
+
+            // 滚动视觉（基于线速度的角速度）
+            const v = ballBody.velocity;
+            ballBody.angularVelocity.set(v.z / BALL_RADIUS * 0.6, 0, -v.x / BALL_RADIUS * 0.6);
+
+            // 掉落判定
+            if (ballBody.position.y < -8) {
+                gameOver();
+                return;
+            }
+
+            // 回收段
+            recycleSegments();
+
+            // 能量球收集（距离判定）+ 动效
+            const bp = ballBody.position;
+            segments.forEach(seg => {
+                seg.orbs.forEach(o => {
+                    if (o.collected) return;
+                    // 浮动
+                    o.mesh.position.y = o.baseY + Math.sin(elapsed * 3 + o.mesh.position.x) * 0.12;
+                    o.mesh.rotation.y += 0.05;
+                    const dx = o.mesh.position.x - bp.x;
+                    const dy = o.mesh.position.y - bp.y;
+                    const dz = o.mesh.position.z - bp.z;
+                    if (dx*dx + dy*dy + dz*dz < 1.1) {
+                        o.collected = true;
+                        orbs++;
+                        trackGroup.remove(o.mesh);
+                        if (window.__gsap) {
+                            // 收集闪光
+                            const flash = new THREE.Mesh(
+                                new THREE.SphereGeometry(0.5, 12, 12),
+                                new THREE.MeshBasicMaterial({ color: 0xffe27a, transparent: true, opacity: 0.9 })
+                            );
+                            flash.position.copy(o.mesh.position);
+                            scene.add(flash);
+                            window.__gsap.to(flash.scale, { x: 3, y: 3, z: 3, duration: 0.4, ease: 'power2.out' });
+                            window.__gsap.to(flash.material, { opacity: 0, duration: 0.4, ease: 'power2.out', onComplete: () => {
+                                scene.remove(flash); flash.geometry.dispose(); flash.material.dispose();
+                            }});
+                        }
+                    }
+                });
+            });
+
+            // 相机跟随
+            const targetX = ballBody.position.x * 0.6;
+            camera.position.x += (targetX - camera.position.x) * 0.08;
+            camera.position.z = ballBody.position.z + 11;
+            camera.position.y = 7 + Math.max(0, ballBody.position.y - BALL_RADIUS) * 0.3;
+            camera.lookAt(ballBody.position.x * 0.5, ballBody.position.y + 1, ballBody.position.z - 6);
+
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('scoreVal').textContent = Math.floor(score);
+            document.getElementById('orbVal').textContent = orbs;
+            if (countdownActive) {
+                const secs = Math.max(0, Math.ceil(countdownRemaining));
+                const mm = Math.floor(secs / 60).toString().padStart(2, '0');
+                const ss = (secs % 60).toString().padStart(2, '0');
+                const timeEl = document.getElementById('timeVal');
+                timeEl.textContent = `${mm}:${ss}`;
+                if (secs <= 10) timeEl.classList.add('countdown-active');
+                else timeEl.classList.remove('countdown-active');
+            } else {
+                document.getElementById('timeVal').textContent = elapsed.toFixed(1) + 's';
+                document.getElementById('timeVal').classList.remove('countdown-active');
+            }
+            document.getElementById('speedVal').textContent = (forwardSpeed / BASE_SPEED).toFixed(1) + 'x';
+        }
+
+        // ===== 弹窗辅助：打开/关闭时自动暂停/恢复 =====
+        function openModalPause() {
+            if (gameState === 'running') {
+                modalPausedState = 'running';
+                gameState = 'paused';
+                document.getElementById('pauseOverlay').classList.remove('hidden-overlay');
+            } else {
+                modalPausedState = null;
+            }
+            isModalOpen = true;
+        }
+        function closeModalResume() {
+            isModalOpen = false;
+            if (modalPausedState === 'running' && gameState === 'paused') {
+                gameState = 'running';
+                document.getElementById('pauseOverlay').classList.add('hidden-overlay');
+                lastTime = performance.now();
+            }
+            modalPausedState = null;
+        }
+
+        // ===== 自定义设置弹窗 =====
+        function loadCustomSettings() {
+            const saved = getGameData('cube3dCustomSettings', null);
+            if (saved) customSettings = { ...customSettings, ...saved };
+            updateCustomUI();
+        }
+        function updateCustomUI() {
+            // 滑块
+            const slider = document.getElementById('speedSlider');
+            if (slider) {
+                slider.value = customSettings.speedMultiplier;
+                updateSpeedSliderVisual();
+            }
+            // 时间分段
+            document.querySelectorAll('#timeSeg .seg-btn').forEach(b => {
+                const t = parseInt(b.dataset.time);
+                const match = t === customSettings.timeLimit;
+                b.classList.toggle('active', match);
+            });
+            // 自定义时间输入
+            const isCustom = customSettings.timeLimit === -1;
+            const wrap = document.getElementById('customTimeWrap');
+            if (wrap) {
+                if (isCustom) {
+                    wrap.classList.remove('hidden-overlay');
+                    const totalSec = customSettings.customTimeSec || 0;
+                    document.getElementById('customTimeMin').value = Math.floor(totalSec / 60);
+                    document.getElementById('customTimeSec').value = totalSec % 60;
+                } else {
+                    wrap.classList.add('hidden-overlay');
+                }
+            }
+        }
+        function updateSpeedSliderVisual() {
+            const slider = document.getElementById('speedSlider');
+            const valEl = document.getElementById('speedValue');
+            if (!slider || !valEl) return;
+            const val = parseFloat(slider.value);
+            // 1x = 橙色(#f0a050), 5x = 红色(#ff4444), 中间渐变
+            const ratio = (val - 1) / 4; // 0~1
+            const r = Math.round(240 + (255 - 240) * ratio);
+            const g = Math.round(160 + (68 - 160) * ratio);
+            const b = Math.round(80 + (68 - 80) * ratio);
+            const color = `rgb(${r},${g},${b})`;
+            valEl.textContent = val.toFixed(1) + 'x';
+            valEl.style.color = color;
+            valEl.style.textShadow = `0 0 12px ${color}80`;
+            // 滑块轨道
+            const pct = ((val - 1) / 4) * 100;
+            slider.style.background = `linear-gradient(90deg, ${color} 0%, ${color} ${pct}%, #333 ${pct}%, #333 100%)`;
+            slider.style.setProperty('--thumb-color', color);
+        }
+        function openCustomModal() {
+            loadCustomSettings();
+            document.getElementById('customModal').classList.remove('hidden-overlay');
+            document.getElementById('customModalBackdrop').classList.add('show');
+            openModalPause();
+        }
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.add('hidden-overlay');
+            document.getElementById('customModalBackdrop').classList.remove('show');
+            closeModalResume();
+        }
+        function saveCustomSettings() {
+            // 验证自定义时间
+            if (customSettings.timeLimit === -1) {
+                const min = parseInt(document.getElementById('customTimeMin').value) || 0;
+                const sec = parseInt(document.getElementById('customTimeSec').value) || 0;
+                const total = min * 60 + sec;
+                if (total <= 0) {
+                    showCustomTimeError('请输入有效的时间！');
+                    return;
+                }
+                if (total > 3600) {
+                    showCustomTimeError('时间不能超过 60 分钟！');
+                    return;
+                }
+                customSettings.customTimeSec = total;
+            }
+            setGameData('cube3dCustomSettings', { ...customSettings });
+            closeCustomModal();
+        }
+        function showCustomTimeError(msg) {
+            const err = document.getElementById('customTimeErr');
+            err.textContent = msg;
+            err.classList.add('show');
+            setTimeout(() => err.classList.remove('show'), 2500);
+        }
+        function resetCustomSettings() {
+            customSettings = { speedMultiplier: 1, timeLimit: 0, customTimeSec: 0 };
+            setGameData('cube3dCustomSettings', { ...customSettings });
+            updateCustomUI();
+        }
+        function applyCustomSettingsToRun() {
+            if (customSettings.speedMultiplier > 1) {
+                forwardSpeed = BASE_SPEED * customSettings.speedMultiplier;
+            }
+            let timeLimit = customSettings.timeLimit;
+            if (timeLimit === -1) {
+                timeLimit = customSettings.customTimeSec || 0;
+            }
+            if (timeLimit > 0) {
+                countdownActive = true;
+                countdownRemaining = timeLimit;
+            } else {
+                countdownActive = false;
+                countdownRemaining = 0;
+            }
+        }
+
+        // ===== 历史记录 =====
+        function getHistory() {
+            return getGameData('cube3dHistory', []) || [];
+        }
+        function saveHistoryEntry(score, orbs, time) {
+            const history = getHistory();
+            history.unshift({ score: Math.floor(score), orbs, time: Math.round(time), date: Date.now() });
+            if (history.length > 20) history.length = 20;
+            setGameData('cube3dHistory', history);
+        }
+        function renderHistory() {
+            const history = getHistory();
+            const highScore = getGameData('cube3dHighScore', 0);
+            const total = getGameData('cube3dGamesPlayed', 0);
+            document.getElementById('historyHighScore').textContent = highScore;
+            document.getElementById('historyTotal').textContent = total + ' 局';
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                list.innerHTML = '<div class="history-empty">暂无记录，快去开始第一局吧！</div>';
+                return;
+            }
+            list.innerHTML = history.map((h, i) => {
+                const rank = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+                const date = new Date(h.date);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                return `
+                    <div class="history-item">
+                        <div class="history-rank ${rank}">${medal}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <span class="history-score">${h.score} 分</span>
+                                <span class="history-meta">${dateStr}</span>
+                            </div>
+                            <div class="history-meta mt-1">
+                                <i class="fas fa-gem text-yellow-400"></i> ${h.orbs} 球 · 
+                                <i class="fas fa-clock text-pre-primary"></i> ${h.time.toFixed(1)}s
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        function openHistoryModal() {
+            renderHistory();
+            document.getElementById('historyModal').classList.remove('hidden-overlay');
+            document.getElementById('historyModalBackdrop').classList.add('show');
+            openModalPause();
+        }
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.add('hidden-overlay');
+            document.getElementById('historyModalBackdrop').classList.remove('show');
+            closeModalResume();
+        }
+        function resetHistory() {
+            showConfirm('重置历史记录', '确定要清除所有历史记录吗？此操作不可撤销。', () => {
+                setGameData('cube3dHistory', []);
+                renderHistory();
+                updateAchvBadge();
+            });
+        }
+
+        // ===== 成就侧边栏 =====
+        function renderAchievementSidebar() {
+            const unlocked = getGameData('cube3dAchievements', []) || [];
+            const specialAchievements = getGameData('specialAchievements', []) || [];
+            const specialComplete = specialAchievements.includes('cube3d_complete') || unlocked.length >= 10;
+            const cond = cube3dConditions();
+            const list = document.getElementById('achvList');
+            const allDefs = [...cube3dAchievementDefs, {
+                id: 'cube3d_complete',
+                name: '光影之王',
+                desc: '解锁光影冲刺所有成就',
+                icon: 'fa-crown',
+                isSpecial: true,
+                progress: unlocked.length >= 10 ? 1 : unlocked.length / 10
+            }];
+            list.innerHTML = allDefs.map(a => {
+                const isUnlocked = unlocked.includes(a.id) || (a.id === 'cube3d_complete' && unlocked.length >= 10);
+                const progress = isUnlocked ? 1 : computeAchievementProgress(a.id);
+                const pct = Math.round(progress * 100);
+                const circumference = 2 * Math.PI * 18;
+                const offset = circumference * (1 - progress);
+                return `
+                    <div class="achv-card ${isUnlocked ? 'unlocked' : ''}">
+                        <div class="achv-progress-ring">
+                            <svg width="48" height="48">
+                                <circle class="ring-bg" cx="24" cy="24" r="18" fill="none" stroke-width="3"/>
+                                <circle class="ring-fg" cx="24" cy="24" r="18" fill="none" stroke-width="3"
+                                    stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+                            </svg>
+                            <div class="achv-progress-text">${isUnlocked ? '✓' : pct + '%'}</div>
+                        </div>
+                        <div class="achv-info">
+                            <div class="flex items-center gap-2">
+                                <div class="achv-icon"><i class="fas ${a.icon}"></i></div>
+                                <div>
+                                    <div class="achv-name">${a.name}</div>
+                                    <div class="achv-desc">${a.desc}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="achv-status">${isUnlocked ? '已解锁' : pct + '%'}</div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('achvUnlockedCount').textContent = unlocked.length;
+            document.getElementById('achvTotalCount').textContent = cube3dAchievementDefs.length + 1;
+            // 全部完成时显示文本
+            const progText = document.getElementById('achvProgressText');
+            const total = cube3dAchievementDefs.length + 1;
+            const totalUnlocked = unlocked.length + (specialComplete ? 1 : 0);
+            if (totalUnlocked >= total) {
+                progText.textContent = '🏆 全部完成！';
+                progText.className = 'text-xs font-bold gradient-text';
+            } else {
+                progText.innerHTML = `<span id="achvUnlockedCount">${unlocked.length}</span> / <span id="achvTotalCount">${total}</span> 已解锁`;
+                progText.className = 'text-xs text-gray-400';
+            }
+        }
+        function computeAchievementProgress(id) {
+            const c = cube3dConditions();
+            const d = cube3dAchievementDefs.find(x => x.id === id);
+            if (!d) return id === 'cube3d_complete' ? (getGameData('cube3dAchievements', []).length / 10) : 0;
+            switch (id) {
+                case 'cube3d_first_game': return Math.min(1, getGameData('cube3dGamesPlayed', 0));
+                case 'cube3d_score_100': return Math.min(1, getGameData('cube3dHighScore', 0) / 100);
+                case 'cube3d_score_300': return Math.min(1, getGameData('cube3dHighScore', 0) / 300);
+                case 'cube3d_score_600': return Math.min(1, getGameData('cube3dHighScore', 0) / 600);
+                case 'cube3d_games_5': return Math.min(1, getGameData('cube3dGamesPlayed', 0) / 5);
+                case 'cube3d_games_15': return Math.min(1, getGameData('cube3dGamesPlayed', 0) / 15);
+                case 'cube3d_orbs_10': return Math.min(1, getGameData('cube3dMaxOrbs', 0) / 10);
+                case 'cube3d_orbs_25': return Math.min(1, getGameData('cube3dMaxOrbs', 0) / 25);
+                case 'cube3d_survivor_30': return Math.min(1, getGameData('cube3dMaxTime', 0) / 30);
+                case 'cube3d_survivor_60': return Math.min(1, getGameData('cube3dMaxTime', 0) / 60);
+                default: return 0;
+            }
+        }
+        function updateAchvBadge() {
+            const unlocked = getGameData('cube3dAchievements', []) || [];
+            const special = getGameData('specialAchievements', []) || [];
+            const total = unlocked.length + (special.includes('cube3d_complete') ? 1 : 0);
+            const badge = document.getElementById('achvBadge');
+            const totalAll = cube3dAchievementDefs.length + 1;
+            if (total >= totalAll) {
+                badge.textContent = '全部完成';
+                badge.style.background = 'linear-gradient(135deg, #f0a050, #d45d79, #9b6dff)';
+                badge.style.maxWidth = 'none';
+                badge.style.borderRadius = '10px';
+                badge.style.padding = '0 8px';
+                badge.style.fontSize = '0.6rem';
+                badge.style.height = '18px';
+            } else {
+                badge.textContent = total;
+                badge.style.background = '';
+                badge.style.maxWidth = '';
+                badge.style.borderRadius = '';
+                badge.style.padding = '';
+                badge.style.fontSize = '';
+                badge.style.height = '';
+            }
+        }
+        function openAchvSidebar() {
+            renderAchievementSidebar();
+            document.getElementById('achvSidebar').classList.add('open');
+            openModalPause();
+        }
+        function closeAchvSidebar() {
+            document.getElementById('achvSidebar').classList.remove('open');
+            closeModalResume();
+        }
+
+        // ===== 成就横幅通知 =====
+        let bannerShowing = false;
+        let bannerTimer = null;
+        function showAchievementBanner(name) {
+            const banner = document.getElementById('achvBanner');
+            if (!banner) return;
+            // 去重：已在显示则只更新文字
+            if (bannerShowing) {
+                document.getElementById('achvBannerText').textContent = `🎉 成就解锁：${name}`;
+                return;
+            }
+            document.getElementById('achvBannerText').textContent = `🎉 成就解锁：${name}`;
+            banner.classList.remove('hide');
+            banner.classList.add('show');
+            bannerShowing = true;
+            if (bannerTimer) clearTimeout(bannerTimer);
+            bannerTimer = setTimeout(() => {
+                hideAchievementBanner();
+            }, 2800);
+        }
+        function hideAchievementBanner() {
+            const banner = document.getElementById('achvBanner');
+            if (!banner) return;
+            banner.classList.remove('show');
+            banner.classList.add('hide');
+            // 动画结束后强制重置
+            setTimeout(() => {
+                banner.classList.remove('hide');
+                bannerShowing = false;
+            }, 500);
+        }
+
+        // ===== 确认弹窗 =====
+        let confirmCallback = null;
+        function showConfirm(title, msg, onOk) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMsg').textContent = msg;
+            confirmCallback = onOk;
+            document.getElementById('confirmModal').classList.remove('hidden-overlay');
+        }
+        function hideConfirm() {
+            document.getElementById('confirmModal').classList.add('hidden-overlay');
+            confirmCallback = null;
+        }
+
+        // ===== 启动与容错 =====
+        window.__gsap = (typeof gsap !== 'undefined') ? gsap : null;
+        // Lenis 初始化（页面为全屏游戏，Lenis 仅做轻量平滑，禁用 wheel 避免干扰）
+        if (typeof Lenis !== 'undefined') {
+            try {
+                const lenis = new Lenis({ duration: 1.0, smoothWheel: false, touchMultiplier: 1 });
+                function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+                requestAnimationFrame(raf);
+            } catch (e) { /* 忽略 Lenis 异常 */ }
+        }
+
+        let started = false;
+        try {
+            init();
+            started = true;
+        } catch (err) {
+            console.error('光影冲刺初始化失败：', err);
+            document.getElementById('loadingOverlay').classList.add('hidden-overlay');
+            document.getElementById('errorOverlay').classList.remove('hidden-overlay');
+        }
+        // 兜底：若 6 秒未完成初始化，显示加载失败
+        setTimeout(() => {
+            if (!started) {
+                document.getElementById('loadingOverlay').classList.add('hidden-overlay');
+                document.getElementById('errorOverlay').classList.remove('hidden-overlay');
+            }
+        }, 6000);
+    </script>
+</body>
+</html>
