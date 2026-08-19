@@ -352,6 +352,42 @@ const announcementData = {
     // 普通公告
     normalAnnouncements: [
         {
+            id: "normalA-20260819",
+            title: "RC 3.0.1.1 前端框架更替进展与新游戏推送说明",
+            date: "2026-08-19",
+            tag: "notice",
+            tagText: "通知",
+            author: "GPY Games Studio - PREAlmax",
+            images: [],
+            content: [
+                "大家好，这里是 PREAlmax。",
+                "",
+                "[color:#d45d79]【前端框架全面更替】[/color]",
+                "继 RC 3.0.1.0 版本完成 UI 视觉层面的重构之后，我们目前正在逐步推进启动器前端框架的更替工作：由原先的 MUI 框架完整替换为 Tailwind CSS（UI 现代化）+ GSAP（高性能动画引擎）+ Lenis（平滑滚动）的「三剑客」组合。",
+                "新的技术栈更加现代、动画能力更强、体积更轻，能够为启动器带来更流畅的运行体验与更丰富的视觉表现，也为后续更复杂的游戏效果打下了基础。",
+                "",
+                "[color:#4ecdc4]【新框架测试页已上线】[/color]",
+                "我们在前几日同步更新了一个用于测试新框架的演示页。如果还没有进入过新测试页的用户，可以在进入启动器登录页后向下滚动，在登录页底部找到「PRE Demo」的入口；",
+                "也可以直接点击此处 [link:html/prelauncherdemo.html]进入新框架测试页[/link] 进行体验！",
+                "",
+                "[color:#ffd93d]【为什么要更换框架】[/color]",
+                "更新框架的目的，一方面是为了让启动器的 UI 更现代、运行更流畅；",
+                "另一方面，我们也希望不再拘泥于 2D 平面游戏的效果——在旧框架下，做出来的效果与我们预期相差甚远，而新框架具备更强的 3D 与动画表现能力，能够支撑我们实现更丰富、更立体的游戏画面。",
+                "",
+                "[color:#ff6b6b]【老旧游戏的框架更替进展】[/color]",
+                "与此同时，我们也没有忘记启动器内之前的老旧游戏，目前正在对它们逐一进行框架更替。",
+                "在 2026-08-19 推送的 RC 3.0.1.1 版本更新中，我们已经大致完成了「五子连珠」和「贪吃蛇」两款游戏框架的更新，并同步追加了两个全新游戏——「光影冲刺」和「光影恐龙」。",
+                "这两款全新游戏正好帮助我们向各位用户直观展示框架更新后游戏的 3D 效果表现。目前这些全新游戏已正式推送给各位用户，希望大家能拥有一个全新的使用体验！",
+                "",
+                "[color:#d45d79]【写在最后】[/color]",
+                "衷心感谢每一位用户的持续关注与支持！",
+                "您的每一条建议、每一份反馈，都是我们前进的动力。",
+                "如果您有任何想法或建议，欢迎通过 Github 仓库提交 Issue 与我们进行沟通。",
+                "",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "normalA-20260715",
             title: "RC 2.7.0.6 (b9) 注册时间校验功能回退说明",
             date: "2026-07-15",
@@ -3156,7 +3192,13 @@ function showAnnouncementDetail(announcement, allAnnouncements) {
         let formattedParagraph = paragraph;
         const colorRegex = /\[color:([^\]]+)\]([^\[]+)\[\/color\]/g;
         formattedParagraph = formattedParagraph.replace(colorRegex, '<span style="color: $1;">$2</span>');
-        
+
+        // 解析链接格式 [link:路径]文本[/link] —— 渲染为与主题色一致的内联按钮
+        const linkRegex = /\[link:([^\]]+)\]([^\[]+)\[\/link\]/g;
+        formattedParagraph = formattedParagraph.replace(linkRegex, function(match, path, text) {
+            return '<a href="' + path + '" style="display: inline-block; padding: 3px 12px; margin: 0 4px; background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%); color: #fff; text-decoration: none; border-radius: 6px; font-size: 0.95em; font-weight: 500; box-shadow: 0 2px 6px rgba(212, 93, 121, 0.3); transition: all 0.25s ease; vertical-align: middle;" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 10px rgba(212, 93, 121, 0.4)\';" onmouseout="this.style.transform=\'translateY(0)\';this.style.boxShadow=\'0 2px 6px rgba(212, 93, 121, 0.3)\';">' + text + '</a>';
+        });
+
         announcementHTML += `
             <p>${formattedParagraph}</p>
         `;
