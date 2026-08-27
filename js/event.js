@@ -615,9 +615,46 @@ function getCheckinData(eventId) {
     var key = getCheckinStorageKey(eventId);
     var stored = localStorage.getItem(key);
     if (stored) {
-        try { return JSON.parse(stored); } catch(e) {}
+        try {
+            var data = JSON.parse(stored);
+            var needsMigration = false;
+
+            if (typeof data.unlockedDays === 'undefined') {
+                data.unlockedDays = 0;
+                needsMigration = true;
+            }
+            if (!data.claimedDays) data.claimedDays = [];
+            if (!data.firstCheckinDate) {
+                data.firstCheckinDate = null;
+                needsMigration = true;
+            }
+            if (!data.lastCheckinDate) {
+                data.lastCheckinDate = null;
+                needsMigration = true;
+            }
+
+            if (needsMigration) {
+                var todayStr = getTodayDateStr();
+                if (data.claimedDays.length > 0) {
+                    var maxClaimed = Math.max.apply(null, data.claimedDays);
+                    data.unlockedDays = Math.min(maxClaimed + 1, 14);
+                    data.firstCheckinDate = todayStr;
+                    data.lastCheckinDate = todayStr;
+                }
+                if (data.unlockedDays === 0) {
+                    data.unlockedDays = 1;
+                    data.firstCheckinDate = todayStr;
+                    data.lastCheckinDate = todayStr;
+                }
+                if (!data.firstCheckinDate) data.firstCheckinDate = todayStr;
+                if (!data.lastCheckinDate) data.lastCheckinDate = todayStr;
+                saveCheckinData(eventId, data);
+            }
+
+            return data;
+        } catch(e) {}
     }
-    return { claimedDays: [], lastClaimDate: null };
+    return { claimedDays: [], firstCheckinDate: null, lastCheckinDate: null, unlockedDays: 0 };
 }
 
 function saveCheckinData(eventId, data) {
@@ -625,38 +662,65 @@ function saveCheckinData(eventId, data) {
     localStorage.setItem(key, JSON.stringify(data));
 }
 
-function getCurrentCheckinDay() {
-    var startDate = new Date('2026-08-26T00:00:00+08:00');
+function getTodayDateStr() {
     var now = new Date();
     var utc8 = new Date(now.getTime() + (8 * 60 * 60 * 1000));
-    var todayStr = utc8.toISOString().substring(0, 10);
-    var today = new Date(todayStr + 'T00:00:00+08:00');
-    var diffMs = today - startDate;
-    var diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    var day = diffDays + 1;
-    if (day < 1) return 0;
-    if (day > 14) return 14;
-    return day;
+    return utc8.toISOString().substring(0, 10);
 }
 
-function isCheckinDayUnlocked(rewardDay) {
-    var currentDay = getCurrentCheckinDay();
-    return rewardDay <= currentDay;
+function updateCheckinProgress(eventId) {
+    var data = getCheckinData(eventId);
+    var todayStr = getTodayDateStr();
+    var rewards = getCheckinRewards(eventId);
+    var maxDays = rewards ? rewards.length : 14;
+
+    if (data.unlockedDays === 0 || !data.firstCheckinDate) {
+        data.firstCheckinDate = todayStr;
+        data.lastCheckinDate = todayStr;
+        data.unlockedDays = 1;
+        saveCheckinData(eventId, data);
+        return data;
+    }
+
+    if (data.lastCheckinDate !== todayStr && data.unlockedDays < maxDays) {
+        var lastDate = new Date(data.lastCheckinDate + 'T00:00:00+08:00');
+        var todayDate = new Date(todayStr + 'T00:00:00+08:00');
+        var diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+        var daysToUnlock = Math.min(diffDays, maxDays - data.unlockedDays);
+        if (daysToUnlock > 0) {
+            data.unlockedDays += daysToUnlock;
+            data.lastCheckinDate = todayStr;
+            saveCheckinData(eventId, data);
+        }
+    }
+
+    return data;
+}
+
+function getCurrentCheckinDay(eventId) {
+    var data = getCheckinData(eventId);
+    return data.unlockedDays || 0;
+}
+
+function isCheckinDayUnlocked(eventId, rewardDay) {
+    var data = getCheckinData(eventId);
+    return rewardDay <= (data.unlockedDays || 0);
 }
 
 function generateCheckinSection(eventId) {
     var rewards = getCheckinRewards(eventId);
     if (!rewards || rewards.length === 0) return '';
 
+    updateCheckinProgress(eventId);
     var checkinData = getCheckinData(eventId);
     var claimedDays = checkinData.claimedDays || [];
-    var currentDay = getCurrentCheckinDay();
+    var currentDay = getCurrentCheckinDay(eventId);
     var allClaimed = claimedDays.length >= rewards.length;
 
     var cardsHtml = rewards.map(function(reward) {
         var isClaimed = claimedDays.indexOf(reward.day) !== -1;
         var isGold = reward.isGold;
-        var isLocked = !isCheckinDayUnlocked(reward.day);
+        var isLocked = !isCheckinDayUnlocked(eventId, reward.day);
         var cardClass = 'evt-reward-card';
         if (isGold) cardClass += ' evt-reward-card-gold';
         if (isClaimed) cardClass += ' claimed';
@@ -734,7 +798,7 @@ function bindCheckinInteractions(eventId) {
     var scrollContainer = document.getElementById('checkinCardsScroll');
     if (!scrollContainer) return;
 
-    var currentDay = getCurrentCheckinDay();
+    var currentDay = getCurrentCheckinDay(eventId);
 
     scrollContainer.querySelectorAll('.evt-reward-card').forEach(function(card) {
         card.addEventListener('click', function() {
@@ -751,7 +815,7 @@ function bindCheckinInteractions(eventId) {
             }
 
             if (isLocked) {
-                showToast({ type: 'info', title: '暂未解锁', message: '该奖励卡暂未解锁，请接着签到以推进奖励解锁进度吧' });
+                showToast({ type: 'info', title: '暂未解锁', message: '该奖励卡暂未解锁，请明天登录后继续签到以推进进度' });
                 return;
             }
 
@@ -788,9 +852,10 @@ function bindCheckinInteractions(eventId) {
     var claimAllBtn = document.getElementById('checkinClaimAllBtn');
     if (claimAllBtn) {
         claimAllBtn.addEventListener('click', function() {
+            updateCheckinProgress(eventId);
             var data = getCheckinData(eventId);
             var claimedDays = data.claimedDays || [];
-            var currentDay = getCurrentCheckinDay();
+            var currentDay = getCurrentCheckinDay(eventId);
 
             var availableRewards = rewards.filter(function(r) {
                 return r.day <= currentDay && claimedDays.indexOf(r.day) === -1;
@@ -822,6 +887,7 @@ function claimCheckinReward(eventId, day, reward) {
 
     data.claimedDays.push(day);
     data.lastClaimDate = new Date().toISOString();
+    data.lastCheckinDate = getTodayDateStr();
     saveCheckinData(eventId, data);
 
     if (reward.type === 'exp') {

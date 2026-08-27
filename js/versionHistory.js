@@ -217,6 +217,19 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.1.2 (c2)",
+            date: "2026-08-27",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 修复秋季签到活动天数计算不正确的问题：原逻辑硬编码活动起始日（2026-08-26）计算解锁天数，导致新注册用户也能直接领取多天奖励；已重构为基于用户实际签到进度（首次签到日期+登录天数）计算解锁状态，新用户首日仅可领取第1天奖励，每日登录推进一天解锁",
+                "- 修复奖励卡解锁状态随活动默认时间推进导致自动解锁的问题：已移除基于全局日期的解锁判断，改为每用户独立的 unlockedDays 字段管理，仅在用户登录访问签到区时才推进解锁进度，杜绝自动解锁",
+                "- 新增旧数据迁移兼容：对已有老用户数据自动迁移至新结构（补充 firstCheckinDate/lastCheckinDate/unlockedDays 字段），迁移时根据已领取天数推算合理的初始解锁进度，保证历史用户体验不受影响",
+            ]
+        },
+        {
             version: "RC 3.0.1.2 (c1)",
             date: "2026-08-27",
             tag: "important",
