@@ -80,6 +80,41 @@ var mailSystem = {
         var mail = mails.find(function(m) { return m.id === mailId; });
         if (!mail || mail.isClaimed) return false;
         
+        // 发放对象二次校验：若邮件要求注册时间早于指定时间点，
+        // 即使邮件已存在于邮箱中，也不允许不符合条件的账户领取。
+        // 与 isMailAvailable 保持一致的宽松策略：无法判定注册时间时放行，
+        // 仅当能明确判定账户注册时间晚于门槛时才拦截。
+        if (mail.requireRegisteredBefore) {
+            var deadlineTime = typeof mail.requireRegisteredBefore === 'string' 
+                ? this.parseCSTTime(mail.requireRegisteredBefore) 
+                : mail.requireRegisteredBefore;
+            
+            if (deadlineTime !== null) {
+                var userRegTime = this.getUserRegisterTime();
+                if (userRegTime !== null && userRegTime >= deadlineTime) {
+                    console.log('[MailSystem] Mail claim blocked by registration time check:', mailId);
+                    return false;
+                }
+            }
+        }
+        
+        // 应用附件奖励
+        // 当前支持类型：
+        //   - experience：经验值，领取后立即对账户等级生效
+        //   - background：背景奖励，仅记录到领取历史中（由用户在历史中预览/应用）
+        // 后续新增奖励类型可在此处扩展
+        if (mail.attachments && mail.attachments.length > 0) {
+            mail.attachments.forEach(function(att) {
+                if (att.type === 'experience' && att.count) {
+                    if (typeof addCheckinExp === 'function') {
+                        addCheckinExp(att.count);
+                    } else {
+                        console.warn('[MailSystem] addCheckinExp not available, experience reward skipped:', att.count);
+                    }
+                }
+            });
+        }
+        
         mail.isClaimed = true;
         
         var history = this.getMailHistory();
@@ -147,8 +182,53 @@ var mailSystem = {
         return null;
     },
     
+    // ==================== 账户注册时间检查系统 ====================
+    // 用于判定邮件发放对象：当邮件模板配置了 requireRegisteredBefore 时，
+    // 仅当当前账户的注册时间早于该时间点，邮件才会被发放与显示。
+    // 每个邮件模板均可独立配置该字段，便于后续灵活发放邮件。
+    getUserRegisterTime: function() {
+        var currentUserStr = localStorage.getItem('currentUser');
+        if (!currentUserStr) {
+            console.warn('[MailSystem] getUserRegisterTime: no currentUser in localStorage');
+            return null;
+        }
+        
+        try {
+            var currentUser = JSON.parse(currentUserStr);
+            if (!currentUser || !currentUser.username) {
+                console.warn('[MailSystem] getUserRegisterTime: currentUser has no username');
+                return null;
+            }
+            
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var foundUser = users.find(function(u) { return u.username === currentUser.username; });
+            
+            if (!foundUser) {
+                console.warn('[MailSystem] getUserRegisterTime: user not found in registeredUsers:', currentUser.username);
+                return null;
+            }
+            
+            if (!foundUser.createdAt) {
+                console.warn('[MailSystem] getUserRegisterTime: user has no createdAt field:', currentUser.username);
+                return null;
+            }
+            
+            var ts = new Date(foundUser.createdAt).getTime();
+            if (isNaN(ts)) {
+                console.warn('[MailSystem] getUserRegisterTime: createdAt is unparseable:', foundUser.createdAt);
+                return null;
+            }
+            
+            return ts;
+        } catch(e) {
+            console.error('[MailSystem] Failed to get user register time:', e);
+            return null;
+        }
+    },
+    
     isMailAvailable: function(mailTemplate) {
         var now = Date.now();
+        var mailId = mailTemplate.id || 'unknown';
         
         if (mailTemplate.startTime) {
             var startTime = typeof mailTemplate.startTime === 'string' 
@@ -156,6 +236,11 @@ var mailSystem = {
                 : mailTemplate.startTime;
             
             if (startTime !== null && now < startTime) {
+                console.log('[MailSystem] isMailAvailable: BLOCKED by startTime check',
+                    'mailId:', mailId,
+                    'now:', now, '(' + new Date(now).toLocaleString() + ')',
+                    'startTime:', startTime, '(' + new Date(startTime).toLocaleString() + ')',
+                    'now < startTime:', now < startTime);
                 return false;
             }
         }
@@ -166,10 +251,41 @@ var mailSystem = {
                 : mailTemplate.endTime;
             
             if (endTime !== null && now > endTime) {
+                console.log('[MailSystem] isMailAvailable: BLOCKED by endTime check',
+                    'mailId:', mailId,
+                    'now:', now, '(' + new Date(now).toLocaleString() + ')',
+                    'endTime:', endTime, '(' + new Date(endTime).toLocaleString() + ')',
+                    'now > endTime:', now > endTime);
                 return false;
             }
         }
         
+        // 发放对象注册时间检查：若邮件模板要求注册时间早于指定时间点，
+        // 则校验当前账户注册时间。
+        // 注意：当无法确定账户注册时间时（如老账户缺少 createdAt 字段），
+        // 默认放行——因为这类账户通常早于该字段引入时间，本身就符合发放条件。
+        // 仅当能明确判定账户注册时间晚于门槛时才拦截。
+        if (mailTemplate.requireRegisteredBefore) {
+            var deadlineTime = typeof mailTemplate.requireRegisteredBefore === 'string' 
+                ? this.parseCSTTime(mailTemplate.requireRegisteredBefore) 
+                : mailTemplate.requireRegisteredBefore;
+            
+            if (deadlineTime !== null) {
+                var userRegTime = this.getUserRegisterTime();
+                console.log('[MailSystem] isMailAvailable: requireRegisteredBefore check',
+                    'mailId:', mailId,
+                    'deadlineTime:', deadlineTime, '(' + new Date(deadlineTime).toLocaleString() + ')',
+                    'userRegTime:', userRegTime, userRegTime !== null ? '(' + new Date(userRegTime).toLocaleString() + ')' : 'null (will pass)');
+                
+                if (userRegTime !== null && userRegTime >= deadlineTime) {
+                    console.log('[MailSystem] isMailAvailable: BLOCKED by registration time check',
+                        'userRegTime(' + new Date(userRegTime).toLocaleString() + ') >= deadlineTime(' + new Date(deadlineTime).toLocaleString() + ')');
+                    return false;
+                }
+            }
+        }
+        
+        console.log('[MailSystem] isMailAvailable: PASSED', mailId);
         return true;
     },
     
@@ -266,6 +382,29 @@ var mailSystem = {
                     endTime: "2026-08-31 23:59:59"
                 }
             ]
+        },
+        {
+            version: 4,
+            date: "2026-08-27",
+            mails: [
+                {
+                    id: 'compensation_mail_20260827',
+                    title: '2026-08-27 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。在 2026-08-27 推送的 RC 3.0.1.2 (c2) 版本更新中，我们对启动器进行了多项功能优化与问题修复。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上 300 经验值作为版本更新补偿。领取后将立即对您的账户等级生效，助力您在秋季签到等级提速活动中更进一步。\n\n本邮件发放对象为 2026-08-27 09:00:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-09-03 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值',
+                            type: 'experience',
+                            count: 300,
+                            icon: 'fa-star'
+                        }
+                    ],
+                    startTime: "2026-08-27 09:00:00",
+                    endTime: "2026-09-03 23:59:59",
+                    requireRegisteredBefore: "2026-08-27 09:00:00"
+                }
+            ]
         }
         
     ],
@@ -307,6 +446,7 @@ var mailSystem = {
                     if (mailTemplate.content !== undefined && existingMail.content !== mailTemplate.content) needsUpdate = true;
                     if (mailTemplate.attachments !== undefined && JSON.stringify(existingMail.attachments) !== JSON.stringify(mailTemplate.attachments)) needsUpdate = true;
                     if (endTime !== undefined && existingMail.expireTime !== endTime) needsUpdate = true;
+                    if (mailTemplate.requireRegisteredBefore !== undefined && existingMail.requireRegisteredBefore !== mailTemplate.requireRegisteredBefore) needsUpdate = true;
                     
                     if (needsUpdate) {
                         console.log('[MailSystem] Updating existing mail:', mailTemplate.id);
@@ -326,6 +466,10 @@ var mailSystem = {
                         isRead: false,
                         isClaimed: false
                     };
+                    // 持久化发放对象注册时间门槛，便于领取时二次校验
+                    if (mailTemplate.requireRegisteredBefore !== undefined) {
+                        newMail.requireRegisteredBefore = mailTemplate.requireRegisteredBefore;
+                    }
                     
                     var history = this.getMailHistory();
                     var hasClaimed = history.some(function(item) { return item.id === newMail.id; });
@@ -365,6 +509,11 @@ var mailSystem = {
                 ? this.parseCSTTime(mailTemplate.endTime) 
                 : mailTemplate.endTime;
             if (endTime !== null) mail.expireTime = endTime;
+        }
+        
+        // 同步发放对象注册时间门槛，便于领取时二次校验
+        if (mailTemplate.requireRegisteredBefore !== undefined) {
+            mail.requireRegisteredBefore = mailTemplate.requireRegisteredBefore;
         }
         
         this.saveMails(mails);
@@ -1180,20 +1329,61 @@ function escapeHtml(str) {
 
 function debugMailSystem() {
     console.log('=== Mail System Debug ===');
-    console.log('mailSystem object:', typeof mailSystem);
-    console.log('mailVersions:', mailSystem.mailVersions);
-    console.log('Current mails:', mailSystem.getMails());
-    console.log('Last mail version:', mailSystem.getLastMailVersion());
     
-    var currentVersion = mailSystem.getLastMailVersion();
-    var latestVersion = 0;
-    mailSystem.mailVersions.forEach(function(v) {
-        if (v.version > latestVersion) {
-            latestVersion = v.version;
+    var currentUserStr = localStorage.getItem('currentUser');
+    var currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+    console.log('currentUser:', currentUser);
+    
+    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    if (currentUser && currentUser.username) {
+        var foundUser = users.find(function(u) { return u.username === currentUser.username; });
+        console.log('Found user in registeredUsers:', foundUser ? foundUser.username : 'NOT FOUND');
+        if (foundUser) {
+            console.log('User createdAt:', foundUser.createdAt, 'type:', typeof foundUser.createdAt);
+            if (foundUser.createdAt) {
+                var ts = new Date(foundUser.createdAt).getTime();
+                console.log('Parsed timestamp:', ts, 'isNaN:', isNaN(ts));
+                if (!isNaN(ts)) {
+                    console.log('Parsed date:', new Date(ts).toLocaleString());
+                }
+            }
         }
+    }
+    
+    console.log('--- getUserRegisterTime ---');
+    var regTime = mailSystem.getUserRegisterTime();
+    console.log('getUserRegisterTime result:', regTime, regTime !== null ? '(' + new Date(regTime).toLocaleString() + ')' : 'null');
+    
+    console.log('--- Mail versions ---');
+    mailSystem.mailVersions.forEach(function(v) {
+        console.log('Version', v.version, ':', v.mails.map(function(m) { return m.id + ' (start:' + m.startTime + ', end:' + m.endTime + ', reqRegBefore:' + (m.requireRegisteredBefore || 'none') + ')'; }));
     });
+    
+    console.log('--- isMailAvailable test for compensation mail ---');
+    var compMail = mailSystem.mailVersions[3].mails[0];
+    console.log('Compensation mail template:', compMail);
+    var available = mailSystem.isMailAvailable(compMail);
+    console.log('isMailAvailable result:', available);
+    
+    console.log('--- Parsed times ---');
+    console.log('startTime parsed:', mailSystem.parseCSTTime(compMail.startTime));
+    console.log('endTime parsed:', mailSystem.parseCSTTime(compMail.endTime));
+    console.log('requireRegisteredBefore parsed:', mailSystem.parseCSTTime(compMail.requireRegisteredBefore));
+    console.log('now:', Date.now(), '(' + new Date().toLocaleString() + ')');
+    
+    console.log('--- Current mails ---');
+    var mails = mailSystem.getMails();
+    console.log('Mail count:', mails.length);
+    mails.forEach(function(m) { console.log('  -', m.id, m.title, 'expireTime:', m.expireTime); });
+    
+    console.log('--- Last version ---');
+    console.log('Last mail version:', mailSystem.getLastMailVersion());
+    var latestVersion = 0;
+    mailSystem.mailVersions.forEach(function(v) { if (v.version > latestVersion) latestVersion = v.version; });
     console.log('Latest version available:', latestVersion);
-    console.log('Need updates:', currentVersion < latestVersion);
+    console.log('Need updates:', mailSystem.getLastMailVersion() < latestVersion);
+    
+    console.log('=== Debug complete ===');
 }
 
 function openBackgroundPreview(attachment) {
