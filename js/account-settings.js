@@ -1,30 +1,46 @@
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
+    // Check if DOM is already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAccountSettings);
+    } else {
+        initAccountSettings();
+    }
+    
+    function initAccountSettings() {
     var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     
     if (!currentUser.username) {
-        window.location.href = '../index.html';
-        return;
+        // Only redirect if this is the account settings page
+        if (window.location.pathname.indexOf('account-settings') !== -1) {
+            window.location.href = '../index.html';
+            return;
+        }
     }
     
-    document.body.classList.add('page-transition-in');
-    setTimeout(function() {
-        document.body.classList.remove('page-transition-in');
-    }, 500);
+    // Check if account-settings specific elements exist
+    var isAccountSettingsPage = !!document.getElementById('accountUsername');
     
-    SettingsManager.init();
-    AccountLangManager.init();
-    SettingsManager.initCardCollapse();
-    loadUserInfo();
-    initializeEventListeners();
-    loadDeviceInfo();
-    loadLoginHistory();
-    
-    checkOfflineModeAndDisableFeatures();
-    
-    updateExperimentalFeaturesState();
-    
-    // 绑定简约设计顶部导航栏
-    bindMinimalistSettingsNav(currentUser);
+    if (isAccountSettingsPage) {
+        document.body.classList.add('page-transition-in');
+        setTimeout(function() {
+            document.body.classList.remove('page-transition-in');
+        }, 500);
+        
+        SettingsManager.init();
+        AccountLangManager.init();
+        SettingsManager.initCardCollapse();
+        loadUserInfo();
+        initializeEventListeners();
+        loadDeviceInfo();
+        loadLoginHistory();
+        
+        checkOfflineModeAndDisableFeatures();
+        
+        updateExperimentalFeaturesState();
+        
+        // 绑定简约设计顶部导航栏
+        bindMinimalistSettingsNav(currentUser);
+    }
     
     function loadUserInfo() {
         var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
@@ -2578,13 +2594,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     return avatarItem.id === avatar;
                 });
                 
-                if (foundAvatar) {
+                if (foundAvatar && customAvatarOption) {
                     customAvatarOption.classList.add('selected');
                     customAvatarOption.style.backgroundImage = 'url(' + foundAvatar.image + ')';
                     customAvatarOption.style.backgroundSize = 'cover';
                     customAvatarOption.style.backgroundPosition = 'center';
                     customAvatarOption.innerHTML = '';
-                } else {
+                } else if (customAvatarOption) {
                     // 如果找不到对应的自定义头像，显示默认上传按钮
                     customAvatarOption.classList.remove('selected');
                     customAvatarOption.style.backgroundImage = '';
@@ -2592,7 +2608,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     customAvatarOption.style.backgroundPosition = '';
                     customAvatarOption.innerHTML = '<i class="fas fa-upload"></i>';
                 }
-            } else {
+            } else if (customAvatarOption) {
                 // 如果没有自定义头像数组，显示默认上传按钮
                 customAvatarOption.classList.remove('selected');
                 customAvatarOption.style.backgroundImage = '';
@@ -2600,7 +2616,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 customAvatarOption.style.backgroundPosition = '';
                 customAvatarOption.innerHTML = '<i class="fas fa-upload"></i>';
             }
-        } else {
+        } else if (customAvatarOption) {
             // 不是自定义头像，显示默认上传按钮
             customAvatarOption.classList.remove('selected');
             customAvatarOption.style.backgroundImage = '';
@@ -2628,6 +2644,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 同步头像到其他页面
             syncAvatarToAllPages(users[userIndex]);
+            
+            // 更新index.html中的用户名片头像（如果存在）
+            if (typeof updateUserCardAvatarDisplay === 'function') {
+                updateUserCardAvatarDisplay(avatar);
+            }
+            // 更新右上角个人卡片头像
+            if (typeof syncMinimalistUserInfo === 'function') {
+                syncMinimalistUserInfo();
+            }
         }
     }
     
@@ -2879,6 +2904,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showAvatarEditor(originalImage) {
+        // Inject avatar editor CSS if not present
+        if (!document.getElementById('avatar-editor-styles')) {
+            var styleEl = document.createElement('style');
+            styleEl.id = 'avatar-editor-styles';
+            styleEl.textContent = `
+                .avatar-editor-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+                .avatar-editor-container.show { opacity: 1; visibility: visible; }
+                .avatar-editor-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+                .avatar-editor-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; overflow: hidden; transform: scale(0.9); transition: transform 0.3s ease; display: flex; flex-direction: column; }
+                .avatar-editor-container.show .avatar-editor-content { transform: scale(1); }
+                .avatar-editor-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; background: #f8f9fa; }
+                .avatar-editor-header h3 { margin: 0; font-size: 18px; font-weight: bold; color: #333; }
+                .close-editor-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s ease; }
+                .close-editor-btn:hover { background: #eee; color: #333; }
+                .avatar-editor-body { display: flex; padding: 20px; gap: 20px; flex: 1; overflow-y: auto; }
+                .editor-preview { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 300px; flex: 1; }
+                .preview-container { position: relative; width: 100%; max-width: 100%; background: #f8f9fa; border-radius: 8px; overflow: hidden; display: inline-block; }
+                #editorImage { display: block; max-width: 100%; max-height: 75vh; object-fit: contain; margin: 0 auto; }
+                .crop-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+                .crop-overlay::before { content: ''; width: 80%; height: 80%; background: transparent; border: 2px dashed #fff; }
+                .editor-tools { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px; }
+                .avatar-editor-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 20px; border-top: 1px solid #eee; background: #f8f9fa; }
+                .avatar-editor-footer button { padding: 10px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+                .avatar-editor-footer .cancel-btn { background: #e0e0e0; color: #333; }
+                .avatar-editor-footer .cancel-btn:hover { background: #d0d0d0; }
+                .avatar-editor-footer .confirm-btn { background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%); color: white; }
+                .avatar-editor-footer .confirm-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,93,121,0.3); }
+                .filter-btn.active { background: #d45d79 !important; color: white !important; border-color: #d45d79 !important; }
+                .crop-btn.active { background: #d45d79 !important; color: white !important; border-color: #d45d79 !important; }
+            `;
+            document.head.appendChild(styleEl);
+        }
+        
         // 创建头像编辑窗口
         var editorContainer = document.createElement('div');
         editorContainer.className = 'avatar-editor-container';
@@ -3387,14 +3445,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 users[userIndex].userProfile.avatar = avatarId;
                 localStorage.setItem('registeredUsers', JSON.stringify(users));
                 
-                // 更新头像显示
-                updateAvatarDisplay();
+                // 更新头像显示（仅在account-settings页面）
+                if (document.querySelector('.avatar-selection')) {
+                    updateAvatarDisplay();
+                }
                 
                 // 更新左上角头像
                 updateSidebarAvatar(users[userIndex]);
                 
                 // 同步头像到其他页面
                 syncAvatarToAllPages(users[userIndex]);
+                
+                // 更新index.html中的用户名片头像（如果存在）
+                if (typeof updateUserCardAvatarDisplay === 'function') {
+                    updateUserCardAvatarDisplay(avatarId);
+                }
+                // 更新右上角个人卡片头像
+                if (typeof syncMinimalistUserInfo === 'function') {
+                    syncMinimalistUserInfo();
+                }
                 
                 showAlert('头像上传成功');
             }
@@ -3494,23 +3563,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // 添加上传头像按钮
-        var uploadBtnContainer = document.createElement('div');
-        uploadBtnContainer.className = 'avatar-option custom-avatar';
-        uploadBtnContainer.id = 'customAvatarOption';
-        uploadBtnContainer.innerHTML = '<i class="fas fa-upload"></i>';
-        // 确保上传按钮没有背景图片
-        uploadBtnContainer.style.background = '';
-        uploadBtnContainer.style.backgroundImage = '';
-        uploadBtnContainer.style.backgroundSize = '';
-        uploadBtnContainer.style.backgroundPosition = '';
-        uploadBtnContainer.style.color = '';
-        avatarSelection.appendChild(uploadBtnContainer);
-        
         // 重新绑定事件
-        document.getElementById('customAvatarOption').addEventListener('click', function() {
-            document.getElementById('avatarUpload').click();
-        });
+        var customAvatarOption = document.getElementById('customAvatarOption');
+        if (customAvatarOption) {
+            customAvatarOption.addEventListener('click', function() {
+                document.getElementById('avatarUpload').click();
+            });
+        }
         
         // 为删除头像按钮添加事件监听器
         document.querySelectorAll('.delete-avatar-btn').forEach(function(btn) {
@@ -4077,6 +4136,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // 如果是隐藏UI设置，更新页面时钟开关状态
             if (setting === 'hideUiEnabled') {
                 updatePageClockToggleState();
+            }
+            
+            // 同步 5 个隐私好友设置到 SettingsManager/appSettings，实现与名片「好友设置」双向同步
+            var PRIVACY_KEYS = ['publicProfile', 'showOnlineStatus', 'allowFriendRequests', 'strangerMessages', 'readReceipts'];
+            if (PRIVACY_KEYS.indexOf(setting) !== -1) {
+                try {
+                    if (typeof SettingsManager !== 'undefined' && typeof SettingsManager.set === 'function') {
+                        SettingsManager.set(setting, value);
+                    } else {
+                        var s = {};
+                        try { s = JSON.parse(localStorage.getItem('appSettings') || '{}'); } catch (e) { s = {}; }
+                        s[setting] = value;
+                        localStorage.setItem('appSettings', JSON.stringify(s));
+                    }
+                } catch (e) {
+                    console.warn('[saveSetting] 同步好友设置到 SettingsManager 失败:', e);
+                }
             }
         }
     }
@@ -5550,6 +5626,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var backgroundSize = '100% 100%';
         var animation = '';
         var hasParticles = false;
+        var is3D = false;
         
         if (userDefaultBg) {
             try {
@@ -5568,6 +5645,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (parsedDefaultBg && parsedDefaultBg.particles) {
                 hasParticles = true;
+            }
+            if (parsedDefaultBg && parsedDefaultBg.is3D) {
+                is3D = true;
             }
             } catch (e) {
                 console.warn('解析用户默认背景失败:', e);
@@ -5592,12 +5672,28 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(particlesContainer);
             console.log('DEBUG - particles container added to DOM');
         }
+
+        if (is3D && typeof window.create3DSpaceBackground === 'function') {
+            var spaceContainer = document.createElement('div');
+            spaceContainer.id = 'global-3d-space-bg';
+            spaceContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:hidden;';
+            document.body.appendChild(spaceContainer);
+            window.create3DSpaceBackground('global-3d-space-bg');
+        }
         
+        if (is3D) {
+            document.body.style.background = 'transparent';
+            document.body.style.backgroundSize = 'auto';
+            document.body.style.backgroundPosition = 'initial';
+            document.body.style.backgroundRepeat = 'initial';
+            document.body.style.backgroundAttachment = 'initial';
+        } else {
         document.body.style.background = gradient;
         document.body.style.backgroundSize = isDynamic ? backgroundSize : '100% 100%';
         document.body.style.backgroundPosition = isDynamic ? '0% 50%' : 'center';
         document.body.style.backgroundRepeat = 'no-repeat';
         document.body.style.backgroundAttachment = 'fixed';
+        }
         
         if (isDynamic && animation) {
             document.body.style.animation = animation;
@@ -5613,7 +5709,11 @@ document.addEventListener('DOMContentLoaded', function() {
             body::before {
                 display: none !important;
             }
-            
+            ${is3D ? `
+            body.dark-mode {
+                background: transparent !important;
+            }
+            ` : `
             body.dark-mode {
                 background: ${gradient} !important;
                 background-size: ${isDynamic ? backgroundSize : '100% 100%'} !important;
@@ -5622,6 +5722,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 background-attachment: fixed !important;
                 ${isDynamic && animation ? 'animation: ' + animation + ' !important;' : ''}
             }
+            `}
             
             .settings-content::before, .content-container::before, .main-content::before {
                 display: none !important;
@@ -5751,6 +5852,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var existingParticles = document.getElementById('global-particles-container');
         if (existingParticles) {
             existingParticles.remove();
+        }
+
+        var existing3DBg = document.getElementById('global-3d-space-bg');
+        if (existing3DBg) {
+            if (typeof window.destroy3DSpaceBackground === 'function') {
+                window.destroy3DSpaceBackground('global-3d-space-bg');
+            }
+            existing3DBg.remove();
         }
         
         document.body.style.background = '';
@@ -8668,6 +8777,16 @@ document.addEventListener('DOMContentLoaded', function() {
             showDate: true,
             dateText: '2026.08',
             particles: true
+        },
+        {
+            id: 'bg-3d-space',
+            name: '3D太空遨游',
+            gradient: 'radial-gradient(ellipse at 50% 50%, #1a1a3e 0%, #0f0c29 50%, #050510 100%)',
+            category: 'special',
+            locked: true,
+            is3D: true,
+            unlockType: 'event',
+            unlockSource: 'center_002'
         }
     ];
     
@@ -8754,7 +8873,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sectionTitle.setAttribute('data-category', category);
             
             var infoIcon = category === 'special' 
-                ? '<span class="background-info-icon"><i class="fas fa-info-circle"></i><span class="background-info-tooltip">该类别是通过邮件、兑换码或其他来源获取的背景</span></span>' 
+                ? '<span class="background-info-icon"><i class="fas fa-info-circle"></i><span class="background-info-tooltip">该类别是通过邮件、兑换码、活动中心等获取的背景</span></span>' 
                 : '';
             
             sectionTitle.innerHTML = '<span class="category-icon"><i class="fas fa-' + icon + '"></i></span><span>' + title + '</span>' + infoIcon + '<button class="background-category-toggle"><i class="fas fa-chevron-down"></i></button>';
@@ -8901,7 +9020,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var defaultBgSettings = {
             type: 'gradient',
             gradient: gradient,
-            name: name
+            name: name,
+            backgroundId: selectedDefaultBackground.id
         };
         
         if (selectedDefaultBackground.isDynamic) {
@@ -8915,6 +9035,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (selectedDefaultBackground.particles) {
                 defaultBgSettings.particles = true;
             }
+        }
+
+        if (selectedDefaultBackground.is3D) {
+            defaultBgSettings.is3D = true;
         }
         
         localStorage.setItem('defaultBackgroundGradient', JSON.stringify(defaultBgSettings));
@@ -9682,14 +9806,27 @@ document.addEventListener('DOMContentLoaded', function() {
         enhancedFeaturesToggleBtn.addEventListener('click', toggleEnhancedFeatures);
     }
     
-    updateGlobalThemeColorPreview();
-    
-    var savedGlobalThemeColor = localStorage.getItem('globalThemeColor');
-    if (savedGlobalThemeColor) {
-        applyGlobalThemeColorToPage(savedGlobalThemeColor);
+    // Only run account-settings specific UI updates on the account settings page
+    if (isAccountSettingsPage) {
+        updateGlobalThemeColorPreview();
+        
+        var savedGlobalThemeColor = localStorage.getItem('globalThemeColor');
+        if (savedGlobalThemeColor) {
+            applyGlobalThemeColorToPage(savedGlobalThemeColor);
+        }
     }
     
-});
+    // Expose avatar functions for cross-page use
+    window.saveAvatar = saveAvatar;
+    window.showAvatarEditor = showAvatarEditor;
+    window.handleAvatarUpload = handleAvatarUpload;
+    window.syncAvatarToAllPages = syncAvatarToAllPages;
+    window.closeAvatarEditor = closeAvatarEditor;
+    window.saveEditedAvatar = saveEditedAvatar;
+    window.updateAvatarDisplay = updateAvatarDisplay;
+    window.updateSidebarAvatar = updateSidebarAvatar;
+    } // end of initAccountSettings
+})(); // end of IIFE
 
 function toggleStickyNotes() {
     var enabled = document.getElementById('enableStickyNotes').checked;

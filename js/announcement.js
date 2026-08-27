@@ -547,6 +547,112 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260827",
+            title: "RC 3.0.1.2 开发日志",
+            date: "2026-08-27",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 3.0.1.2 重大版本更新！本次更新围绕社交系统与活动中心两大核心模块进行了全面升级，全新好友系统带来完整的社交功能闭环，活动中心与活动公告弹窗实现跨弹窗联动，同时新增用户名片头像编辑、3D 太空遨游背景等重大内容，带来更丰富的社交体验和更流畅的活动交互！",
+                "[color:#d45d79]【新增功能】[/color]",
+                "• 全新好友系统：用户名片侧边栏新增「好友」Tab，提供好友卡片网格展示（一行三列）、空状态引导、好友搜索添加、好友设置、好友申请管理、黑名单管理等完整社交功能",
+                "• 好友申请机制：搜索添加好友改为发送申请模式，不再直接添加；目标用户需同意后双方才建立好友关系，实现双向好友确认流程",
+                "• 查看申请弹窗：操作栏新增「查看申请」按钮（带红点数字徽章实时显示未处理申请数），弹窗内列出所有收到的好友申请，每条申请配备「同意」「拒绝」「加入黑名单」三个操作按钮",
+                "• 管理黑名单弹窗：操作栏新增「管理黑名单」按钮，弹窗内列出所有被拉黑用户，支持查看用户信息并一键「移出黑名单」恢复对方申请权限",
+                "• 好友搜索智能状态：搜索结果按钮支持 7 级互斥状态（自己/已是好友/对方关闭申请/被对方拉黑/已申请/对方已申请/可添加），每种状态对应不同按钮样式与交互，含禁用态与跳转态",
+                "• 好友设置功能：新增「好友设置」弹窗，包含 5 项隐私开关（公开个人资料/显示在线状态/允许好友请求/接收陌生人消息/显示已读回执），与系统设置页隐私设置双向实时同步",
+                "• 好友卡片展示：好友列表采用渐变头像卡片网格布局，显示好友昵称、ID、等级徽章、签名，支持「发消息」「删除好友」操作；等级徽章从 user.level 优先读取，gameData.level 兜底",
+                "• 黑名单防护机制：被拉黑用户无法再发送好友申请，搜索时显示「被对方拉黑」禁用按钮；移出黑名单后自动恢复对方申请权限",
+                "• 好友申请重复防护：同一用户不可重复发送申请，搜索结果按钮自动变为「已申请」禁用态；若对方已向我方发送申请，按钮变为蓝色「对方已申请」可点击态，直接跳转查看申请弹窗",
+                "• 隐私设置「允许好友请求」开关：关闭后其他用户搜索时按钮自动变为灰色「对方关闭申请」禁用态，彻底阻止申请发送",
+                "• 好友数据自动初始化：ensureFriendDataFields 函数为所有历史用户自动补全 friends/username[]、friendRequests/[]、sentRequests/[]、blacklist/[] 四个社交字段，兼容旧用户数据",
+                "• 好友徽章红点动态渲染：名片渲染阶段同步读取当前用户 friendRequests 数组长度生成红点徽章 HTML，申请数 ≥1 显示具体数字，≥100 显示 99+，处理申请后徽章自动消失",
+                "• 新增「加入黑名单」按钮：好友卡片操作区新增第三个按钮（橙色-ban 图标），点击后弹出自定义确认弹窗，确认后先双向解除好友关系再写入黑名单，一步完成删除+拉黑双操作",
+                "• 新增 addUserToBlacklist 函数：支持直接将指定用户加入当前用户黑名单，含重复检测与友好提示，与 blockUserFromRequest 互为补充",
+                "• 新增 blockFriendFromCard 封装：串联 mutualRemoveFriend（双向删好友）+ addUserToBlacklist（加入黑名单）+ Toast 反馈的完整拉黑流程",
+                "• 新增 sendMessageToFriend 占位函数：为「发消息」按钮预留接口，后续接入聊天模块时可直接替换实现",
+                "• 事件委托统一升级：bindFriendCardEvents 扩展为同时处理删除好友、加入黑名单、发消息三种按钮点击事件，代码结构清晰易扩展",
+                "• 用户名片头像编辑功能：在用户名片「注册时间」下方新增「编辑头像」胶囊按钮（粉色渐变背景 + 编辑图标），点击后弹出头像选择弹窗，支持 6 种默认头像（用户/机器人/猫咪/狗狗/龙/幽灵）和自定义上传两种模式",
+                "• 头像选择弹窗交互：默认头像网格（6列布局，圆形渐变背景），点击即切换并保存；自定义上传区域（虚线边框 + 云上传图标），点击后打开文件选择器",
+                "• 头像编辑器跨页面调用：上传自定义头像后自动打开与系统设置页完全相同的头像编辑器，支持裁剪比例（1:1/4:3/16:9）、滤镜（原图/黑白/复古/模糊/明亮）、亮度/对比度/饱和度调整、自定义头像名，编辑器CSS动态注入 document.head，支持在任意页面调用",
+                "• account-settings.js 架构重构：将原 DOMContentLoaded 闭包改为 IIFE + initAccountSettings() 结构，支持脚本在任意页面加载而不报错；头像编辑器 CSS 改为动态注入，不依赖外部样式文件",
+                "• 顶部导航栏结构优化：将原独立的「版本更新」与「开发者公告」两个导航项合并为统一的「公告中心」下拉菜单，支持鼠标悬浮与点击两种展开方式，保持登录页与游戏中心两处导航栏完全一致",
+                "• 公告中心多级菜单：下拉菜单按顺序包含 4 个条目——活动中心、活动公告、版本更新、开发者公告，每项独立绑定各自的弹窗打开逻辑",
+                "• 活动公告全屏弹窗：全新全屏弹窗，采用邮件弹窗同款布局（Header + 侧边栏 + 主内容区），侧边栏按分类（当前活动/即将到来/已结束）展示公告条目，主内容区预留 Banner 头图区域显示公告详情",
+                "• 活动中心全屏弹窗：全新全屏弹窗，同样基于邮件弹窗基础模板，侧边栏按分类（精选活动/每日活动/特殊活动）展示活动卡片，主内容区支持活动详情展示与「立即参与」「活动规则」操作按钮，内容结构灵活可扩展",
+                "• 活动公告已读状态管理：引入 localStorage 持久化记录已读公告 ID，未读条目显示红色圆点 + 渐变色「最新」标签（带脉冲呼吸动画），点击公告后自动标记已读并移除标签；支持「一键已读」批量操作",
+                "• 代码架构优化：将原混在 announcement.js 中的活动相关代码（eventAnnouncementData、eventCenterData、弹窗生成/渲染/交互函数共约 490 行）完整抽离为独立的 event.js 模块，代码组织参照 versionHistory.js、announcement.js、premail.js 的模块规范，数据与逻辑分离、全局函数暴露、分区注释标记",
+                "• i18n 多语言支持：为公告中心、活动中心、活动公告新增 4 种语言（中文/英文/日文/韩文）的国际化翻译条目，接入 lang.js 统一管理",
+                "• 下拉菜单静态 CSS 样式：为登录页补充独立的下拉菜单 CSS 样式，确保无需 JS 预加载即可正常显示交互",
+                "• 主题与响应式适配：两个活动弹窗及下拉菜单完整支持普通模式、暗色模式、透明模式三种主题，以及移动端响应式布局",
+                "• 新增更改名片样式按钮，用户可在系统设置页自定义名片样式，更新样式后可立即生效（系统默认/特殊获取）",
+                "• 新增每日签到公告：活动公告系统新增「每日签到」条目，作为活动中心「每日签到」活动的规则说明页，起始日固定显示「账号建立时间」、结束时间固定显示「无限制」，与签到页面内容形成联动闭环",
+                "• 活动排序自定义配置：活动中心与活动公告数据新增 sortOrder 数组字段，支持在代码内自定义侧边栏显示顺序；新增 sortEventsByConfig() / sortAnnouncementsByConfig() 两个排序工具函数",
+                "• 活动规则跨弹窗跳转增强：活动中心「每日签到」活动的「活动规则」按钮现在正确关联到新增的每日签到公告条目，点击后自动跳转至对应活动公告详情",
+                "• 每日签到「立即参与」跳转：活动中心点击每日签到活动的「立即参与」按钮后，自动关闭弹窗、显示页面签到区、平滑滚动定位到签到区域，实现一键直达签到",
+                "• 奖励领取逻辑优化：移除「只能领取当天奖励」的限制，改为允许领取所有已解锁的奖励卡，此前错过的签到日仍可补领",
+                "• 一键领取逻辑升级：「一键领取」按钮从「只领当天」改为「领取所有已解锁且未领取的奖励」，一次性批量处理并提示实际领取数量",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 好友数据原子保存机制：设计 withAllUsers(mutator) 闭包抽象，所有好友/申请/黑名单修改通过一次 read→补全字段→业务逻辑→write 原子完成，避免并发脏写导致的数据不一致",
+                "• 双向关系同步：acceptFriendRequest / mutualRemoveFriend 等函数在双方 registeredUsers 条目上对称修改 friends[] 数组，确保好友关系双向一致",
+                "• 申请清理联动：处理申请时（同意/拒绝/拉黑）同步清理对方的 sentRequests 对应项；拒绝和拉黑场景下清理对方 sentRequests 后对方可重新发送申请，拉黑场景下同时追加我方 blacklist 永久禁止",
+                "• 好友删除改为双向删除：删除好友按钮触发 mutualRemoveFriend，双方 friends[] 列表同时移除对方，彻底解决旧版单向删除导致的残留问题",
+                "• 编辑侧边栏标签页管理：renderTabManagementList / renderSectionManagementList 两处 tabOrder 硬编码数组同步加入 'friends'，用户可在布局管理中自由开关好友 Tab 的显示",
+                "• 隐私设置双写同步：account-settings.js saveSetting 函数对 5 个隐私键同步写入 registeredUsers.userProfile 与 SettingsManager / localStorage.appSettings，好友设置弹窗读写保持数据源一致",
+                "• 好友 Tab 卡片等级显示修复：buildFriendCardHTML 等级读取改为 user.level 优先、gameData.level 兜底，修复旧用户卡片等级恒为 1 的问题",
+                "• 按钮悬停样式优化：查看申请按钮与管理黑名单按钮 hover 时不再加深背景渐变色，改为保持原配色 + 微微上浮 + 柔和阴影，视觉体验与其他按钮统一",
+                "• CSS 模块化加载：申请/黑名单/徽章相关 80+ 条 CSS 样式通过 ensureFriendRequestStyles() 动态注入 document.head，与主样式分离便于维护，支持幂等加载与暗色模式完整适配",
+                "• 好友卡片结构重排：将原居中纵向布局改为左上-右下分区布局，头像放置卡片左上角、用户名+UID 放置头像右侧、用户签名放置卡片左下角、操作按钮放置卡片右下角，信息层级更清晰",
+                "• 好友卡片字体全面放大：用户名从 15px → 16px、UID 从 11px → 12px、签名从 12px → 14px，阅读舒适度显著提升",
+                "• 操作按钮尺寸放大：好友卡片操作按钮从 32px → 36px 圆形图标按钮，点击区域更大，视觉更突出",
+                "• 按钮悬浮气泡提示：为「发消息」「删除好友」「加入黑名单」三个操作按钮新增 CSS Tooltip 悬浮气泡，鼠标悬停时在按钮上方显示对应操作名称，带淡入动画与箭头指示器",
+                "• 头像选择区精简：系统设置页头像选择区删除末尾的上传头像按钮，只保留下方独立的上传区域；updateAvatarDisplay() 函数同步移除重新添加上传按钮的逻辑，避免重复添加",
+                "• 编辑按钮样式优化：原头像右下角圆形覆盖按钮改为注册时间下方的胶囊按钮（编辑图标 + 文字），更大更显眼；按钮支持 hover 上浮 + 阴影加深、active 回弹动画",
+                "• showConfirm 三参数调用规范：统一 showConfirm(title, message, callback) 的调用方式，修复原活动公告「一键已读」按钮因参数缺失导致回调函数被当作文本显示、确定按钮无反应的问题",
+                "• 活动数据版本控制：新增 EVENT_DATA_VERSION 版本号机制，当数据版本不匹配时自动清理旧的已读记录，解决历史测试数据残留导致所有公告恒为已读的问题",
+                "• 侧边栏条目布局优化：活动公告条目调整为左侧圆点 + 中间标题日期 + 右侧「最新」标签的三段式 flex 布局",
+                "• 最新标签视觉设计：采用渐变背景 + 白色文字 + 脉冲呼吸动画，暗色模式自动切换配色，已读状态通过 .viewed 选择器隐藏标签",
+                "• 奖励卡片视觉全面放大：卡片尺寸从 130×175px → 150×200px，标签从 2 行截断改为 3 行显示，文字采用 word-break:break-all 完整展示",
+                "• 奖励卡片与主页签到卡片 CSS 完全隔离：将活动中心奖励卡片的 CSS 类名从 .checkin-card 全部重命名为 .evt-reward-card 前缀，彻底解决与主页每日签到卡片的样式冲突",
+                "• 「立即参与」按钮条件显示：活动数据新增 showParticipate 布尔字段，各活动可独立控制是否显示该按钮；「活动规则」按钮也改为条件显示（需存在 announcementId）",
+                "• 奖励卡类型视觉差异化：cardStyle 类型改用 fa-id-card 图标 + 粉色圆形背景，background3d 类型改用 fa-rocket 图标 + 紫色圆形背景",
+                "• 查找机制健壮性：getCheckinRewards() 函数保留双重查找机制（先按 eventId 直接匹配，找不到则通过 hasCheckin + checkinDays 长度智能匹配），即使更改活动 ID 仍能正确找到奖励数据",
+                "• 移动端响应式同步更新：奖励卡片移动端尺寸同步从 112×155px → 130×175px，保持移动端视觉一致性",
+                "• 深色/透明模式适配：新增 evt-reward-card-lock 在深色模式和透明模式下的样式适配",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复编辑侧边栏「布局管理-标签页管理」未显示好友条目的问题：根因为 tabOrder 硬编码白名单遗漏 'friends'；已同步在两处数组末尾添加",
+                "• 修复好友设置与系统设置页隐私设置不同步的问题：两边原读写不同数据源；已改为双写同步保持数据源一致",
+                "• 修复好友卡片等级徽章恒为 1 的问题：原只读取 gameData.level；已改为双源兜底（user.level 优先 + gameData.level 兜底）",
+                "• 修复添加好友直接建立关系的问题：原点击添加按钮立即将对方加入 friends[] 数组；已改为发送申请模式，经对方同意后才建立双向好友关系",
+                "• 修复黑名单用户仍能发送申请的问题：原拉黑操作仅在我方添加记录；已改为拉黑时同步清理对方 sentRequests，搜索时双向拦截",
+                "• 修复申请处理后红点徽章不更新的问题：已改为名片渲染阶段直接读取 friendRequests.length 生成 HTML，重建名片时徽章数字立即正确",
+                "• 修复好友卡片等级徽章被裁剪的问题：原 overflow:hidden 导致徽章被裁剪；已移除并调整偏移确保徽章完整可见",
+                "• 修复删除好友使用浏览器默认弹窗的问题：已改为调用全局 showConfirm() 页面内自定义模态框，视觉体验统一",
+                "• 修复右上角个人卡片头像不更新的问题：原硬编码 avatarEl.className；已改为读取 localStorage 支持自定义头像和默认头像双模式切换",
+                "• 修复修改头像后多处不同步的问题：saveAvatar() 和 saveEditedAvatar() 现在同时更新用户名片、右上角个人卡片、跨页面 localStorage 三处",
+                "• 修复 updateAvatarDisplay 重新添加已删除上传按钮的问题：已改为仅在元素存在时绑定事件，不再动态创建",
+                "• 修复活动公告侧边栏活动状态恒为已读的问题：已新增数据版本控制机制自动清理旧记录",
+                "• 修复「一键已读」弹窗显示 JavaScript 代码文本的问题：原 showConfirm 仅传 2 参数；已修正为三参数调用",
+                "• 修复「一键已读」弹窗确定按钮点击无反应的问题：与上述同源，修复三参数后正常触发 markAllEventAnnouncementsAsRead()",
+                "• 修复奖励卡片内容显示不全的问题：原卡片尺寸 100×135px + 2 行截断导致长文本被裁切；已放大至 150×200px + 3 行显示",
+                "• 修复每日签到卡片显示不正确的问题：根因是 CHECKIN_REWARDS 键与活动实际 ID 不匹配；已修正键名并增加回退查找逻辑",
+                "• 修复更改活动 ID 后奖励区不显示的问题：原三处均使用硬编码直接查找；已统一改用 getCheckinRewards() 函数支持直接匹配 + 回退匹配",
+                "• 修复活动规则按钮无法跳转的问题：已为每个活动数据增加 announcementId 字段，实现关闭中心弹窗 → 打开公告弹窗 → 自动定位的完整链路",
+                "• 修复奖励领取仅限当天的逻辑错误：原判断 day !== currentDay 导致错过天数后无法补领；已改为 day > currentDay，支持补领所有已解锁的历史奖励",
+                "• 修复「一键领取」只能领当天奖励的问题：已改为遍历所有 day ≤ currentDay 且未领取的奖励，一次性全部领取",
+                "• 修复活动中心卡片 CSS 污染主页签到卡片的问题：已将活动中心奖励卡片全部重命名为 evt-reward-card 前缀，两套样式完全隔离",
+                "• 修复秋季签到活动不需要「立即参与」按钮的问题：已改为通过 showParticipate 字段条件渲染",
+                "• 修复侧边栏缺少「最新」标签的问题：已在活动公告条目右侧新增标签元素，未读显示、已读隐藏，点击或一键已读后自动清除",
+                "[color:#d45d79]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！本次版本更新带来了全新的好友社交系统、活动中心与活动公告弹窗、用户名片头像编辑、3D 太空遨游背景等重大功能，以及大量的交互优化和问题修复。希望能为您带来更丰富、更流畅的使用体验！",
+                "如果您在使用过程中发现任何问题，或有任何想法和建议，欢迎通过 Github 仓库提交 Issue 与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260819",
             title: "RC 3.0.1.1 开发日志",
             date: "2026-08-19",
@@ -2475,64 +2581,80 @@ function showAnnouncementSelection(announcements) {
         justify-content: space-between;
         padding: 20px 20px 10px;
         margin-bottom: 10px;
+        position: relative;
     `;
+    
+    var isDarkMode = document.body.classList.contains('dark-mode');
     
     var hintText = document.createElement('p');
     hintText.className = 'announcement-selection-hint';
     hintText.style.cssText = `
         font-style: normal;
         font-size: 16px;
-        color: #333;
+        color: ${isDarkMode ? '#e0e0e0' : '#333'};
         margin: 0;
     `;
     hintText.textContent = '请选择要查看的公告';
     hintContainer.appendChild(hintText);
     
+    // 添加筛选按钮容器（用于定位下拉菜单）
+    var filterBtnContainer = document.createElement('div');
+    filterBtnContainer.style.cssText = `
+        position: relative;
+        display: inline-block;
+    `;
+    
     // 添加筛选按钮
     var filterButton = document.createElement('button');
     filterButton.className = 'announcement-filter-btn';
+    var filterBtnBg = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
+    var filterBtnBorder = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
+    var filterBtnColor = isDarkMode ? '#e67e8a' : '#d45d79';
     filterButton.style.cssText = `
         display: flex;
         align-items: center;
         gap: 6px;
         padding: 8px 16px;
-        border: 1px solid rgba(212, 93, 121, 0.3);
+        border: 1px solid ${filterBtnBorder};
         border-radius: 20px;
-        background: white;
-        color: #d45d79;
+        background: ${filterBtnBg};
+        color: ${filterBtnColor};
         font-size: 13px;
         cursor: pointer;
         transition: all 0.3s ease;
     `;
     filterButton.innerHTML = `<i class="fas fa-filter"></i> <span>筛选</span>`;
-    hintContainer.appendChild(filterButton);
+    filterBtnContainer.appendChild(filterButton);
+    hintContainer.appendChild(filterBtnContainer);
     contentArea.appendChild(hintContainer);
     
-    // 添加筛选菜单
-    var filterMenu = document.createElement('div');
-    filterMenu.className = 'announcement-filter-menu';
-    var isDarkMode = document.body.classList.contains('dark-mode');
     var menuBg = isDarkMode ? 'rgba(50, 50, 70, 0.98)' : 'white';
     var menuBorder = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(212, 93, 121, 0.2)';
     var menuShadow = isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)';
     var menuText = isDarkMode ? '#e0e0e0' : '#333';
     var menuHover = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(212, 93, 121, 0.05)';
     
+    // 添加筛选菜单（在按钮下方展开）
+    var filterMenu = document.createElement('div');
+    filterMenu.className = 'announcement-filter-menu';
     filterMenu.style.cssText = `
-        display: none;
-        position: fixed;
-        top: 150px;
-        right: 30px;
-        width: 240px;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 260px;
         background: ${menuBg};
         border-radius: 12px;
         box-shadow: 0 8px 32px ${menuShadow};
         border: 1px solid ${menuBorder};
         z-index: 1000;
         overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition: all 0.25s ease;
     `;
     
-    // 月份筛选子菜单
+    // 月份筛选子项
     var monthMenuItem = document.createElement('div');
     monthMenuItem.className = 'filter-menu-item';
     monthMenuItem.style.cssText = `
@@ -2543,13 +2665,14 @@ function showAnnouncementSelection(announcements) {
         justify-content: space-between;
         transition: background 0.2s ease;
         color: ${menuText};
+        user-select: none;
     `;
     monthMenuItem.innerHTML = `
         <span style="font-size: 14px;">仅显示以下月份的所有公告</span>
-        <i class="fas fa-chevron-right" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'};"></i>
+        <i class="fas fa-chevron-right filter-menu-arrow" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'}; transition: transform 0.2s ease;"></i>
     `;
     
-    // 版本筛选子菜单
+    // 版本筛选子项
     var versionMenuItem = document.createElement('div');
     versionMenuItem.className = 'filter-menu-item';
     versionMenuItem.style.cssText = `
@@ -2561,55 +2684,59 @@ function showAnnouncementSelection(announcements) {
         transition: background 0.2s ease;
         color: ${menuText};
         border-top: 1px solid ${menuBorder};
+        user-select: none;
     `;
     versionMenuItem.innerHTML = `
         <span style="font-size: 14px;">仅显示以下版本内的所有公告</span>
-        <i class="fas fa-chevron-right" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'};"></i>
+        <i class="fas fa-chevron-right filter-menu-arrow" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'}; transition: transform 0.2s ease;"></i>
     `;
     
     filterMenu.appendChild(monthMenuItem);
     filterMenu.appendChild(versionMenuItem);
     
-    // 月份选择子菜单
+    // 月份选择子菜单（与主菜单同级定位，从右向左滑入）
     var monthSubMenu = document.createElement('div');
     monthSubMenu.className = 'filter-submenu';
     monthSubMenu.style.cssText = `
-        display: none;
-        position: fixed;
-        top: 150px;
-        right: 270px;
-        width: 240px;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 260px;
         background: ${menuBg};
         border-radius: 12px;
         box-shadow: 0 8px 32px ${menuShadow};
         border: 1px solid ${menuBorder};
-        z-index: 1001;
+        z-index: 1002;
         overflow-y: auto;
         max-height: 300px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(30px);
+        transition: all 0.25s ease;
     `;
     
-    // 版本选择子菜单
+    // 版本选择子菜单（与主菜单同级定位，从右向左滑入）
     var versionSubMenu = document.createElement('div');
     versionSubMenu.className = 'filter-submenu';
     versionSubMenu.style.cssText = `
-        display: none;
-        position: fixed;
-        top: 150px;
-        right: 270px;
-        width: 240px;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 260px;
         background: ${menuBg};
         border-radius: 12px;
         box-shadow: 0 8px 32px ${menuShadow};
         border: 1px solid ${menuBorder};
-        z-index: 1001;
+        z-index: 1002;
         overflow-y: auto;
         max-height: 300px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(30px);
+        transition: all 0.25s ease;
     `;
     
-    filterMenu.appendChild(monthSubMenu);
-    filterMenu.appendChild(versionSubMenu);
-    
-    contentArea.appendChild(filterMenu);
+    filterBtnContainer.appendChild(filterMenu);
     
     // 按日期倒序排序公告
     var sortedAnnouncements = [...announcements].sort(function(a, b) {
@@ -2751,6 +2878,10 @@ function showAnnouncementSelection(announcements) {
         });
     });
     
+    // 将子菜单添加到按钮容器（与主菜单同级，便于绝对定位展开）
+    filterBtnContainer.appendChild(monthSubMenu);
+    filterBtnContainer.appendChild(versionSubMenu);
+    
     // 动态生成月份列表
     var months = getUniqueMonths(announcements);
     months.forEach(function(month) {
@@ -2764,9 +2895,10 @@ function showAnnouncementSelection(announcements) {
             transition: background 0.2s ease;
         `;
         monthItem.textContent = month;
-        monthItem.addEventListener('click', function() {
+        monthItem.addEventListener('click', function(e) {
+            e.stopPropagation();
             filterAnnouncementsByMonth(month, announcements);
-            filterMenu.style.display = 'none';
+            closeFilterMenu();
         });
         monthItem.addEventListener('mouseenter', function() {
             this.style.background = menuHover;
@@ -2790,9 +2922,10 @@ function showAnnouncementSelection(announcements) {
             transition: background 0.2s ease;
         `;
         versionItem.textContent = 'RC ' + version;
-        versionItem.addEventListener('click', function() {
+        versionItem.addEventListener('click', function(e) {
+            e.stopPropagation();
             filterAnnouncementsByVersion(version, announcements);
-            filterMenu.style.display = 'none';
+            closeFilterMenu();
         });
         versionItem.addEventListener('mouseenter', function() {
             this.style.background = menuHover;
@@ -2803,32 +2936,109 @@ function showAnnouncementSelection(announcements) {
         versionSubMenu.appendChild(versionItem);
     });
     
+    // 关闭筛选菜单（带动画）
+    function closeFilterMenu() {
+        filterMenu.style.opacity = '0';
+        filterMenu.style.visibility = 'hidden';
+        filterMenu.style.transform = 'translateY(-8px)';
+        monthSubMenu.style.opacity = '0';
+        monthSubMenu.style.visibility = 'hidden';
+        monthSubMenu.style.transform = 'translateX(30px)';
+        versionSubMenu.style.opacity = '0';
+        versionSubMenu.style.visibility = 'hidden';
+        versionSubMenu.style.transform = 'translateX(30px)';
+        // 重置箭头
+        var arrows = filterMenu.querySelectorAll('.filter-menu-arrow');
+        arrows.forEach(function(a) {
+            a.style.transform = 'rotate(0deg)';
+        });
+    }
+    
+    // 打开筛选菜单（带动画）
+    function openFilterMenu() {
+        filterMenu.style.opacity = '1';
+        filterMenu.style.visibility = 'visible';
+        filterMenu.style.transform = 'translateY(0)';
+    }
+    
+    // 打开月份子菜单（从右滑入）
+    function openMonthSubMenu() {
+        monthSubMenu.style.opacity = '1';
+        monthSubMenu.style.visibility = 'visible';
+        monthSubMenu.style.transform = 'translateX(0)';
+        versionSubMenu.style.opacity = '0';
+        versionSubMenu.style.visibility = 'hidden';
+        versionSubMenu.style.transform = 'translateX(30px)';
+        // 更新箭头方向
+        var arrows = filterMenu.querySelectorAll('.filter-menu-arrow');
+        arrows.forEach(function(a) {
+            a.style.transform = 'rotate(0deg)';
+        });
+        var monthArrow = monthMenuItem.querySelector('.filter-menu-arrow');
+        if (monthArrow) monthArrow.style.transform = 'rotate(90deg)';
+    }
+    
+    // 打开版本子菜单（从右滑入）
+    function openVersionSubMenu() {
+        versionSubMenu.style.opacity = '1';
+        versionSubMenu.style.visibility = 'visible';
+        versionSubMenu.style.transform = 'translateX(0)';
+        monthSubMenu.style.opacity = '0';
+        monthSubMenu.style.visibility = 'hidden';
+        monthSubMenu.style.transform = 'translateX(30px)';
+        // 更新箭头方向
+        var arrows = filterMenu.querySelectorAll('.filter-menu-arrow');
+        arrows.forEach(function(a) {
+            a.style.transform = 'rotate(0deg)';
+        });
+        var versionArrow = versionMenuItem.querySelector('.filter-menu-arrow');
+        if (versionArrow) versionArrow.style.transform = 'rotate(90deg)';
+    }
+    
     // 筛选按钮点击事件
     filterButton.addEventListener('click', function(e) {
         e.stopPropagation();
-        filterMenu.style.display = filterMenu.style.display === 'block' ? 'none' : 'block';
+        if (filterMenu.style.visibility === 'visible') {
+            closeFilterMenu();
+        } else {
+            openFilterMenu();
+        }
     });
     
     // 月份菜单项点击事件
     monthMenuItem.addEventListener('click', function(e) {
         e.stopPropagation();
-        monthSubMenu.style.display = 'block';
-        versionSubMenu.style.display = 'none';
+        if (monthSubMenu.style.visibility === 'visible') {
+            // 关闭子菜单
+            monthSubMenu.style.opacity = '0';
+            monthSubMenu.style.visibility = 'hidden';
+            monthSubMenu.style.transform = 'translateX(30px)';
+            var monthArrow = monthMenuItem.querySelector('.filter-menu-arrow');
+            if (monthArrow) monthArrow.style.transform = 'rotate(0deg)';
+        } else {
+            openMonthSubMenu();
+        }
     });
     
     // 版本菜单项点击事件
     versionMenuItem.addEventListener('click', function(e) {
         e.stopPropagation();
-        versionSubMenu.style.display = 'block';
-        monthSubMenu.style.display = 'none';
+        if (versionSubMenu.style.visibility === 'visible') {
+            // 关闭子菜单
+            versionSubMenu.style.opacity = '0';
+            versionSubMenu.style.visibility = 'hidden';
+            versionSubMenu.style.transform = 'translateX(30px)';
+            var versionArrow = versionMenuItem.querySelector('.filter-menu-arrow');
+            if (versionArrow) versionArrow.style.transform = 'rotate(0deg)';
+        } else {
+            openVersionSubMenu();
+        }
     });
     
     // 点击其他地方关闭菜单
     document.addEventListener('click', function(e) {
-        if (!filterButton.contains(e.target) && !filterMenu.contains(e.target)) {
-            filterMenu.style.display = 'none';
-            monthSubMenu.style.display = 'none';
-            versionSubMenu.style.display = 'none';
+        if (!filterBtnContainer.contains(e.target)) {
+            closeFilterMenu();
         }
     });
     
@@ -3604,3 +3814,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
