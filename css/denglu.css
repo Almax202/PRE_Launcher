@@ -2245,15 +2245,14 @@ body.dark-mode #userCardSettingsPanel .empty-state {
     }
     
     .version-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+        flex-wrap: wrap;
+        row-gap: 5px;
     }
-    
+
     .version-number {
         font-size: 14px;
     }
-    
+
     .version-date {
         font-size: 12px;
     }
@@ -4769,27 +4768,45 @@ body.dark-mode .announcement-title {
     color: #e0e0e0;
 }
 
+/* 公告tag：与邮件过期tag一致，仅边框着色，内部无背景，文字跟随边框颜色 */
 .announcement-tag {
-    padding: 4px 12px;
-    border-radius: 20px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1.5px solid;
     font-size: 12px;
     font-weight: bold;
     flex-shrink: 0;
+    background: transparent;
 }
 
 .announcement-tag.important {
-    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-    color: white;
+    border-color: #e53e3e;
+    color: #e53e3e;
 }
 
 .announcement-tag.update {
-    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
-    color: white;
+    border-color: #d45d79;
+    color: #d45d79;
 }
 
 .announcement-tag.notice {
-    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-    color: white;
+    border-color: #ff9800;
+    color: #f57c00;
+}
+
+body.dark-mode .announcement-tag.important {
+    border-color: #ff7875;
+    color: #ff7875;
+}
+
+body.dark-mode .announcement-tag.update {
+    border-color: #e67e8a;
+    color: #e67e8a;
+}
+
+body.dark-mode .announcement-tag.notice {
+    border-color: #ffc53d;
+    color: #ffc53d;
 }
 
 .announcement-meta {
@@ -7407,17 +7424,26 @@ body.dark-mode .reset-btn:hover {
 .version-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 10px;
     padding-bottom: 5px;
     gap: 10px;
     text-align: left;
 }
 
-.version-header-content {
+/* 左侧区域：版本号+tag一行，日期在其下方 */
+.version-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.version-title-row {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
 .version-number {
@@ -7430,44 +7456,49 @@ body.dark-mode .reset-btn:hover {
 .version-date {
     font-size: 14px;
     color: #666;
-    margin-left: auto;
-    text-align: right;
+    text-align: left;
 }
 
 .version-details {
     margin-top: 10px;
 }
 
+/* 版本tag：与邮件过期tag一致，仅边框着色，内部无背景，文字跟随边框颜色 */
 .version-tag {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 12px;
+    border: 1.5px solid;
     font-size: 12px;
     font-weight: bold;
     flex-shrink: 0;
+    background: transparent;
 }
 
 .version-tag.major {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    color: white;
+    border-color: #e74c3c;
+    color: #e74c3c;
 }
 
 .version-tag.important {
-    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-    color: white;
+    border-color: #f39c12;
+    color: #e67e22;
 }
 
 .version-tag.normal {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    color: white;
+    border-color: #3498db;
+    color: #2980b9;
 }
 
 .version-tag.patch {
-    background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
-    color: white;
+    border-color: #8B4513;
+    color: #8B4513;
 }
 
 .view-log-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 4px 12px;
     border: none;
     border-radius: 12px;
@@ -7478,6 +7509,7 @@ body.dark-mode .reset-btn:hover {
     cursor: pointer;
     transition: all 0.3s ease;
     flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .view-log-btn:hover {
@@ -7526,6 +7558,26 @@ body.dark-mode .version-number {
 
 body.dark-mode .version-date {
     color: #ccc;
+}
+
+body.dark-mode .version-tag.major {
+    border-color: #ff7875;
+    color: #ff7875;
+}
+
+body.dark-mode .version-tag.important {
+    border-color: #ffc53d;
+    color: #ffc53d;
+}
+
+body.dark-mode .version-tag.normal {
+    border-color: #69c0ff;
+    color: #69c0ff;
+}
+
+body.dark-mode .version-tag.patch {
+    border-color: #d2a679;
+    color: #d2a679;
 }
 
 body.dark-mode .view-log-btn {
@@ -8728,6 +8780,39 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
     color: #d45d79;
 }
 
+/* 邮件过期提醒Tag */
+.mail-expire-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1.5px solid;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+.mail-expire-tag .expire-days {
+    font-weight: 700;
+}
+
+.mail-expire-tag.green {
+    border-color: #52c41a;
+    color: #389e0d;
+}
+
+.mail-expire-tag.yellow {
+    border-color: #faad14;
+    color: #d48806;
+}
+
+.mail-expire-tag.red {
+    border-color: #f5222d;
+    color: #cf1322;
+}
+
 .mail-detail-body {
     font-size: 15px;
     color: #333;
@@ -9407,6 +9492,21 @@ body.dark-mode .mail-detail-expire {
     background: rgba(212, 93, 121, 0.2);
 }
 
+body.dark-mode .mail-expire-tag.green {
+    border-color: #73d13d;
+    color: #73d13d;
+}
+
+body.dark-mode .mail-expire-tag.yellow {
+    border-color: #ffc53d;
+    color: #ffc53d;
+}
+
+body.dark-mode .mail-expire-tag.red {
+    border-color: #ff4d4f;
+    color: #ff7875;
+}
+
 body.dark-mode .mail-detail-info {
     color: #888;
 }
@@ -10062,6 +10162,14 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
     color: #d45d79;
 }
 
+/* 空类别提示 */
+.event-category-empty {
+    padding: 2px 14px 10px 33px;
+    font-size: 12px;
+    color: #c0c0c0;
+    line-height: 1.4;
+}
+
 /* 公告/活动条目 */
 .event-announcement-item {
     display: flex;
@@ -10081,6 +10189,30 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
 
 .event-announcement-item.active {
     background: rgba(212, 93, 121, 0.1);
+}
+
+.event-announcement-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 55%;
+    background: linear-gradient(180deg, #d45d79 0%, #e67e8a 100%);
+    border-radius: 2px;
+    transform-origin: center;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    pointer-events: none;
+}
+
+.event-announcement-item.active::before {
+    transform: translateY(-50%) scaleY(1);
+}
+
+.event-announcement-item.animating-out::before {
+    transform: translateY(-50%) scaleY(0);
+    transition: transform 0.3s cubic-bezier(0.55, 0, 0.67, 0.19);
 }
 
 .event-announcement-item.viewed {
@@ -10204,25 +10336,86 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
 /* Banner区域 */
 .event-banner-area {
     width: 100%;
-    min-height: 140px;
-    max-height: 200px;
+    min-height: 90px;
+    max-height: 140px;
     flex-shrink: 0;
     background: linear-gradient(135deg, rgba(212, 93, 121, 0.15) 0%, rgba(230, 126, 138, 0.1) 100%);
     position: relative;
     overflow: hidden;
 }
 
+/* Banner切换动效 - 斜线渐变滑动 */
+.event-banner-sweep {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.event-banner-sweep::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        -45deg,
+        transparent 0%,
+        transparent 35%,
+        rgba(255, 255, 255, 0.85) 50%,
+        transparent 65%,
+        transparent 100%
+    );
+    transform: translate(-100%, -100%);
+    animation: bannerSweepSlide 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bannerSweepSlide {
+    0% {
+        transform: translate(-100%, -100%);
+    }
+    100% {
+        transform: translate(50%, 50%);
+    }
+}
+
+.event-banner-sweep.animating::before {
+    animation: bannerSweepSlide 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Banner内容淡入效果 */
+.event-banner-area.banner-content-enter .event-banner-default,
+.event-banner-area.banner-content-enter .event-banner-image {
+    animation: bannerFadeIn 0.4s ease 0.2s both;
+}
+
+@keyframes bannerFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .event-banner-placeholder {
     width: 100%;
     height: 100%;
-    min-height: 140px;
+    min-height: 90px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     color: rgba(0, 0, 0, 0.25);
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .event-banner-placeholder i {
@@ -10238,46 +10431,46 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
 .event-banner-default {
     width: 100%;
     height: 100%;
-    min-height: 140px;
+    min-height: 90px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, rgba(212, 93, 121, 0.1) 0%, rgba(230, 126, 138, 0.05) 100%);
-    padding: 20px;
+    padding: 14px 20px;
     text-align: center;
 }
 
 .event-banner-center {
     flex-direction: row;
-    gap: 20px;
+    gap: 16px;
     justify-content: flex-start;
-    padding: 24px 30px;
+    padding: 16px 24px;
 }
 
 .event-banner-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 22px;
     flex-shrink: 0;
 }
 
 .event-banner-title {
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 600;
     color: #333;
 }
 
 .event-banner-date {
-    font-size: 13px;
+    font-size: 12px;
     color: #888;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
 /* 空状态 */
@@ -10306,6 +10499,7 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
     flex: 1;
     overflow-y: auto;
     padding: 30px;
+    position: relative;
     scrollbar-width: thin;
     scrollbar-color: #d45d79 #f0f0f0;
 }
@@ -10510,12 +10704,20 @@ body.dark-mode .event-category-header {
     color: #888;
 }
 
+body.dark-mode .event-category-empty {
+    color: #666;
+}
+
 body.dark-mode .event-announcement-item:hover {
     background: rgba(212, 93, 121, 0.12);
 }
 
 body.dark-mode .event-announcement-item.active {
     background: rgba(212, 93, 121, 0.18);
+}
+
+body.dark-mode .event-announcement-item::before {
+    box-shadow: 0 0 6px rgba(212, 93, 121, 0.4);
 }
 
 body.dark-mode .event-announcement-title {
@@ -10541,6 +10743,17 @@ body.dark-mode .event-main {
 
 body.dark-mode .event-banner-area {
     background: linear-gradient(135deg, rgba(212, 93, 121, 0.2) 0%, rgba(230, 126, 138, 0.1) 100%);
+}
+
+body.dark-mode .event-banner-sweep::before {
+    background: linear-gradient(
+        -45deg,
+        transparent 0%,
+        transparent 35%,
+        rgba(30, 30, 46, 0.85) 50%,
+        transparent 65%,
+        transparent 100%
+    );
 }
 
 body.dark-mode .event-banner-default {
@@ -10659,19 +10872,23 @@ body.transparent-mode .event-banner-area {
     }
     
     .event-banner-area {
-        min-height: 100px;
-        max-height: 140px;
+        min-height: 70px;
+        max-height: 100px;
     }
     
     .event-banner-center {
-        padding: 16px 20px;
-        gap: 12px;
+        padding: 12px 16px;
+        gap: 10px;
     }
     
     .event-banner-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    
+    .event-banner-title {
+        font-size: 15px;
     }
     
     .event-detail {
@@ -10708,6 +10925,27 @@ body.transparent-mode .event-banner-area {
     gap: 14px;
     margin-bottom: 10px;
     flex-wrap: wrap;
+    position: relative;
+}
+
+.checkin-section-header .checkin-section-title {
+    flex-shrink: 0;
+}
+
+.checkin-section-header .checkin-progress {
+    flex-shrink: 0;
+}
+
+.checkin-section-header .checkin-toggle-btn {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+.checkin-section-header .checkin-claim-all-btn {
+    margin-left: auto;
 }
 
 .checkin-section-title {
@@ -10973,6 +11211,111 @@ body.transparent-mode .event-banner-area {
     font-size: 13px;
 }
 
+/* 签到区展开/收起按钮 */
+.checkin-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin: 0 auto;
+    position: relative;
+}
+
+.checkin-toggle-btn:hover {
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    border-color: rgba(212, 93, 121, 0.3);
+}
+
+.checkin-toggle-btn i {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+.checkin-toggle-btn.collapsed i {
+    transform: rotate(-90deg);
+}
+
+/* 签到区折叠状态 */
+.checkin-section.collapsed {
+    padding: 8px 20px;
+    transition: padding 0.3s ease;
+}
+
+.checkin-section {
+    transition: padding 0.3s ease;
+}
+
+.checkin-section.collapsed .checkin-cards-wrapper,
+.checkin-section.collapsed .checkin-all-done {
+    display: none;
+}
+
+.checkin-section.collapsed .checkin-section-header {
+    margin-bottom: 0;
+}
+
+.checkin-section.collapsed .checkin-claim-all-btn {
+    display: none;
+}
+
+.checkin-section.collapsed .checkin-toggle-btn {
+    top: 50%;
+}
+
+.checkin-cards-wrapper {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+}
+
+/* 公告跳转按钮 */
+.event-announcement-jump-btn {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 16px rgba(212, 93, 121, 0.35);
+    z-index: 5;
+}
+
+.event-announcement-jump-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 93, 121, 0.45);
+}
+
+.event-announcement-jump-btn:active {
+    transform: translateY(0);
+}
+
+.event-announcement-jump-btn i {
+    font-size: 12px;
+}
+
+.event-detail-jump-wrapper {
+    position: relative;
+    padding-bottom: 60px;
+}
+
 /* 签到区暗色模式 */
 body.dark-mode .checkin-section {
     background: rgba(30, 30, 46, 0.9);
@@ -10995,6 +11338,9 @@ body.dark-mode .checkin-all-done { color: #ccc; }
 body.dark-mode .checkin-cards-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
 body.dark-mode .checkin-cards-scroll::-webkit-scrollbar-thumb { background: rgba(212, 93, 121, 0.6); }
 body.dark-mode .checkin-card.locked { opacity: 0.7; }
+body.dark-mode .checkin-toggle-btn { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.15); color: #ccc; }
+body.dark-mode .checkin-toggle-btn:hover { background: rgba(212, 93, 121, 0.15); color: #e67e8a; border-color: rgba(212, 93, 121, 0.4); }
+body.dark-mode .event-announcement-jump-btn { box-shadow: 0 4px 16px rgba(212, 93, 121, 0.45); }
 
 /* 签到区透明模式 */
 body.transparent-mode .checkin-section {
@@ -16929,16 +17275,28 @@ body.ui-minimalist .ui-min-topnav {
     color: #d45d79;
 }
 
-.ui-min-nav-item.active::after {
+.ui-min-nav-item::after {
     content: '';
     position: absolute;
     bottom: -10px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scaleX(0);
+    transform-origin: center;
     width: 24px;
     height: 3px;
     background: linear-gradient(90deg, #d45d79, #e67e8a);
     border-radius: 2px;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    pointer-events: none;
+}
+
+.ui-min-nav-item.active::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.ui-min-nav-item.animating-out::after {
+    transform: translateX(-50%) scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.55, 0, 0.67, 0.19);
 }
 
 .ui-min-nav-item i {
@@ -17247,6 +17605,10 @@ body.dark-mode.ui-minimalist .ui-min-nav-item:hover {
 body.dark-mode.ui-minimalist .ui-min-nav-item.active {
     background: rgba(212, 93, 121, 0.2);
     color: #e67e8a;
+}
+
+body.dark-mode.ui-minimalist .ui-min-nav-item::after {
+    box-shadow: 0 0 6px rgba(212, 93, 121, 0.4);
 }
 
 body.dark-mode.ui-minimalist .ui-min-action-btn {

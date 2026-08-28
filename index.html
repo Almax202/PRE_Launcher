@@ -18,7 +18,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" onerror="this.onerror=null; window.JSZipFallback=true" defer></script>
     <script src="./js/settings.js" defer></script>
     <script src="./js/versionHistory.js" defer></script>
-    <script src="./js/premail.js?v=1.4" defer></script>
+    <script src="./js/warehouse.js" defer></script>
+    <script src="./js/premail.js?v=1.5" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
@@ -4639,11 +4640,19 @@
                     item.addEventListener('click', function() {
                         var nav = this.getAttribute('data-nav');
                         
-                        // 移除所有active状态
-                        document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(i) {
-                            i.classList.remove('active');
-                        });
-                        this.classList.add('active');
+                        // 动画切换active状态
+                        var oldActive = document.querySelector('#uiMinTopnav .ui-min-nav-item.active');
+                        if (oldActive && oldActive !== this) {
+                            oldActive.classList.add('animating-out');
+                            setTimeout(function() {
+                                oldActive.classList.remove('active');
+                                oldActive.classList.remove('animating-out');
+                            }, 320);
+                        }
+                        var self = this;
+                        setTimeout(function() {
+                            self.classList.add('active');
+                        }, 50);
                         
                         // 触发对应功能
                         if (nav === 'login') {
@@ -4653,10 +4662,17 @@
                                     // 恢复"注册账号"的active状态，因为用户可能取消
                                     var registerNavItem = document.querySelector('#uiMinTopnav .ui-min-nav-item[data-nav="register"]');
                                     if (registerNavItem) {
-                                        document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(i) {
-                                            i.classList.remove('active');
-                                        });
-                                        registerNavItem.classList.add('active');
+                                        var oldA = document.querySelector('#uiMinTopnav .ui-min-nav-item.active');
+                                        if (oldA) {
+                                            oldA.classList.add('animating-out');
+                                            setTimeout(function() {
+                                                oldA.classList.remove('active');
+                                                oldA.classList.remove('animating-out');
+                                            }, 320);
+                                        }
+                                        setTimeout(function() {
+                                            registerNavItem.classList.add('active');
+                                        }, 50);
                                     }
                                     showConfirm('切换确认', '当前表单未提交，切换功能则会清空所有已填写内容，是否继续？', function() {
                                         hideRegisterPanel();
@@ -4718,24 +4734,58 @@
                                 e.stopPropagation();
                                 var nav = this.getAttribute('data-nav');
                                 
-                                // 清除所有active状态
-                                centerNav.querySelectorAll('.ui-min-nav-item').forEach(function(i) {
-                                    i.classList.remove('active');
-                                });
-                                centerNav.querySelectorAll('.ui-min-dropdown-item').forEach(function(i) {
-                                    i.classList.remove('active');
-                                });
-                                centerNav.querySelectorAll('.ui-min-dropdown-menu').forEach(function(m) {
-                                    m.classList.remove('active');
-                                });
-                                
-                                // 设置当前项active
-                                this.classList.add('active');
-                                var parentMenu = this.closest('.ui-min-dropdown-menu');
-                                if (parentMenu) {
-                                    parentMenu.classList.add('active');
-                                    parentMenu.querySelector('.ui-min-nav-item').classList.add('active');
+                                // 动画切换active状态
+                                var oldNavActive = centerNav.querySelector('.ui-min-nav-item.active');
+                                var oldItemActive = centerNav.querySelector('.ui-min-dropdown-item.active');
+                                var oldMenuActive = centerNav.querySelector('.ui-min-dropdown-menu.active');
+
+                                if (oldNavActive) {
+                                    oldNavActive.classList.add('animating-out');
+                                    setTimeout(function() {
+                                        oldNavActive.classList.remove('active');
+                                        oldNavActive.classList.remove('animating-out');
+                                    }, 320);
+                                } else {
+                                    centerNav.querySelectorAll('.ui-min-nav-item').forEach(function(i) {
+                                        i.classList.remove('active');
+                                    });
                                 }
+
+                                if (oldItemActive) {
+                                    setTimeout(function() {
+                                        oldItemActive.classList.remove('active');
+                                    }, 320);
+                                } else {
+                                    centerNav.querySelectorAll('.ui-min-dropdown-item').forEach(function(i) {
+                                        i.classList.remove('active');
+                                    });
+                                }
+
+                                if (oldMenuActive) {
+                                    setTimeout(function() {
+                                        oldMenuActive.classList.remove('active');
+                                    }, 320);
+                                } else {
+                                    centerNav.querySelectorAll('.ui-min-dropdown-menu').forEach(function(m) {
+                                        m.classList.remove('active');
+                                    });
+                                }
+                                
+                                // 设置当前项active（带延迟以允许消失动画）
+                                var selfItem = this;
+                                setTimeout(function() {
+                                    selfItem.classList.add('active');
+                                    var parentMenu = selfItem.closest('.ui-min-dropdown-menu');
+                                    if (parentMenu) {
+                                        parentMenu.classList.add('active');
+                                        var parentNavItem = parentMenu.querySelector('.ui-min-nav-item');
+                                        if (parentNavItem) {
+                                            setTimeout(function() {
+                                                parentNavItem.classList.add('active');
+                                            }, 50);
+                                        }
+                                    }
+                                }, 50);
                                 
                                 // 关闭菜单
                                 centerNav.querySelectorAll('.ui-min-dropdown-menu.open').forEach(function(m) {
@@ -6183,7 +6233,7 @@
             </div>
             <div class="ui-min-brand">
                 <span class="ui-min-brand-name">PRE Launcher</span>
-                <span class="ui-min-brand-version" id="uiMinVersion">RC 2.7.2.1 (b10)</span>
+                <span class="ui-min-brand-version" id="uiMinVersion"></span>
             </div>
         </div>
         <div class="ui-min-topnav-center">
@@ -6456,8 +6506,8 @@
             
             <div class="sidebar-footer">
                 <div class="sidebar-uid">
-                    <div id="versionNumber">RC 1.2.1.2 (a4)</div>
-                    <div class="version-info" id="versionInfo" style="display: none;">启动器基于 RC 1.2.1.2 (a4) 版本开发</div>
+                    <div id="versionNumber"></div>
+                    <div class="version-info" id="versionInfo" style="display: none;"></div>
                 </div>
 
                 <div class="sidebar-copyright">
@@ -11478,6 +11528,10 @@
                         <i class="fas fa-box-open"></i>
                         <span>百宝箱</span>
                     </div>
+                    <div class="ui-min-nav-item" data-nav="warehouse" id="uiMinWarehouse">
+                        <i class="fas fa-warehouse"></i>
+                        <span>仓库</span>
+                    </div>
                     <div class="ui-min-nav-item" data-nav="checkin">
                         <i class="fas fa-calendar-check"></i>
                         <span>每日签到</span>
@@ -11611,6 +11665,10 @@
                         if (nav === 'treasure') {
                             var treasureBtn = document.getElementById('menuTreasure');
                             if (treasureBtn) treasureBtn.click();
+                        } else if (nav === 'warehouse') {
+                            if (typeof showWarehouseModal === 'function') {
+                                showWarehouseModal();
+                            }
                         } else if (nav === 'checkin') {
                             var checkinBtn = document.getElementById('menuCheckin');
                             if (checkinBtn) checkinBtn.click();
@@ -16627,6 +16685,25 @@
                 var cost10 = 1300;
                 var perCost = (requestedCount === 10) ? cost10 : cost1;
 
+                // 0. 仓库卡券优先抵扣（单抽卡券/十连卡券：免费提取）
+                var usedTicket = false;
+                if (requestedCount === 1 && typeof warehouseGetItemCount === 'function' && warehouseGetItemCount('gacha_single') > 0 && typeof warehouseRemoveItem === 'function') {
+                    warehouseRemoveItem('gacha_single', 1);
+                    usedTicket = true;
+                    showToastWarning('已使用1张单抽卡券，本次提取免费！');
+                } else if (requestedCount === 10 && typeof warehouseGetItemCount === 'function' && warehouseGetItemCount('gacha_ten') > 0 && typeof warehouseRemoveItem === 'function') {
+                    warehouseRemoveItem('gacha_ten', 1);
+                    usedTicket = true;
+                    showToastWarning('已使用1张十连卡券，本次提取免费！');
+                }
+
+                // 仓库幸运币：若已激活幸运状态，本次提取消耗1枚并提升稀有项概率
+                var luckBoosted = false;
+                if (typeof warehouseTakeLuckyBoost === 'function' && warehouseTakeLuckyBoost()) {
+                    luckBoosted = true;
+                    showToastWarning('幸运币生效：本次提取稀有项概率翻倍！');
+                }
+
                 // 1. 新手池提取次数上限检查
                 var poolGroup = getPoolGroup();
                 var poolId = getUniquePoolId();
@@ -16645,12 +16722,12 @@
                     }
                 }
                 
-                // 2. 狂气检查
-                if (!gachaSettings.unlimitedMode && diamond < perCost) {
+                // 2. 狂气检查（使用卡券时免费）
+                if (!usedTicket && !gachaSettings.unlimitedMode && diamond < perCost) {
                     showToastWarning('狂气不足！');
                     return;
                 }
-                if (!gachaSettings.unlimitedMode) {
+                if (!usedTicket && !gachaSettings.unlimitedMode) {
                     diamond -= perCost;
                     saveDiamond();
                     updateDiamondDisplay();
@@ -16669,7 +16746,7 @@
                     }
                 }
 
-                var results = doGacha(requestedCount, guarantee, { forceLast3Star: forceLast3Star });
+                var results = doGacha(requestedCount, guarantee, { forceLast3Star: forceLast3Star, luckBoost: luckBoosted });
                 
                 // 4. 写回计数器
                 perPoolTotalDraws[poolId] = (perPoolTotalDraws[poolId] || 0) + requestedCount;
@@ -16691,6 +16768,22 @@
             }
             
             // ===== 核心提取逻辑 =====
+            // 幸运币概率加成：稀有项概率翻倍，低稀有项吸收剩余概率，保证总和100%
+            function applyLuckBoost(rates) {
+                var boosted = JSON.parse(JSON.stringify(rates));
+                ['narrator', 'ego', '3star'].forEach(function(key) {
+                    if (boosted[key]) boosted[key] = boosted[key] * 2;
+                });
+                var sum = 0;
+                for (var k in boosted) {
+                    if (boosted.hasOwnProperty(k) && k !== '2star' && k !== '1star') sum += boosted[k];
+                }
+                if (boosted['2star'] !== undefined) {
+                    boosted['2star'] = Math.max(0, boosted['2star'] + (100 - sum));
+                }
+                return boosted;
+            }
+
             function doGacha(count, guarantee, opts) {
                 opts = opts || {};
                 var poolGroup = getPoolGroup();
@@ -16721,6 +16814,11 @@
                         currentRates = personalityOnly ? ratesPityPersonality : ratesPity10;
                     } else {
                         currentRates = rates;
+                    }
+
+                    // 幸运币加成：稀有项（播报员/EGO/3★）概率翻倍，剩余概率由低稀有项吸收
+                    if (opts.luckBoost) {
+                        currentRates = applyLuckBoost(currentRates);
                     }
                     
                     // EGO可用检测（非人格专用池）
@@ -19498,6 +19596,12 @@
             bonuses.forEach(function(b) {
                 totalExpGained += b.exp;
             });
+
+            // 仓库经验加成卡：结算时应用经验倍率
+            if (typeof getWarehouseExpMultiplier === 'function') {
+                var warehouseExpMult = getWarehouseExpMultiplier();
+                if (warehouseExpMult > 1) totalExpGained = Math.round(totalExpGained * warehouseExpMult);
+            }
             
             // 添加经验值
             var result = addExpToUser(user, totalExpGained);

@@ -120,6 +120,22 @@ function sortAnnouncementsByConfig(announcements) {
     });
 }
 
+// ==================== 类别排序工具 ====================
+
+// 类别排序：有内容的类别优先显示在上层（已结束类别除外，始终保持在最后）
+function orderCategoriesByActivity(categories, countFn) {
+    var endedCat = null;
+    var rest = categories.filter(function(cat) {
+        if (cat.id === 'ended') { endedCat = cat; return false; }
+        return true;
+    });
+    var withItems = rest.filter(function(cat) { return countFn(cat.id) > 0; });
+    var withoutItems = rest.filter(function(cat) { return countFn(cat.id) === 0; });
+    var ordered = withItems.concat(withoutItems);
+    if (endedCat) ordered.push(endedCat);
+    return ordered;
+}
+
 // ==================== 活动公告已读状态管理 ====================
 
 function getViewedEventAnnouncementIds() {
@@ -192,7 +208,7 @@ function generateEventAnnouncementModal() {
                     </div>
                 </div>
                 <div class="mail-main event-main">
-                    <div class="event-banner-area" id="eventBannerArea">
+                    <div class="event-banner-area" id="eventBannerArea" style="display: none;">
                         <div class="event-banner-placeholder">
                             <i class="fas fa-image"></i>
                             <span>头图区域（预留）</span>
@@ -247,16 +263,21 @@ function renderEventAnnouncementList() {
     }
 
     var html = '';
-    var categories = eventAnnouncementData.categories;
+    var categories = orderCategoriesByActivity(eventAnnouncementData.categories, function(catId) {
+        return eventAnnouncementData.announcements.filter(function(a) { return a.category === catId; }).length;
+    });
 
     categories.forEach(function(cat) {
         var catAnnouncements = sortAnnouncementsByConfig(eventAnnouncementData.announcements.filter(function(a) {
             return a.category === cat.id;
         }));
 
-        if (catAnnouncements.length === 0) return;
-
         html += `<div class="event-category-header"><i class="fas ${cat.icon}"></i><span>${cat.name}</span></div>`;
+
+        if (catAnnouncements.length === 0) {
+            html += '<div class="event-category-empty">该类别暂无活动</div>';
+            return;
+        }
 
         catAnnouncements.forEach(function(ann) {
             var isViewed = viewedIds.indexOf(ann.id) !== -1;
@@ -278,6 +299,15 @@ function renderEventAnnouncementList() {
     listContainer.querySelectorAll('.event-announcement-item').forEach(function(item) {
         item.addEventListener('click', function() {
             var id = this.getAttribute('data-id');
+            var currentActive = listContainer.querySelector('.event-announcement-item.active');
+            if (currentActive && currentActive !== this) {
+                currentActive.classList.add('animating-out');
+                setTimeout(function() {
+                    currentActive.classList.remove('active');
+                    currentActive.classList.remove('animating-out');
+                }, 320);
+            }
+            this.classList.add('active');
             showEventAnnouncementDetail(id);
 
             markEventAnnouncementAsViewed(id);
@@ -305,6 +335,8 @@ function showEventAnnouncementDetail(id) {
     }
 
     if (bannerArea) {
+        bannerArea.style.display = '';
+        bannerArea.classList.remove('banner-content-enter');
         if (ann.banner) {
             bannerArea.innerHTML = `<img src="${ann.banner}" alt="${ann.title}" class="event-banner-image">`;
         } else {
@@ -315,7 +347,53 @@ function showEventAnnouncementDetail(id) {
                 </div>
             `;
         }
+        triggerBannerSweep(bannerArea);
     }
+
+    if (detailEl) {
+        detailEl.classList.add('event-detail-jump-wrapper');
+        var centerEvent = eventCenterData.events.find(function(e) { return e.announcementId === id; });
+        if (centerEvent) {
+            var existingJumpBtn = detailEl.querySelector('.event-announcement-jump-btn');
+            if (existingJumpBtn) existingJumpBtn.remove();
+            var jumpBtn = document.createElement('button');
+            jumpBtn.className = 'event-announcement-jump-btn';
+            jumpBtn.innerHTML = '<i class="fas fa-arrow-right"></i><span>跳转至相应活动</span>';
+            jumpBtn.addEventListener('click', function() {
+                closeEventAnnouncementModal();
+                setTimeout(function() {
+                    showEventCenterModal();
+                    setTimeout(function() {
+                        showEventCenterDetail(centerEvent.id);
+                        var listContainer = document.getElementById('eventCenterList');
+                        var item = listContainer ? listContainer.querySelector('.event-announcement-item[data-id="' + centerEvent.id + '"]') : null;
+                        if (item) {
+                            var currentActive = listContainer.querySelector('.event-announcement-item.active');
+                            if (currentActive && currentActive !== item) {
+                                currentActive.classList.add('animating-out');
+                                setTimeout(function() {
+                                    currentActive.classList.remove('active');
+                                    currentActive.classList.remove('animating-out');
+                                }, 320);
+                            }
+                            item.classList.add('active');
+                        }
+                    }, 150);
+                }, 350);
+            });
+            detailEl.appendChild(jumpBtn);
+        }
+    }
+}
+
+function triggerBannerSweep(bannerArea) {
+    var sweep = document.createElement('div');
+    sweep.className = 'event-banner-sweep animating';
+    bannerArea.appendChild(sweep);
+    bannerArea.classList.add('banner-content-enter');
+    setTimeout(function() {
+        sweep.remove();
+    }, 600);
 }
 
 function showEventAnnouncementModal() {
@@ -331,6 +409,11 @@ function showEventAnnouncementModal() {
     if (!modal) {
         generateEventAnnouncementModal();
         modal = document.getElementById('eventAnnouncementModal');
+    }
+
+    // 应用已结束迁移并刷新侧边栏列表
+    if (applyMigratedEvents()) {
+        renderEventAnnouncementList();
     }
 
     modal.style.display = 'flex';
@@ -380,7 +463,7 @@ function generateEventCenterModal() {
                     </div>
                 </div>
                 <div class="mail-main event-main">
-                    <div class="event-banner-area" id="eventCenterBannerArea">
+                    <div class="event-banner-area" id="eventCenterBannerArea" style="display: none;">
                         <div class="event-banner-placeholder">
                             <i class="fas fa-image"></i>
                             <span>头图区域（预留）</span>
@@ -421,16 +504,21 @@ function renderEventCenterList() {
     }
 
     var html = '';
-    var categories = eventCenterData.categories;
+    var categories = orderCategoriesByActivity(eventCenterData.categories, function(catId) {
+        return eventCenterData.events.filter(function(e) { return e.category === catId; }).length;
+    });
 
     categories.forEach(function(cat) {
         var catEvents = sortEventsByConfig(eventCenterData.events.filter(function(e) {
             return e.category === cat.id;
         }));
 
-        if (catEvents.length === 0) return;
-
         html += `<div class="event-category-header"><i class="fas ${cat.icon}"></i><span>${cat.name}</span></div>`;
+
+        if (catEvents.length === 0) {
+            html += '<div class="event-category-empty">该类别暂无活动</div>';
+            return;
+        }
 
         catEvents.forEach(function(evt) {
             html += `
@@ -453,6 +541,15 @@ function renderEventCenterList() {
     listContainer.querySelectorAll('.event-announcement-item').forEach(function(item) {
         item.addEventListener('click', function() {
             var id = this.getAttribute('data-id');
+            var currentActive = listContainer.querySelector('.event-announcement-item.active');
+            if (currentActive && currentActive !== this) {
+                currentActive.classList.add('animating-out');
+                setTimeout(function() {
+                    currentActive.classList.remove('active');
+                    currentActive.classList.remove('animating-out');
+                }, 320);
+            }
+            this.classList.add('active');
             showEventCenterDetail(id);
         });
     });
@@ -562,12 +659,15 @@ function showEventCenterDetail(id) {
     }
 
     if (bannerArea) {
+        bannerArea.style.display = '';
+        bannerArea.classList.remove('banner-content-enter');
         bannerArea.innerHTML = `
             <div class="event-banner-default event-banner-center">
                 <div class="event-banner-icon"><i class="fas ${evt.icon}"></i></div>
                 <div class="event-banner-title">${evt.title}</div>
             </div>
         `;
+        triggerBannerSweep(bannerArea);
     }
 }
 
@@ -654,7 +754,7 @@ function getCheckinData(eventId) {
             return data;
         } catch(e) {}
     }
-    return { claimedDays: [], firstCheckinDate: null, lastCheckinDate: null, unlockedDays: 0 };
+    return { claimedDays: [], firstCheckinDate: null, lastCheckinDate: null, unlockedDays: 0, makeupDays: [] };
 }
 
 function saveCheckinData(eventId, data) {
@@ -704,7 +804,9 @@ function getCurrentCheckinDay(eventId) {
 
 function isCheckinDayUnlocked(eventId, rewardDay) {
     var data = getCheckinData(eventId);
-    return rewardDay <= (data.unlockedDays || 0);
+    if (rewardDay <= (data.unlockedDays || 0)) return true;
+    // 补签卡解锁的天数同样视为已解锁
+    return !!(data.makeupDays && data.makeupDays.indexOf(rewardDay) !== -1);
 }
 
 function generateCheckinSection(eventId) {
@@ -766,10 +868,14 @@ function generateCheckinSection(eventId) {
     var claimAllDisabled = claimedDays.length >= rewards.length || !canClaimAny;
 
     return `
-        <div class="checkin-section">
+        <div class="checkin-section" id="checkinSection_${eventId}">
             <div class="checkin-section-header">
                 <div class="checkin-section-title"><i class="fas fa-calendar-check"></i> 签到区</div>
                 <div class="checkin-progress">${progressText}</div>
+                <button class="checkin-toggle-btn" id="checkinToggleBtn_${eventId}" data-collapsed="false">
+                    <span>收起</span>
+                    <i class="fas fa-chevron-up"></i>
+                </button>
                 <button class="checkin-claim-all-btn" id="checkinClaimAllBtn" ${claimAllDisabled ? 'disabled' : ''}>
                     <i class="fas fa-gift"></i>
                     <span>一键领取</span>
@@ -814,13 +920,20 @@ function bindCheckinInteractions(eventId) {
                 return;
             }
 
-            if (isLocked) {
-                showToast({ type: 'info', title: '暂未解锁', message: '该奖励卡暂未解锁，请明天登录后继续签到以推进进度' });
-                return;
-            }
-
-            if (day > currentDay) {
-                showToast({ type: 'info', title: '暂未解锁', message: '该奖励尚未解锁，请等待对应签到日到来' });
+            if (isLocked || day > currentDay) {
+                // 补签卡：持有补签卡时可解锁未解锁的奖励卡
+                if (typeof warehousePromptMakeupCard === 'function') {
+                    warehousePromptMakeupCard(eventId, day, function(used) {
+                        if (used) {
+                            claimCheckinReward(eventId, day, reward);
+                            updateCheckinUI(eventId);
+                        }
+                    });
+                } else if (isLocked) {
+                    showToast({ type: 'info', title: '暂未解锁', message: '该奖励卡暂未解锁，请明天登录后继续签到以推进进度' });
+                } else {
+                    showToast({ type: 'info', title: '暂未解锁', message: '该奖励尚未解锁，请等待对应签到日到来' });
+                }
                 return;
             }
 
@@ -846,6 +959,25 @@ function bindCheckinInteractions(eventId) {
     if (scrollRight) {
         scrollRight.addEventListener('click', function() {
             scrollContainer.scrollBy({ left: 220, behavior: 'smooth' });
+        });
+    }
+
+    var toggleBtn = document.getElementById('checkinToggleBtn_' + eventId);
+    var section = document.getElementById('checkinSection_' + eventId);
+    if (toggleBtn && section) {
+        toggleBtn.addEventListener('click', function() {
+            var isCollapsed = toggleBtn.getAttribute('data-collapsed') === 'true';
+            if (isCollapsed) {
+                section.classList.remove('collapsed');
+                toggleBtn.setAttribute('data-collapsed', 'false');
+                toggleBtn.querySelector('span').textContent = '收起';
+                toggleBtn.querySelector('i').className = 'fas fa-chevron-up';
+            } else {
+                section.classList.add('collapsed');
+                toggleBtn.setAttribute('data-collapsed', 'true');
+                toggleBtn.querySelector('span').textContent = '展开';
+                toggleBtn.querySelector('i').className = 'fas fa-chevron-down';
+            }
         });
     }
 
@@ -909,33 +1041,101 @@ function updateCheckinUI(eventId) {
     var rewards = getCheckinRewards(eventId);
     if (!rewards || rewards.length === 0) return;
 
+    var wasCollapsed = false;
+    var oldSection = checkinEl.querySelector('.checkin-section');
+    if (oldSection && oldSection.classList.contains('collapsed')) {
+        wasCollapsed = true;
+    }
+
     checkinEl.innerHTML = generateCheckinSection(eventId);
     bindCheckinInteractions(eventId);
+
+    if (wasCollapsed) {
+        var newSection = checkinEl.querySelector('.checkin-section');
+        var newToggleBtn = document.getElementById('checkinToggleBtn_' + eventId);
+        if (newSection && newToggleBtn) {
+            newSection.classList.add('collapsed');
+            newToggleBtn.setAttribute('data-collapsed', 'true');
+            newToggleBtn.querySelector('span').textContent = '展开';
+            newToggleBtn.querySelector('i').className = 'fas fa-chevron-down';
+        }
+    }
 
     var claimedDays = (getCheckinData(eventId).claimedDays || []).slice();
     var allClaimed = rewards.every(function(r) { return claimedDays.indexOf(r.day) !== -1; });
     if (allClaimed) {
         migrateEventToEnded(eventId);
+
+        // 刷新侧边栏列表，使活动条目移入已结束类别并保持选中状态
+        var listContainer = document.getElementById('eventCenterList');
+        if (listContainer) {
+            renderEventCenterList();
+            var item = listContainer.querySelector('.event-announcement-item[data-id="' + eventId + '"]');
+            if (item) item.classList.add('active');
+        }
     }
 }
 
+// ==================== 活动结束迁移（领完全部奖励的活动纳入已结束类别） ====================
+
+function getMigratedEventIds() {
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    var key = 'event_migrated_' + (currentUser.username || 'anonymous');
+    try {
+        var stored = localStorage.getItem(key);
+        return stored ? JSON.parse(stored) : [];
+    } catch(e) { return []; }
+}
+
+function saveMigratedEventIds(ids) {
+    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    var key = 'event_migrated_' + (currentUser.username || 'anonymous');
+    localStorage.setItem(key, JSON.stringify(ids));
+}
+
+// 打开弹窗时应用已迁移活动：下次打开后活动始终显示在已结束类别
+function applyMigratedEvents() {
+    var migratedIds = getMigratedEventIds();
+    if (!migratedIds.length) return false;
+    var changed = false;
+
+    migratedIds.forEach(function(eventId) {
+        var evt = eventCenterData.events.find(function(e) { return e.id === eventId; });
+        if (evt && (evt.category !== 'ended' || evt.status !== 'ended')) {
+            evt.category = 'ended';
+            evt.status = 'ended';
+            changed = true;
+        }
+        var annId = evt && evt.announcementId ? evt.announcementId : eventId;
+        var ann = eventAnnouncementData.announcements.find(function(a) { return a.id === annId; });
+        if (ann && ann.category !== 'ended') {
+            ann.category = 'ended';
+            changed = true;
+        }
+    });
+
+    return changed;
+}
+
 function migrateEventToEnded(eventId) {
-    if (window.eventAnnouncementData) {
-        var ann = window.eventAnnouncementData;
-        var itemIdx = ann.announcements.findIndex(function(a) { return a.id === eventId; });
-        if (itemIdx !== -1 && ann.announcements[itemIdx].category !== 'ended') {
-            ann.announcements[itemIdx].category = 'ended';
-            localStorage.setItem('eventAnnouncementData', JSON.stringify(ann));
+    var evt = eventCenterData.events.find(function(e) { return e.id === eventId; });
+    if (evt) {
+        evt.category = 'ended';
+        evt.status = 'ended';
+
+        // 同步迁移关联的活动公告
+        if (evt.announcementId) {
+            var ann = eventAnnouncementData.announcements.find(function(a) { return a.id === evt.announcementId; });
+            if (ann && ann.category !== 'ended') {
+                ann.category = 'ended';
+            }
         }
     }
 
-    if (window.eventCenterData) {
-        var ec = window.eventCenterData;
-        var eIdx = ec.events.findIndex(function(e) { return e.id === eventId; });
-        if (eIdx !== -1 && ec.events[eIdx].category !== 'ended') {
-            ec.events[eIdx].category = 'ended';
-            localStorage.setItem('eventCenterData', JSON.stringify(ec));
-        }
+    var migratedIds = getMigratedEventIds();
+    if (migratedIds.indexOf(eventId) === -1) {
+        migratedIds.push(eventId);
+        saveMigratedEventIds(migratedIds);
     }
 }
 
@@ -978,6 +1178,12 @@ function addCheckinExp(amount) {
     var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     var foundUser = users.find(function(u) { return u.username === currentUser.username; });
     if (!foundUser) return;
+
+    // 仓库经验加成卡：结算时应用经验倍率
+    if (typeof getWarehouseExpMultiplier === 'function') {
+        var expMult = getWarehouseExpMultiplier();
+        if (expMult > 1) amount = Math.round(amount * expMult);
+    }
 
     if (!foundUser.gameData) foundUser.gameData = {};
     if (foundUser.gameData.level === undefined) foundUser.gameData.level = 1;
@@ -1027,6 +1233,11 @@ function showEventCenterModal() {
     if (!modal) {
         generateEventCenterModal();
         modal = document.getElementById('eventCenterModal');
+    }
+
+    // 应用已结束迁移并刷新侧边栏列表
+    if (applyMigratedEvents()) {
+        renderEventCenterList();
     }
 
     modal.style.display = 'flex';

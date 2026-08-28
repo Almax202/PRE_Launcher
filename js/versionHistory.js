@@ -217,6 +217,50 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.1.3 (c2)",
+            date: "2026-08-28",
+            tag: "important",
+            tagText: "重要更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 头图区切换动效：活动中心与活动公告切换条目时，头图区新增从左上角到右下角的白色斜线渐变扫过动画（0.55s cubic-bezier 缓动），配合内容淡入效果，切换过程更流畅自然",
+                "- 秋季签到活动签到区展开/收起按钮：在签到区顶部居中位置新增「展开/收起」胶囊按钮，点击可折叠签到卡片区域为内容区留出更多阅读空间；支持折叠状态记忆，领取奖励后刷新UI时保持折叠状态；图标随状态切换（⬆️展开态 / ⬇️收起态）",
+                "- 活动公告跳转按钮：每条公告详情右下角新增「跳转至相应活动」按钮，点击后自动关闭公告弹窗→打开活动中心→定位并展示对应活动详情，通过 announcementId 反向查找实现精准跳转",
+                "- 邮件过期提醒Tag：邮件详情发布日期右侧新增过期提醒标签，支持三色状态标识（绿色≥8天 / 黄色≤7天 / 红色≤3天 / 已过期显示红色「已过期」），标签仅边框带色文字正常色，每天自动计算剩余天数",
+                "- 侧边栏选中竖线动效：活动中心与活动公告侧边栏选中条目左侧新增垂直渐变竖线指示器，选中时从中心向上下平滑展开（scaleY 0→1，0.35s 缓动），切换时旧指示器快速收缩消失（0.3s），再触发新指示器展开",
+                "- 顶部导航栏选中横线动效：登录页与游戏中心顶部导航选中条目下方横线指示器新增动态过渡动画，选中时从中心向左右展开（scaleX 0→1，0.35s 缓动），切换时旧横线快速收缩消失后新横线展开，两处导航栏（登录页/游戏中心）均已适配",
+                "- 全新仓库功能上线：游戏中心顶部导航栏新增「仓库」入口，点击弹出全屏仓库弹窗，存放启动器内所有可用道具与材料",
+                "- 账户隔离存储：仓库数据按账户独立保存（localStorage key=warehouse_<username>），不同账户仓库互不相通，切换账户数据自动切换",
+                "- 道具分类与筛选：仓库道具分为消耗品、材料、徽章三大类，支持分类筛选与稀有度排序",
+                "- 新增9种道具：经验加成卡（小/中/大）、单抽卡券、十连卡券、补签卡、幸运币、先驱者勋章、周年纪念徽章、半周年纪念徽章",
+                "- 经验加成卡：使用后30分钟内经验获取提升10%/25%/50%，生效于每日签到与活动签到经验结算，可重复使用覆盖已有加成",
+                "- 幸运币：使用后激活幸运状态，下一次提取时稀有项概率翻倍，抽卡时自动消耗1枚",
+                "- 单抽/十连卡券：抽卡提取时自动优先抵扣狂气消耗，免费获得提取次数",
+                "- 补签卡：在签到页点击未解锁的奖励卡时可使用，立即解锁并领取该天奖励",
+                "- 卡片样式优化：仓库道具卡片采用与游戏中心卡片统一的白色背景+圆角15px+阴影风格，hover上移5px",
+                "- 类型Tag位置调整：道具类型Tag（消耗品/材料/徽章）移至卡片右上角，采用边框风格与稀有度配色",
+                "- 一行6列网格布局：桌面端一行显示6个道具卡片，窄屏自动降级为4/3/2列",
+                "- 邮件系统对接仓库：邮件附件新增warehouse类型，领取时自动调用warehouseAddItem发放到仓库；邮件详情中仓库道具图标、名称、数量从WAREHOUSE_ITEMS动态读取，新增道具无需修改邮件系统",
+                "- 开发者模式功能：系统设置开启开发者模式后，仓库工具栏显示「获取道具（dev）」和「移除道具（dev）」两个按钮",
+                "- 获取道具（dev）：点击弹出全屏弹窗，包含所有道具卡片，每个卡片可设置数量并一键发放到仓库",
+                "- 移除道具（dev）：点击进入移除模式，所有卡片变灰且显示红色「移除」按钮，点击即可删除对应道具",
+                "- 数据版本自动迁移：仓库数据版本升级时自动清空旧数据，确保数据结构与代码同步",
+                "- 来源文本显示开关：新增WAREHOUSE_SHOW_SOURCE全局变量，手动控制是否显示道具来源文本",
+                "优化改进",
+                "- 头图区尺寸缩小：活动中心与活动公告头图区高度从 min140/max200 调整为 min90/max140，图标容器从60×60→48×48，标题字号20→17，日期字号13→12，使头图区更紧凑不突兀",
+                "- 移动端响应式同步：头图区移动端尺寸同步缩小（min70/max100，图标36×36，标题15px），保持移动端视觉比例协调",
+                "- 暗色模式适配：头图区切换动效、侧边栏竖线指示器、顶部导航横线指示器、邮件过期Tag均已完整适配暗色模式，指示器增加发光阴影效果（box-shadow）提升暗色主题下可见度",
+                "- CSS类结构优化：侧边栏条目新增 .animating-out 过渡类用于切换时的快速收缩动画，顶部导航栏统一 ::after 伪元素实现横线指示器，避免多套下划线机制冲突",
+                "修复问题",
+                "- 修复侧边栏条目切换时指示器瞬间消失的问题：原切换逻辑直接移除 active 类导致指示线无过渡消失，现已改为先添加 animating-out 类触发收缩动画，320ms 后再移除 active 类，实现平滑过渡",
+                "- 修复顶部导航下拉菜单项切换时双指示器叠加的问题：原下拉菜单项点击同时触发导航项和下拉项的 active 切换，现已改为旧指示器先收缩消失再延迟50ms后新指示器展开，避免两条线同时显示",
+                "- 修复仓库弹窗脚本加载顺序问题：warehouse.js必须在premail.js之前加载，否则邮件领取时warehouseAddItem不可用导致仓库道具发放失败；已调整index.html中脚本引用顺序并移除重复引用",
+                "- 修复补签卡点击未识别解锁状态的问题：isCheckinDayUnlocked函数已兼容makeupDays字段，补签后正确识别已解锁状态",
+                "- 修复经验加成buff被旧数据覆盖的问题：使用经验加成卡时改为先消耗道具并保存数据，再激活buff效果，避免异步覆盖",
+            ]
+        },
+        {
             version: "RC 3.0.1.2 (c2)",
             date: "2026-08-27",
             tag: "patch",
@@ -3312,13 +3356,15 @@ function loadVersionHistory() {
                 // 构建版本项HTML
                 var versionHTML = `
                     <div class="version-header">
-                        <span class="version-number">${versionItem.version}</span>
-                        <div class="version-header-content">
-                            ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
-                            ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
-                            <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                        <div class="version-header-left">
+                            <div class="version-title-row">
+                                <span class="version-number">${versionItem.version}</span>
+                                ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
+                                ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                            </div>
+                            <span class="version-date">${versionItem.date}</span>
                         </div>
-                        <span class="version-date">${versionItem.date}</span>
+                        <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')"><i class="fas fa-file-lines"></i> 查看日志 <i class="fas fa-chevron-down"></i></button>
                     </div>
                     <div class="version-details" style="display: none;">
                 `
@@ -3982,13 +4028,15 @@ function loadVersionHistory() {
                                         // 构建版本项HTML
                                         var versionHTML = `
                                             <div class="version-header">
-                                                <span class="version-number">${versionItem.version}</span>
-                                                <div class="version-header-content">
-                                                    ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
-                                                    ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
-                                                    <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                                                <div class="version-header-left">
+                                                    <div class="version-title-row">
+                                                        <span class="version-number">${versionItem.version}</span>
+                                                        ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
+                                                        ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                                                    </div>
+                                                    <span class="version-date">${versionItem.date}</span>
                                                 </div>
-                                                <span class="version-date">${versionItem.date}</span>
+                                                <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')"><i class="fas fa-file-lines"></i> 查看日志 <i class="fas fa-chevron-down"></i></button>
                                             </div>
                                             <div class="version-details" style="display: none;">
                                         `;
@@ -4097,7 +4145,7 @@ function loadVersionHistory() {
                                             details.style.display = 'block';
                                         });
                                         allButtons.forEach(function(btn) {
-                                            btn.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
+                                            btn.innerHTML = '<i class="fas fa-file-lines"></i> 收起日志 <i class="fas fa-chevron-up"></i>';
                                         });
                                     } else {
                                         expandAllButton.innerHTML = '<i class="fas fa-chevron-down"></i> 全部展开';
@@ -4108,7 +4156,7 @@ function loadVersionHistory() {
                                             details.style.display = 'none';
                                         });
                                         allButtons.forEach(function(btn) {
-                                            btn.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
+                                            btn.innerHTML = '<i class="fas fa-file-lines"></i> 查看日志 <i class="fas fa-chevron-down"></i>';
                                         });
                                     }
                                 }
@@ -4171,13 +4219,15 @@ function loadVersionHistory() {
                                     // 构建版本项HTML
                                     var versionHTML = `
                                         <div class="version-header">
-                                            <span class="version-number">${versionItem.version}</span>
-                                            <div class="version-header-content">
-                                                ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
-                                                ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
-                                                <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')">查看日志 <span style="margin-left: 4px;">▶</span></button>
+                                            <div class="version-header-left">
+                                                <div class="version-title-row">
+                                                    <span class="version-number">${versionItem.version}</span>
+                                                    ${versionItem.tag ? `<span class="version-tag ${versionItem.tag}">${versionItem.tagText}</span>` : ''}
+                                                    ${!isVersionViewedFlag ? '<span class="new-update-tag">新更新</span>' : ''}
+                                                </div>
+                                                <span class="version-date">${versionItem.date}</span>
                                             </div>
-                                            <span class="version-date">${versionItem.date}</span>
+                                            <button class="view-log-btn" onclick="toggleVersionDetails(this, '${versionId}')"><i class="fas fa-file-lines"></i> 查看日志 <i class="fas fa-chevron-down"></i></button>
                                         </div>
                                         <div class="version-details" style="display: none;">
                                     `;
@@ -4268,7 +4318,7 @@ function toggleVersionDetails(button, versionId) {
     
     if (details.style.display === 'none') {
         details.style.display = 'block';
-        button.innerHTML = '收起日志 <span style="margin-left: 4px;">▼</span>';
+        button.innerHTML = '<i class="fas fa-file-lines"></i> 收起日志 <i class="fas fa-chevron-up"></i>';
         
         // 标记版本为已查看
         if (versionId) {
@@ -4281,7 +4331,7 @@ function toggleVersionDetails(button, versionId) {
         }
     } else {
         details.style.display = 'none';
-        button.innerHTML = '查看日志 <span style="margin-left: 4px;">▶</span>';
+        button.innerHTML = '<i class="fas fa-file-lines"></i> 查看日志 <i class="fas fa-chevron-down"></i>';
     }
 }
 

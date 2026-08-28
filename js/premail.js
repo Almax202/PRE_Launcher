@@ -102,6 +102,7 @@ var mailSystem = {
         // 当前支持类型：
         //   - experience：经验值，领取后立即对账户等级生效
         //   - background：背景奖励，仅记录到领取历史中（由用户在历史中预览/应用）
+        //   - warehouse：仓库道具，通过 warehouseAddItem 自动发放到仓库（与 WAREHOUSE_ITEMS 联动）
         // 后续新增奖励类型可在此处扩展
         if (mail.attachments && mail.attachments.length > 0) {
             mail.attachments.forEach(function(att) {
@@ -110,6 +111,13 @@ var mailSystem = {
                         addCheckinExp(att.count);
                     } else {
                         console.warn('[MailSystem] addCheckinExp not available, experience reward skipped:', att.count);
+                    }
+                } else if (att.type === 'warehouse' && att.itemId) {
+                    // 仓库道具：自动调用仓库发放接口，无需邮件系统维护道具列表
+                    if (typeof warehouseAddItem === 'function') {
+                        warehouseAddItem(att.itemId, att.count || 1, '邮件附件');
+                    } else {
+                        console.warn('[MailSystem] warehouseAddItem not available, warehouse item skipped:', att.itemId);
                     }
                 }
             });
@@ -428,8 +436,28 @@ var mailSystem = {
                     requireRegisteredBefore: "2026-08-27 11:00:00"
                 }
             ]
+        },
+        {
+            version: 6,
+            date: "2026-08-28",
+            mails: [
+                {
+                    id: 'half_anniversary_mail_20260828',
+                    title: 'PRE Launcher 半周年奖励',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n时光荏苒，PRE Launcher 已悄然走过半个年头。自上线以来，正是有您的陪伴、支持与反馈，启动器才能不断成长与完善。值此半周年之际，向您致以最诚挚的感谢！\n\n为庆祝这一时刻，我们为您准备了半周年专属奖励：\n· 半周年纪念徽章 ×1——半周年庆典限定纪念徽章；\n· 先驱者勋章 ×1——授予一路同行的您，见证启动器的每一步成长；\n· 补签卡 ×2——可在部分签到活动中补领未解锁的奖励；\n· 经验值补给卡 Ⅰ ×1——在仓库中使用后即可获得 1000 点经验值，立即对账户等级生效。\n\n点击"领取"按钮即可将上述奖励全部收入囊中。\n\n本次奖励无发放对象限制，凡在领取有效期内的账户均可领取；\n领取有效期截至 2026-09-28 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n愿我们在下一个半年继续同行，祝您使用愉快！',
+                    attachments: [
+                        { name: '半周年纪念徽章', type: 'warehouse', itemId: 'half_anniv_badge', count: 1 },
+                        { name: '先驱者勋章', type: 'warehouse', itemId: 'medal_pioneer', count: 1 },
+                        { name: '补签卡', type: 'warehouse', itemId: 'makeup_card', count: 2 },
+                        { name: '经验值补给卡 Ⅰ', type: 'warehouse', itemId: 'exp_supply_1', count: 1 }
+                    ],
+                    startTime: "2026-08-28 12:00:00",
+                    endTime: "2026-09-28 23:59:59"
+                }
+            ]
         }
-        
+
     ],
     
     applyMailUpdates: function() {
@@ -840,6 +868,47 @@ function selectMail(mailId) {
     document.getElementById('mailDetailSender').textContent = mail.sender;
     document.getElementById('mailDetailTime').textContent = formatMailTime(mail.sendTime);
     
+    // 移除旧的过期提醒tag
+    var oldExpireTag = document.getElementById('mailDetailExpireTag');
+    if (oldExpireTag) oldExpireTag.remove();
+    
+    // 添加过期提醒tag
+    if (mail.expireTime) {
+        var now = new Date();
+        var expireDate = new Date(mail.expireTime);
+        var diffMs = expireDate - now;
+        var remainingDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        
+        if (remainingDays > 0) {
+            var tagColor = 'green';
+            if (remainingDays <= 3) {
+                tagColor = 'red';
+            } else if (remainingDays <= 7) {
+                tagColor = 'yellow';
+            }
+            
+            var expireTag = document.createElement('span');
+            expireTag.id = 'mailDetailExpireTag';
+            expireTag.className = 'mail-expire-tag ' + tagColor;
+            expireTag.innerHTML = '剩余<span class="expire-days">' + remainingDays + '</span>天过期，请及时领取';
+            
+            var timeItem = document.getElementById('mailDetailTime');
+            if (timeItem && timeItem.parentNode) {
+                timeItem.parentNode.appendChild(expireTag);
+            }
+        } else if (remainingDays <= 0) {
+            var expireTag = document.createElement('span');
+            expireTag.id = 'mailDetailExpireTag';
+            expireTag.className = 'mail-expire-tag red';
+            expireTag.textContent = '已过期';
+            
+            var timeItem = document.getElementById('mailDetailTime');
+            if (timeItem && timeItem.parentNode) {
+                timeItem.parentNode.appendChild(expireTag);
+            }
+        }
+    }
+    
     var expireStr = mail.expireTime 
         ? '有效期至: ' + formatMailExpireTime(mail.expireTime)
         : '无有效期限制';
@@ -921,6 +990,39 @@ function selectMail(mailId) {
                     openBackgroundPreview(att);
                 });
                 
+                attachmentList.appendChild(itemDiv);
+            } else if (att.type === 'warehouse' && att.itemId) {
+                // 仓库道具附件：从 WAREHOUSE_ITEMS 读取显示信息
+                var whItem = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS[att.itemId] : null;
+                var itemDiv = document.createElement('div');
+                itemDiv.className = 'mail-attachment-item';
+                
+                var iconDiv = document.createElement('div');
+                iconDiv.className = 'mail-attachment-icon';
+                if (whItem) {
+                    iconDiv.style.background = hexToRgba(whItem.color || '#3498db', 0.15);
+                    iconDiv.innerHTML = '<i class="' + (whItem.icon || 'fas fa-gift') + '" style="color:' + (whItem.color || '#3498db') + ';"></i>';
+                } else {
+                    iconDiv.innerHTML = '<i class="fas fa-gift"></i>';
+                }
+                itemDiv.appendChild(iconDiv);
+                
+                var infoDiv = document.createElement('div');
+                infoDiv.className = 'mail-attachment-info';
+                
+                var nameEl = document.createElement('div');
+                nameEl.className = 'mail-attachment-name';
+                nameEl.textContent = whItem ? whItem.name : (att.name || att.itemId);
+                infoDiv.appendChild(nameEl);
+                
+                if (att.count !== undefined) {
+                    var countEl = document.createElement('div');
+                    countEl.className = 'mail-attachment-count';
+                    countEl.textContent = 'x' + att.count;
+                    infoDiv.appendChild(countEl);
+                }
+                
+                itemDiv.appendChild(infoDiv);
                 attachmentList.appendChild(itemDiv);
             } else {
                 var itemDiv = document.createElement('div');

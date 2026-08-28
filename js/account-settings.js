@@ -9279,34 +9279,73 @@
         
         // 更新导航栏active状态
         function updateNavActiveState(nav) {
-            // 移除所有active状态
-            document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(i) {
-                i.classList.remove('active');
-            });
-            document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-item').forEach(function(i) {
-                i.classList.remove('active');
-            });
-            document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-menu').forEach(function(i) {
-                i.classList.remove('active');
-            });
+            var oldActiveNavItem = document.querySelector('#uiMinTopnav .ui-min-nav-item.active');
+            var oldActiveDropdownItem = document.querySelector('#uiMinTopnav .ui-min-dropdown-item.active');
+            var oldActiveDropdownMenu = document.querySelector('#uiMinTopnav .ui-min-dropdown-menu.active');
+
+            if (oldActiveNavItem) {
+                oldActiveNavItem.classList.add('animating-out');
+                setTimeout(function() {
+                    oldActiveNavItem.classList.remove('active');
+                    oldActiveNavItem.classList.remove('animating-out');
+                }, 320);
+            } else {
+                document.querySelectorAll('#uiMinTopnav .ui-min-nav-item').forEach(function(i) {
+                    i.classList.remove('active');
+                });
+            }
+
+            if (oldActiveDropdownItem) {
+                setTimeout(function() {
+                    oldActiveDropdownItem.classList.remove('active');
+                }, 320);
+            } else {
+                document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-item').forEach(function(i) {
+                    i.classList.remove('active');
+                });
+            }
+
+            if (oldActiveDropdownMenu) {
+                setTimeout(function() {
+                    oldActiveDropdownMenu.classList.remove('active');
+                    var navItem = oldActiveDropdownMenu.querySelector('.ui-min-nav-item');
+                    if (navItem) {
+                        navItem.classList.remove('active');
+                        navItem.classList.remove('animating-out');
+                    }
+                }, 320);
+            } else {
+                document.querySelectorAll('#uiMinTopnav .ui-min-dropdown-menu').forEach(function(i) {
+                    i.classList.remove('active');
+                });
+            }
             
             // 查找并设置对应的active状态
             // 直接导航项
             var directItem = document.querySelector('#uiMinTopnav .ui-min-nav-item[data-nav="' + nav + '"]');
             if (directItem) {
-                directItem.classList.add('active');
+                setTimeout(function() {
+                    directItem.classList.add('active');
+                }, 50);
                 return;
             }
             
             // 下拉菜单项 - 需要同时设置父菜单的active状态
             var dropdownItem = document.querySelector('#uiMinTopnav .ui-min-dropdown-item[data-nav="' + nav + '"]');
             if (dropdownItem) {
-                dropdownItem.classList.add('active');
-                var parentMenu = dropdownItem.closest('.ui-min-dropdown-menu');
-                if (parentMenu) {
-                    parentMenu.classList.add('active');
-                    parentMenu.querySelector('.ui-min-nav-item').classList.add('active');
-                }
+                setTimeout(function() {
+                    dropdownItem.classList.add('active');
+                    var parentMenu = dropdownItem.closest('.ui-min-dropdown-menu');
+                    if (parentMenu) {
+                        parentMenu.classList.add('active');
+                        var parentNavItem = parentMenu.querySelector('.ui-min-nav-item');
+                        if (parentNavItem) {
+                            setTimeout(function() {
+                                parentNavItem.classList.add('active');
+                            }, 50);
+                        }
+                    }
+                }, 50);
             }
         }
         
