@@ -18,7 +18,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" onerror="this.onerror=null; window.JSZipFallback=true" defer></script>
     <script src="./js/settings.js" defer></script>
     <script src="./js/versionHistory.js" defer></script>
+    <script src="./js/precoin.js" defer></script>
     <script src="./js/warehouse.js" defer></script>
+    <script src="./js/dailytasks.js" defer></script>
+    <script src="./js/shop.js" defer></script>
     <script src="./js/premail.js?v=1.5" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
@@ -11532,9 +11535,17 @@
                         <i class="fas fa-warehouse"></i>
                         <span>仓库</span>
                     </div>
+                    <div class="ui-min-nav-item" data-nav="shop" id="uiMinShop">
+                        <i class="fas fa-store"></i>
+                        <span>商店</span>
+                    </div>
                     <div class="ui-min-nav-item" data-nav="checkin">
                         <i class="fas fa-calendar-check"></i>
                         <span>每日签到</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="dailytask" id="uiMinDailyTask">
+                        <i class="fas fa-tasks"></i>
+                        <span>每日任务</span>
                     </div>
                     <div class="ui-min-nav-item" data-nav="feedback" id="uiMinFeedback">
                         <i class="fas fa-comment-dots"></i>
@@ -11665,13 +11676,19 @@
                         if (nav === 'treasure') {
                             var treasureBtn = document.getElementById('menuTreasure');
                             if (treasureBtn) treasureBtn.click();
+                            if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('treasure');
                         } else if (nav === 'warehouse') {
                             if (typeof showWarehouseModal === 'function') {
                                 showWarehouseModal();
                             }
+                            if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('warehouse');
+                        } else if (nav === 'shop') {
+                            if (typeof showShopModal === 'function') showShopModal();
                         } else if (nav === 'checkin') {
                             var checkinBtn = document.getElementById('menuCheckin');
                             if (checkinBtn) checkinBtn.click();
+                        } else if (nav === 'dailytask') {
+                            if (typeof showDailyTaskModal === 'function') showDailyTaskModal();
                         } else if (nav === 'feedback') {
                             var feedbackBtn = document.getElementById('sidebarFeedback');
                             if (feedbackBtn) feedbackBtn.click();
@@ -11693,6 +11710,7 @@
                             if (typeof showMailModal === 'function') {
                                 showMailModal();
                             }
+                            if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('mail');
                         }
                     });
                 });
@@ -13039,8 +13057,26 @@
                     font-weight: 700;
                     font-size: 14px;
                     color: #667eea;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
                 }
-                
+                .milestone-exp {
+                    font-size: 14px;
+                }
+                .milestone-coin {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    font-size: 12px;
+                    color: #e67e22;
+                    background: rgba(230, 126, 34, 0.1);
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    width: fit-content;
+                }
+                .milestone-coin i { font-size: 10px; }
+
                 .milestone-status {
                     position: absolute;
                     top: 12px;
@@ -13130,7 +13166,11 @@
                 body.dark-mode .milestone-reward {
                     color: #90caf9;
                 }
-                
+                body.dark-mode .milestone-coin {
+                    color: #ffb74d;
+                    background: rgba(230, 126, 34, 0.18);
+                }
+
                 body.dark-mode .milestone-status {
                     color: #888;
                 }
@@ -15734,6 +15774,8 @@
                         // 记录游戏启动（跳过敬请期待）
                         if (gameId && gameId !== 'game_coming') {
                             recordGameLaunch(gameId);
+                            // 每日任务：启动小游戏
+                            if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('minigame');
                         }
                         window.open(url, '_blank');
                     }
@@ -16765,6 +16807,9 @@
                 saveToHistory(results, perCost);
                 updateTotalDrawsDisplay();
                 updateCurrentStatusDisplay();
+
+                // 每日任务：完成一次抽卡（单抽/十连都算完成一次）
+                if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('gacha');
             }
             
             // ===== 核心提取逻辑 =====
@@ -19247,22 +19292,24 @@
             if (user.userProfile && user.userProfile.checkinStats) {
                 streak = user.userProfile.checkinStats.streak || 0;
             }
-            
+
+            // 里程碑：exp 奖励保持不变，在此基础上新增 PRE Coin 奖励（coin 字段）
             var milestones = [
-                { days: 7, name: '连续签到7天', reward: '+500 EXP', icon: '🎁', description: '首次达成' },
-                { days: 15, name: '连续签到15天', reward: '每日 100 EXP', icon: '⭐', description: '每日最高奖励' },
-                { days: 30, name: '连续签到30天', reward: '+1000 EXP', icon: '🏆', description: '每月循环奖励' },
-                { days: 60, name: '连续签到60天', reward: '+1000 EXP', icon: '🏆', description: '每月循环奖励' },
-                { days: 90, name: '连续签到90天', reward: '+1000 EXP', icon: '🏆', description: '每月循环奖励' },
-                { days: 180, name: '连续签到180天', reward: '+1000 EXP', icon: '💎', description: '每半年奖励' },
-                { days: 365, name: '连续签到365天', reward: '+1000 EXP', icon: '👑', description: '年度奖励' }
+                { days: 7,   name: '连续签到7天',   expReward: '+500 EXP',    coin: 100, icon: '🎁', description: '首次达成' },
+                { days: 15,  name: '连续签到15天',  expReward: '每日 100 EXP', coin: 100, icon: '⭐', description: '每日最高奖励' },
+                { days: 30,  name: '连续签到30天',  expReward: '+1000 EXP',   coin: 200, icon: '🏆', description: '每月循环奖励' },
+                { days: 60,  name: '连续签到60天',  expReward: '+1000 EXP',   coin: 200, icon: '🏆', description: '每月循环奖励' },
+                { days: 90,  name: '连续签到90天',  expReward: '+1000 EXP',   coin: 250, icon: '🏆', description: '每季度奖励' },
+                { days: 180, name: '连续签到180天', expReward: '+1000 EXP',   coin: 250, icon: '💎', description: '每半年奖励' },
+                { days: 365, name: '连续签到365天', expReward: '+1000 EXP',   coin: 500, icon: '👑', description: '年度奖励' }
             ];
-            
+
             var itemsHTML = '';
             milestones.forEach(function(m) {
                 var achieved = streak >= m.days;
                 var daysText = achieved ? '已达成' : '需连续签到 ' + m.days + ' 天';
                 var statusText = achieved ? '✓ 已达成' : (streak > 0 && streak < m.days ? '还差 ' + (m.days - streak) + ' 天' : '未达成');
+                var coinRewardHtml = m.coin > 0 ? '<div class="milestone-coin"><i class="fas fa-coins"></i> +' + m.coin + ' PRE</div>' : '';
                 itemsHTML += '<li class="milestone-item' + (achieved ? ' achieved' : '') + '">' +
                     '<span class="milestone-status">' + statusText + '</span>' +
                     '<div class="milestone-item-top">' +
@@ -19272,7 +19319,10 @@
                             '<div class="milestone-days">' + daysText + '</div>' +
                         '</div>' +
                     '</div>' +
-                    '<div class="milestone-reward">' + m.reward + '</div>' +
+                    '<div class="milestone-reward">' +
+                        '<div class="milestone-exp">' + m.expReward + '</div>' +
+                        coinRewardHtml +
+                    '</div>' +
                 '</li>';
             });
             
@@ -19414,42 +19464,54 @@
             if (user.userProfile && user.userProfile.checkinStats) {
                 streak = user.userProfile.checkinStats.streak || 0;
             }
-            
+
             var dailyExp = getCheckinExpReward(streak);
+            var dailyCoin = (typeof getPreCoinDailyCheckinReward === 'function') ? getPreCoinDailyCheckinReward(streak) : 0;
             var nextBonus = null;
-            
+
             if (streak < 7) {
-                nextBonus = { daysLeft: 7 - streak, exp: 500, label: '连续7天' };
+                nextBonus = { daysLeft: 7 - streak, exp: 500, coin: 100, label: '连续7天' };
             } else if (streak < 15) {
-                nextBonus = { daysLeft: 15 - streak, exp: 0, label: '' };
+                nextBonus = { daysLeft: 15 - streak, exp: 0, coin: 100, label: '连续15天' };
             } else if (streak < 30) {
-                nextBonus = { daysLeft: 30 - streak, exp: 1000, label: '连续30天' };
+                nextBonus = { daysLeft: 30 - streak, exp: 1000, coin: 200, label: '连续30天' };
+            } else if (streak < 60) {
+                nextBonus = { daysLeft: 60 - streak, exp: 1000, coin: 200, label: '连续60天' };
+            } else if (streak < 90) {
+                nextBonus = { daysLeft: 90 - streak, exp: 1000, coin: 250, label: '连续90天' };
+            } else if (streak < 180) {
+                nextBonus = { daysLeft: 180 - streak, exp: 1000, coin: 250, label: '连续180天' };
+            } else if (streak < 365) {
+                nextBonus = { daysLeft: 365 - streak, exp: 1000, coin: 500, label: '连续365天' };
             }
-            
+
             var dailyExpEl = document.getElementById('dailyExpPreview');
             var nextBonusEl = document.getElementById('nextBonusPreview');
             var streakBonusEl = document.getElementById('streakBonusInfo');
-            
-            if (dailyExpEl) dailyExpEl.textContent = dailyExp + ' EXP';
+
+            if (dailyExpEl) {
+                var coinPart = dailyCoin > 0 ? ' + ' + dailyCoin + ' PRE' : '';
+                dailyExpEl.textContent = dailyExp + ' EXP' + coinPart;
+            }
             if (nextBonusEl && nextBonus) {
                 if (nextBonus.label) {
                     nextBonusEl.innerHTML = '距离' + nextBonus.label + '奖励还有 <strong>' + nextBonus.daysLeft + '</strong> 天';
                 } else {
-                    nextBonusEl.innerHTML = '<span style="color: #4facfe;">已达到每日最高奖励！每日 ' + dailyExp + ' EXP</span>';
+                    nextBonusEl.innerHTML = '<span style="color: #4facfe;">已达每日最高：' + dailyExp + ' EXP + ' + dailyCoin + ' PRE /天</span>';
                 }
             } else if (nextBonusEl) {
-                nextBonusEl.innerHTML = '<span style="color: #4facfe;">已达到最高连续签到奖励！</span>';
+                nextBonusEl.innerHTML = '<span style="color: #4facfe;">已达最长里程碑：每日 ' + dailyExp + ' EXP + ' + dailyCoin + ' PRE</span>';
             }
-            
+
             if (streakBonusEl) {
                 if (streak >= 30) {
-                    streakBonusEl.textContent = '已连续签到30天以上，每天获得100 EXP';
+                    streakBonusEl.textContent = '已连续签到30天以上：每天 100 EXP + 80 PRE（断签将重置为 30 EXP + 20 PRE）';
                 } else if (streak >= 15) {
-                    streakBonusEl.textContent = '已连续签到15天，每天获得100 EXP（断签将重置为30 EXP）';
+                    streakBonusEl.textContent = '已连续签到15天：每天 100 EXP + 80 PRE（断签将重置为 30 EXP + 20 PRE）';
                 } else if (streak >= 7) {
-                    streakBonusEl.textContent = '已连续签到7天，每天获得60 EXP（断签将重置为30 EXP）';
+                    streakBonusEl.textContent = '已连续签到7天：每天 60 EXP + 50 PRE（断签将重置为 30 EXP + 20 PRE）';
                 } else {
-                    streakBonusEl.textContent = '连续签到7天后每天获得60 EXP，15天后每天100 EXP（断签将重置为30 EXP）';
+                    streakBonusEl.textContent = '1-6天：每天 30 EXP + 20 PRE；7天起：60 EXP + 50 PRE；15天起：100 EXP + 80 PRE（断签重置）';
                 }
             }
         }
@@ -19592,7 +19654,7 @@
             var dailyExp = getCheckinExpReward(streak);
             var totalExpGained = dailyExp;
             var bonuses = getCheckinBonuses(streak, wasContinuous);
-            
+
             bonuses.forEach(function(b) {
                 totalExpGained += b.exp;
             });
@@ -19602,24 +19664,65 @@
                 var warehouseExpMult = getWarehouseExpMultiplier();
                 if (warehouseExpMult > 1) totalExpGained = Math.round(totalExpGained * warehouseExpMult);
             }
-            
+
             // 添加经验值
             var result = addExpToUser(user, totalExpGained);
-            
+
             // 保存到localStorage
             users[userIndex] = user;
             localStorage.setItem('registeredUsers', JSON.stringify(users));
-            
+
+            // ============ PRE Coin：每日签到奖励 + 里程碑奖励 ============
+            var totalPreCoinGained = 0;
+            var preCoinParts = [];
+            var dailyCoin = 0;
+            if (typeof getPreCoinDailyCheckinReward === 'function') {
+                dailyCoin = getPreCoinDailyCheckinReward(streak);
+                if (dailyCoin > 0) {
+                    totalPreCoinGained += dailyCoin;
+                    preCoinParts.push({ label: '每日签到奖励', coin: dailyCoin });
+                }
+            }
+            // 里程碑 PRE Coin：连续签到且刚好命中里程碑天数时触发
+            var preCoinMilestoneParts = [];
+            if (wasContinuous && typeof PRECOIN_CHECKIN_MILESTONE_BONUSES !== 'undefined') {
+                PRECOIN_CHECKIN_MILESTONE_BONUSES.forEach(function(m) {
+                    if (streak === m.days) {
+                        totalPreCoinGained += m.coin;
+                        preCoinMilestoneParts.push({ label: m.label, coin: m.coin });
+                        preCoinParts.push({ label: '🎁 ' + m.label, coin: m.coin });
+                    }
+                });
+            }
+            if (totalPreCoinGained > 0 && typeof addPreCoin === 'function') {
+                addPreCoin(totalPreCoinGained, '每日签到（连续 ' + streak + ' 天）');
+            }
+
+            // 每日任务：标记签到完成
+            if (typeof dailyTaskMarkProgress === 'function') {
+                dailyTaskMarkProgress('checkin');
+            }
+
             // 更新界面
             loadCheckinData();
             updateCheckinPageAfterCheckin(user);
-            
+
             // 构建提示消息
             var message = '签到成功！连续签到 ' + streak + ' 天';
             message += '<br>获得 ' + totalExpGained + ' 经验值';
             bonuses.forEach(function(b) {
                 message += '<br>🎉 ' + b.label + ' +' + b.exp + ' EXP';
             });
+            if (totalPreCoinGained > 0) {
+                message += '<hr style="border:none;border-top:1px dashed #ddd;margin:8px 0;">';
+                if (dailyCoin > 0) {
+                    message += '<br><i class="fas fa-coins" style="color:#f39c12;"></i> 每日 PRE Coin：<b style="color:#e67e22;">+' + dailyCoin + '</b>';
+                }
+                preCoinMilestoneParts.forEach(function(p) {
+                    message += '<br>🎊 ' + p.label + '：<b style="color:#e67e22;">+' + p.coin + ' PRE</b>';
+                });
+                message += '<br>💴 本次合计获得 <b style="color:#c0392b;">' + totalPreCoinGained + ' PRE Coin</b>';
+            }
             if (result.leveledUp) {
                 message += '<br>🎊 升级啦！当前等级 Lv.' + result.newLevel;
             }

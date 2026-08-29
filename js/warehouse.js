@@ -10,7 +10,7 @@
 //   - 经验值补给卡：使用后立即获得对应点数经验值，直接对账户等级生效
 // 开发者模式：系统设置开启开发者模式后，仓库工具栏最右侧显示「获取道具（dev）」按钮
 
-var WAREHOUSE_DATA_VERSION = 3; // 数据版本：升级时自动清空旧仓库数据（v3：徽章分类调整）
+var WAREHOUSE_DATA_VERSION = 3; // 数据版本：升级时自动迁移旧仓库数据（保留已有道具，仅剔除目录中已移除的旧道具）
 
 // ===== 开发者移除模式状态（由「移除道具（dev）」按钮切换） =====
 var WAREHOUSE_REMOVE_MODE = false;
@@ -27,31 +27,31 @@ var WAREHOUSE_SHOW_SOURCE = true;
 var WAREHOUSE_ITEMS = {
     // ---- 消耗品 ----
     exp_boost_small: {
-        name: '经验加成卡（小）', icon: 'fas fa-arrow-up', color: '#3498db',
+        name: '经验值加成卡 Ⅰ', icon: 'fas fa-arrow-up', color: '#3498db',
         category: 'consumable', rarity: 'common', showSource: true,
         desc: '使用后30分钟内，经验获取提升10%（签到经验结算时生效，可重复使用刷新时长）。',
         source: '活动奖励 / 商店兑换', usable: true
     },
     exp_boost_mid: {
-        name: '经验加成卡（中）', icon: 'fas fa-arrow-circle-up', color: '#9b59b6',
+        name: '经验值加成卡 Ⅱ', icon: 'fas fa-arrow-circle-up', color: '#9b59b6',
         category: 'consumable', rarity: 'rare', showSource: true,
         desc: '使用后30分钟内，经验获取提升25%（签到经验结算时生效，可重复使用刷新时长）。',
         source: '活动奖励 / 商店兑换', usable: true
     },
     exp_boost_large: {
-        name: '经验加成卡（大）', icon: 'fas fa-rocket', color: '#f39c12',
+        name: '经验值加成卡 Ⅲ', icon: 'fas fa-rocket', color: '#f39c12',
         category: 'consumable', rarity: 'epic', showSource: true,
         desc: '使用后30分钟内，经验获取提升50%（签到经验结算时生效，可重复使用刷新时长）。',
         source: '特殊活动奖励', usable: true
     },
     gacha_single: {
-        name: '单抽卡券', icon: 'fas fa-ticket-alt', color: '#2ecc71',
+        name: '单次抽卡卷', icon: 'fas fa-ticket-alt', color: '#2ecc71',
         category: 'consumable', rarity: 'rare', showSource: true,
         desc: '在抽卡模拟器提取1次时自动优先使用，本次提取免扣狂气。',
         source: '签到 / 邮件附件', usable: false
     },
     gacha_ten: {
-        name: '十连卡券', icon: 'fas fa-ticket', color: '#8e44ad',
+        name: '十连抽卡卷', icon: 'fas fa-ticket', color: '#8e44ad',
         category: 'consumable', rarity: 'epic', showSource: true,
         desc: '在抽卡模拟器十连提取时自动优先使用，本次提取免扣狂气。',
         source: '特殊活动奖励', usable: false
@@ -90,7 +90,7 @@ var WAREHOUSE_ITEMS = {
     // ---- 徽章 ----
     medal_pioneer: {
         name: '先驱者勋章', icon: 'fas fa-medal', color: '#f39c12',
-        category: 'badge', rarity: 'epic', showSource: true,
+        category: 'badge', rarity: 'legendary', showSource: true,
         desc: '授予早期加入启动器的用户纪念勋章。',
         source: '成就系统（敬请期待）', usable: false
     },
@@ -102,7 +102,7 @@ var WAREHOUSE_ITEMS = {
     },
     half_anniv_badge: {
         name: '半周年纪念徽章', icon: 'fas fa-certificate', color: '#e67e22',
-        category: 'badge', rarity: 'epic', showSource: true,
+        category: 'badge', rarity: 'legendary', showSource: true,
         desc: 'PRE Launcher 半周年限定纪念徽章。',
         source: '半周年活动', usable: false
     }
@@ -116,7 +116,7 @@ var WAREHOUSE_CATEGORIES = [
     { id: 'badge', name: '徽章', icon: 'fas fa-medal' }
 ];
 
-// 稀有度配置（用于排序/左边框/类型tag配色）
+// 稀有度配置（用于排序/类型tag配色）
 var WAREHOUSE_RARITY = {
     common:    { name: '普通', color: '#9aa0a6' },
     rare:      { name: '稀有', color: '#3498db' },
@@ -140,10 +140,22 @@ function getWarehouseData() {
     if (stored) {
         try {
             var data = JSON.parse(stored);
-            // 数据版本不一致时清空旧数据（例如清除历史测试道具）
-            if (data && data.items && data.version === WAREHOUSE_DATA_VERSION) {
+            if (data && data.items && typeof data.items === 'object') {
+                // 数据版本升级迁移：保留原有道具，仅剔除道具目录中已不存在的旧道具（如历史测试道具）
+                var migrated = data.version !== WAREHOUSE_DATA_VERSION;
+                if (migrated) {
+                    Object.keys(data.items).forEach(function(id) {
+                        if (!WAREHOUSE_ITEMS[id]) {
+                            delete data.items[id];
+                        } else if (!data.items[id] || typeof data.items[id].qty !== 'number' || data.items[id].qty <= 0) {
+                            delete data.items[id]; // 修复无效条目
+                        }
+                    });
+                    data.version = WAREHOUSE_DATA_VERSION;
+                }
                 if (!data.expBuff) data.expBuff = null;
                 if (typeof data.luckyActive === 'undefined') data.luckyActive = false;
+                if (migrated) saveWarehouseData(data); // 迁移结果立即落盘
                 return data;
             }
         } catch (e) {}
@@ -560,7 +572,7 @@ function buildWarehouseCardHTML(itemId, entry, removeMode) {
         actionHtml = '<button class="wh-use-btn" data-id="' + itemId + '"><i class="fas fa-hand-sparkles"></i> 使用</button>';
     }
 
-    return '<div class="wh-item-card wh-rarity-' + item.rarity + (removeMode ? ' wh-remove-mode' : '') + '">' +
+    return '<div class="wh-item-card' + (removeMode ? ' wh-remove-mode' : '') + '">' +
         '<span class="wh-qty-badge">×' + entry.qty + '</span>' +
         '<span class="wh-type-tag" style="color:' + rarity.color + '; border-color:' + rarity.color + ';">' + categoryLabel + '</span>' +
         '<div class="wh-item-icon" style="background: ' + hexToRgba(item.color, 0.15) + ';">' +
@@ -956,11 +968,7 @@ function getWarehouseStyleCSS() {
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
 
-        /* 稀有度左边框强调条（保留，但更柔和） */
-        .wh-item-card.wh-rarity-common    { border-left: 4px solid #9aa0a6; }
-        .wh-item-card.wh-rarity-rare      { border-left: 4px solid #3498db; }
-        .wh-item-card.wh-rarity-epic      { border-left: 4px solid #9b59b6; }
-        .wh-item-card.wh-rarity-legendary { border-left: 4px solid #f39c12; }
+        /* 稀有度左边框强调条已移除：所有卡片统一为无左侧竖条的组合包样式 */
 
         /* 移除模式：卡片变灰，禁用交互 */
         .wh-item-card.wh-remove-mode {

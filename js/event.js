@@ -8,7 +8,7 @@ const EVENT_STORAGE_KEYS = {
 
 // 初始化：如果数据版本不匹配，重置已读状态
 (function initEventData() {
-    var currentVersion = '1';
+    var currentVersion = '2';
     var storedVersion = localStorage.getItem(EVENT_STORAGE_KEYS.EVENT_DATA_VERSION);
     if (storedVersion !== currentVersion) {
         localStorage.removeItem(EVENT_STORAGE_KEYS.VIEWED_EVENT_ANNOUNCEMENT_IDS);
@@ -24,8 +24,20 @@ var eventAnnouncementData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 公告侧边栏排序配置：按数组顺序显示
-    sortOrder: ['event_001','event_daily_checkin', ],
+    sortOrder: ['event_autumn_sale', 'event_001', 'event_daily_checkin'],
     announcements: [
+        {
+            id: 'event_autumn_sale',
+            category: 'current',
+            title: '秋季促销',
+            date: '2026-08-30',
+            endDate: '2026-09-13',
+            startTime: '2026-08-30 00:00:00',
+            endTime: '2026-09-13 23:59:59',
+            description: '商店全场物品限时折扣！PRE Coin 兑换更划算，折扣力度以商店页面实时展示为准。',
+            content: '<h2>秋季促销</h2><p>金秋九月，好价连连！秋季促销是商店的<span style="color:#d45d79;font-weight:600;">限时大型促销活动</span>，活动期间商店内全部在售商品均享受促销折扣优惠。</p><h3>活动时间</h3><p>起始日：2026年8月30日 00:00:00（UTC+8）<br>结束时间：2026年9月13日 23:59:59（UTC+8）<br>活动结束后将自动纳入已结束类别</p><h3>促销内容</h3><ul><li><strong>全场折扣：</strong>活动期间商店全部在售商品统一附加促销折扣，具体折扣力度以商店页面的价格标签为准</li><li><strong>划线价展示：</strong>促销商品同时展示原价（划线）与折后价，优惠一目了然</li><li><strong>限购不变：</strong>各类商品的每日/每周/总限购数量在活动期间保持不变</li><li><strong>组合包说明：</strong>组合包价格独立计算，不与全场促销叠加</li></ul><h3>参与方式</h3><p>打开商店即可看到促销价格，使用 PRE Coin 直接兑换；也可在活动中心点击「立即参与」直达商店。</p><h3>温馨提示</h3><p>促销折扣与商品自身折扣取较高者生效；活动结束后商品将恢复原价，请把握机会！</p>',
+            banner: ''
+        },
         {
             id: 'event_daily_checkin',
             category: 'current',
@@ -58,8 +70,22 @@ var eventCenterData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 活动侧边栏排序配置：按数组顺序显示
-    sortOrder: ['center_002', 'center_001'],
+    sortOrder: ['center_003', 'center_002', 'center_001'],
     events: [
+        {
+            id: 'center_003',
+            category: 'featured',
+            title: '秋季促销',
+            subtitle: '全场商品限时折扣',
+            status: 'active',
+            description: '商店全场物品限时促销，PRE Coin 兑换更划算<p>（折扣力度以商店页面为准）</p><p>活动时间：2026年8月30日 00:00 - 2026年9月13日 23:59（UTC+8）</p>',
+            icon: 'fa-percent',
+            announcementId: 'event_autumn_sale',
+            showParticipate: true,
+            participateAction: 'shop',
+            startTime: '2026-08-30 00:00:00',
+            endTime: '2026-09-13 23:59:59'
+        },
 
         {
             id: 'center_001',
@@ -87,6 +113,83 @@ var eventCenterData = {
         },
     ]
 };
+
+// ==================== 活动定时开始/结束（依据 startTime / endTime 自动迁移） ====================
+
+// 将 'YYYY-MM-DD HH:mm:ss' 按 UTC+8 解析为时间戳；未配置/格式错误返回 null
+function parseEventTimeUtc8(str) {
+    if (!str) return null;
+    var m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/.exec(String(str).trim());
+    if (!m) return null;
+    var h = m[4] !== undefined ? parseInt(m[4], 10) : 0;
+    return Date.UTC(
+        parseInt(m[1], 10),
+        parseInt(m[2], 10) - 1,
+        parseInt(m[3], 10),
+        h - 8, // UTC+8 → UTC
+        m[5] !== undefined ? parseInt(m[5], 10) : 0,
+        m[6] !== undefined ? parseInt(m[6], 10) : 0
+    );
+}
+
+// 获取活动时间状态：'upcoming' 未开始 / 'active' 进行中 / 'ended' 已结束
+function getEventTimeState(startStr, endStr) {
+    var now = Date.now();
+    var s = parseEventTimeUtc8(startStr);
+    var e = parseEventTimeUtc8(endStr);
+    if (s !== null && now < s) return 'upcoming';
+    if (e !== null && now > e) return 'ended';
+    return 'active';
+}
+
+// 活动状态中文文本
+function getEventStatusText(status) {
+    return status === 'active' ? '进行中' : (status === 'upcoming' ? '未开始' : '已结束');
+}
+
+// 依据起止时间自动调整活动/公告的状态与分类（结束后归入已结束类别），返回是否有变化
+function applyTimedEventStates() {
+    var changed = false;
+
+    eventCenterData.events.forEach(function(evt) {
+        if (!evt.startTime && !evt.endTime) return;
+        var state = getEventTimeState(evt.startTime, evt.endTime);
+        if (evt.status !== state) { evt.status = state; changed = true; }
+        // 已结束的活动归入「已结束」类别
+        if (state === 'ended' && evt.category !== 'ended') { evt.category = 'ended'; changed = true; }
+    });
+
+    // 公告分类跟随时间：即将到来 → 当前活动 → 已结束
+    var annCatMap = { upcoming: 'upcoming', active: 'current', ended: 'ended' };
+    eventAnnouncementData.announcements.forEach(function(ann) {
+        if (!ann.startTime && !ann.endTime) return;
+        var newCat = annCatMap[getEventTimeState(ann.startTime, ann.endTime)];
+        if (newCat && ann.category !== newCat) { ann.category = newCat; changed = true; }
+    });
+
+    return changed;
+}
+
+// 刷新已打开的活动弹窗（侧边栏列表 + 当前选中详情）
+function refreshOpenEventModals() {
+    var annModal = document.getElementById('eventAnnouncementModal');
+    if (annModal && annModal.style.display === 'flex') renderEventAnnouncementList();
+
+    var centerModal = document.getElementById('eventCenterModal');
+    if (centerModal && centerModal.style.display === 'flex') {
+        renderEventCenterList();
+        var activeItem = centerModal.querySelector('.event-announcement-item.active');
+        if (activeItem) showEventCenterDetail(activeItem.getAttribute('data-id'));
+    }
+}
+
+// 定时检查：每 30 秒校验一次，活动到点自动开始/结束并刷新界面
+setInterval(function() {
+    if (applyTimedEventStates()) refreshOpenEventModals();
+}, 30000);
+
+// 页面加载时立即应用一次时间状态
+applyTimedEventStates();
 
 // ==================== 活动排序工具 ====================
 
@@ -411,8 +514,9 @@ function showEventAnnouncementModal() {
         modal = document.getElementById('eventAnnouncementModal');
     }
 
-    // 应用已结束迁移并刷新侧边栏列表
-    if (applyMigratedEvents()) {
+    // 应用时间状态与已结束迁移并刷新侧边栏列表
+    var stateChanged = applyTimedEventStates();
+    if (applyMigratedEvents() || stateChanged) {
         renderEventAnnouncementList();
     }
 
@@ -529,7 +633,7 @@ function renderEventCenterList() {
                         <div class="event-announcement-subtitle">${evt.subtitle}</div>
                     </div>
                     <div class="event-status-tag ${evt.status}">
-                        ${evt.status === 'active' ? '进行中' : '已结束'}
+                        ${getEventStatusText(evt.status)}
                     </div>
                 </div>
             `;
@@ -572,7 +676,9 @@ function showEventCenterDetail(id) {
 
         var actionButtonsHtml = '';
         if (showParticipateBtn) {
-            actionButtonsHtml += `<button class="event-action-btn event-primary-btn" data-action="participate" data-event-id="${evt.id}">
+            // 活动未开始/已结束时按钮失效（灰色不可点击）
+            var partDisabled = evt.status !== 'active';
+            actionButtonsHtml += `<button class="event-action-btn event-primary-btn" data-action="participate" data-event-id="${evt.id}"${partDisabled ? ' disabled' : ''}>
                 <i class="fas fa-play"></i>
                 <span>立即参与</span>
             </button>`;
@@ -591,7 +697,7 @@ function showEventCenterDetail(id) {
                 <h2 class="event-center-title">${evt.title}</h2>
                 <div class="event-center-subtitle">${evt.subtitle}</div>
                 <div class="event-center-status ${evt.status}">
-                    ${evt.status === 'active' ? '进行中' : '已结束'}
+                    ${getEventStatusText(evt.status)}
                 </div>
                 <div class="event-center-desc">${evt.description}</div>
                 <div class="event-center-actions">
@@ -625,7 +731,24 @@ function showEventCenterDetail(id) {
                     }, 350);
                 } else if (action === 'participate') {
                     var targetEvt = eventCenterData.events.find(function(e) { return e.id === eventId; });
-                    if (targetEvt && targetEvt.id === 'center_001') {
+                    // 未开始/已结束的活动不允许参与（按钮已禁用，此处为兜底）
+                    if (targetEvt && targetEvt.status !== 'active') {
+                        if (typeof showToast === 'function') {
+                            showToast({
+                                type: 'info',
+                                title: getEventStatusText(targetEvt.status),
+                                message: targetEvt.status === 'upcoming' ? '活动尚未开始，请等待活动开始后再参与' : '活动已结束，感谢您的关注'
+                            });
+                        }
+                        return;
+                    }
+                    if (targetEvt && targetEvt.participateAction === 'shop') {
+                        // 直接打开商店弹窗
+                        closeEventCenterModal();
+                        setTimeout(function() {
+                            if (typeof showShopModal === 'function') showShopModal();
+                        }, 350);
+                    } else if (targetEvt && targetEvt.id === 'center_001') {
                         closeEventCenterModal();
                         setTimeout(function() {
                             var checkinArea = document.getElementById('checkinArea');
@@ -1235,8 +1358,9 @@ function showEventCenterModal() {
         modal = document.getElementById('eventCenterModal');
     }
 
-    // 应用已结束迁移并刷新侧边栏列表
-    if (applyMigratedEvents()) {
+    // 应用时间状态与已结束迁移并刷新侧边栏列表
+    var stateChanged = applyTimedEventStates();
+    if (applyMigratedEvents() || stateChanged) {
         renderEventCenterList();
     }
 

@@ -10288,6 +10288,11 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
     color: #999;
 }
 
+.event-status-tag.upcoming {
+    background: rgba(52, 152, 219, 0.1);
+    color: #2980b9;
+}
+
 /* 最新标签 */
 .event-new-tag {
     font-size: 10px;
@@ -10608,6 +10613,11 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
     color: #999;
 }
 
+.event-center-status.upcoming {
+    background: rgba(52, 152, 219, 0.1);
+    color: #2980b9;
+}
+
 .event-center-desc {
     font-size: 15px;
     color: #666;
@@ -10645,6 +10655,20 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
 .event-primary-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(212, 93, 121, 0.4);
+}
+
+/* 活动按钮禁用态（活动未开始/已结束时） */
+.event-action-btn:disabled {
+    background: rgba(0, 0, 0, 0.08);
+    color: #aaa;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.event-action-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .event-secondary-btn {
@@ -10814,6 +10838,21 @@ body.dark-mode .event-status-tag.active {
 body.dark-mode .event-status-tag.ended {
     background: rgba(255, 255, 255, 0.06);
     color: #888;
+}
+
+body.dark-mode .event-status-tag.upcoming {
+    background: rgba(52, 152, 219, 0.2);
+    color: #5dade2;
+}
+
+body.dark-mode .event-center-status.upcoming {
+    background: rgba(52, 152, 219, 0.2);
+    color: #5dade2;
+}
+
+body.dark-mode .event-action-btn:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    color: #666;
 }
 
 body.dark-mode .event-new-tag {

@@ -101,6 +101,7 @@ var mailSystem = {
         // 应用附件奖励
         // 当前支持类型：
         //   - experience：经验值，领取后立即对账户等级生效
+        //   - precoin：PRE Coin，通过 addPreCoin 领取后立即生效到 PRE Coin 系统
         //   - background：背景奖励，仅记录到领取历史中（由用户在历史中预览/应用）
         //   - warehouse：仓库道具，通过 warehouseAddItem 自动发放到仓库（与 WAREHOUSE_ITEMS 联动）
         // 后续新增奖励类型可在此处扩展
@@ -111,6 +112,13 @@ var mailSystem = {
                         addCheckinExp(att.count);
                     } else {
                         console.warn('[MailSystem] addCheckinExp not available, experience reward skipped:', att.count);
+                    }
+                } else if (att.type === 'precoin' && att.count) {
+                    // PRE Coin：领取后立即到账生效到 PRE Coin 系统
+                    if (typeof addPreCoin === 'function') {
+                        addPreCoin(att.count, '邮件附件');
+                    } else {
+                        console.warn('[MailSystem] addPreCoin not available, PRE Coin reward skipped:', att.count);
                     }
                 } else if (att.type === 'warehouse' && att.itemId) {
                     // 仓库道具：自动调用仓库发放接口，无需邮件系统维护道具列表
@@ -454,6 +462,57 @@ var mailSystem = {
                     ],
                     startTime: "2026-08-28 12:00:00",
                     endTime: "2026-09-28 23:59:59"
+                }
+            ]
+        },
+        {
+            version: 7,
+            date: "2026-08-29",
+            mails: [
+                {
+                    id: 'compensation_mail_20260829',
+                    title: '2026-08-29 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。在 2026-08-29 推送的版本更新中，我们为启动器新增了 PRE Coin 经济系统、每日/每周任务以及 PRE Launcher 商店等全新功能，并对若干体验细节进行了修复与优化。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上版本更新补偿：300 经验值 + 经验值加成卡 Ⅰ ×1。经验值领取后将立即对您的账户等级生效；经验值加成卡 Ⅰ 将发放至您的仓库，使用后30分钟内经验获取提升10%（签到经验结算时生效）。\n\n本邮件发放对象为 2026-08-29 15:30:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-09-05 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值',
+                            type: 'experience',
+                            count: 300,
+                            icon: 'fa-star'
+                        },
+                        {
+                            name: '经验值加成卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_boost_small',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-08-29 15:30:00",
+                    endTime: "2026-09-05 23:59:59",
+                    requireRegisteredBefore: "2026-08-29 15:30:00"
+                }
+            ]
+        },
+        {
+            version: 8,
+            date: "2026-08-29",
+            mails: [
+                {
+                    id: 'shop_launch_reward_20260829',
+                    title: 'PRE Launcher 商店上线奖励',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\nPRE Launcher 商店已正式上线！您现在可以通过每日任务、每周任务、签到、小游戏以及各类活动等途径获取 PRE Coin，并在商店中兑换仓库道具、每日限购商品与超值组合礼包。\n\n为庆祝商店上线，我们向所有用户发放上线奖励：1000 PRE Coin！点击"领取"按钮后，PRE Coin 将立即到账并对您的账户余额生效，您可随时打开商店进行兑换。\n\n本次奖励无发放对象限制，凡在领取有效期内的账户均可领取；\n领取有效期截至 2026-09-12 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您购物愉快！',
+                    attachments: [
+                        {
+                            name: 'PRE Coin',
+                            type: 'precoin',
+                            count: 1000,
+                            icon: 'fa-coins'
+                        }
+                    ],
+                    startTime: "2026-08-29 15:30:00",
+                    endTime: "2026-09-12 23:59:59"
                 }
             ]
         }
