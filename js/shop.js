@@ -209,10 +209,10 @@ var SHOP_BUNDLES = {
         icon: 'fas fa-gift',
         color: '#3498db',
         items: [
-            { itemId: 'exp_supply_1', price: 400 },
-            { itemId: 'exp_supply_1', price: 400 },
+            { itemId: 'exp_supply_1', price: 600 },
+            { itemId: 'exp_supply_1', price: 600 },
         ],
-        discount: 0,          // ★ 整包打折百分比，修改此单一数值即可
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
@@ -223,10 +223,10 @@ var SHOP_BUNDLES = {
         icon: 'fas fa-gift',
         color: '#9b59b6',
         items: [
-            { itemId: 'exp_supply_2', price: 700 },
-            { itemId: 'exp_supply_2', price: 700 },
+            { itemId: 'exp_supply_2', price: 1000 },
+            { itemId: 'exp_supply_2', price: 1000 },
         ],
-        discount: 0,          // ★ 整包打折百分比，修改此单一数值即可
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
@@ -237,10 +237,10 @@ var SHOP_BUNDLES = {
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
-            { itemId: 'exp_supply_3', price: 1000 },
-            { itemId: 'exp_supply_3', price: 1000 },
+            { itemId: 'exp_supply_3', price: 1500 },
+            { itemId: 'exp_supply_3', price: 1500 },
         ],
-        discount: 0,          // ★ 整包打折百分比，修改此单一数值即可
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
@@ -251,14 +251,56 @@ var SHOP_BUNDLES = {
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
-            { itemId: 'gacha_ten', price: 800 },
-            { itemId: 'gacha_ten', price: 800 },
+            { itemId: 'gacha_ten', price: 1000 },
+            { itemId: 'gacha_ten', price: 1000 },
         ],
-        discount: 0,          // ★ 整包打折百分比，修改此单一数值即可
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
         note: '提取补给包，包含20张十连抽卡卷（该组合包限购 1 份）'
+    },
+    bundle_expup1: {
+        name: '经验加成包 Ⅰ',
+        icon: 'fas fa-gift',
+        color: '#3498db',
+        items: [
+            { itemId: 'exp_boost_small', price: 300 },
+            { itemId: 'exp_boost_small', price: 300 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: '经验加成包 Ⅰ，包含两张经验加成卡 Ⅰ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+    },
+    bundle_expup2: {
+        name: '经验加成包 Ⅱ',
+        icon: 'fas fa-gift',
+        color: '#9b59b6',
+        items: [
+            { itemId: 'exp_boost_mid', price: 500 },
+            { itemId: 'exp_boost_mid', price: 500 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: '经验加成包 Ⅱ，包含两张经验加成卡 Ⅱ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+    },
+    bundle_expup3: {
+        name: '经验加成包 Ⅲ',
+        icon: 'fas fa-gift',
+        color: '#e67e22',
+        items: [
+            { itemId: 'exp_boost_large', price: 850 },
+            { itemId: 'exp_boost_large', price: 850 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: '经验加成包 Ⅲ，包含两张经验加成卡 Ⅲ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
     },
     // 新增组合包：复制上方格式追加即可
     // bundle_xxx: {
@@ -572,6 +614,7 @@ function showShopModal() {
 }
 
 function closeShopModal() {
+    if (_shopRefreshTimer) { clearInterval(_shopRefreshTimer); _shopRefreshTimer = null; }
     var modal = document.getElementById('shopModal');
     if (!modal) return;
     modal.classList.remove('show');
@@ -596,6 +639,37 @@ function _shopFormatPromoTime(ts) {
     var d = new Date(ts + 8 * 60 * 60 * 1000);
     var p2 = function(n) { return (n < 10 ? '0' : '') + n; };
     return p2(d.getUTCMonth() + 1) + '-' + p2(d.getUTCDate()) + ' ' + p2(d.getUTCHours()) + ':' + p2(d.getUTCMinutes());
+}
+
+// ==================== 库存刷新倒计时 ====================
+// 下次库存刷新时间戳：每日 00:00（UTC+8）重置每日限购库存（周一同时重置每周限购）
+function _shopGetNextStockResetTs() {
+    var now8 = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
+    var next = Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate() + 1, 0, 0, 0);
+    return next - 8 * 60 * 60 * 1000; // 转回真实 UTC 时间戳
+}
+
+// 格式化库存刷新倒计时（HH:MM:SS，剩余不足一天）
+function _shopFormatRefreshCountdown(ms) {
+    if (ms < 0) ms = 0;
+    var s = Math.floor(ms / 1000);
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    var p2 = function(n) { return (n < 10 ? '0' : '') + n; };
+    return p2(h) + ':' + p2(m) + ':' + p2(sec);
+}
+
+var _shopRefreshTimer = null;
+
+// 启动顶栏库存刷新倒计时（每秒更新；重复调用会先清理旧定时器）
+function _shopStartStockRefreshCountdown() {
+    if (_shopRefreshTimer) { clearInterval(_shopRefreshTimer); _shopRefreshTimer = null; }
+    var update = function() {
+        var el = document.querySelector('#shopStockRefreshTag .shop-refresh-countdown');
+        if (!el) return;
+        el.textContent = _shopFormatRefreshCountdown(_shopGetNextStockResetTs() - Date.now());
+    };
+    update();
+    _shopRefreshTimer = setInterval(update, 1000);
 }
 
 // 渲染分类工具栏（含组合包隔离线 / dev 按钮）
@@ -827,12 +901,20 @@ function renderShopUI() {
                 : '<span class="shop-promo-tag"><i class="fas fa-tags"></i> 当前有 ' + ps.promo + ' 款物品正在进行促销</span>';
         }
 
+        // 库存刷新倒计时 tag（PRE Coin 余额左侧）
+        var stockRefreshHtml = '<span class="shop-stock-refresh-tag" id="shopStockRefreshTag"' +
+            ' title="每日 00:00（UTC+8）刷新所有商品限购库存；每周一 00:00（UTC+8）额外重置每周限购">' +
+            '<i class="fas fa-hourglass-half"></i> 距离下次刷新库存时间剩余：<b class="shop-refresh-countdown">--:--:--</b></span>';
+
         statsEl.innerHTML =
             promoPeriodHtml +
             promoItemsHtml +
+            stockRefreshHtml +
             '<span class="wh-stat"><i class="fas fa-wallet"></i> PRE Coin 余额 <b>' + formatPreCoin(coinBalance) + '</b></span>' +
             '<span class="wh-stat"><i class="fas fa-shopping-cart"></i> 累计消费 <b>' + formatPreCoin(shopData.totalSpentCoin) + '</b> PRE Coin</span>' +
             '<span class="wh-stat"><i class="fas fa-receipt"></i> 累计购买 <b>' + shopData.totalPurchased + '</b> 件</span>';
+
+        _shopStartStockRefreshCountdown();
     }
 
     // 组合包分类：渲染组合包卡片
@@ -1090,7 +1172,7 @@ function buildShopBundleCardHTML(bundleId) {
                 <i class="fas ${isSoldOut ? 'fa-ban' : 'fa-shopping-cart'}"></i>
                 ${isSoldOut ? '已售罄' : (cfg.discount >= 100 ? '立即领取' : '立即购买')}
             </button>
-            <button class="shop-bundle-open" data-id="${bundleId}"><i class="fas fa-list-ul"></i> 查看包内内容</button>
+            <button class="shop-bundle-open" data-id="${bundleId}"><i class="fas fa-list-ul"></i> 查看该组合包所有物品</button>
         </div>
     `;
 }
@@ -1394,6 +1476,20 @@ function getShopStyleCSS() {
         #shopModal .shop-promo-period-tag.shop-promo-pending {
             background: rgba(0,0,0,0.07); color: #999; box-shadow: none;
         }
+        /* 顶栏库存刷新倒计时 tag（PRE Coin 余额左侧） */
+        #shopModal .shop-stock-refresh-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 13px; border-radius: 20px;
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+            color: white; font-size: 12px; font-weight: bold;
+            box-shadow: 0 2px 8px rgba(52,152,219,0.3);
+            cursor: default;
+        }
+        #shopModal .shop-stock-refresh-tag i { font-size: 11px; }
+        #shopModal .shop-stock-refresh-tag .shop-refresh-countdown {
+            color: white; font-variant-numeric: tabular-nums; letter-spacing: 0.5px;
+        }
+        body.dark-mode #shopModal .shop-stock-refresh-tag .shop-refresh-countdown { color: white; }
         @keyframes shopPromoPulse {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-2px); }
