@@ -12,40 +12,40 @@ var SHOP_DATA_VERSION = 2;
 //   - discount: 打折百分比（0 = 不打折，20 = 8 折，50 = 5 折，100 = 免费）
 //     ★ 实际售价 = Math.round(price * (1 - discount/100))
 //   - stock: 限购数量，-1 表示不限购
-//   - stockType: 'daily' 每日重置限购; 'weekly' 每周重置限购(周一 UTC+8); 'total' 永久累计限购; 'none' 不限购
+//   - stockType: 'daily' 每日重置限购; 'weekly' 每周重置限购(周一 UTC+8); 'monthly' 每月1号重置; 'total' 永久累计限购; 'none' 不限购
 //   - enabled: 是否上架
 //   - note: 商品说明（卡片底部展示）
 //   - 说明：徽章（category === 'badge'）不得在商店出售，此处只允许消耗品和材料
 var SHOP_ITEM_PRICES = {
-    // ===== 消耗品：经验值加成卡 =====
+    // ===== 消耗品：经验值加成卡（可与不同类型叠加，同类型不叠加，最多同时3张） =====
     exp_boost_small: {
-        price: 300,
+        price: 400,
         discount: 0,
         stock: -1,
         stockType: 'none',
         enabled: true,
-        note: '适合日常签到使用'
+        note: '经验获取 +5%，可与不同类型叠加（I+II+III 组合可至 +50%）'
     },
     exp_boost_mid: {
-        price: 500,
+        price: 600,
         discount: 0,
         stock: 1,
         stockType: 'daily',
         enabled: true,
-        note: '每日限购 1 份，提升性价比适中'
+        note: '经验获取 +15%，每日限购 1 份，可叠加（I+II+III 组合可至 +50%）'
     },
     exp_boost_large: {
-        price: 850,
+        price: 1000,
         discount: 0,
         stock: 1,
         stockType: 'weekly',
         enabled: true,
-        note: '每周限购 1 份，提升幅度最大'
+        note: '经验获取 +30%，每周限购 1 份，可叠加（I+II+III 组合可至 +50%）'
     },
 
     // ===== 消耗品：抽卡卷 =====
     gacha_single: {
-        price: 100,
+        price: 130,
         discount: 0,
         stock: 20,
         stockType: 'daily',
@@ -53,7 +53,7 @@ var SHOP_ITEM_PRICES = {
         note: '每日限购 20 张，免扣狂气单抽'
     },
     gacha_ten: {
-        price: 1000,
+        price: 1300,
         discount: 0,
         stock: 1,
         stockType: 'daily',
@@ -65,15 +65,15 @@ var SHOP_ITEM_PRICES = {
     makeup_card: {
         price: 500,
         discount: 0,
-        stock: 1,
-        stockType: 'daily',
+        stock: 2,
+        stockType: 'weekly',
         enabled: true,
-        note: '每日限购 1 张，解锁错过的签到奖励'
+        note: '每周限购 2 张，解锁错过的签到奖励'
     },
 
     // ===== 消耗品：幸运币 =====
     luck_coin: {
-        price: 150,
+        price: 100,
         discount: 0,
         stock: 3,
         stockType: 'daily',
@@ -83,28 +83,65 @@ var SHOP_ITEM_PRICES = {
 
     // ===== 消耗品：经验值补给卡 =====
     exp_supply_1: {
-        price: 600,
+        price: 400,
         discount: 0,
-        stock: 1,
+        stock: 2,
         stockType: 'daily',
         enabled: true,
-        note: '每日限购 1 份，立即获得 1000 经验值'
+        note: '每日限购 2 份，立即获得 300 经验值'
     },
     exp_supply_2: {
-        price: 1000,
+        price: 800,
         discount: 0,
-        stock: 1,
+        stock: 2,
         stockType: 'weekly',
         enabled: true,
-        note: '每周限购 1 份，立即获得 2000 经验值'
+        note: '每周限购 2 份，立即获得 600 经验值'
     },
     exp_supply_3: {
-        price: 1500,
+        price: 1400,
         discount: 0,
         stock: 1,
         stockType: 'weekly',
         enabled: true,
-        note: '每周限购 1 份，立即获得 3000 经验值'
+        note: '每周限购 1 份，立即获得 1000 经验值'
+    },
+    exp_supply_4: {
+        price: 2000,
+        discount: 0,
+        stock: 3,
+        stockType: 'total',
+        enabled: true,
+        note: '永久限购 3 份，立即获得 2000 经验值（最高效）'
+    },
+
+    // ===== 消耗品：每月限购特供（stockType: monthly，对应已有仓库道具 ID） =====
+    exp_boost_large_monthly: {
+        price: 1000,
+        discount: 10,
+        stock: 1,
+        stockType: 'monthly',
+        enabled: true,
+        warehouseId: 'exp_boost_large', // 与普通版共享仓库条目
+        note: '每月限购 1 份，经验获取 +30%，可叠加（月度特供价 90% 折）'
+    },
+    exp_supply_4_monthly: {
+        price: 2000,
+        discount: 10,              // ★ 90 折月度特供
+        stock: 1,
+        stockType: 'monthly',
+        enabled: true,
+        warehouseId: 'exp_supply_4',
+        note: '每月限购 1 份，立即获得 2000 经验值，（月度特供价 90% 折）'
+    },
+    gacha_ten_monthly: {
+        price: 1300,
+        discount: 10,
+        stock: 3,
+        stockType: 'monthly',
+        enabled: true,
+        warehouseId: 'gacha_ten',
+        note: '每月限购 3 张，免扣狂气十连（月度特供价 90% 折）'
     }
     // 新增商品：复制上方格式，追加新条目即可
     // new_item_id: {
@@ -194,67 +231,81 @@ var SHOP_BUNDLES = {
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
-            { itemId: 'exp_boost_small', price: 300 },
-            { itemId: 'exp_supply_1', price: 600 },
-            { itemId: 'luck_coin', price: 150 }
+            { itemId: 'exp_boost_small', price: 400 },
+            { itemId: 'exp_supply_1', price: 400 },
+            { itemId: 'luck_coin', price: 100 }
         ],
         discount: 50,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '新手补给三件套，包含 50% 折扣，比单买立省 525 PRE Coin'
+        note: '新手补给三件套，包含 50% 折扣，助力初期等级提升（该组合包仅限购 1 份）'
     },
     bundle_exp01: {
         name: '经验补给包 Ⅰ',
         icon: 'fas fa-gift',
         color: '#3498db',
         items: [
-            { itemId: 'exp_supply_1', price: 600 },
-            { itemId: 'exp_supply_1', price: 600 },
+            { itemId: 'exp_supply_1', price: 400 },
+            { itemId: 'exp_supply_1', price: 400 },
         ],
         discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验卡折扣礼包 Ⅰ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+        note: '经验补给包 Ⅰ，两张经验补给卡 Ⅰ（共600 EXP）（该组合包仅限购 1 份）'
     },
     bundle_exp02: {
         name: '经验补给包 Ⅱ',
         icon: 'fas fa-gift',
         color: '#9b59b6',
         items: [
-            { itemId: 'exp_supply_2', price: 1000 },
-            { itemId: 'exp_supply_2', price: 1000 },
+            { itemId: 'exp_supply_2', price: 800 },
+            { itemId: 'exp_supply_2', price: 800 },
         ],
         discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验卡折扣礼包 Ⅱ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+        note: '经验补给包 Ⅱ，两张经验补给卡 Ⅱ（共1200 EXP）（该组合包仅限购 1 份）'
     },
     bundle_exp03: {
         name: '经验补给包 Ⅲ',
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
-            { itemId: 'exp_supply_3', price: 1500 },
-            { itemId: 'exp_supply_3', price: 1500 },
+            { itemId: 'exp_supply_3', price: 1400 },
+            { itemId: 'exp_supply_3', price: 1400 },
         ],
         discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验卡折扣礼包 Ⅲ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+        note: '经验补给包 Ⅲ，两张经验补给卡 Ⅲ（共2000 EXP）（该组合包仅限购 1 份）'
+    },
+    bundle_exp04: {
+        name: '经验补给包 Ⅳ',
+        icon: 'fas fa-gift',
+        color: '#e74c3c',
+        items: [
+            { itemId: 'exp_supply_4', price: 2000 },
+            { itemId: 'exp_supply_4', price: 2000 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: '经验补给包 Ⅳ，两张经验补给卡 Ⅳ（共4000 EXP），最高效经验来源（该组合包仅限购 1 份）'
     },
     bundle_gacha: {
         name: '提取补给包',
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
-            { itemId: 'gacha_ten', price: 1000 },
-            { itemId: 'gacha_ten', price: 1000 },
+            { itemId: 'gacha_ten', price: 1300 },
+            { itemId: 'gacha_ten', price: 1300 },
         ],
-        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        discount: 15,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
@@ -265,42 +316,42 @@ var SHOP_BUNDLES = {
         icon: 'fas fa-gift',
         color: '#3498db',
         items: [
-            { itemId: 'exp_boost_small', price: 300 },
-            { itemId: 'exp_boost_small', price: 300 },
+            { itemId: 'exp_boost_small', price: 400 },
+            { itemId: 'exp_boost_small', price: 400 },
         ],
         discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验加成包 Ⅰ，包含两张经验加成卡 Ⅰ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+        note: '经验加成包 Ⅰ，两张经验加成卡 Ⅰ（各+5%），可与其他类型叠加至最高+50%（该组合包仅限购 1 份）'
     },
     bundle_expup2: {
         name: '经验加成包 Ⅱ',
         icon: 'fas fa-gift',
         color: '#9b59b6',
         items: [
-            { itemId: 'exp_boost_mid', price: 500 },
-            { itemId: 'exp_boost_mid', price: 500 },
+            { itemId: 'exp_boost_mid', price: 600 },
+            { itemId: 'exp_boost_mid', price: 600 },
         ],
         discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验加成包 Ⅱ，包含两张经验加成卡 Ⅱ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+        note: '经验加成包 Ⅱ，两张经验加成卡 Ⅱ（各+15%），可叠加（该组合包仅限购 1 份）'
     },
     bundle_expup3: {
         name: '经验加成包 Ⅲ',
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
-            { itemId: 'exp_boost_large', price: 850 },
-            { itemId: 'exp_boost_large', price: 850 },
+            { itemId: 'exp_boost_large', price: 1000 },
+            { itemId: 'exp_boost_large', price: 1000 },
         ],
         discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验加成包 Ⅲ，包含两张经验加成卡 Ⅲ，助力等级升级，快速提升经验值（该组合包限购 1 份）'
+        note: '经验加成包 Ⅲ，两张经验加成卡 Ⅲ（各+30%），可叠加（该组合包仅限购 1 份）'
     },
     // 新增组合包：复制上方格式追加即可
     // bundle_xxx: {
@@ -315,7 +366,41 @@ var SHOP_BUNDLES = {
     //     stockType: 'weekly',
     //     enabled: true,
     //     note: '组合包说明'
-    // }
+    // },
+
+    // ===== 每月限购组合包 =====
+    bundle_monthly_supply: {
+        name: '月度成长补给包',
+        icon: 'fas fa-gift',
+        color: '#e67e22',
+        items: [
+            { itemId: 'exp_boost_mid', price: 600 },
+            { itemId: 'exp_boost_large', price: 1000 },
+            { itemId: 'exp_supply_4', price: 2000 },
+        ],
+        discount: 15,         // ★ 整包 85% 折
+        stock: 1,
+        stockType: 'monthly',
+        enabled: true,
+        note: '每月限购 1 份： 经验加成卡Ⅱ + 经验加成卡Ⅲ + 经验补给卡Ⅳ（整包 85% 折）'
+    },
+
+    // ===== 每周限购组合包 =====
+    bundle_weekly_supply: {
+        name: '每周轻量补给包',
+        icon: 'fas fa-gift',
+        color: '#16a085',
+        items: [
+            { itemId: 'exp_supply_2', price: 800 },
+            { itemId: 'exp_boost_mid', price: 600 },
+            { itemId: 'makeup_card', price: 500 },
+        ],
+        discount: 20,         // ★ 整包 8 折
+        stock: 2,
+        stockType: 'weekly',
+        enabled: true,
+        note: '每周限购 2 份：经验补给卡Ⅱ + 经验加成卡Ⅱ + 补签卡 1 张（整包 80% 折）'
+    }
 };
 
 // ==================== 价格计算辅助（★ 单一改价入口 ★）====================
@@ -377,6 +462,8 @@ var SHOP_CATEGORIES = [
     { id: 'material',     name: '材料',       icon: 'fas fa-cubes' },
     { id: 'daily_limit',  name: '每日限购',   icon: 'fas fa-calendar-day', separator: true },
     { id: 'weekly_limit', name: '每周限购',   icon: 'fas fa-calendar-week' },
+    { id: 'monthly_limit',name: '每月限购',   icon: 'fas fa-calendar-alt' },
+    { id: 'total_limit',  name: '累计限购',   icon: 'fas fa-infinity' },
     { id: 'bundle',       name: '组合包',     icon: 'fas fa-gift', separator: true }
 ];
 
@@ -416,9 +503,16 @@ function _shopGetWeekKey() {
     return monday.toISOString().substring(0, 10);
 }
 
+// 本月（UTC+8）年月 key，用于每月限购重置
+function _shopGetMonthKey() {
+    var now8 = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
+    return now8.toISOString().substring(0, 7); // YYYY-MM
+}
+
 function getShopData() {
     var todayKey = _shopGetTodayKey();
     var weekKey = _shopGetWeekKey();
+    var monthKey = _shopGetMonthKey();
     var stored = localStorage.getItem(getShopStorageKey());
     if (stored) {
         try {
@@ -441,6 +535,14 @@ function getShopData() {
                     data.lastPurchaseWeek = weekKey;
                     dirty = true;
                 }
+                if (data.lastPurchaseMonth !== monthKey) {
+                    Object.keys(data.purchases).forEach(function(id) {
+                        var rec = data.purchases[id];
+                        if (rec.monthlyCount !== undefined) rec.monthlyCount = 0;
+                    });
+                    data.lastPurchaseMonth = monthKey;
+                    dirty = true;
+                }
                 if (dirty) saveShopData(data);
                 return data;
             }
@@ -450,6 +552,7 @@ function getShopData() {
         version: SHOP_DATA_VERSION,
         lastPurchaseDate: todayKey,
         lastPurchaseWeek: weekKey,
+        lastPurchaseMonth: monthKey,
         purchases: {},
         totalSpentCoin: 0,
         totalPurchased: 0
@@ -463,10 +566,11 @@ function saveShopData(data) {
 
 function _shopRecordPurchase(itemId, price, qty) {
     var data = getShopData();
-    if (!data.purchases[itemId]) data.purchases[itemId] = { dailyCount: 0, weeklyCount: 0, totalCount: 0 };
+    if (!data.purchases[itemId]) data.purchases[itemId] = { dailyCount: 0, weeklyCount: 0, monthlyCount: 0, totalCount: 0 };
     var rec = data.purchases[itemId];
     rec.dailyCount = (rec.dailyCount || 0) + qty;
     rec.weeklyCount = (rec.weeklyCount || 0) + qty;
+    rec.monthlyCount = (rec.monthlyCount || 0) + qty;
     rec.totalCount = (rec.totalCount || 0) + qty;
     data.totalSpentCoin += price * qty;
     data.totalPurchased += qty;
@@ -478,9 +582,10 @@ function getShopStockRemaining(itemId) {
     if (!cfg || !cfg.enabled) return 0;
     if (cfg.stockType === 'none' || cfg.stock === -1) return 9999;
     var data = getShopData();
-    var rec = data.purchases[itemId] || { dailyCount: 0, weeklyCount: 0, totalCount: 0 };
+    var rec = data.purchases[itemId] || { dailyCount: 0, weeklyCount: 0, monthlyCount: 0, totalCount: 0 };
     if (cfg.stockType === 'daily') return Math.max(0, cfg.stock - (rec.dailyCount || 0));
     if (cfg.stockType === 'weekly') return Math.max(0, cfg.stock - (rec.weeklyCount || 0));
+    if (cfg.stockType === 'monthly') return Math.max(0, cfg.stock - (rec.monthlyCount || 0));
     if (cfg.stockType === 'total') return Math.max(0, cfg.stock - (rec.totalCount || 0));
     return 9999;
 }
@@ -491,9 +596,10 @@ function getShopBundleStockRemaining(bundleId) {
     if (!cfg || !cfg.enabled) return 0;
     if (cfg.stockType === 'none' || cfg.stock === -1) return 9999;
     var data = getShopData();
-    var rec = data.purchases['bundle_' + bundleId] || { dailyCount: 0, weeklyCount: 0, totalCount: 0 };
+    var rec = data.purchases['bundle_' + bundleId] || { dailyCount: 0, weeklyCount: 0, monthlyCount: 0, totalCount: 0 };
     if (cfg.stockType === 'daily') return Math.max(0, cfg.stock - (rec.dailyCount || 0));
     if (cfg.stockType === 'weekly') return Math.max(0, cfg.stock - (rec.weeklyCount || 0));
+    if (cfg.stockType === 'monthly') return Math.max(0, cfg.stock - (rec.monthlyCount || 0));
     if (cfg.stockType === 'total') return Math.max(0, cfg.stock - (rec.totalCount || 0));
     return 9999;
 }
@@ -506,11 +612,12 @@ function shopPurchaseItem(itemId, qty) {
         if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '商品不存在或已下架' });
         return false;
     }
-    if (typeof WAREHOUSE_ITEMS === 'undefined' || !WAREHOUSE_ITEMS[itemId]) {
+    var wid = _shopResolveWarehouseId(itemId);
+    if (typeof WAREHOUSE_ITEMS === 'undefined' || !WAREHOUSE_ITEMS[wid]) {
         if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '道具目录中不存在该商品' });
         return false;
     }
-    var item = WAREHOUSE_ITEMS[itemId];
+    var item = WAREHOUSE_ITEMS[wid];
     if (item.category === 'badge') {
         if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '徽章类商品不可在商店购买' });
         return false;
@@ -518,8 +625,8 @@ function shopPurchaseItem(itemId, qty) {
     var remaining = getShopStockRemaining(itemId);
     if (remaining < qty) {
         if (typeof showToast === 'function') {
-            var limitMsg = cfg.stockType === 'daily' ? '今日剩余：' + remaining
-                : (cfg.stockType === 'weekly' ? '本周剩余：' + remaining : '总剩余：' + remaining);
+            var limitMsgMap = { daily: '今日剩余', weekly: '本周剩余', monthly: '本月剩余', total: '总剩余' };
+            var limitMsg = (limitMsgMap[cfg.stockType] || '剩余') + '：' + remaining;
             showToast({ type: 'error', title: '超出限购数量', message: limitMsg });
         }
         return false;
@@ -541,7 +648,7 @@ function shopPurchaseItem(itemId, qty) {
     var spent = spendPreCoin(totalCost, '商店兑换：' + item.name + ' ×' + qty);
     if (!spent) return false;
     if (typeof warehouseAddItem === 'function') {
-        warehouseAddItem(itemId, qty, '商店兑换');
+        warehouseAddItem(wid, qty, '商店兑换');
     }
     _shopRecordPurchase(itemId, finalPrice, qty);
 
@@ -625,13 +732,72 @@ function closeShopModal() {
 function getShopPromoStats() {
     var tradableIds = Object.keys(SHOP_ITEM_PRICES).filter(function(id) {
         var c = SHOP_ITEM_PRICES[id];
-        return c.enabled && typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[id];
+        if (!c.enabled) return false;
+        var wid = _shopResolveWarehouseId(id);
+        return typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[wid];
     });
     var promoCount = tradableIds.filter(function(id) {
         var d = getShopItemEffectiveDiscount(id);
         return d > 0 && d < 100;
     }).length;
     return { total: tradableIds.length, promo: promoCount };
+}
+
+// 限购类别（weekly / monthly / total）→ 对应的 stockType 映射
+function _shopCatToStockType(catId) {
+    return { daily_limit: 'daily', weekly_limit: 'weekly', monthly_limit: 'monthly', total_limit: 'total' }[catId] || null;
+}
+
+// 解析 shop itemId 对应的真实仓库道具 ID（支持月度特供等镜像配置）
+function _shopResolveWarehouseId(itemId) {
+    var cfg = SHOP_ITEM_PRICES[itemId];
+    if (!cfg) return itemId;
+    return cfg.warehouseId || itemId;
+}
+
+// ★ 统一的类别过滤：返回 { singles: [itemIds], bundles: [bundleIds] }
+//   singles → 已排序好的 itemId 列表（同现有稀有度+价格排序）
+//   bundles → 已排序好的 bundleId 列表
+//   对于限购类别（weekly/monthly/total）同时包含 singles 和 bundles
+function _shopFilterByCategory(catId) {
+    var stockType = _shopCatToStockType(catId);
+    var rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
+
+    // —— singles ——
+    var singles = Object.keys(SHOP_ITEM_PRICES).filter(function(id) {
+        var cfg = SHOP_ITEM_PRICES[id];
+        if (!cfg.enabled) return false;
+        var wid = _shopResolveWarehouseId(id);
+        if (typeof WAREHOUSE_ITEMS === 'undefined' || !WAREHOUSE_ITEMS[wid]) return false;
+        if (stockType !== null) return cfg.stockType === stockType;
+        if (catId === 'all') return true;
+        if (catId === 'bundle') return false; // bundle tab 不卖单个
+        return WAREHOUSE_ITEMS[wid].category === catId;
+    });
+    singles.sort(function(a, b) {
+        var ia = WAREHOUSE_ITEMS[_shopResolveWarehouseId(a)], ib = WAREHOUSE_ITEMS[_shopResolveWarehouseId(b)];
+        var ra = rarityOrder[ia.rarity] !== undefined ? rarityOrder[ia.rarity] : 4;
+        var rb = rarityOrder[ib.rarity] !== undefined ? rarityOrder[ib.rarity] : 4;
+        if (ra !== rb) return ra - rb;
+        return getShopItemFinalPrice(a) - getShopItemFinalPrice(b);
+    });
+
+    // —— bundles ——
+    var bundles = Object.keys(SHOP_BUNDLES).filter(function(id) {
+        var cfg = SHOP_BUNDLES[id];
+        if (!cfg.enabled) return false;
+        if (catId === 'bundle') return true;
+        // 限购类别：包含匹配 stockType 的 bundle（weekly / monthly / total 才支持）
+        if (catId === 'weekly_limit' || catId === 'monthly_limit' || catId === 'total_limit') {
+            return cfg.stockType === stockType;
+        }
+        return false;
+    });
+    bundles.sort(function(a, b) {
+        return getShopBundleFinalPrice(a) - getShopBundleFinalPrice(b);
+    });
+
+    return { singles: singles, bundles: bundles };
 }
 
 // 格式化促销时间戳为 UTC+8 紧凑展示（MM-DD HH:mm）
@@ -683,9 +849,19 @@ function renderShopToolbar() {
             '<i class="' + cat.icon + '"></i><span>' + cat.name + '</span></button>';
     }).join('');
 
-    var totalItems = getShopPromoStats().total;
-
-    var countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + totalItems + '</b> 款</span>';
+    // 动态计数：按当前类别过滤 singles + bundles
+    var fc = _shopFilterByCategory(_shopActiveCategory);
+    var hasS = fc.singles.length > 0, hasB = fc.bundles.length > 0;
+    var countHtml;
+    if (_shopActiveCategory === 'bundle') {
+        countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
+    } else if (hasS && hasB) {
+        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + fc.singles.length + '</b> 款、组合包 <b>' + fc.bundles.length + '</b> 款</span>';
+    } else if (hasB) {
+        countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
+    } else {
+        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + fc.singles.length + '</b> 款</span>';
+    }
 
     // 开发者模式按钮：获取 PRE Coin / 重置购买状态
     var devBtnHtml = isShopDevMode()
@@ -903,7 +1079,7 @@ function renderShopUI() {
 
         // 库存刷新倒计时 tag（PRE Coin 余额左侧）
         var stockRefreshHtml = '<span class="shop-stock-refresh-tag" id="shopStockRefreshTag"' +
-            ' title="每日 00:00（UTC+8）刷新所有商品限购库存；每周一 00:00（UTC+8）额外重置每周限购">' +
+            ' title="每日 00:00（UTC+8）刷新所有每日限购库存；每周一 00:00 额外重置每周限购；每月 1 号 00:00 重置每月限购">' +
             '<i class="fas fa-hourglass-half"></i> 距离下次刷新库存时间剩余：<b class="shop-refresh-countdown">--:--:--</b></span>';
 
         statsEl.innerHTML =
@@ -917,44 +1093,46 @@ function renderShopUI() {
         _shopStartStockRefreshCountdown();
     }
 
-    // 组合包分类：渲染组合包卡片
-    if (_shopActiveCategory === 'bundle') {
-        renderShopBundleGrid(content);
-        return;
-    }
+    // ★ 统一过滤（singles + bundles）
+    var fc = _shopFilterByCategory(_shopActiveCategory);
+    var singles = fc.singles;
+    var bundles = fc.bundles;
+    var hasS = singles.length > 0;
+    var hasB = bundles.length > 0;
 
-    var ids = Object.keys(SHOP_ITEM_PRICES).filter(function(id) {
-        var cfg = SHOP_ITEM_PRICES[id];
-        return cfg.enabled && typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[id];
-    });
-
-    if (_shopActiveCategory === 'daily_limit') {
-        ids = ids.filter(function(id) { return SHOP_ITEM_PRICES[id].stockType === 'daily'; });
-    } else if (_shopActiveCategory === 'weekly_limit') {
-        ids = ids.filter(function(id) { return SHOP_ITEM_PRICES[id].stockType === 'weekly'; });
-    } else if (_shopActiveCategory !== 'all') {
-        ids = ids.filter(function(id) {
-            return WAREHOUSE_ITEMS[id].category === _shopActiveCategory;
-        });
-    }
-
-    var rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
-    ids.sort(function(a, b) {
-        var ia = WAREHOUSE_ITEMS[a], ib = WAREHOUSE_ITEMS[b];
-        var ra = rarityOrder[ia.rarity] !== undefined ? rarityOrder[ia.rarity] : 4;
-        var rb = rarityOrder[ib.rarity] !== undefined ? rarityOrder[ib.rarity] : 4;
-        if (ra !== rb) return ra - rb;
-        return getShopItemFinalPrice(a) - getShopItemFinalPrice(b);
-    });
-
-    if (ids.length === 0) {
+    if (!hasS && !hasB) {
         content.innerHTML =
-            '<div class="wh-empty"><i class="fas fa-store-slash"></i><p>暂无在售商品</p><span>该分类下暂无可购买的商品</span></div>';
+            '<div class="wh-empty"><i class="fas fa-store-slash"></i><p>暂无在售商品</p><span>该分类下暂无可购买的商品或组合包</span></div>';
         return;
     }
 
-    content.innerHTML = ids.map(function(id) { return buildShopCardHTML(id); }).join('');
+    // —— 渲染逻辑：
+    // ・只有 singles：直接渲染 singles（原有表现）
+    // ・只有 bundles：直接渲染 bundles（复用 bundle 卡片）
+    // ・两者都有：分成两个 subsection（单独售卖 / 组合包），中间留间距
+    var html = '';
+    if (hasS && hasB) {
+        // subsection: singles
+        html += '<div class="shop-subsection">';
+        html += '<div class="shop-subsection-title"><i class="fas fa-tag"></i> 单独售卖 <span class="shop-subsection-count">' + singles.length + ' 款</span></div>';
+        html += '<div class="shop-grid">' + singles.map(function(id) { return buildShopCardHTML(id); }).join('') + '</div>';
+        html += '</div>';
+        // subsection: bundles
+        html += '<div class="shop-subsection">';
+        html += '<div class="shop-subsection-title"><i class="fas fa-gift"></i> 组合包 <span class="shop-subsection-count">' + bundles.length + ' 款</span></div>';
+        html += '<div class="shop-grid">' + bundles.map(function(id) { return buildShopBundleCardHTML(id); }).join('') + '</div>';
+        html += '</div>';
+    } else if (hasB) {
+        // 纯 bundle 分类（bundle tab 或刚好该限购类别无 singles 只有 bundle）
+        html += '<div class="shop-grid">' + bundles.map(function(id) { return buildShopBundleCardHTML(id); }).join('') + '</div>';
+    } else {
+        // 纯 singles 分类
+        html += '<div class="shop-grid">' + singles.map(function(id) { return buildShopCardHTML(id); }).join('') + '</div>';
+    }
 
+    content.innerHTML = html;
+
+    // —— 绑定事件（singles）
     content.querySelectorAll('.shop-buy-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -995,6 +1173,23 @@ function renderShopUI() {
             _shopUpdateTotalPrice(id, input.value);
         });
     });
+
+    // —— 绑定事件（bundles，当限购类别混排时 inline 渲染的 bundle 卡片）
+    content.querySelectorAll('.shop-bundle-card').forEach(function(card) {
+        card.addEventListener('click', function() { openShopBundleModal(card.getAttribute('data-id')); });
+    });
+    content.querySelectorAll('.shop-bundle-buy').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            shopPurchaseBundle(btn.getAttribute('data-id'));
+        });
+    });
+    content.querySelectorAll('.shop-bundle-open').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            openShopBundleModal(btn.getAttribute('data-id'));
+        });
+    });
 }
 
 function _shopUpdateTotalPrice(itemId, qty) {
@@ -1014,7 +1209,8 @@ function _shopUpdateTotalPrice(itemId, qty) {
 
 // 构建单个商品卡片 HTML
 function buildShopCardHTML(itemId) {
-    var item = WAREHOUSE_ITEMS[itemId];
+    var wid = _shopResolveWarehouseId(itemId);
+    var item = WAREHOUSE_ITEMS[wid];
     var cfg = SHOP_ITEM_PRICES[itemId];
     var rarity = (typeof WAREHOUSE_RARITY !== 'undefined' && WAREHOUSE_RARITY[item.rarity])
         ? WAREHOUSE_RARITY[item.rarity]
@@ -1050,16 +1246,26 @@ function buildShopCardHTML(itemId) {
         limitHtml = '<div class="shop-stock shop-stock-daily"><i class="fas fa-calendar-day"></i> 每日限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
     } else if (cfg.stockType === 'weekly') {
         limitHtml = '<div class="shop-stock shop-stock-weekly"><i class="fas fa-calendar-week"></i> 每周限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
+    } else if (cfg.stockType === 'monthly') {
+        limitHtml = '<div class="shop-stock shop-stock-monthly"><i class="fas fa-calendar-alt"></i> 每月限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
     } else if (cfg.stockType === 'total') {
         limitHtml = '<div class="shop-stock shop-stock-total"><i class="fas fa-infinity"></i> 总限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
     }
 
     var isSoldOut = remaining <= 0;
     var noteHtml = cfg.note ? '<div class="shop-note"><i class="fas fa-info-circle"></i> ' + cfg.note + '</div>' : '';
+    // 镜像商品（warehouseId 指向不同仓库条目）的特殊角标，例如月度/每周特供
+    var mirrorTagHtml = '';
+    if (cfg.warehouseId && cfg.warehouseId !== itemId) {
+        var mirrorLabel = cfg.stockType === 'monthly' ? '月度特供'
+            : (cfg.stockType === 'weekly' ? '每周特供' : '');
+        if (mirrorLabel) mirrorTagHtml = '<span class="shop-mirror-tag">' + mirrorLabel + '</span>';
+    }
 
     return `
         <div class="wh-item-card shop-item-card ${isSoldOut ? 'shop-sold-out' : ''}">
             ${priceTagHtml}
+            ${mirrorTagHtml}
             <span class="wh-type-tag" style="color:${rarity.color}; border-color:${rarity.color};">${categoryLabel}</span>
             <div class="wh-item-icon" style="background: ${hexToRgbaShop(item.color, 0.15)};">
                 <i class="${item.icon}" style="color:${item.color};"></i>
@@ -1149,6 +1355,8 @@ function buildShopBundleCardHTML(bundleId) {
         limitHtml = '<div class="shop-stock shop-stock-daily"><i class="fas fa-calendar-day"></i> 每日限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
     } else if (cfg.stockType === 'weekly') {
         limitHtml = '<div class="shop-stock shop-stock-weekly"><i class="fas fa-calendar-week"></i> 每周限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
+    } else if (cfg.stockType === 'monthly') {
+        limitHtml = '<div class="shop-stock shop-stock-monthly"><i class="fas fa-calendar-alt"></i> 每月限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
     } else if (cfg.stockType === 'total') {
         limitHtml = '<div class="shop-stock shop-stock-total"><i class="fas fa-infinity"></i> 总限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
     }
@@ -1187,7 +1395,8 @@ function shopPurchaseBundle(bundleId) {
     var remaining = getShopBundleStockRemaining(bundleId);
     if (remaining < 1) {
         if (typeof showToast === 'function') {
-            var lm = cfg.stockType === 'daily' ? '今日' : (cfg.stockType === 'weekly' ? '本周' : '');
+            var lmMap = { daily: '今日', weekly: '本周', monthly: '本月' };
+            var lm = lmMap[cfg.stockType] || '';
             showToast({ type: 'error', title: '超出限购数量', message: lm ? lm + '限购已用完' : '限购已用完' });
         }
         return false;
@@ -1350,8 +1559,28 @@ function getShopStyleCSS() {
         }
         #shopModal .wh-content {
             flex: 1; overflow-y: auto; padding: 24px 40px;
+            display: block; /* 让 .shop-grid 成为真正的网格容器 */
+        }
+        /* ★ 统一网格容器：单类商品/组合包 均用此 class */
+        #shopModal .shop-grid {
             display: grid; gap: 16px; align-content: start;
             grid-template-columns: repeat(5, 1fr);
+        }
+        /* ★ 分组 subsection（weekly/monthly/total 混排 singles + bundles 时） */
+        #shopModal .shop-subsection { margin-bottom: 28px; }
+        #shopModal .shop-subsection:last-child { margin-bottom: 0; }
+        #shopModal .shop-subsection-title {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 700; color: #2c3e50;
+            margin: 0 0 14px 4px;
+            padding: 0 0 8px 12px;
+            border-left: 3px solid #c0392b;
+            border-bottom: 1px dashed rgba(0,0,0,0.08);
+        }
+        #shopModal .shop-subsection-title i { color: #c0392b; }
+        #shopModal .shop-subsection-count {
+            font-size: 12px; font-weight: 500; color: #7f8c8d;
+            margin-left: auto;
         }
         #shopModal .wh-item-card {
             position: relative; display: flex; flex-direction: column;
@@ -1420,13 +1649,14 @@ function getShopStyleCSS() {
 
     // ====== 响应式 ======
     var responsiveCSS = `
-        @media (max-width: 1400px) { #shopModal .wh-content { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 1100px) { #shopModal .wh-content { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 800px)  { #shopModal .wh-content { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 1400px) { #shopModal .shop-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 1100px) { #shopModal .shop-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px)  { #shopModal .shop-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px)  {
             #shopModal .wh-header, #shopModal .wh-toolbar, #shopModal .wh-footer { padding: 14px 16px !important; }
             #shopModal .wh-stats { display: none; }
-            #shopModal .wh-content { padding: 16px; grid-template-columns: repeat(1, 1fr); }
+            #shopModal .wh-content { padding: 16px; }
+            #shopModal .shop-grid { grid-template-columns: repeat(1, 1fr); }
         }
     `;
 
@@ -1495,6 +1725,15 @@ function getShopStyleCSS() {
             50% { transform: translateY(-2px); }
         }
         #shopModal .wh-item-card.shop-sold-out { opacity: 0.6; filter: grayscale(0.6); }
+        /* ★ 镜像商品角标（月度/每周特供） */
+        #shopModal .shop-mirror-tag {
+            position: absolute; top: -2px; right: -2px;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white; font-size: 10px; font-weight: 700;
+            padding: 3px 8px; border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(211,84,0,0.4);
+            z-index: 2; letter-spacing: 0.5px;
+        }
         /* ★ 价格标签改为文档流内元素（不再绝对定位），彻底避免遮挡下方物品图标 */
         #shopModal .shop-price-tag {
             position: static; align-self: flex-start;
@@ -1523,6 +1762,7 @@ function getShopStyleCSS() {
         #shopModal .shop-stock-daily { background: rgba(52, 152, 219, 0.1); color: #2980b9; }
         #shopModal .shop-stock-weekly { background: rgba(22, 160, 133, 0.1); color: #16a085; }
         #shopModal .shop-stock-total { background: rgba(155, 89, 182, 0.1); color: #8e44ad; }
+        #shopModal .shop-stock-monthly { background: rgba(230, 126, 34, 0.1); color: #d35400; }
         #shopModal .shop-note {
             font-size: 11px; color: #a88; line-height: 1.5; padding: 3px 6px;
             border-left: 2px solid #e67e22; background: rgba(230,126,34,0.05);
@@ -1824,6 +2064,8 @@ function getShopStyleCSS() {
         body.dark-mode #shopModal .shop-promo-period-tag.shop-promo-pending { background: rgba(255,255,255,0.1); color: #888; }
         body.dark-mode #shopModal .shop-bundle-count { background: rgba(230,126,34,0.18); color: #f5b041; }
         body.dark-mode #shopModal .shop-bundle-open { background: rgba(230,126,34,0.12); color: #f5b041; border-color: rgba(230,126,34,0.5); }
+        body.dark-mode #shopModal .shop-subsection-title { color: #e8e8e8; border-bottom-color: rgba(255,255,255,0.12); }
+        body.dark-mode #shopModal .shop-subsection-count { color: #aaa; }
         body.dark-mode #shopModal .wh-content { scrollbar-color: #e74c3c rgba(255,255,255,0.08); }
         body.dark-mode #shopModal .wh-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.06); }
         body.dark-mode #shopModal .wh-content::-webkit-scrollbar-thumb {

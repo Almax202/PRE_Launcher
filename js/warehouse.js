@@ -3,14 +3,14 @@
 // 数据按账户隔离存储（localStorage key = warehouse_<username>），不同账户仓库互不相通
 // 入口：游戏中心顶部导航栏「仓库」条目（登录页不显示）
 // 道具接入：
-//   - 经验加成卡：使用后30分钟内经验获取提升（生效于每日签到与活动签到经验），可重复使用覆盖已有加成
+//   - 经验加成卡：支持多类型叠加（I+II+III 三种不同类型可同时生效，同类型不可叠加，最多同时3张），每张30分钟
 //   - 幸运币：使用后激活幸运状态，下一次提取自动消耗并提升稀有项概率
 //   - 单抽/十连卡券：提取时自动优先使用（免费抵扣狂气消耗）
 //   - 补签卡：在每日签到页点击未解锁的奖励卡即可使用，立即解锁并领取该天奖励
 //   - 经验值补给卡：使用后立即获得对应点数经验值，直接对账户等级生效
 // 开发者模式：系统设置开启开发者模式后，仓库工具栏最右侧显示「获取道具（dev）」按钮
 
-var WAREHOUSE_DATA_VERSION = 3; // 数据版本：升级时自动迁移旧仓库数据（保留已有道具，仅剔除目录中已移除的旧道具）
+var WAREHOUSE_DATA_VERSION = 4; // v4: expBuff(单对象) → expBuffs(数组, 支持多类型叠加)
 
 // ===== 开发者移除模式状态（由「移除道具（dev）」按钮切换） =====
 var WAREHOUSE_REMOVE_MODE = false;
@@ -29,20 +29,20 @@ var WAREHOUSE_ITEMS = {
     exp_boost_small: {
         name: '经验值加成卡 Ⅰ', icon: 'fas fa-arrow-up', color: '#3498db',
         category: 'consumable', rarity: 'common', showSource: true,
-        desc: '使用后30分钟内，经验获取提升10%（签到经验结算时生效，可重复使用刷新时长）。',
-        source: '活动奖励 / 商店兑换', usable: true
+        desc: '使用后30分钟内，经验获取提升5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时3张）。',
+        source: '活动奖励 / 商店兑换', usable: true, _boostType: 'small', _boostPercent: 5
     },
     exp_boost_mid: {
         name: '经验值加成卡 Ⅱ', icon: 'fas fa-arrow-circle-up', color: '#9b59b6',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '使用后30分钟内，经验获取提升25%（签到经验结算时生效，可重复使用刷新时长）。',
-        source: '活动奖励 / 商店兑换', usable: true
+        desc: '使用后30分钟内，经验获取提升15%（可与不同类型加成卡叠加，同类型不可叠加，最多同时3张）。',
+        source: '活动奖励 / 商店兑换', usable: true, _boostType: 'mid', _boostPercent: 15
     },
     exp_boost_large: {
         name: '经验值加成卡 Ⅲ', icon: 'fas fa-rocket', color: '#f39c12',
         category: 'consumable', rarity: 'epic', showSource: true,
-        desc: '使用后30分钟内，经验获取提升50%（签到经验结算时生效，可重复使用刷新时长）。',
-        source: '特殊活动奖励', usable: true
+        desc: '使用后30分钟内，经验获取提升30%（可与不同类型加成卡叠加，同类型不可叠加，最多同时3张）。',
+        source: '特殊活动奖励', usable: true, _boostType: 'large', _boostPercent: 30
     },
     gacha_single: {
         name: '单次抽卡卷', icon: 'fas fa-ticket-alt', color: '#2ecc71',
@@ -71,20 +71,32 @@ var WAREHOUSE_ITEMS = {
     exp_supply_1: {
         name: '经验值补给卡 Ⅰ', icon: 'fas fa-star', color: '#3498db',
         category: 'consumable', rarity: 'common', showSource: true,
-        desc: '使用后获得1000点经验值，将立即对账户等级生效。',
-        source: '活动奖励 / 邮件附件', usable: true
+        desc: '使用后获得300点经验值，将立即对账户等级生效。',
+        source: '活动奖励 / 邮件附件', usable: true, _expGain: 300
     },
     exp_supply_2: {
         name: '经验值补给卡 Ⅱ', icon: 'fas fa-star', color: '#9b59b6',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '使用后获得2000点经验值，将立即对账户等级生效。',
-        source: '活动奖励 / 邮件附件', usable: true
+        desc: '使用后获得600点经验值，将立即对账户等级生效。',
+        source: '活动奖励 / 邮件附件', usable: true, _expGain: 600
     },
     exp_supply_3: {
         name: '经验值补给卡 Ⅲ', icon: 'fas fa-star', color: '#f39c12',
         category: 'consumable', rarity: 'epic', showSource: true,
-        desc: '使用后获得3000点经验值，将立即对账户等级生效。',
-        source: '活动奖励 / 邮件附件', usable: true
+        desc: '使用后获得1000点经验值，将立即对账户等级生效。',
+        source: '活动奖励 / 邮件附件', usable: true, _expGain: 1000
+    },
+    exp_supply_4: {
+        name: '经验值补给卡 Ⅳ', icon: 'fas fa-star', color: '#e74c3c',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用后获得2000点经验值，将立即对账户等级生效。',
+        source: '高级活动奖励 / 商店兑换', usable: true, _expGain: 2000
+    },
+    exchange_card: {
+        name: '自选物品兑换卡', icon: 'fas fa-ticket', color: '#16a085',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用该兑换卡后可以任选一个当前版本在商店内正在售卖的物品进行兑换获取。（该兑换卡可以兑换包括之后新加入的物品；该兑换卡不包含也不能兑换商店内所有的组合包）',
+        source: '特殊补偿 / 活动奖励', usable: true, _exchangeCard: true
     },
 
     // ---- 徽章 ----
@@ -153,14 +165,28 @@ function getWarehouseData() {
                     });
                     data.version = WAREHOUSE_DATA_VERSION;
                 }
-                if (!data.expBuff) data.expBuff = null;
+                if (!data.expBuffs) {
+                    // v4 迁移：旧单对象 expBuff → 新数组 expBuffs
+                    data.expBuffs = [];
+                    if (data.expBuff && data.expBuff.multiplier && data.expBuff.expiresAt) {
+                        // 根据 multiplier 反推 type（旧值 1.1/1.25/1.5）
+                        var oldMult = data.expBuff.multiplier;
+                        var oldType = 'small', oldPercent = 5;
+                        if (Math.abs(oldMult - 1.1) < 0.001) { oldType = 'small'; oldPercent = 5; }
+                        else if (Math.abs(oldMult - 1.25) < 0.001) { oldType = 'mid'; oldPercent = 15; }
+                        else if (Math.abs(oldMult - 1.5) < 0.001) { oldType = 'large'; oldPercent = 30; }
+                        data.expBuffs.push({ type: oldType, percent: oldPercent, multiplier: 1 + oldPercent / 100, expiresAt: data.expBuff.expiresAt });
+                    }
+                    data.expBuff = null;
+                    migrated = true;
+                }
                 if (typeof data.luckyActive === 'undefined') data.luckyActive = false;
                 if (migrated) saveWarehouseData(data); // 迁移结果立即落盘
                 return data;
             }
         } catch (e) {}
     }
-    return { version: WAREHOUSE_DATA_VERSION, items: {}, expBuff: null, luckyActive: false, createdAt: new Date().toISOString() };
+    return { version: WAREHOUSE_DATA_VERSION, items: {}, expBuffs: [], luckyActive: false, createdAt: new Date().toISOString() };
 }
 
 function saveWarehouseData(data) {
@@ -210,26 +236,67 @@ function warehouseGetItemCount(itemId) {
 }
 
 // ==================== 道具效果接入 ====================
-// 经验加成：计算当前生效的经验倍率（未激活/已过期返回1）
-function getWarehouseExpMultiplier() {
-    var data = getWarehouseData();
-    if (!data.expBuff || !data.expBuff.expiresAt) return 1;
-    if (new Date(data.expBuff.expiresAt).getTime() <= Date.now()) {
-        data.expBuff = null;
+// 清理过期加成卡（内部调用），返回有效 buff 数组
+function _cleanExpBuffs(data) {
+    if (!data.expBuffs) data.expBuffs = [];
+    var now = Date.now();
+    var valid = [];
+    data.expBuffs.forEach(function(b) {
+        if (b.expiresAt && new Date(b.expiresAt).getTime() > now) valid.push(b);
+    });
+    if (valid.length !== data.expBuffs.length) {
+        data.expBuffs = valid;
         saveWarehouseData(data);
-        return 1;
     }
-    return data.expBuff.multiplier || 1;
+    return valid;
 }
 
-// 激活经验加成（30分钟）
-function activateWarehouseExpBuff(multiplier) {
+// 经验加成：计算当前叠加后总倍率（所有有效加成卡累加百分比；无加成返回 1）
+function getWarehouseExpMultiplier() {
     var data = getWarehouseData();
-    data.expBuff = {
-        multiplier: multiplier,
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString()
-    };
+    var buffs = _cleanExpBuffs(data);
+    if (buffs.length === 0) return 1;
+    var totalPercent = 0;
+    buffs.forEach(function(b) { totalPercent += (b.percent || 0); });
+    return 1 + totalPercent / 100;
+}
+
+// 经验加成：返回当前生效的加成卡数组（供 UI 展示）
+function getWarehouseExpBuffs() {
+    var data = getWarehouseData();
+    return _cleanExpBuffs(data);
+}
+
+// 激活经验加成（支持多类型叠加，同类型刷新时长，最多 3 张同时生效）
+// boostType: 'small' | 'mid' | 'large'，percent: 5/15/30
+// 返回值：{ ok: bool, reason: string|null }
+//   ok=true  → 成功激活（新增或刷新时长）
+//   ok=false → 失败（同类型已在生效 or 已达上限 3 张）
+function activateWarehouseExpBuff(boostType, percent) {
+    var data = getWarehouseData();
+    var buffs = _cleanExpBuffs(data);
+    var now = Date.now();
+    var expiresAt = new Date(now + 30 * 60 * 1000).toISOString();
+    var existingIdx = -1;
+    for (var i = 0; i < buffs.length; i++) {
+        if (buffs[i].type === boostType) { existingIdx = i; break; }
+    }
+    if (existingIdx >= 0) {
+        // 同类型已生效 → 仅刷新时长（不叠加）
+        buffs[existingIdx].expiresAt = expiresAt;
+        buffs[existingIdx].percent = percent;
+        buffs[existingIdx].multiplier = 1 + percent / 100;
+        data.expBuffs = buffs;
+        saveWarehouseData(data);
+        return { ok: true, refreshed: true };
+    }
+    if (buffs.length >= 3) {
+        return { ok: false, reason: '已同时激活 3 张不同类型加成卡，无法继续叠加' };
+    }
+    buffs.push({ type: boostType, percent: percent, multiplier: 1 + percent / 100, expiresAt: expiresAt });
+    data.expBuffs = buffs;
     saveWarehouseData(data);
+    return { ok: true, refreshed: false };
 }
 
 // 幸运币：激活幸运状态（使用时调用）
@@ -385,6 +452,14 @@ function ensureWarehouseConfirmModal() {
     var modal = document.getElementById('warehouseConfirmModal');
     if (modal) return modal;
 
+    // 注入仓库样式（补签卡弹窗依赖 .wh-confirm-* 样式）
+    if (!document.getElementById('warehouse-style')) {
+        var style = document.createElement('style');
+        style.id = 'warehouse-style';
+        style.innerHTML = getWarehouseStyleCSS();
+        document.head.appendChild(style);
+    }
+
     modal = document.createElement('div');
     modal.className = 'custom-alert';
     modal.id = 'warehouseConfirmModal';
@@ -519,8 +594,13 @@ function renderWarehouseItems() {
     var totalQty = ownedIds.reduce(function(sum, id) { return sum + data.items[id].qty; }, 0);
     if (stats) {
         var buffInfo = '';
-        var mult = getWarehouseExpMultiplier();
-        if (mult > 1) buffInfo = '<span class="wh-stat wh-buff"><i class="fas fa-bolt"></i> 经验加成 ×' + mult + ' 生效中</span>';
+        var buffs = getWarehouseExpBuffs();
+        if (buffs.length > 0) {
+            var totalMult = getWarehouseExpMultiplier();
+            var typeLabels = { small: '卡I', mid: '卡II', large: '卡III' };
+            var buffTags = buffs.map(function(b) { return (typeLabels[b.type] || b.type) + '+' + b.percent + '%'; }).join(' ');
+            buffInfo = '<span class="wh-stat wh-buff"><i class="fas fa-bolt"></i> 经验加成 ×' + totalMult.toFixed(2) + ' 生效中 <b style="font-weight:normal;font-size:11px;opacity:.85;">[' + buffTags + ']</b></span>';
+        }
         stats.innerHTML = '<span class="wh-stat"><i class="fas fa-layer-group"></i> 道具种类 <b>' + totalKinds + '</b></span>' +
             '<span class="wh-stat"><i class="fas fa-cube"></i> 道具总数 <b>' + totalQty + '</b></span>' + buffInfo;
     }
@@ -600,16 +680,42 @@ function useWarehouseItem(itemId) {
     var entry = data.items[itemId];
     if (!entry || entry.qty <= 0) return;
 
-    var buffMult = null;
-    var isLucky = false;
-    var expGain = null;
-    if (itemId === 'exp_boost_small' || itemId === 'exp_boost_mid' || itemId === 'exp_boost_large') {
-        buffMult = itemId === 'exp_boost_small' ? 1.1 : (itemId === 'exp_boost_mid' ? 1.25 : 1.5);
-    } else if (itemId === 'luck_coin') {
-        isLucky = true;
-    } else if (itemId === 'exp_supply_1' || itemId === 'exp_supply_2' || itemId === 'exp_supply_3') {
-        expGain = itemId === 'exp_supply_1' ? 1000 : (itemId === 'exp_supply_2' ? 2000 : 3000);
-    } else {
+    // 自选物品兑换卡：打开选择弹窗，确认兑换后才消耗（不在此处消耗）
+    if (item._exchangeCard) {
+        openExchangeCardModal();
+        return;
+    }
+
+    var isBoost = item._boostType && typeof item._boostPercent === 'number';
+    var isLucky = itemId === 'luck_coin';
+    var expGain = item._expGain || null;
+
+    // 经验加成卡：先尝试激活（检查叠加条件），失败则不消耗道具
+    if (isBoost) {
+        var actResult = activateWarehouseExpBuff(item._boostType, item._boostPercent);
+        if (!actResult.ok) {
+            if (typeof showToast === 'function') {
+                showToast({ type: 'warning', title: '无法激活', message: actResult.reason || '激活失败' });
+            }
+            return;
+        }
+        // 激活成功才消耗道具
+        entry.qty -= 1;
+        if (entry.qty <= 0) delete data.items[itemId];
+        saveWarehouseData(data);
+
+        // 通知
+        if (typeof showToast === 'function') {
+            var expire = new Date(Date.now() + 30 * 60 * 1000);
+            var hh = ('0' + expire.getHours()).slice(-2), mm = ('0' + expire.getMinutes()).slice(-2);
+            if (actResult.refreshed) {
+                showToast({ type: 'success', title: '经验加成已刷新', message: '「' + item.name + '」同类型已生效，时长已刷新（至 ' + hh + ':' + mm + '）' });
+            } else {
+                var totalMult = getWarehouseExpMultiplier();
+                showToast({ type: 'success', title: '经验加成已激活', message: '「' + item.name + '」已激活，叠加后经验获取 ×' + totalMult.toFixed(2) + '（至 ' + hh + ':' + mm + '）' });
+            }
+        }
+        renderWarehouseItems();
         return;
     }
 
@@ -619,9 +725,7 @@ function useWarehouseItem(itemId) {
     saveWarehouseData(data);
 
     // 再激活效果（避免旧数据覆盖）
-    if (buffMult !== null) {
-        activateWarehouseExpBuff(buffMult);
-    } else if (isLucky) {
+    if (isLucky) {
         activateWarehouseLucky();
     } else if (expGain !== null) {
         if (typeof addCheckinExp === 'function') {
@@ -636,13 +740,232 @@ function useWarehouseItem(itemId) {
             showToast({ type: 'success', title: '幸运状态', message: '幸运币已激活：下一次提取时稀有项概率翻倍（自动消耗）' });
         } else if (expGain !== null) {
             showToast({ type: 'success', title: '经验值补给', message: '「' + item.name + '」已使用，获得 ' + expGain + ' 点经验值，已对账户等级生效' });
-        } else {
-            var expire = new Date(Date.now() + 30 * 60 * 1000);
-            var hh = ('0' + expire.getHours()).slice(-2), mm = ('0' + expire.getMinutes()).slice(-2);
-            showToast({ type: 'success', title: '经验加成', message: '「' + item.name + '」已激活，30分钟内经验获取 ×' + buffMult + '（至 ' + hh + ':' + mm + '）' });
         }
     }
     renderWarehouseItems();
+}
+
+// ==================== 自选物品兑换卡弹窗 ====================
+// 可兑换物品：当前版本商店内正在售卖的单个物品（自动包含之后新加入的物品；不含组合包）
+function _getExchangeCardCandidates() {
+    if (typeof SHOP_ITEM_PRICES === 'undefined') return [];
+    var seen = {}; // 按“真实仓库道具 ID”去重（镜像商品如月度特供与普通版视为同一物品）
+    var list = [];
+    Object.keys(SHOP_ITEM_PRICES).forEach(function(shopId) {
+        var cfg = SHOP_ITEM_PRICES[shopId];
+        if (!cfg || !cfg.enabled) return;
+        var wid = (typeof _shopResolveWarehouseId === 'function') ? _shopResolveWarehouseId(shopId) : shopId;
+        if (seen[wid]) return;
+        if (typeof WAREHOUSE_ITEMS === 'undefined' || !WAREHOUSE_ITEMS[wid]) return;
+        if (WAREHOUSE_ITEMS[wid].category === 'badge') return; // 徽章不可商店售卖
+        seen[wid] = true;
+        list.push(wid);
+    });
+    var rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
+    list.sort(function(a, b) {
+        var ia = WAREHOUSE_ITEMS[a], ib = WAREHOUSE_ITEMS[b];
+        var ra = rarityOrder[ia.rarity] !== undefined ? rarityOrder[ia.rarity] : 4;
+        var rb = rarityOrder[ib.rarity] !== undefined ? rarityOrder[ib.rarity] : 4;
+        if (ra !== rb) return ra - rb;
+        return ia.name.localeCompare(ib.name, 'zh-CN');
+    });
+    return list;
+}
+
+function ensureExchangeCardModal() {
+    var modal = document.getElementById('exchangeCardModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.className = 'custom-alert';
+    modal.id = 'exchangeCardModal';
+    modal.style.display = 'none';
+    modal.innerHTML = `
+        <div class="wh-fullscreen wh-ex-fullscreen">
+            <div class="wh-header">
+                <div class="wh-title">
+                    <i class="fas fa-ticket" style="color:#16a085;"></i>
+                    <h2>自选物品兑换卡</h2>
+                </div>
+                <span class="wh-ex-tip">选择一个商店在售物品后点击「确定兑换」（不可兑换组合包）</span>
+                <button class="wh-close" id="whExCloseBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="wh-content wh-ex-content" id="whExContent"></div>
+            <div class="wh-footer wh-ex-footer">
+                <span id="whExSelectedName">未选择物品</span>
+                <button class="wh-ex-confirm-btn" id="whExConfirmBtn" disabled>
+                    <i class="fas fa-check"></i> 确定兑换
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#whExCloseBtn').addEventListener('click', closeExchangeCardModal);
+    modal.querySelector('#whExConfirmBtn').addEventListener('click', function() {
+        if (!_exSelectedId || !WAREHOUSE_ITEMS[_exSelectedId]) return;
+        _showExchangeConfirm(_exSelectedId);
+    });
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeExchangeCardModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeExchangeCardModal();
+    });
+    return modal;
+}
+
+var _exSelectedId = null;
+
+function openExchangeCardModal() {
+    var modal = ensureExchangeCardModal();
+    _exSelectedId = null;
+    renderExchangeCardItems();
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+function closeExchangeCardModal() {
+    var modal = document.getElementById('exchangeCardModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(function() { modal.style.display = 'none'; }, 300);
+}
+
+function renderExchangeCardItems() {
+    var content = document.getElementById('whExContent');
+    if (!content) return;
+    var ids = _getExchangeCardCandidates();
+
+    if (!ids.length) {
+        content.innerHTML = '<div class="wh-empty"><i class="fas fa-store-slash"></i><p>暂无可兑换物品</p><span>当前商店内没有在售物品</span></div>';
+        _updateExFooter();
+        return;
+    }
+
+    content.innerHTML = ids.map(function(id) {
+        var item = WAREHOUSE_ITEMS[id];
+        var rarity = WAREHOUSE_RARITY[item.rarity] || WAREHOUSE_RARITY.common;
+        return '<div class="wh-item-card wh-ex-card' + (_exSelectedId === id ? ' selected' : '') + '" data-id="' + id + '">' +
+            '<span class="wh-type-tag" style="color:' + rarity.color + '; border-color:' + rarity.color + ';">' + getWarehouseCategoryLabel(item.category) + '</span>' +
+            '<div class="wh-item-icon" style="background: ' + hexToRgba(item.color, 0.15) + ';">' +
+                '<i class="' + item.icon + '" style="color:' + item.color + ';"></i>' +
+            '</div>' +
+            '<div class="wh-item-name">' + item.name + '</div>' +
+            '<div class="wh-item-desc">' + item.desc + '</div>' +
+        '</div>';
+    }).join('');
+
+    content.querySelectorAll('.wh-ex-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            _exSelectedId = card.getAttribute('data-id');
+            content.querySelectorAll('.wh-ex-card').forEach(function(c) { c.classList.toggle('selected', c === card); });
+            _updateExFooter();
+        });
+    });
+
+    _updateExFooter();
+}
+
+function _updateExFooter() {
+    var nameEl = document.getElementById('whExSelectedName');
+    var btn = document.getElementById('whExConfirmBtn');
+    if (!nameEl || !btn) return;
+    if (_exSelectedId && WAREHOUSE_ITEMS[_exSelectedId]) {
+        nameEl.textContent = '已选择：' + WAREHOUSE_ITEMS[_exSelectedId].name;
+        btn.disabled = false;
+    } else {
+        nameEl.textContent = '未选择物品';
+        btn.disabled = true;
+    }
+}
+
+// 二次确认弹窗：确定要兑换该物品吗？（下方展示所选物品 logo/名称/描述）
+function ensureExchangeConfirmModal() {
+    var modal = document.getElementById('exchangeConfirmModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.className = 'custom-alert';
+    modal.id = 'exchangeConfirmModal';
+    modal.style.display = 'none';
+    modal.innerHTML = `
+        <div class="wh-confirm-box">
+            <div class="wh-confirm-icon" style="background:rgba(22,160,133,0.12); color:#16a085;"><i class="fas fa-ticket"></i></div>
+            <h3>确定要兑换该物品吗？</h3>
+            <div class="wh-ex-confirm-item" id="whExConfirmItem"></div>
+            <div class="wh-confirm-actions">
+                <button id="whExConfirmCancel">取消</button>
+                <button id="whExConfirmOk">确定</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+            setTimeout(function() { modal.style.display = 'none'; }, 250);
+        }
+    });
+    return modal;
+}
+
+function _showExchangeConfirm(selectedId) {
+    var modal = ensureExchangeConfirmModal();
+    var item = WAREHOUSE_ITEMS[selectedId];
+    var box = modal.querySelector('#whExConfirmItem');
+    box.innerHTML =
+        '<div class="wh-ex-confirm-icon" style="background: ' + hexToRgba(item.color, 0.15) + ';">' +
+            '<i class="' + item.icon + '" style="color:' + item.color + ';"></i>' +
+        '</div>' +
+        '<div class="wh-ex-confirm-name">' + item.name + '</div>' +
+        '<div class="wh-ex-confirm-desc">' + item.desc + '</div>';
+
+    var okBtn = modal.querySelector('#whExConfirmOk');
+    var cancelBtn = modal.querySelector('#whExConfirmCancel');
+    // 移除旧监听（clone 替换）
+    var newOk = okBtn.cloneNode(true);
+    var newCancel = cancelBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+    newCancel.addEventListener('click', function() {
+        modal.classList.remove('show');
+        setTimeout(function() { modal.style.display = 'none'; }, 250);
+    });
+    newOk.addEventListener('click', function() {
+        _doExchange(selectedId);
+        modal.classList.remove('show');
+        setTimeout(function() { modal.style.display = 'none'; }, 250);
+    });
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+function _doExchange(selectedId) {
+    var data = getWarehouseData();
+    var entry = data.items['exchange_card'];
+    if (!entry || entry.qty <= 0) {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '兑换失败', message: '自选物品兑换卡数量不足' });
+        return;
+    }
+    // 消耗兑换卡
+    entry.qty -= 1;
+    if (entry.qty <= 0) delete data.items['exchange_card'];
+    saveWarehouseData(data);
+
+    // 发放所选物品
+    if (typeof warehouseAddItem === 'function') {
+        warehouseAddItem(selectedId, 1, '自选物品兑换卡');
+    }
+    if (typeof showToast === 'function') {
+        showToast({ type: 'success', title: '兑换成功', message: '已消耗 1 张自选物品兑换卡，获得「' + WAREHOUSE_ITEMS[selectedId].name + '」×1' });
+    }
+    // 刷新仓库界面（若打开中）
+    var whModal = document.getElementById('warehouseModal');
+    if (whModal && whModal.style.display === 'flex') renderWarehouseItems();
+    closeExchangeCardModal();
 }
 
 // ==================== 开发者获取道具弹窗 ====================
@@ -1415,10 +1738,170 @@ function getWarehouseStyleCSS() {
             color: #ccc;
         }
 
+        /* ==================== 自选物品兑换卡弹窗 ==================== */
+        #exchangeCardModal {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .wh-ex-fullscreen .wh-title i { margin-right: 8px; }
+
+        .wh-ex-tip {
+            margin-left: auto;
+            margin-right: 16px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .wh-ex-content {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            align-content: start;
+            padding: 24px 40px;
+            overflow-y: auto;
+        }
+
+        .wh-ex-card {
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+
+        .wh-ex-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .wh-ex-card.selected {
+            border-color: #16a085 !important;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.18), 0 8px 20px rgba(22, 160, 133, 0.15);
+        }
+
+        .wh-ex-card.selected::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #16a085;
+            color: white;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wh-ex-footer {
+            justify-content: space-between;
+            padding: 12px 40px;
+        }
+
+        .wh-ex-footer span {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .wh-ex-confirm-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 22px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(22, 160, 133, 0.35);
+        }
+
+        .wh-ex-confirm-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(22, 160, 133, 0.45);
+        }
+
+        .wh-ex-confirm-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 二次确认弹窗内的物品展示 */
+        .wh-ex-confirm-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 12px;
+            margin-bottom: 18px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 12px;
+        }
+
+        .wh-ex-confirm-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .wh-ex-confirm-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .wh-ex-confirm-desc {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        body.dark-mode #exchangeCardModal .wh-ex-fullscreen {
+            background: #1a1a2e;
+        }
+
+        body.dark-mode .wh-ex-tip { color: #777; }
+
+        body.dark-mode .wh-ex-card.selected {
+            border-color: #1abc9c !important;
+            box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.2), 0 8px 20px rgba(26, 188, 156, 0.15);
+        }
+
+        body.dark-mode .wh-ex-footer span { color: #aaa; }
+
+        body.dark-mode .wh-ex-confirm-item { background: rgba(255, 255, 255, 0.05); }
+
+        body.dark-mode .wh-ex-confirm-name { color: #e0e0e0; }
+
+        body.dark-mode .wh-ex-confirm-desc { color: #999; }
+
+        body.dark-mode #whExConfirmOk {
+            background: #16a085;
+            color: white;
+        }
+
         /* 窄屏适配（优先保证一行 6 个，仅在较窄视口逐级减少） */
         @media (max-width: 1200px) {
             .wh-content,
             .wh-dev-content {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .wh-ex-content {
                 grid-template-columns: repeat(4, 1fr);
             }
         }
@@ -1426,6 +1909,10 @@ function getWarehouseStyleCSS() {
         @media (max-width: 900px) {
             .wh-content,
             .wh-dev-content {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .wh-ex-content {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
@@ -1448,6 +1935,15 @@ function getWarehouseStyleCSS() {
             .wh-dev-content {
                 padding: 16px;
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .wh-ex-content {
+                padding: 16px;
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .wh-ex-footer {
+                padding: 12px 16px;
             }
         }
     `;

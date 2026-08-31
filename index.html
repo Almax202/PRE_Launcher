@@ -22,7 +22,7 @@
     <script src="./js/warehouse.js" defer></script>
     <script src="./js/dailytasks.js" defer></script>
     <script src="./js/shop.js" defer></script>
-    <script src="./js/premail.js?v=1.5" defer></script>
+    <script src="./js/premail.js?v=1.6" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
@@ -19734,7 +19734,9 @@
         
         function getExpRequiredForLevel(level) {
             if (level >= MAX_LEVEL) return 0;
-            return 50 + (level - 1) * 30;
+            if (level >= 50) return 100 + (level + 5) * 80;   // 50级+：100 + (等级+5) × 80
+            if (level >= 20) return 80 + (level + 2) * 50;     // 20-49级：80 + (等级+2) × 50
+            return 50 + (level + 1) * 30;                      // 1-19级：50 + (等级+1) × 30
         }
         
         function getTotalExpForLevel(level) {
@@ -19804,7 +19806,11 @@
             if (user.gameData.level === undefined) user.gameData.level = 1;
             if (user.gameData.totalExp === undefined) user.gameData.totalExp = 0;
             if (user.gameData.exp === undefined) user.gameData.exp = 0;
-            if (user.gameData.expToNext === undefined) user.gameData.expToNext = getExpRequiredForLevel(user.gameData.level);
+            // 始终根据当前等级重算 expToNext（防止旧公式遗留错误值）
+            var correctExpToNext = getExpRequiredForLevel(user.gameData.level);
+            if (user.gameData.expToNext !== correctExpToNext) {
+                user.gameData.expToNext = correctExpToNext;
+            }
             if (user.gameData.maxLevelReached === undefined) user.gameData.maxLevelReached = false;
             return user.gameData;
         }
@@ -20228,7 +20234,7 @@
                 if (user && user.gameData) {
                     var level = user.gameData.level || 1;
                     var exp = user.gameData.exp || 0;
-                    var expToNext = user.gameData.expToNext || (50 + (level - 1) * 30);
+                    var expToNext = user.gameData.expToNext || getExpRequiredForLevel(level);
                     if (levelBadge) {
                         levelBadge.textContent = level;
                         levelBadge.style.display = 'flex';
@@ -25227,7 +25233,7 @@
                 level = user.gameData.level || 1;
                 exp = user.gameData.exp || 0;
                 totalExp = user.gameData.totalExp || 0;
-                expToNextLevel = user.gameData.expToNext || (50 + (level - 1) * 30);
+                expToNextLevel = user.gameData.expToNext || getExpRequiredForLevel(level);
             }
             var expProgress = expToNextLevel > 0 ? Math.min((exp / expToNextLevel) * 100, 100) : 100;
             
@@ -25568,7 +25574,7 @@
                                                             </div>
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
-                                                                <span>等级越高所需经验越多（公式：50 + (等级-1) × 30）</span>
+                                                                <span>等级越高所需经验越多（分档公式：Lv.1-19 为 50+(等级+1)×30，Lv.20-49 为 80+(等级+2)×50，Lv.50+ 为 100+(等级+5)×80）</span>
                                                             </div>
                                                         </div>
                                                     </div>

@@ -1340,7 +1340,9 @@ function addCheckinExp(amount) {
 function getExpRequiredForLevelStatic(level) {
     var MAX_LEVEL = 60;
     if (level >= MAX_LEVEL) return 0;
-    return 50 + (level - 1) * 30;
+    if (level >= 50) return 100 + (level + 5) * 80;   // 50级+：100 + (等级+5) × 80
+    if (level >= 20) return 80 + (level + 2) * 50;     // 20-49级：80 + (等级+2) × 50
+    return 50 + (level + 1) * 30;                      // 1-19级：50 + (等级+1) × 30
 }
 
 function showEventCenterModal() {

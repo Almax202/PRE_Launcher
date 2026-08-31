@@ -217,6 +217,17 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.2.0 (c3)",
+            date: "2026-08-31",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "优化改进",
+                '我们对账户等级与经验值系统进行了平衡性调整，并对商店物品内容与价格进行了更新',,
+            ]
+        },
+        {
             version: "RC 3.0.2.0 (c2)",
             date: "2026-08-29",
             tag: "major",
