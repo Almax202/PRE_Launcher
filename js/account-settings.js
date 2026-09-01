@@ -8779,6 +8779,21 @@
             particles: true
         },
         {
+            id: 'monthly-bg-september',
+            name: '九月月华',
+            gradient: 'radial-gradient(circle at 20% 15%, rgba(170, 200, 255, 0.28) 0%, transparent 40%), radial-gradient(circle at 85% 80%, rgba(255, 220, 150, 0.22) 0%, transparent 45%), radial-gradient(circle at 55% 45%, rgba(220, 235, 255, 0.16) 0%, transparent 50%), radial-gradient(circle at 10% 75%, rgba(110, 120, 220, 0.2) 0%, transparent 50%), radial-gradient(circle at 78% 25%, rgba(255, 190, 130, 0.14) 0%, transparent 45%), linear-gradient(135deg, #0a0e23 0%, #131a3a 15%, #1c2750 30%, #2b3a6b 45%, #46588f 60%, #6f81b0 75%, #a5b4d8 88%, #3d4c7d 100%)',
+            backgroundSize: '300% 300%',
+            animation: 'septemberShift 22s ease infinite',
+            isDynamic: true,
+            category: 'special',
+            locked: true,
+            unlockType: 'mail',
+            unlockSource: 'monthly_mail_september',
+            showDate: true,
+            dateText: '2026.09',
+            particles: true
+        },
+        {
             id: 'bg-3d-space',
             name: '3D太空遨游',
             gradient: 'radial-gradient(ellipse at 50% 50%, #1a1a3e 0%, #0f0c29 50%, #050510 100%)',
@@ -8963,7 +8978,10 @@
         
         if (!isUnlocked) {
             var unlockMethod = '';
-            if (background.isObsoleteUnlock) {
+            if (typeof isShopSpecialOnSale === 'function' && isShopSpecialOnSale('background', background.id)) {
+                // 该背景正在商店售卖中，优先提示商店购买
+                unlockMethod = '解锁方式：通过商店购买获取';
+            } else if (background.isObsoleteUnlock) {
                 unlockMethod = '解锁方式：该背景已无法获取，测试用兑换码已失效';
             } else if (background.unlockType === 'mail') {
                 unlockMethod = '解锁方式：通过邮件获取';

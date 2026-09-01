@@ -241,6 +241,28 @@ var SHOP_BUNDLES = {
         enabled: true,
         note: '新手补给三件套，包含 50% 折扣，助力初期等级提升（该组合包仅限购 1 份）'
     },
+    bundle_allinone: {
+        name: 'PRE Launcher 豪华组合包',
+        icon: 'fas fa-gift',
+        color: '#e74c3c',
+        items: [
+            { itemId: 'exp_boost_small', price: 400 },
+            { itemId: 'exp_boost_mid', price: 600 },
+            { itemId: 'exp_boost_large', price: 1000 },
+            { itemId: 'exp_supply_1', price: 400 },
+            { itemId: 'exp_supply_2', price: 800 },
+            { itemId: 'exp_supply_3', price: 1400 },
+            { itemId: 'exp_supply_4', price: 2000 },
+            { itemId: 'makeup_card', price: 500 },
+            { itemId: 'makeup_card', price: 500 },
+            { itemId: 'makeup_card', price: 500 },
+        ],
+        discount: 20,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: 'PRE Launcher 豪华组合包，包含 20% 折扣，购买即可享受最豪华的经验补给服务（该组合包仅限购 1 份）'
+    },
     bundle_exp01: {
         name: '经验补给包 Ⅰ',
         icon: 'fas fa-gift',
@@ -297,8 +319,25 @@ var SHOP_BUNDLES = {
         enabled: true,
         note: '经验补给包 Ⅳ，两张经验补给卡 Ⅳ（共4000 EXP），最高效经验来源（该组合包仅限购 1 份）'
     },
-    bundle_gacha: {
-        name: '提取补给包',
+    bundle_gacha01: {
+        name: '提取补给包 Ⅰ',
+        icon: 'fas fa-gift',
+        color: '#9b59b6',
+        items: [
+            { itemId: 'gacha_single', price: 130 },
+            { itemId: 'gacha_single', price: 130 },
+            { itemId: 'gacha_single', price: 130 },
+            { itemId: 'gacha_single', price: 130 },
+            { itemId: 'gacha_single', price: 130 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 2,
+        stockType: 'total',
+        enabled: true,
+        note: '提取补给包 Ⅰ，包含 5 张单次抽卡卷（该组合包限购 2 份）'
+    },
+    bundle_gacha02: {
+        name: '提取补给包 Ⅱ',
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
@@ -309,7 +348,7 @@ var SHOP_BUNDLES = {
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '提取补给包，包含20张十连抽卡卷（该组合包限购 1 份）'
+        note: '提取补给包 Ⅱ，包含 2 张十连抽卡卷（该组合包限购 1 份）'
     },
     bundle_expup1: {
         name: '经验加成包 Ⅰ',
@@ -403,6 +442,108 @@ var SHOP_BUNDLES = {
     }
 };
 
+// ==================== 特殊商品：背景 / 名片（★ 固定价，不参与任何促销与折扣 ★）====================
+// 规则：
+//   - price 固定 5000 PRE Coin，任何全局促销 / 商品折扣均不影响（与 SHOP_ITEM_PRICES 完全隔离）
+//   - kind: 'background'（背景）| 'namecard'（名片样式）
+//   - targetId: 背景 id（对应 account-settings 预设背景）或名片样式 id（对应 cardStyleData）
+//   - unlockSource: 该背景原邮件的 id（用于判定用户是否曾通过邮件领取过 → 已拥有）
+//   - preview: 背景卡片点击预览数据（字段与邮件附件一致，复用 openBackgroundPreview）；名片不提供预览
+//   - 已拥有对应背景 / 名片样式时：购买按钮显示「已拥有或已售罄」且卡片置灰
+//   - 当前有进行中 / 即将开始的活动包含对应背景 / 名片奖励时：购买按钮显示「暂未开放售卖」且卡片置灰，
+//     活动结束（endTime 到点）或下线（活动移除 / status 置为 ended）后自动恢复售卖
+var SHOP_SPECIAL_ITEMS = {
+    sp_bg_liujin: {
+        kind: 'background',
+        targetId: 'mail-bg-1',
+        unlockSource: 'test_mail_001',
+        name: '限定背景「鎏金幻彩」',
+        icon: 'fas fa-image',
+        color: '#e94560',
+        price: 5000,
+        enabled: true,
+        desc: '曾随欢迎邮件发放的限定静态背景，深邃夜色与流光溢彩交织',
+        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往系统设置应用',
+        preview: {
+            name: '鎏金幻彩',
+            gradient: 'radial-gradient(circle at 10% 20%, rgba(255, 223, 0, 0.2) 0%, transparent 35%), radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.18) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.15) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 45%), radial-gradient(circle at 70% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 40%), linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 20%, #16213e 40%, #0f3460 60%, #533483 80%, #e94560 100%)'
+        }
+    },
+    sp_bg_dongtai: {
+        kind: 'background',
+        targetId: 'dynamic-bg-1',
+        name: '限定背景「动态流光」',
+        icon: 'fas fa-image',
+        color: '#e67e22',
+        price: 5000,
+        enabled: true,
+        desc: '早期测试兑换码解锁的限定动态背景，四色流光循环变换',
+        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往系统设置应用',
+        preview: {
+            name: '动态流光',
+            gradient: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
+            isDynamic: true,
+            backgroundSize: '400% 400%',
+            animation: 'gradientShift 15s ease infinite'
+        }
+    },
+    sp_bg_july: {
+        kind: 'background',
+        targetId: 'monthly-bg-july',
+        unlockSource: 'monthly_mail_july',
+        name: '限定背景「七月流火」',
+        icon: 'fas fa-image',
+        color: '#f97316',
+        price: 5000,
+        enabled: true,
+        desc: '七月限定动态背景，暖橙渐变配动态星光与年月角标（2026.07）',
+        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往系统设置应用',
+        preview: {
+            name: '七月流火',
+            gradient: 'radial-gradient(circle at 15% 15%, rgba(255, 200, 50, 0.3) 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(255, 100, 50, 0.25) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(255, 150, 0, 0.2) 0%, transparent 55%), radial-gradient(circle at 30% 70%, rgba(255, 230, 100, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(255, 80, 80, 0.15) 0%, transparent 50%), linear-gradient(135deg, #fff7ed 0%, #ffedd5 15%, #fed7aa 30%, #fdba74 45%, #fb923c 60%, #f97316 75%, #ea580c 90%, #c2410c 100%)',
+            isDynamic: true,
+            backgroundSize: '200% 200%',
+            animation: 'monthlyShift 20s ease infinite',
+            particles: true,
+            showDate: true,
+            dateText: '2026.07'
+        }
+    },
+    sp_bg_august: {
+        kind: 'background',
+        targetId: 'monthly-bg-august',
+        unlockSource: 'monthly_mail_august',
+        name: '限定背景「八月鎏金」',
+        icon: 'fas fa-image',
+        color: '#daa520',
+        price: 5000,
+        enabled: true,
+        desc: '八月限定动态背景，深金琥珀渐变配动态粒子与年月角标（2026.08）',
+        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往系统设置应用',
+        preview: {
+            name: '八月鎏金',
+            gradient: 'radial-gradient(circle at 12% 18%, rgba(218, 165, 32, 0.35) 0%, transparent 40%), radial-gradient(circle at 88% 82%, rgba(255, 140, 0, 0.25) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.2) 0%, transparent 55%), radial-gradient(circle at 28% 72%, rgba(139, 90, 43, 0.18) 0%, transparent 50%), radial-gradient(circle at 72% 28%, rgba(46, 139, 142, 0.12) 0%, transparent 45%), linear-gradient(135deg, #1a0f00 0%, #2d1810 15%, #4a2c1a 30%, #8b6914 45%, #b8860b 55%, #daa520 65%, #cd853f 75%, #6b4423 85%, #2e2e2e 100%)',
+            isDynamic: true,
+            backgroundSize: '300% 300%',
+            animation: 'augustShift 18s ease infinite',
+            particles: true,
+            showDate: true,
+            dateText: '2026.08'
+        }
+    },
+    sp_nc_star: {
+        kind: 'namecard',
+        targetId: 'card-style-special-autumn',
+        name: '名片样式「星河漫游」',
+        icon: 'fas fa-id-card',
+        color: '#6366f1',
+        price: 5000,
+        enabled: true,
+        desc: '特殊获取的名片样式，深邃星河配色，购买后可前往系统设置更改名片样式',
+        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣'
+    }
+};
+
 // ==================== 价格计算辅助（★ 单一改价入口 ★）====================
 // 获取商品实际最终价格（已应用自身折扣 + 全局促销折扣）
 function getShopItemFinalPrice(itemId) {
@@ -460,6 +601,8 @@ var SHOP_CATEGORIES = [
     { id: 'all',          name: '全部商品',   icon: 'fas fa-th-large' },
     { id: 'consumable',   name: '消耗品',     icon: 'fas fa-bolt' },
     { id: 'material',     name: '材料',       icon: 'fas fa-cubes' },
+    { id: 'background',   name: '背景',       icon: 'fas fa-image' },
+    { id: 'namecard',     name: '名片',       icon: 'fas fa-id-card' },
     { id: 'daily_limit',  name: '每日限购',   icon: 'fas fa-calendar-day', separator: true },
     { id: 'weekly_limit', name: '每周限购',   icon: 'fas fa-calendar-week' },
     { id: 'monthly_limit',name: '每月限购',   icon: 'fas fa-calendar-alt' },
@@ -755,13 +898,180 @@ function _shopResolveWarehouseId(itemId) {
     return cfg.warehouseId || itemId;
 }
 
-// ★ 统一的类别过滤：返回 { singles: [itemIds], bundles: [bundleIds] }
+// ==================== 特殊商品（背景 / 名片）辅助 ====================
+function _shopGetUsername() {
+    try {
+        return (JSON.parse(localStorage.getItem('currentUser') || '{}').username) || 'anonymous';
+    } catch (e) { return 'anonymous'; }
+}
+
+// 特殊商品固定售价（不参与任何促销与折扣）
+function getShopSpecialPrice(itemId) {
+    var cfg = SHOP_SPECIAL_ITEMS[itemId];
+    return cfg ? (cfg.price || 0) : 0;
+}
+
+// 判断特殊商品是否已拥有（背景：解锁 ID / 旧兑换码 / 邮件领取历史；名片：userProfile.unlockedCardStyles）
+function _shopIsSpecialOwned(itemId) {
+    var cfg = SHOP_SPECIAL_ITEMS[itemId];
+    if (!cfg) return false;
+    var username = _shopGetUsername();
+    try {
+        if (cfg.kind === 'background') {
+            var unlockedIds = JSON.parse(localStorage.getItem(username + '_unlockedBackgroundIds') || '[]');
+            if (unlockedIds.indexOf(cfg.targetId) !== -1) return true;
+            // 兼容旧存储键：动态流光曾通过测试兑换码解锁
+            if (cfg.targetId === 'dynamic-bg-1' && localStorage.getItem(username + '_unlockedBackgrounds') === 'true') return true;
+            if (cfg.unlockSource) {
+                var history = JSON.parse(localStorage.getItem(username + '_mailHistory') || '[]');
+                if (history.some(function(item) { return item.id === cfg.unlockSource; })) return true;
+            }
+            return false;
+        }
+        if (cfg.kind === 'namecard') {
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var foundUser = users.find(function(u) { return u.username === username; });
+            if (foundUser && foundUser.userProfile && foundUser.userProfile.unlockedCardStyles) {
+                return foundUser.userProfile.unlockedCardStyles.indexOf(cfg.targetId) !== -1;
+            }
+        }
+    } catch (e) {}
+    return false;
+}
+
+// 判断特殊商品是否被进行中的活动锁定（活动签到奖励包含对应背景 / 名片，且活动未结束、未下线）
+// 活动结束后（endTime 到点自动迁移 status）或下线后（活动移除 / status 手动置为 ended）自动解除锁定
+function _shopIsSpecialBlockedByEvent(itemId) {
+    var cfg = SHOP_SPECIAL_ITEMS[itemId];
+    if (!cfg) return false;
+    if (typeof eventCenterData === 'undefined' || !eventCenterData.events) return false;
+    var wantType = cfg.kind === 'background' ? 'background3d' : 'cardStyle';
+    for (var i = 0; i < eventCenterData.events.length; i++) {
+        var evt = eventCenterData.events[i];
+        // 已结束 / 已下线的活动不锁定；upcoming（未开始）与 active（进行中）均锁定
+        if (!evt || evt.status === 'ended' || !evt.hasCheckin) continue;
+        var rewards = (typeof getCheckinRewards === 'function') ? getCheckinRewards(evt.id) : null;
+        if (!rewards) continue;
+        var hit = rewards.some(function(r) {
+            return r && r.type === wantType && r.value === cfg.targetId;
+        });
+        if (hit) return true;
+    }
+    return false;
+}
+
+// 判断某背景 / 名片当前是否正在商店售卖中（已上架且未被活动锁定，不含已拥有判断）
+// 供系统设置（背景 / 名片样式弹窗）等外部模块查询解锁提示使用
+function isShopSpecialOnSale(kind, targetId) {
+    var ids = Object.keys(SHOP_SPECIAL_ITEMS);
+    for (var i = 0; i < ids.length; i++) {
+        var cfg = SHOP_SPECIAL_ITEMS[ids[i]];
+        if (cfg.enabled && cfg.kind === kind && cfg.targetId === targetId) {
+            return !_shopIsSpecialBlockedByEvent(ids[i]);
+        }
+    }
+    return false;
+}
+
+// 购买后解锁背景（写入 <username>_unlockedBackgroundIds，与系统设置预设背景联动）
+function _shopUnlockBackground(bgId) {
+    try {
+        var username = _shopGetUsername();
+        var unlockedIds = JSON.parse(localStorage.getItem(username + '_unlockedBackgroundIds') || '[]');
+        if (unlockedIds.indexOf(bgId) === -1) {
+            unlockedIds.push(bgId);
+            localStorage.setItem(username + '_unlockedBackgroundIds', JSON.stringify(unlockedIds));
+        }
+    } catch (e) {}
+}
+
+// 购买后解锁名片样式（写入 registeredUsers.userProfile.unlockedCardStyles，与名片样式弹窗联动）
+function _shopUnlockCardStyle(styleId) {
+    try {
+        var username = _shopGetUsername();
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var foundUser = users.find(function(u) { return u.username === username; });
+        if (foundUser) {
+            if (!foundUser.userProfile) foundUser.userProfile = {};
+            if (!foundUser.userProfile.unlockedCardStyles) foundUser.userProfile.unlockedCardStyles = [];
+            if (foundUser.userProfile.unlockedCardStyles.indexOf(styleId) === -1) {
+                foundUser.userProfile.unlockedCardStyles.push(styleId);
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+            }
+        }
+    } catch (e) {}
+}
+
+// 背景卡片点击预览（复用邮件附件预览查看器）
+function shopOpenSpecialBackgroundPreview(itemId) {
+    var cfg = SHOP_SPECIAL_ITEMS[itemId];
+    if (!cfg || !cfg.preview) return;
+    if (typeof openBackgroundPreview === 'function') {
+        openBackgroundPreview(cfg.preview);
+    } else if (typeof showAlert === 'function') {
+        showAlert('预览功能暂不可用');
+    }
+}
+
+// 特殊商品购买（每账号限购 1 件，已拥有后禁止重复购买）
+function shopPurchaseSpecialItem(itemId) {
+    var cfg = SHOP_SPECIAL_ITEMS[itemId];
+    if (!cfg || !cfg.enabled) {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '商品不存在或已下架' });
+        return false;
+    }
+    if (_shopIsSpecialOwned(itemId)) {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '已拥有或已售罄', message: '您已拥有该' + (cfg.kind === 'background' ? '背景' : '名片样式') + '，无法重复购买' });
+        return false;
+    }
+    if (_shopIsSpecialBlockedByEvent(itemId)) {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '暂未开放售卖', message: '包含该' + (cfg.kind === 'background' ? '背景' : '名片样式') + '的活动正在进行中，请通过活动获取，活动结束后开放购买' });
+        return false;
+    }
+    if (typeof spendPreCoin !== 'function' || typeof getPreCoinBalance !== 'function') {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '系统错误', message: 'PRE Coin 系统未加载' });
+        return false;
+    }
+    var price = getShopSpecialPrice(itemId);
+    var balance = getPreCoinBalance();
+    if (balance < price) {
+        showToast({ type: 'error', title: 'PRE Coin 不足', message: '当前余额 ' + balance + '，需要 ' + price });
+        return false;
+    }
+    var spent = spendPreCoin(price, '商店购买：' + cfg.name);
+    if (!spent) return false;
+
+    if (cfg.kind === 'background') {
+        _shopUnlockBackground(cfg.targetId);
+        if (typeof showToast === 'function') showToast({ type: 'success', title: '购买成功', message: cfg.name + ' 已解锁，可前往系统设置 → 预设背景应用' });
+    } else {
+        _shopUnlockCardStyle(cfg.targetId);
+        if (typeof showToast === 'function') showToast({ type: 'success', title: '购买成功', message: cfg.name + ' 已解锁，可在系统设置中更改名片样式' });
+    }
+    _shopRecordPurchase('special_' + itemId, price, 1);
+
+    var modal = document.getElementById('shopModal');
+    if (modal && modal.style.display === 'flex') renderShopUI();
+    return true;
+}
+
+// ★ 统一的类别过滤：返回 { singles: [itemIds], bundles: [bundleIds], specials: [specialIds] }
 //   singles → 已排序好的 itemId 列表（同现有稀有度+价格排序）
 //   bundles → 已排序好的 bundleId 列表
+//   specials → 特殊商品（背景 / 名片）specialId 列表（仅背景 / 名片分类返回）
 //   对于限购类别（weekly/monthly/total）同时包含 singles 和 bundles
 function _shopFilterByCategory(catId) {
     var stockType = _shopCatToStockType(catId);
     var rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
+
+    // —— specials（背景 / 名片特殊商品）——
+    var specials = [];
+    if (catId === 'background' || catId === 'namecard') {
+        specials = Object.keys(SHOP_SPECIAL_ITEMS).filter(function(id) {
+            var cfg = SHOP_SPECIAL_ITEMS[id];
+            return cfg.enabled && cfg.kind === catId;
+        });
+    }
 
     // —— singles ——
     var singles = Object.keys(SHOP_ITEM_PRICES).filter(function(id) {
@@ -797,7 +1107,7 @@ function _shopFilterByCategory(catId) {
         return getShopBundleFinalPrice(a) - getShopBundleFinalPrice(b);
     });
 
-    return { singles: singles, bundles: bundles };
+    return { singles: singles, bundles: bundles, specials: specials };
 }
 
 // 格式化促销时间戳为 UTC+8 紧凑展示（MM-DD HH:mm）
@@ -849,18 +1159,19 @@ function renderShopToolbar() {
             '<i class="' + cat.icon + '"></i><span>' + cat.name + '</span></button>';
     }).join('');
 
-    // 动态计数：按当前类别过滤 singles + bundles
+    // 动态计数：按当前类别过滤 singles + bundles + specials（背景/名片）
     var fc = _shopFilterByCategory(_shopActiveCategory);
-    var hasS = fc.singles.length > 0, hasB = fc.bundles.length > 0;
+    var singleCount = fc.singles.length + (fc.specials ? fc.specials.length : 0);
+    var hasS = singleCount > 0, hasB = fc.bundles.length > 0;
     var countHtml;
     if (_shopActiveCategory === 'bundle') {
         countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
     } else if (hasS && hasB) {
-        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + fc.singles.length + '</b> 款、组合包 <b>' + fc.bundles.length + '</b> 款</span>';
+        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + singleCount + '</b> 款、组合包 <b>' + fc.bundles.length + '</b> 款</span>';
     } else if (hasB) {
         countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
     } else {
-        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + fc.singles.length + '</b> 款</span>';
+        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + singleCount + '</b> 款</span>';
     }
 
     // 开发者模式按钮：获取 PRE Coin / 重置购买状态
@@ -1093,14 +1404,16 @@ function renderShopUI() {
         _shopStartStockRefreshCountdown();
     }
 
-    // ★ 统一过滤（singles + bundles）
+    // ★ 统一过滤（singles + bundles + specials）
     var fc = _shopFilterByCategory(_shopActiveCategory);
     var singles = fc.singles;
     var bundles = fc.bundles;
+    var specials = fc.specials || [];
     var hasS = singles.length > 0;
     var hasB = bundles.length > 0;
+    var hasSp = specials.length > 0;
 
-    if (!hasS && !hasB) {
+    if (!hasS && !hasB && !hasSp) {
         content.innerHTML =
             '<div class="wh-empty"><i class="fas fa-store-slash"></i><p>暂无在售商品</p><span>该分类下暂无可购买的商品或组合包</span></div>';
         return;
@@ -1110,6 +1423,7 @@ function renderShopUI() {
     // ・只有 singles：直接渲染 singles（原有表现）
     // ・只有 bundles：直接渲染 bundles（复用 bundle 卡片）
     // ・两者都有：分成两个 subsection（单独售卖 / 组合包），中间留间距
+    // ・只有 specials（背景 / 名片分类）：渲染特殊商品卡片（背景卡片点击可预览）
     var html = '';
     if (hasS && hasB) {
         // subsection: singles
@@ -1125,6 +1439,9 @@ function renderShopUI() {
     } else if (hasB) {
         // 纯 bundle 分类（bundle tab 或刚好该限购类别无 singles 只有 bundle）
         html += '<div class="shop-grid">' + bundles.map(function(id) { return buildShopBundleCardHTML(id); }).join('') + '</div>';
+    } else if (hasSp) {
+        // 背景 / 名片特殊商品分类
+        html += '<div class="shop-grid">' + specials.map(function(id) { return buildShopSpecialCardHTML(id); }).join('') + '</div>';
     } else {
         // 纯 singles 分类
         html += '<div class="shop-grid">' + singles.map(function(id) { return buildShopCardHTML(id); }).join('') + '</div>';
@@ -1132,8 +1449,8 @@ function renderShopUI() {
 
     content.innerHTML = html;
 
-    // —— 绑定事件（singles）
-    content.querySelectorAll('.shop-buy-btn').forEach(function(btn) {
+    // —— 绑定事件（singles，排除特殊商品购买按钮）
+    content.querySelectorAll('.shop-buy-btn:not(.shop-special-buy)').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             var id = btn.getAttribute('data-id');
@@ -1189,6 +1506,22 @@ function renderShopUI() {
             e.stopPropagation();
             openShopBundleModal(btn.getAttribute('data-id'));
         });
+    });
+
+    // —— 绑定事件（特殊商品：背景 / 名片）
+    content.querySelectorAll('.shop-special-buy').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            shopPurchaseSpecialItem(btn.getAttribute('data-id'));
+        });
+    });
+    content.querySelectorAll('.shop-special-card').forEach(function(card) {
+        // 仅背景卡片支持点击整卡预览（名片无预览）
+        if (card.getAttribute('data-kind') === 'background') {
+            card.addEventListener('click', function() {
+                shopOpenSpecialBackgroundPreview(card.getAttribute('data-id'));
+            });
+        }
     });
 }
 
@@ -1297,6 +1630,61 @@ function hexToRgbaShop(hex, alpha) {
     var g = parseInt(hex.slice(3, 5), 16);
     var b = parseInt(hex.slice(5, 7), 16);
     return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
+}
+
+// 构建特殊商品卡片（背景 / 名片：固定价、不参与折扣；背景卡片点击可预览）
+// 状态优先级：已拥有（「已拥有或已售罄」置灰）> 活动锁定（「暂未开放售卖」置灰）> 可购买
+function buildShopSpecialCardHTML(itemId) {
+    var cfg = SHOP_SPECIAL_ITEMS[itemId];
+    if (!cfg) return '';
+    var isBg = cfg.kind === 'background';
+    var typeNoun = isBg ? '背景' : '名片样式';
+    var owned = _shopIsSpecialOwned(itemId);
+    var eventBlocked = !owned && _shopIsSpecialBlockedByEvent(itemId);
+    var typeLabel = isBg ? '背景' : '名片';
+
+    // 固定价：不应用任何折扣 / 全局促销
+    var priceTagHtml = '<span class="shop-price-tag">' +
+        '<i class="fas fa-coins"></i> ' + cfg.price +
+        '<span class="shop-unit">/件</span>' +
+    '</span>';
+
+    var stockHtml;
+    if (owned) {
+        stockHtml = '<div class="shop-stock shop-stock-total"><i class="fas fa-check-circle"></i> 已拥有该' + typeNoun + '，每账号限购 1 件</div>';
+    } else if (eventBlocked) {
+        stockHtml = '<div class="shop-stock shop-stock-daily"><i class="fas fa-lock"></i> 包含该' + typeNoun + '的活动进行中，暂未开放售卖</div>';
+    } else {
+        stockHtml = '<div class="shop-stock shop-stock-total"><i class="fas fa-infinity"></i> 每账号限购 1 件</div>';
+    }
+
+    var noteHtml = cfg.note ? '<div class="shop-note"><i class="fas fa-info-circle"></i> ' + cfg.note + '</div>' : '';
+    var previewHintHtml = isBg
+        ? '<div class="shop-special-hint"><i class="fas fa-magnifying-glass"></i> 点击卡片预览背景效果</div>'
+        : '';
+
+    return `
+        <div class="wh-item-card shop-item-card shop-special-card ${isBg ? 'shop-special-bg' : ''} ${(owned || eventBlocked) ? 'shop-sold-out' : ''}" data-id="${itemId}" data-kind="${cfg.kind}">
+            ${priceTagHtml}
+            <span class="wh-type-tag" style="color:${cfg.color}; border-color:${cfg.color};"><i class="${cfg.icon}"></i> ${typeLabel}</span>
+            <div class="wh-item-icon" style="background: ${hexToRgbaShop(cfg.color, 0.15)};">
+                <i class="${cfg.icon}" style="color:${cfg.color};"></i>
+            </div>
+            <div class="wh-item-name">${cfg.name}</div>
+            <div class="wh-item-desc">${cfg.desc || ''}</div>
+            ${stockHtml}
+            ${previewHintHtml}
+            ${noteHtml}
+            <div class="shop-total-row">
+                <span>合计：</span>
+                <b class="shop-total-price">${cfg.price} PRE Coin</b>
+            </div>
+            <button class="shop-buy-btn shop-special-buy" data-id="${itemId}" ${(owned || eventBlocked) ? 'disabled' : ''}>
+                <i class="fas ${owned ? 'fa-ban' : (eventBlocked ? 'fa-lock' : 'fa-shopping-cart')}"></i>
+                ${owned ? '已拥有或已售罄' : (eventBlocked ? '暂未开放售卖' : '立即购买')}
+            </button>
+        </div>
+    `;
 }
 
 // ==================== 组合包：渲染 / 购买 / 详情弹窗 ====================
@@ -1725,6 +2113,22 @@ function getShopStyleCSS() {
             50% { transform: translateY(-2px); }
         }
         #shopModal .wh-item-card.shop-sold-out { opacity: 0.6; filter: grayscale(0.6); }
+        /* ★ 特殊商品卡片（背景 / 名片）：背景卡片整体可点击预览 */
+        #shopModal .shop-special-card.shop-special-bg { cursor: pointer; }
+        #shopModal .shop-special-card .shop-special-buy[disabled] { cursor: not-allowed; }
+        #shopModal .shop-special-hint {
+            display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: bold;
+            color: #2980b9; background: rgba(52, 152, 219, 0.08);
+            padding: 4px 8px; border-radius: 8px;
+            border: 1px dashed rgba(52, 152, 219, 0.4);
+        }
+        #shopModal .shop-special-hint i { font-size: 10px; }
+        #shopModal .shop-special-card.shop-sold-out .shop-special-hint {
+            color: #8e44ad; background: rgba(142, 68, 173, 0.06);
+            border-color: rgba(142, 68, 173, 0.35);
+        }
+        body.dark-mode #shopModal .shop-special-hint { color: #7fb8e0; background: rgba(52, 152, 219, 0.12); }
+        body.dark-mode #shopModal .shop-special-card.shop-sold-out .shop-special-hint { color: #c39bd3; }
         /* ★ 镜像商品角标（月度/每周特供） */
         #shopModal .shop-mirror-tag {
             position: absolute; top: -2px; right: -2px;

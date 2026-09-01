@@ -544,7 +544,57 @@ var mailSystem = {
                     requireRegisteredBefore: "2026-08-31 11:00:00"
                 }
             ]
-        }
+        },
+        {
+            version: 10,
+            date: "2026-09-01",
+            mails: [
+                {
+                    id: 'monthly_mail_september',
+                    title: '九月限定动态背景',
+                    sender: 'PRE Launcher',
+                    content: '九月限定动态背景「九月月华」已发放！点击"领取"按钮即可获得这一专属背景。\n\n该背景以初秋夜空与中秋月色为主题，采用深靛夜幕与月华银蓝渐变配色，缀以温润的月金光晕，右下角带有年月数字显示和动态星粒子效果，为您的桌面带来宁静祥和的九月月夜氛围。\n\n时值九月，暑气渐消，玉露初凉，中秋将至。愿这轮明月为您送去圆满与安宁，祝您在新的一个月里诸事顺遂。\n\n该动态背景领取有效期截止至 2026-09-30 23:59:59 (UTC+8)，请及时领取！\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '九月月华',
+                            type: 'background',
+                            gradient: 'radial-gradient(circle at 20% 15%, rgba(170, 200, 255, 0.28) 0%, transparent 40%), radial-gradient(circle at 85% 80%, rgba(255, 220, 150, 0.22) 0%, transparent 45%), radial-gradient(circle at 55% 45%, rgba(220, 235, 255, 0.16) 0%, transparent 50%), radial-gradient(circle at 10% 75%, rgba(110, 120, 220, 0.2) 0%, transparent 50%), radial-gradient(circle at 78% 25%, rgba(255, 190, 130, 0.14) 0%, transparent 45%), linear-gradient(135deg, #0a0e23 0%, #131a3a 15%, #1c2750 30%, #2b3a6b 45%, #46588f 60%, #6f81b0 75%, #a5b4d8 88%, #3d4c7d 100%)',
+                            isDynamic: true,
+                            backgroundSize: '300% 300%',
+                            animation: 'septemberShift 22s ease infinite',
+                            particles: true,
+                            showDate: true,
+                            dateText: '2026.09'
+                        }
+                    ],
+                    startTime: "2026-09-01 12:30:00",
+                    endTime: "2026-09-30 23:59:59"
+                }
+            ]
+        },
+        {
+            version: 11,
+            date: "2026-09-01",
+            mails: [
+                {
+                    id: 'compensation_mail_20260901',
+                    title: '2026-09-01 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上版本更新补偿：经验值补给卡 Ⅰ ×1。经验值补给卡 Ⅰ 领取后将发放至您的仓库，使用后获得300点经验值，将立即对账户等级生效。。\n\n本邮件发放对象为 2026-09-01 12:30:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-09-08 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-09-01 12:30:00",
+                    endTime: "2026-09-08 23:59:59",
+                    requireRegisteredBefore: "2026-09-01 12:30:00"
+                }
+            ]
+        },
 
     ],
     
