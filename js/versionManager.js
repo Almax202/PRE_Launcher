@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20260901.3021.c3.129.l4",
+    launcher: "20260903.3021.c3.130.l5",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -181,8 +181,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),    
-    buildDate: "2026-09-01",
-    patchDate: "2026-09-01",
+    buildDate: "2026-09-03",
+    patchDate: "2026-09-03",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",

@@ -595,6 +595,47 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 12,
+            date: "2026-09-03",
+            mails: [
+                {
+                    id: 'compensation_mail_20260903',
+                    title: '2026-09-03 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n在本次轻量更新中，我们对每日签到功能进行了优化与改善，现在您可以通过每日签到功能来获取更多丰富的每日奖励。\n每日签到除 EXP 和 PRE Coin 外，还可获得限时道具（所有通过签到获得的物品都具有时效性，有效期为14天，过期后该物品将从您的仓库中自动清除）。工作日物品随周数提升等级，周末发放固定简单物品（补签卡 / 幸运币）。\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上版本更新补偿：经验值补给卡 Ⅰ ×1。\n\n同时因为每日签到机制不可补签的原因，我们也考虑到部分用户在本次更新之前就已经完成了本日的签到，鉴于此我们将发放在2026-09-01至2026-09-03中，这三天的每日签到奖励（本次额外补偿发放的签到奖励不视为限时物品，长期有效）。\n\n本邮件发放对象为 2026-09-03 14:00:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-09-10 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        },
+                        {
+                            name: '经验值加成卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_boost_small',
+                            count: 1
+                        },
+                        {
+                            name: '补签卡',
+                            type: 'warehouse',
+                            itemId: 'makeup_card',
+                            count: 1
+                        },
+                        {
+                            name: '幸运币',
+                            type: 'warehouse',
+                            itemId: 'luck_coin',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-09-03 14:00:00",
+                    endTime: "2026-09-10 23:59:59",
+                    requireRegisteredBefore: "2026-09-03 14:00:00"
+                }
+            ]
+        },
 
     ],
     

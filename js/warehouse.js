@@ -186,13 +186,107 @@ function getWarehouseData() {
             }
         } catch (e) {}
     }
-    return { version: WAREHOUSE_DATA_VERSION, items: {}, expBuffs: [], luckyActive: false, createdAt: new Date().toISOString() };
+    return { version: WAREHOUSE_DATA_VERSION, items: {}, expBuffs: [], luckyActive: false, timedItems: [], createdAt: new Date().toISOString() };
 }
 
 function saveWarehouseData(data) {
     data.version = WAREHOUSE_DATA_VERSION;
     data.updatedAt = new Date().toISOString();
     localStorage.setItem(getWarehouseStorageKey(), JSON.stringify(data));
+}
+
+// ==================== 限时物品（签到奖励） ====================
+// timedItems 数组：每项 { uid, itemId, qty, obtainedAt, expiresAt, source }
+// 与 items（普通无期限物品）完全独立存储，渲染为独立卡片
+// 过期清理在 getWarehouseData / 渲染前统一执行，保证过期项自动消失
+
+// 清理已过期的限时物品（每次读取/渲染时自动调用）
+function cleanExpiredTimedItems(data) {
+    if (!data.timedItems) { data.timedItems = []; return; }
+    var now = Date.now();
+    var valid = data.timedItems.filter(function(t) {
+        return t.expiresAt && new Date(t.expiresAt).getTime() > now && (!t.qty || t.qty > 0);
+    });
+    if (valid.length !== data.timedItems.length) {
+        data.timedItems = valid;
+        saveWarehouseData(data);
+    }
+}
+
+// 获取当前有效的限时物品列表（自动清理过期项）
+function getActiveTimedItems() {
+    var data = getWarehouseData();
+    cleanExpiredTimedItems(data);
+    return data.timedItems || [];
+}
+
+// 添加限时物品：warehouseAddTimedItem('exp_supply_1', 1, '签到奖励', 14)
+function warehouseAddTimedItem(itemId, qty, source, expiryDays) {
+    if (!WAREHOUSE_ITEMS[itemId]) return false;
+    qty = Math.max(1, parseInt(qty, 10) || 1);
+    if (typeof expiryDays !== 'number' || expiryDays <= 0) expiryDays = 14;
+    var data = getWarehouseData();
+    cleanExpiredTimedItems(data);
+    var now = Date.now();
+    var expiresAt = new Date(now + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+    // 同一 uid 是一个独立的限时条目，不同批次不同 uid
+    var uid = 'ti_' + now + '_' + Math.floor(Math.random() * 1e6);
+    data.timedItems.push({
+        uid: uid,
+        itemId: itemId,
+        qty: qty,
+        obtainedAt: new Date(now).toISOString(),
+        expiresAt: expiresAt,
+        source: source || ''
+    });
+    saveWarehouseData(data);
+    // 如果该道具原本就有 usable=true 且有特殊效果字段，保留为限时版
+    if (typeof showToast === 'function') {
+        var item = WAREHOUSE_ITEMS[itemId];
+        var expireStr = new Date(expiresAt);
+        var dd = ('0' + expireStr.getDate()).slice(-2);
+        var mm = ('0' + (expireStr.getMonth() + 1)).slice(-2);
+        showToast({ type: 'success', title: '签到奖励', message: '获得限时道具：' + item.name + ' ×' + qty + '（有效期至 ' + mm + '/' + dd + '）' });
+    }
+    return uid;
+}
+
+// 消耗限时道具（按 uid 定位）
+function warehouseUseTimedItem(uid) {
+    var data = getWarehouseData();
+    cleanExpiredTimedItems(data);
+    var idx = -1;
+    for (var i = 0; i < data.timedItems.length; i++) {
+        if (data.timedItems[i].uid === uid) { idx = i; break; }
+    }
+    if (idx === -1) return false;
+    var entry = data.timedItems[idx];
+    entry.qty -= 1;
+    if (entry.qty <= 0) {
+        data.timedItems.splice(idx, 1);
+    }
+    saveWarehouseData(data);
+    return true;
+}
+
+// 查询限时物品中某 itemId 的剩余数量（不含普通物品）
+function warehouseGetTimedItemCount(itemId) {
+    var items = getActiveTimedItems();
+    var total = 0;
+    items.forEach(function(t) { if (t.itemId === itemId) total += (t.qty || 0); });
+    return total;
+}
+
+// 批量添加多个限时物品（一次签到发放多个道具时使用）
+function warehouseAddTimedItems(items, source, expiryDays) {
+    if (!Array.isArray(items)) return [];
+    var uids = [];
+    items.forEach(function(it) {
+        // it:  { itemId: 'exp_supply_1', qty: 1 }
+        var uid = warehouseAddTimedItem(it.itemId, it.qty || 1, source, expiryDays);
+        if (uid) uids.push(uid);
+    });
+    return uids;
 }
 
 // ==================== 仓库操作 API（供其他模块调用） ====================
@@ -572,26 +666,44 @@ function renderWarehouseItems() {
     var category = activeTab ? activeTab.getAttribute('data-cat') : 'all';
 
     var data = getWarehouseData();
-    var ownedIds = Object.keys(data.items);
+    // 每次渲染前清理过期限时物品
+    cleanExpiredTimedItems(data);
 
-    // 分类筛选
-    var filteredIds = ownedIds.filter(function(id) {
+    // 收集要渲染的卡片：{ kind: 'normal'|'timed', id, entry, timedMeta }
+    var cards = [];
+
+    // 普通物品
+    var ownedIds = Object.keys(data.items);
+    ownedIds.forEach(function(id) {
         var item = WAREHOUSE_ITEMS[id];
-        return item && (category === 'all' || item.category === category);
+        if (!item) return;
+        if (category !== 'all' && item.category !== category) return;
+        cards.push({ kind: 'normal', itemId: id, entry: data.items[id] });
     });
 
-    // 按稀有度（传说>史诗>稀有>普通）、名称排序
+    // 限时物品（始终参与渲染，分类筛选同样适用）
+    (data.timedItems || []).forEach(function(t) {
+        var item = WAREHOUSE_ITEMS[t.itemId];
+        if (!item) return;
+        if (category !== 'all' && item.category !== category) return;
+        cards.push({ kind: 'timed', itemId: t.itemId, entry: t, timedMeta: t });
+    });
+
+    // 按稀有度 + 名称排序（限时物品和普通物品混合排序）
     var rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
-    filteredIds.sort(function(a, b) {
-        var ra = (rarityOrder[WAREHOUSE_ITEMS[a].rarity] !== undefined) ? rarityOrder[WAREHOUSE_ITEMS[a].rarity] : 4;
-        var rb = (rarityOrder[WAREHOUSE_ITEMS[b].rarity] !== undefined) ? rarityOrder[WAREHOUSE_ITEMS[b].rarity] : 4;
+    cards.sort(function(a, b) {
+        var ra = (rarityOrder[WAREHOUSE_ITEMS[a.itemId].rarity] !== undefined) ? rarityOrder[WAREHOUSE_ITEMS[a.itemId].rarity] : 4;
+        var rb = (rarityOrder[WAREHOUSE_ITEMS[b.itemId].rarity] !== undefined) ? rarityOrder[WAREHOUSE_ITEMS[b.itemId].rarity] : 4;
         if (ra !== rb) return ra - rb;
-        return WAREHOUSE_ITEMS[a].name.localeCompare(WAREHOUSE_ITEMS[b].name, 'zh-CN');
+        // 同名限时物品排在普通物品之后（用户可以先看到非限时的主库存）
+        if (a.itemId === b.itemId && a.kind !== b.kind) return a.kind === 'timed' ? 1 : -1;
+        return WAREHOUSE_ITEMS[a.itemId].name.localeCompare(WAREHOUSE_ITEMS[b.itemId].name, 'zh-CN');
     });
 
     // 统计信息
-    var totalKinds = ownedIds.length;
-    var totalQty = ownedIds.reduce(function(sum, id) { return sum + data.items[id].qty; }, 0);
+    var totalNormalKinds = ownedIds.length;
+    var totalNormalQty = ownedIds.reduce(function(sum, id) { return sum + data.items[id].qty; }, 0);
+    var totalTimed = (data.timedItems || []).reduce(function(sum, t) { return sum + (t.qty || 0); }, 0);
     if (stats) {
         var buffInfo = '';
         var buffs = getWarehouseExpBuffs();
@@ -601,24 +713,26 @@ function renderWarehouseItems() {
             var buffTags = buffs.map(function(b) { return (typeLabels[b.type] || b.type) + '+' + b.percent + '%'; }).join(' ');
             buffInfo = '<span class="wh-stat wh-buff"><i class="fas fa-bolt"></i> 经验加成 ×' + totalMult.toFixed(2) + ' 生效中 <b style="font-weight:normal;font-size:11px;opacity:.85;">[' + buffTags + ']</b></span>';
         }
-        stats.innerHTML = '<span class="wh-stat"><i class="fas fa-layer-group"></i> 道具种类 <b>' + totalKinds + '</b></span>' +
-            '<span class="wh-stat"><i class="fas fa-cube"></i> 道具总数 <b>' + totalQty + '</b></span>' + buffInfo;
+        stats.innerHTML = '<span class="wh-stat"><i class="fas fa-layer-group"></i> 道具种类 <b>' + totalNormalKinds + '</b></span>' +
+            '<span class="wh-stat"><i class="fas fa-cube"></i> 道具总数 <b>' + totalNormalQty + '</b></span>' +
+            (totalTimed > 0 ? '<span class="wh-stat"><i class="fas fa-clock" style="color:#f39c12;"></i> 限时 <b style="color:#f39c12;">' + totalTimed + '</b></span>' : '') +
+            buffInfo;
     }
 
-    if (filteredIds.length === 0) {
+    if (cards.length === 0) {
         content.innerHTML = '<div class="wh-empty"><i class="fas fa-box-open"></i><p>暂无道具</p><span>通过签到、活动、邮件等方式获取道具后，将存放在此处</span></div>';
         return;
     }
 
-    content.innerHTML = filteredIds.map(function(id) {
-        return buildWarehouseCardHTML(id, data.items[id], WAREHOUSE_REMOVE_MODE);
+    content.innerHTML = cards.map(function(c) {
+        return buildWarehouseCardHTML(c.itemId, c.entry, WAREHOUSE_REMOVE_MODE, c.kind === 'timed' ? c.timedMeta : null);
     }).join('');
 
     // 绑定使用按钮事件
     content.querySelectorAll('.wh-use-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            useWarehouseItem(btn.getAttribute('data-id'));
+            useWarehouseItem(btn.getAttribute('data-id'), btn.getAttribute('data-timed-uid') || null);
         });
     });
 
@@ -626,6 +740,15 @@ function renderWarehouseItems() {
     content.querySelectorAll('.wh-remove-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
+            var timedUid = btn.getAttribute('data-timed-uid');
+            if (timedUid) {
+                // 移除模式下的限时物品：直接按 uid 删除整个条目
+                var wdata = getWarehouseData();
+                wdata.timedItems = (wdata.timedItems || []).filter(function(t) { return t.uid !== timedUid; });
+                saveWarehouseData(wdata);
+                renderWarehouseItems();
+                return;
+            }
             warehouseRemoveItem(btn.getAttribute('data-id'), 1);
             renderWarehouseItems();
         });
@@ -633,10 +756,34 @@ function renderWarehouseItems() {
 }
 
 // 构建道具卡片 HTML
-function buildWarehouseCardHTML(itemId, entry, removeMode) {
+// timedMeta: null 或限时物品条目对象（带 uid / expiresAt）
+function buildWarehouseCardHTML(itemId, entry, removeMode, timedMeta) {
     var item = WAREHOUSE_ITEMS[itemId];
     var rarity = WAREHOUSE_RARITY[item.rarity] || WAREHOUSE_RARITY.common;
     var categoryLabel = getWarehouseCategoryLabel(item.category);
+    var isTimed = !!timedMeta;
+
+    // 限时物品：名称后缀（限时）、描述追加时效提示
+    var displayName = item.name;
+    var displayDesc = item.desc;
+    var timedTagHtml = '';
+    if (isTimed && timedMeta.expiresAt) {
+        displayName = item.name + '（限时）';
+        displayDesc = item.desc + '（该物品具有时效性，有效期为14天）';
+        // 计算剩余天数
+        var now = Date.now();
+        var expireMs = new Date(timedMeta.expiresAt).getTime();
+        var daysLeft = Math.ceil((expireMs - now) / (24 * 60 * 60 * 1000));
+        if (daysLeft < 0) daysLeft = 0;
+        var tagColor, tagBg;
+        if (daysLeft <= 3) { tagColor = '#fff'; tagBg = '#e74c3c'; }
+        else if (daysLeft <= 7) { tagColor = '#fff'; tagBg = '#f39c12'; }
+        else { tagColor = '#fff'; tagBg = '#27ae60'; }
+        var expireDate = new Date(expireMs);
+        var mm = ('0' + (expireDate.getMonth() + 1)).slice(-2);
+        var dd = ('0' + expireDate.getDate()).slice(-2);
+        timedTagHtml = '<span class="wh-timed-tag" style="background:' + tagBg + ';color:' + tagColor + ';" title="有效期至 ' + mm + '/' + dd + '">剩' + daysLeft + '天</span>';
+    }
 
     // 来源文本：由顶部 WAREHOUSE_SHOW_SOURCE 全局开关 + 每个道具的 showSource 字段共同控制
     var sourceHtml = '';
@@ -644,22 +791,31 @@ function buildWarehouseCardHTML(itemId, entry, removeMode) {
         sourceHtml = '<div class="wh-item-source"><i class="fas fa-link"></i> ' + (entry.source || item.source || '') + '</div>';
     }
 
-    // 移除模式：显示移除按钮，其他按钮隐藏/禁用
+    // 移除模式 / 使用按钮：限时物品按钮带 data-timed-uid
     var actionHtml = '';
     if (removeMode) {
-        actionHtml = '<button class="wh-remove-btn" data-id="' + itemId + '"><i class="fas fa-trash"></i> 移除</button>';
+        if (isTimed) {
+            actionHtml = '<button class="wh-remove-btn" data-timed-uid="' + timedMeta.uid + '"><i class="fas fa-trash"></i> 移除</button>';
+        } else {
+            actionHtml = '<button class="wh-remove-btn" data-id="' + itemId + '"><i class="fas fa-trash"></i> 移除</button>';
+        }
     } else if (item.usable) {
-        actionHtml = '<button class="wh-use-btn" data-id="' + itemId + '"><i class="fas fa-hand-sparkles"></i> 使用</button>';
+        if (isTimed) {
+            actionHtml = '<button class="wh-use-btn" data-id="' + itemId + '" data-timed-uid="' + timedMeta.uid + '"><i class="fas fa-hand-sparkles"></i> 使用</button>';
+        } else {
+            actionHtml = '<button class="wh-use-btn" data-id="' + itemId + '"><i class="fas fa-hand-sparkles"></i> 使用</button>';
+        }
     }
 
-    return '<div class="wh-item-card' + (removeMode ? ' wh-remove-mode' : '') + '">' +
+    return '<div class="wh-item-card' + (isTimed ? ' wh-timed-card' : '') + (removeMode ? ' wh-remove-mode' : '') + '">' +
         '<span class="wh-qty-badge">×' + entry.qty + '</span>' +
         '<span class="wh-type-tag" style="color:' + rarity.color + '; border-color:' + rarity.color + ';">' + categoryLabel + '</span>' +
+        timedTagHtml +
         '<div class="wh-item-icon" style="background: ' + hexToRgba(item.color, 0.15) + ';">' +
             '<i class="' + item.icon + '" style="color:' + item.color + ';"></i>' +
         '</div>' +
-        '<div class="wh-item-name">' + item.name + '</div>' +
-        '<div class="wh-item-desc">' + item.desc + '</div>' +
+        '<div class="wh-item-name">' + displayName + '</div>' +
+        '<div class="wh-item-desc">' + displayDesc + '</div>' +
         sourceHtml +
         actionHtml +
     '</div>';
@@ -671,14 +827,25 @@ function getWarehouseCategoryLabel(category) {
     return labels[category] || '道具';
 }
 
-// 使用道具
-function useWarehouseItem(itemId) {
+// 使用道具（支持限时物品：传入 timedUid 指定扣减 timedItems 中的条目）
+function useWarehouseItem(itemId, timedUid) {
     var item = WAREHOUSE_ITEMS[itemId];
     if (!item || !item.usable) return;
 
     var data = getWarehouseData();
-    var entry = data.items[itemId];
-    if (!entry || entry.qty <= 0) return;
+    cleanExpiredTimedItems(data);
+
+    var timedEntry = null;
+    var normalEntry = null;
+    if (timedUid) {
+        for (var i = 0; i < (data.timedItems || []).length; i++) {
+            if (data.timedItems[i].uid === timedUid) { timedEntry = data.timedItems[i]; break; }
+        }
+        if (!timedEntry || timedEntry.qty <= 0) return;
+    } else {
+        normalEntry = data.items[itemId];
+        if (!normalEntry || normalEntry.qty <= 0) return;
+    }
 
     // 自选物品兑换卡：打开选择弹窗，确认兑换后才消耗（不在此处消耗）
     if (item._exchangeCard) {
@@ -690,6 +857,21 @@ function useWarehouseItem(itemId) {
     var isLucky = itemId === 'luck_coin';
     var expGain = item._expGain || null;
 
+    // 扣减数量（辅助函数）
+    function deductOne() {
+        if (timedEntry) {
+            timedEntry.qty -= 1;
+            if (timedEntry.qty <= 0) {
+                var arr = data.timedItems;
+                for (var j = 0; j < arr.length; j++) { if (arr[j].uid === timedEntry.uid) { arr.splice(j, 1); break; } }
+            }
+        } else {
+            normalEntry.qty -= 1;
+            if (normalEntry.qty <= 0) delete data.items[itemId];
+        }
+        saveWarehouseData(data);
+    }
+
     // 经验加成卡：先尝试激活（检查叠加条件），失败则不消耗道具
     if (isBoost) {
         var actResult = activateWarehouseExpBuff(item._boostType, item._boostPercent);
@@ -699,20 +881,18 @@ function useWarehouseItem(itemId) {
             }
             return;
         }
-        // 激活成功才消耗道具
-        entry.qty -= 1;
-        if (entry.qty <= 0) delete data.items[itemId];
-        saveWarehouseData(data);
+        deductOne();
 
         // 通知
         if (typeof showToast === 'function') {
             var expire = new Date(Date.now() + 30 * 60 * 1000);
             var hh = ('0' + expire.getHours()).slice(-2), mm = ('0' + expire.getMinutes()).slice(-2);
+            var timedLabel = timedEntry ? '【限时】' : '';
             if (actResult.refreshed) {
-                showToast({ type: 'success', title: '经验加成已刷新', message: '「' + item.name + '」同类型已生效，时长已刷新（至 ' + hh + ':' + mm + '）' });
+                showToast({ type: 'success', title: '经验加成已刷新', message: timedLabel + '「' + item.name + '」同类型已生效，时长已刷新（至 ' + hh + ':' + mm + '）' });
             } else {
                 var totalMult = getWarehouseExpMultiplier();
-                showToast({ type: 'success', title: '经验加成已激活', message: '「' + item.name + '」已激活，叠加后经验获取 ×' + totalMult.toFixed(2) + '（至 ' + hh + ':' + mm + '）' });
+                showToast({ type: 'success', title: '经验加成已激活', message: timedLabel + '「' + item.name + '」已激活，叠加后经验获取 ×' + totalMult.toFixed(2) + '（至 ' + hh + ':' + mm + '）' });
             }
         }
         renderWarehouseItems();
@@ -720,9 +900,7 @@ function useWarehouseItem(itemId) {
     }
 
     // 先消耗道具
-    entry.qty -= 1;
-    if (entry.qty <= 0) delete data.items[itemId];
-    saveWarehouseData(data);
+    deductOne();
 
     // 再激活效果（避免旧数据覆盖）
     if (isLucky) {

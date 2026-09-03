@@ -7117,6 +7117,63 @@
         </div>
     </div>
 
+    <!-- 个人荣勋列表弹窗 -->
+    <div id="honorsListModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content badges-list-content">
+            <button class="treasure-modal-close" id="honorsListClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="badges-list-header">
+                <h2><i class="fas fa-medal"></i> 个人荣勋</h2>
+                <div class="badges-list-stats">
+                    <span class="stat-unlocked" id="honorsUnlockedCount">0</span>
+                    <span class="stat-divider">/</span>
+                    <span class="stat-total" id="honorsTotalCount">0</span>
+                </div>
+            </div>
+            <div class="badges-list-filter">
+                <label class="switch-container">
+                    <span>显示未获得勋章</span>
+                    <input type="checkbox" id="showLockedHonorsToggle" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+            <div class="badges-list-body" id="honorsListBody">
+                <!-- 勋章列表将由JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 个人荣勋详情弹窗 -->
+    <div id="honorDetailModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content badge-detail-content">
+            <button class="treasure-modal-close" id="honorDetailClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="badge-detail-body">
+                <div class="badge-detail-icon" id="honorDetailIcon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h2 class="badge-detail-name" id="honorDetailName">勋章名称</h2>
+                <div class="badge-detail-status" id="honorDetailStatus">
+                    <span class="status-badge unlocked">已获得</span>
+                </div>
+                <div class="badge-detail-section">
+                    <h4><i class="fas fa-info-circle"></i> 勋章描述</h4>
+                    <p id="honorDetailDescription">--</p>
+                </div>
+                <div class="badge-detail-section badge-detail-condition" id="honorDetailConditionSection" style="display: none;">
+                    <h4><i class="fas fa-lock"></i> 解锁方式</h4>
+                    <p id="honorDetailCondition">--</p>
+                </div>
+                <div class="badge-detail-section" id="honorDetailTimeSection" style="display: none;">
+                    <h4><i class="fas fa-clock"></i> 解锁时间</h4>
+                    <p id="honorDetailTime">--</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 游戏成就详情弹窗 -->
     <div id="gameAchievementModal" class="treasure-modal" style="display: none;">
         <div class="treasure-modal-content game-achievement-modal-content">
@@ -11309,6 +11366,13 @@
                                                 <span class="reward-value" id="dailyExpPreview">30 EXP</span>
                                             </div>
                                         </div>
+                                        <div class="reward-item clickable" id="monthlyRewardOverviewBtn" title="查看本月每日奖励一览">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <div class="reward-info">
+                                                <span class="reward-label">本月奖励一览 <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></span>
+                                                <span class="reward-value">查看本月每日奖励</span>
+                                            </div>
+                                        </div>
                                         <div class="reward-item clickable" id="milestoneInfoBtn" title="查看所有里程碑">
                                             <i class="fas fa-gift"></i>
                                             <div class="reward-info">
@@ -11322,6 +11386,9 @@
                                         <span>连续签到7天后每天获得60 EXP，15天后每天100 EXP（断签将重置为30 EXP）</span>
                                     </div>
                                     <button class="checkin-btn" id="checkinBtn">立即签到</button>
+                                    <button class="checkin-btn dev-custom-checkin" id="devCustomCheckinBtn" style="display: none;" title="开发者模式：自定义签到天数">
+                                        <i class="fas fa-code"></i> 自定义签到天数
+                                    </button>
                                     <div class="checkin-message" id="checkinMessage"></div>
                                 </div>
                                 
@@ -12615,27 +12682,50 @@
                 
                 .checkin-btn {
                     padding: 15px 40px;
-                    background: white;
-                    color: #4facfe;
-                    border: none;
+                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                    color: white;
+                    border: 2px solid rgba(79, 172, 254, 0.6);
                     border-radius: 30px;
                     font-size: 18px;
                     font-weight: bold;
                     cursor: pointer;
                     transition: all 0.3s ease;
+                    box-shadow: 0 4px 14px rgba(79, 172, 254, 0.35);
                 }
                 
                 .checkin-btn:hover {
                     transform: scale(1.05);
-                    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 8px 20px rgba(79, 172, 254, 0.45);
+                    border-color: rgba(255, 255, 255, 0.8);
                 }
                 
                 .checkin-btn:disabled {
                     background: #ccc;
                     color: #666;
+                    border: 2px solid #bbb;
                     cursor: not-allowed;
                     transform: none;
+                    box-shadow: none;
                 }
+                
+                .dev-custom-checkin {
+                    padding: 10px 24px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: 2px solid rgba(102, 126, 234, 0.6);
+                    border-radius: 24px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+                    margin-left: 12px;
+                }
+                .dev-custom-checkin:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.45);
+                }
+                .dev-custom-checkin i { margin-right: 4px; }
                 
                 .checkin-message {
                     margin-top: 15px;
@@ -12726,7 +12816,60 @@
                 .dev-adjust-btn i {
                     font-size: 11px;
                 }
-                
+
+                /* 自定义签到天数弹窗样式 */
+                .dev-custom-checkin-modal {
+                    max-width: 520px;
+                }
+                .dcc-status {
+                    display: flex;
+                    justify-content: space-around;
+                    padding: 14px;
+                    background: #f4f6fb;
+                    border-radius: 10px;
+                    margin-bottom: 16px;
+                }
+                .dcc-status-row {
+                    text-align: center;
+                    font-size: 12px;
+                    color: #666;
+                    line-height: 1.8;
+                }
+                .dcc-status-row b {
+                    display: block;
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #333;
+                }
+                .dcc-section {
+                    padding: 14px;
+                    background: #fafbff;
+                    border: 1px solid #eef1f8;
+                    border-radius: 10px;
+                    margin-bottom: 14px;
+                }
+                .dcc-section h4 {
+                    margin: 0 0 6px;
+                    font-size: 14px;
+                    color: #333;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+                .dcc-section.dcc-danger {
+                    background: #fff5f5;
+                    border-color: #fcd5d5;
+                }
+                .dcc-section.dcc-danger h4 {
+                    color: #c0392b;
+                }
+                .dcc-desc {
+                    margin: 0 0 10px;
+                    font-size: 12px;
+                    color: #888;
+                    line-height: 1.6;
+                }
+
                 .dev-modal-overlay {
                     position: fixed;
                     top: 0;
@@ -13355,7 +13498,7 @@
                 .calendar-card {
                     background: white;
                     border-radius: 16px;
-                    padding: 24px;
+                    padding: 18px;
                     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
                 }
                 
@@ -13363,16 +13506,16 @@
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-bottom: 20px;
+                    margin-bottom: 10px;
                 }
                 
                 .calendar-card-header h3 {
                     margin: 0;
-                    font-size: 18px;
+                    font-size: 16px;
                     color: #333;
                     display: flex;
                     align-items: center;
-                    gap: 10px;
+                    gap: 8px;
                 }
                 
                 .calendar-card-header h3 i {
@@ -13380,21 +13523,21 @@
                 }
                 
                 .calendar-subtitle {
-                    font-size: 13px;
+                    font-size: 12px;
                     color: #999;
                 }
                 
                 .calendar-container {
-                    min-height: 280px;
+                    min-height: 220px;
                 }
                 
                 .calendar-header {
                     text-align: center;
-                    margin-bottom: 12px;
+                    margin-bottom: 6px;
                 }
                 
                 .calendar-title {
-                    font-size: 16px;
+                    font-size: 14px;
                     font-weight: 600;
                     color: #333;
                 }
@@ -13402,22 +13545,22 @@
                 .calendar-weekdays {
                     display: grid;
                     grid-template-columns: repeat(7, 1fr);
-                    gap: 4px;
-                    margin-bottom: 8px;
+                    gap: 3px;
+                    margin-bottom: 5px;
                 }
                 
                 .calendar-weekday {
                     text-align: center;
-                    font-size: 12px;
+                    font-size: 11px;
                     font-weight: 600;
                     color: #999;
-                    padding: 6px 0;
+                    padding: 2px 0;
                 }
                 
                 .calendar-days {
                     display: grid;
                     grid-template-columns: repeat(7, 1fr);
-                    gap: 4px;
+                    gap: 3px;
                 }
                 
                 .calendar-empty {
@@ -13430,16 +13573,17 @@
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    border-radius: 8px;
+                    border-radius: 6px;
                     background: #f5f5f5;
-                    font-size: 13px;
+                    font-size: 12px;
                     color: #666;
                     position: relative;
                     transition: all 0.2s ease;
+                    min-height: 0;
                 }
                 
                 .calendar-day .day-num {
-                    font-size: 13px;
+                    font-size: 12px;
                 }
                 
                 .calendar-day.checked {
@@ -13449,18 +13593,18 @@
                 
                 .calendar-day.checked .day-check {
                     position: absolute;
-                    bottom: 2px;
-                    font-size: 10px;
+                    bottom: 1px;
+                    font-size: 8px;
                 }
                 
                 .calendar-day.today {
-                    border: 2px solid #667eea;
+                    border: 1.5px solid #667eea;
                     font-weight: bold;
                 }
                 
                 .calendar-day.checked.today {
                     border-color: white;
-                    box-shadow: 0 0 0 2px #667eea;
+                    box-shadow: 0 0 0 1.5px #667eea;
                 }
                 
                 .calendar-day.future {
@@ -13476,6 +13620,190 @@
                     text-align: center;
                     padding: 40px;
                     color: #999;
+                }
+
+                /* 日历卡内道具缩写 */
+                .calendar-day .day-item {
+                    position: absolute;
+                    top: 3px;
+                    right: 3px;
+                    font-size: 9px;
+                    font-weight: 600;
+                    line-height: 1;
+                    padding: 1px 3px;
+                    border-radius: 3px;
+                    background: rgba(255,255,255,0.75);
+                    white-space: nowrap;
+                    z-index: 1;
+                }
+                .calendar-day.checked .day-item {
+                    background: rgba(255,255,255,0.25);
+                    color: #fff !important;
+                }
+                .calendar-day.today .day-item {
+                    background: rgba(102, 126, 234, 0.15);
+                }
+                .calendar-day.checked.streak-high .day-item {
+                    background: rgba(255,255,255,0.3);
+                }
+
+                /* 仓库限时物品 tag + 卡片 */
+                .wh-timed-tag {
+                    position: absolute;
+                    top: 6px;
+                    right: 6px;
+                    font-size: 10px;
+                    font-weight: 700;
+                    line-height: 1;
+                    padding: 3px 6px;
+                    border-radius: 10px;
+                    white-space: nowrap;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+                    z-index: 2;
+                }
+                .wh-item-card.wh-timed-card {
+                    border: 1px dashed rgba(243, 156, 18, 0.5) !important;
+                    background: linear-gradient(135deg, rgba(243,156,18,0.05) 0%, transparent 60%) !important;
+                }
+
+                /* 本月奖励一览弹窗 */
+                .milestone-modal.mr-override {
+                    max-width: 680px;
+                    max-height: 85vh;
+                    width: 90%;
+                    overflow: hidden;
+                }
+                .mr-tip {
+                    margin: 12px 20px;
+                    padding: 10px 14px;
+                    background: #f0f4ff;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    color: #667eea;
+                    line-height: 1.6;
+                }
+                .mr-tip i { margin-right: 6px; }
+                .mr-summary {
+                    margin: 0 20px 10px;
+                    padding: 12px 14px;
+                    background: #fafbff;
+                    border: 1px solid #eef1f8;
+                    border-radius: 10px;
+                }
+                .mr-summary h4 {
+                    margin: 0 0 8px;
+                    font-size: 13px;
+                    color: #333;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+                .mr-summary-items {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                }
+                .mr-summary-item {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    font-size: 12px;
+                    color: #555;
+                    padding: 3px 8px;
+                    background: #fff;
+                    border-radius: 6px;
+                    border: 1px solid #eef1f8;
+                }
+                .mr-summary-item i { font-size: 11px; }
+                .mr-summary-empty {
+                    font-size: 12px;
+                    color: #999;
+                }
+                .mr-days-list {
+                    max-height: 50vh;
+                    overflow-y: auto;
+                    padding: 0 10px 10px;
+                }
+                .mr-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 10px 12px;
+                    border-bottom: 1px solid #f0f0f0;
+                    font-size: 12px;
+                }
+                .mr-row.mr-weekend { background: #fafafa; }
+                .mr-row.mr-today-row {
+                    background: linear-gradient(90deg, #eef1ff 0%, transparent 100%);
+                    border-left: 3px solid #667eea;
+                }
+                .mr-row:last-child { border-bottom: none; }
+                .mr-day-cell {
+                    flex: 0 0 52px;
+                    text-align: center;
+                }
+                .mr-day-num {
+                    display: block;
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #333;
+                    line-height: 1.2;
+                }
+                .mr-day-wd {
+                    font-size: 10px;
+                    color: #999;
+                }
+                .mr-rewards {
+                    flex: 1;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px 14px;
+                    align-items: center;
+                }
+                .mr-reward-row {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    color: #555;
+                    font-size: 12px;
+                    white-space: nowrap;
+                }
+                .mr-reward-row.mr-items {
+                    min-width: 100%;
+                    margin-top: 2px;
+                }
+                .mr-item-tag {
+                    display: inline-block;
+                    font-size: 11px;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    margin-left: 4px;
+                    white-space: nowrap;
+                }
+                .mr-item-empty {
+                    font-size: 11px;
+                    color: #bbb;
+                    margin-left: 4px;
+                }
+                /* 本月奖励一览 — 自定义滚动条 */
+                .mr-days-list::-webkit-scrollbar {
+                    width: 8px;
+                }
+                .mr-days-list::-webkit-scrollbar-track {
+                    background: #f1f3f8;
+                    border-radius: 4px;
+                    margin: 4px 0;
+                }
+                .mr-days-list::-webkit-scrollbar-thumb {
+                    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 4px;
+                    border: 1px solid rgba(102, 126, 234, 0.3);
+                }
+                .mr-days-list::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(180deg, #5a6fd6 0%, #6a4190 100%);
+                }
+                .mr-days-list::-webkit-scrollbar-corner {
+                    background: transparent;
                 }
                 
                 .checkin-area {
@@ -19042,6 +19370,182 @@
             }, 300);
         }
         
+        // ====================== 个人荣勋（仓库徽章类道具） ======================
+        // 存储荣勋数据供弹窗使用
+        var honorsData = [];
+        
+        // 格式化荣勋解锁时间
+        function formatHonorUnlockTime(iso) {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '--';
+            var y = d.getFullYear();
+            var m = String(d.getMonth() + 1).padStart(2, '0');
+            var day = String(d.getDate()).padStart(2, '0');
+            var h = String(d.getHours()).padStart(2, '0');
+            var mi = String(d.getMinutes()).padStart(2, '0');
+            return y + '/' + m + '/' + day + ' ' + h + ':' + mi;
+        }
+        
+        // 获取个人荣勋完整数据（已获得 + 未获得）
+        // 数据源：WAREHOUSE_ITEMS 中 category='badge' 的道具，后续新增勋章自动纳入
+        // 获得状态：仓库 warehouse_<username> 中持有该道具（含获得时间 obtainedAt）
+        function getHonorsAllData() {
+            var list = [];
+            if (typeof WAREHOUSE_ITEMS === 'undefined') return list;
+            var whData = null;
+            try {
+                if (typeof getWarehouseData === 'function') {
+                    whData = getWarehouseData();
+                }
+            } catch (e) {}
+            Object.keys(WAREHOUSE_ITEMS).forEach(function(id) {
+                var item = WAREHOUSE_ITEMS[id];
+                if (!item || item.category !== 'badge') return;
+                var entry = whData && whData.items ? whData.items[id] : null;
+                var owned = !!(entry && entry.qty > 0);
+                list.push({
+                    id: id,
+                    name: item.name,
+                    icon: item.icon,
+                    color: item.color,
+                    description: item.desc,
+                    condition: item.source || '暂无解锁方式',
+                    unlocked: owned,
+                    unlockedAt: owned && entry.obtainedAt ? formatHonorUnlockTime(entry.obtainedAt) : null
+                });
+            });
+            return list;
+        }
+        
+        // 初始化荣勋数据（在用户名片打开时调用）
+        function initHonorsData(data) {
+            honorsData = data || [];
+        }
+        
+        // 显示个人荣勋列表弹窗（每次打开重新读取仓库，确保实时同步）
+        function showHonorsListModal() {
+            honorsData = getHonorsAllData();
+            var modal = document.getElementById('honorsListModal');
+            if (!modal || honorsData.length === 0) {
+                showToastInfo('暂无荣勋数据');
+                return;
+            }
+            
+            // 清除残留的关闭动画类，防止关闭按钮失效
+            modal.classList.remove('modal-closing');
+            
+            // 统计数据
+            var unlockedCount = honorsData.filter(function(h) { return h.unlocked; }).length;
+            document.getElementById('honorsUnlockedCount').textContent = unlockedCount;
+            document.getElementById('honorsTotalCount').textContent = honorsData.length;
+            
+            // 渲染勋章列表
+            renderHonorsList(honorsData);
+            
+            modal.style.display = 'flex';
+        }
+        
+        // 渲染个人荣勋列表
+        function renderHonorsList(list) {
+            var body = document.getElementById('honorsListBody');
+            var toggle = document.getElementById('showLockedHonorsToggle');
+            var showLocked = toggle ? toggle.checked : true;
+            
+            var filteredHonors = showLocked ? list : list.filter(function(h) { return h.unlocked; });
+            
+            if (filteredHonors.length === 0) {
+                body.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">暂无已获得的勋章</p>';
+                return;
+            }
+            
+            body.innerHTML = '<div class="badges-list-grid">' + 
+                filteredHonors.map(function(honor) {
+                    return '<div class="badge-list-item ' + (honor.unlocked ? 'unlocked' : 'locked') + '" onclick="showHonorDetailModal(\'' + honor.id + '\')">' +
+                        '<div class="badge-list-icon" style="background: linear-gradient(135deg, ' + honor.color + ' 0%, ' + honor.color + 'dd 100%);">' +
+                            '<i class="' + honor.icon + '"></i>' +
+                        '</div>' +
+                        '<span class="badge-list-name">' + honor.name + '</span>' +
+                    '</div>';
+                }).join('') +
+            '</div>';
+        }
+        
+        // 关闭个人荣勋列表弹窗
+        function closeHonorsListModal() {
+            var modal = document.getElementById('honorsListModal');
+            if (!modal) return;
+            
+            if (modal.classList.contains('modal-closing')) return;
+            
+            modal.classList.add('modal-closing');
+            
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+            }, 300);
+        }
+        
+        // 显示个人荣勋详情弹窗
+        function showHonorDetailModal(honorId) {
+            // 实时读取仓库数据，确保解锁时间最新
+            honorsData = getHonorsAllData();
+            var honor = honorsData.find(function(h) { return h.id === honorId; });
+            if (!honor) {
+                showToastInfo('未找到勋章信息');
+                return;
+            }
+            
+            // 填充详情
+            document.getElementById('honorDetailIcon').style.background = 'linear-gradient(135deg, ' + honor.color + ' 0%, ' + honor.color + 'dd 100%)';
+            document.getElementById('honorDetailIcon').innerHTML = '<i class="' + honor.icon + '"></i>';
+            document.getElementById('honorDetailName').textContent = honor.name;
+            document.getElementById('honorDetailDescription').textContent = honor.description;
+            
+            // 状态
+            var statusEl = document.getElementById('honorDetailStatus');
+            if (honor.unlocked) {
+                statusEl.innerHTML = '<span class="status-badge unlocked">已获得</span>';
+                document.getElementById('honorDetailTimeSection').style.display = 'block';
+                document.getElementById('honorDetailTime').textContent = honor.unlockedAt || '--';
+                document.getElementById('honorDetailConditionSection').style.display = 'none';
+            } else {
+                statusEl.innerHTML = '<span class="status-badge locked">未获得</span>';
+                document.getElementById('honorDetailTimeSection').style.display = 'none';
+                document.getElementById('honorDetailConditionSection').style.display = 'block';
+                document.getElementById('honorDetailCondition').textContent = honor.condition;
+            }
+            
+            // 先关闭荣勋列表弹窗
+            closeHonorsListModal();
+            
+            // 延迟显示详情弹窗
+            setTimeout(function() {
+                var modal = document.getElementById('honorDetailModal');
+                if (modal) {
+                    // 清除残留的关闭动画类，防止关闭按钮失效
+                    modal.classList.remove('modal-closing');
+                    modal.style.display = 'flex';
+                }
+            }, 300);
+        }
+        
+        // 关闭个人荣勋详情弹窗
+        function closeHonorDetailModal() {
+            var modal = document.getElementById('honorDetailModal');
+            if (!modal) return;
+            
+            if (modal.classList.contains('modal-closing')) return;
+            
+            modal.classList.add('modal-closing');
+            
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+            }, 300);
+        }
+        
+        // ====================== /个人荣勋 ======================
+        
         // 绑定徽章弹窗事件
         function initBadgeModalEvents() {
             // 徽章列表关闭按钮
@@ -19070,6 +19574,26 @@
                 });
             }
             
+            // 个人荣勋列表关闭按钮
+            var honorsListClose = document.getElementById('honorsListClose');
+            if (honorsListClose) {
+                honorsListClose.addEventListener('click', closeHonorsListModal);
+            }
+            
+            // 个人荣勋详情关闭按钮
+            var honorDetailClose = document.getElementById('honorDetailClose');
+            if (honorDetailClose) {
+                honorDetailClose.addEventListener('click', closeHonorDetailModal);
+            }
+            
+            // 显示/隐藏未获得勋章开关
+            var showLockedHonorsToggle = document.getElementById('showLockedHonorsToggle');
+            if (showLockedHonorsToggle) {
+                showLockedHonorsToggle.addEventListener('change', function() {
+                    renderHonorsList(honorsData);
+                });
+            }
+            
             // 点击遮罩层关闭
             var badgesListModal = document.getElementById('badgesListModal');
             if (badgesListModal) {
@@ -19085,6 +19609,25 @@
                 badgeDetailModal.addEventListener('click', function(e) {
                     if (e.target === badgeDetailModal) {
                         closeBadgeDetailModal();
+                    }
+                });
+            }
+            
+            // 个人荣勋弹窗点击遮罩层关闭
+            var honorsListModal = document.getElementById('honorsListModal');
+            if (honorsListModal) {
+                honorsListModal.addEventListener('click', function(e) {
+                    if (e.target === honorsListModal) {
+                        closeHonorsListModal();
+                    }
+                });
+            }
+            
+            var honorDetailModal = document.getElementById('honorDetailModal');
+            if (honorDetailModal) {
+                honorDetailModal.addEventListener('click', function(e) {
+                    if (e.target === honorDetailModal) {
+                        closeHonorDetailModal();
                     }
                 });
             }
@@ -19274,6 +19817,165 @@
             return quotes[Math.floor(Math.random() * quotes.length)];
         }
         
+        // ==================== 每日签到限时道具奖励系统 ====================
+        // 按星期+第几周轮换，每月限额自动追踪
+        // 周一=补给卡, 周二=加成卡, 周三=补签卡, 周四=幸运币, 周五=抽卡券
+        // 第二周起物品等级提升（补给卡I→II→III→IV，加成卡I→II→III）
+        // 但每月补给卡IV≤1张、加成卡III≤1张（限额追踪在 user.checkinStats.monthlyCaps）
+
+        // 日历卡中道具缩写显示（2-3字符）
+        var CHECKIN_ITEM_ABBREV = {
+            exp_supply_1: '补I',
+            exp_supply_2: '补II',
+            exp_supply_3: '补III',
+            exp_supply_4: '补IV',
+            exp_boost_small: '加I',
+            exp_boost_mid: '加II',
+            exp_boost_large: '加III',
+            makeup_card: '签',
+            luck_coin: '币',
+            gacha_single: '卷'
+        };
+
+        // 日历卡中道具缩写颜色（浅字用深色字，深背景用白字）
+        var CHECKIN_ITEM_COLOR = {
+            exp_supply_1: '#3498db',
+            exp_supply_2: '#9b59b6',
+            exp_supply_3: '#f39c12',
+            exp_supply_4: '#e74c3c',
+            exp_boost_small: '#3498db',
+            exp_boost_mid: '#9b59b6',
+            exp_boost_large: '#f39c12',
+            makeup_card: '#e67e22',
+            luck_coin: '#f1c40f',
+            gacha_single: '#2ecc71'
+        };
+
+        // 获取指定 Date 在 UTC+8 下的本月第几周（1-based）
+        function getWeekOfMonth(date) {
+            // 转为 UTC+8
+            var d = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+            var year = d.getUTCFullYear();
+            var month = d.getUTCMonth();
+            var day = d.getUTCDate();
+            // 该月1号在星期几（0=周日）
+            var firstDow = new Date(year, month, 1).getDay();
+            return Math.floor((day + firstDow - 1) / 7) + 1;
+        }
+
+        // 获取指定 UTC+8 日期字符串对应的 [年, 月(1-based), 日, 星期几(0=周日), 第几周]
+        function parseUtc8Date(dateStrOrDate) {
+            var d = (dateStrOrDate instanceof Date) ? dateStrOrDate : new Date(dateStrOrDate + 'T00:00:00+08:00');
+            var utc8 = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+            return {
+                year: utc8.getUTCFullYear(),
+                month: utc8.getUTCMonth() + 1,
+                day: utc8.getUTCDate(),
+                weekday: utc8.getUTCDay(), // 0=周日, 1=周一
+                weekOfMonth: getWeekOfMonth(new Date(utc8.getTime() - 8 * 60 * 60 * 1000))
+            };
+        }
+
+        // 获取月度限额追踪（自动按月份重置）
+        // 结构: { month: '2026-09', exp_supply_4_given: 0, exp_boost_3_given: 0 }
+        function getMonthlyCheckinCaps(user, monthKey) {
+            if (!user.userProfile) user.userProfile = {};
+            if (!user.userProfile.checkinStats) user.userProfile.checkinStats = {};
+            var stats = user.userProfile.checkinStats;
+            if (!stats.monthlyCaps || stats.monthlyCaps.month !== monthKey) {
+                stats.monthlyCaps = {
+                    month: monthKey,
+                    exp_supply_4_given: 0,
+                    exp_boost_3_given: 0
+                };
+            }
+            return stats.monthlyCaps;
+        }
+
+        // 计算指定日期的每日签到限时道具奖励
+        // @param dateStrOrDate  UTC+8 日期字符串 (YYYY-MM-DD) 或 Date 对象
+        // @param user           当前用户（用于月度限额判断，可传 null 不检查限额）
+        // @return [{ itemId, qty }]  道具列表（可能为空数组）
+        // 重要约束：补给卡Ⅳ 每月固定最多1张、加成卡Ⅲ 每月固定最多1张，超限降级为下一级
+        function getDailyCheckinReward(dateStrOrDate, user) {
+            var info = parseUtc8Date(dateStrOrDate);
+            var items = [];
+            var week = info.weekOfMonth;
+
+            // 周末（周六/周日）也给道具，使用固定简单物品（不区分第几周）
+            if (info.weekday === 6) { // 周六
+                items.push({ itemId: 'makeup_card', qty: 1 });
+                return items;
+            }
+            if (info.weekday === 0) { // 周日
+                items.push({ itemId: 'luck_coin', qty: 1 });
+                return items;
+            }
+
+            // 工作日：根据星期+第几周决定发什么
+            // 周一=补给卡, 周二=加成卡, 周三=补签卡, 周四=幸运币, 周五=抽卡券
+            var supplyLevel = Math.min(week, 4);   // 补给卡等级：第一周I，第二周II，第三周III，第四周起IV
+            var boostLevel = Math.min(week, 3);    // 加成卡等级：第一周I，第二周II，第三周起III
+
+            switch (info.weekday) {
+                case 1: // 周一 — 经验值补给卡
+                    var supplyId = 'exp_supply_' + supplyLevel;
+                    // 月度严格限额：补给卡Ⅳ 每月固定最多1张
+                    if (supplyLevel === 4 && user) {
+                        var monthKey = info.year + '-' + ('0' + info.month).slice(-2);
+                        var caps = getMonthlyCheckinCaps(user, monthKey);
+                        if (caps.exp_supply_4_given >= 1) {
+                            // 本月已给过 IV，降级为 III
+                            supplyId = 'exp_supply_3';
+                        }
+                    }
+                    items.push({ itemId: supplyId, qty: 1 });
+                    break;
+
+                case 2: // 周二 — 经验值加成卡
+                    var boostId = 'exp_boost_' + (boostLevel === 1 ? 'small' : boostLevel === 2 ? 'mid' : 'large');
+                    // 月度严格限额：加成卡Ⅲ 每月固定最多1张
+                    if (boostLevel === 3 && user) {
+                        var monthKey2 = info.year + '-' + ('0' + info.month).slice(-2);
+                        var caps2 = getMonthlyCheckinCaps(user, monthKey2);
+                        if (caps2.exp_boost_3_given >= 1) {
+                            // 本月已给过 III，降级为 II
+                            boostId = 'exp_boost_mid';
+                        }
+                    }
+                    items.push({ itemId: boostId, qty: 1 });
+                    break;
+
+                case 3: // 周三 — 补签卡
+                    items.push({ itemId: 'makeup_card', qty: 1 });
+                    break;
+
+                case 4: // 周四 — 幸运币
+                    items.push({ itemId: 'luck_coin', qty: 1 });
+                    break;
+
+                case 5: // 周五 — 单次抽卡券
+                    items.push({ itemId: 'gacha_single', qty: 1 });
+                    break;
+            }
+
+            return items;
+        }
+
+        // 领取后更新月度限额（在 performCheckin 中调用）
+        function consumeMonthlyCheckinCaps(user, items) {
+            if (!items || items.length === 0) return;
+            var today = new Date();
+            var monthKey = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2);
+            var caps = getMonthlyCheckinCaps(user, monthKey);
+            items.forEach(function(it) {
+                if (it.itemId === 'exp_supply_4') caps.exp_supply_4_given++;
+                if (it.itemId === 'exp_boost_large') caps.exp_boost_3_given++;
+            });
+        }
+
+        // ==================== /每日签到限时道具奖励系统 ====================
+
         // 初始化签到功能
         function initCheckinFunction() {
             var checkinBtn = document.getElementById('checkinBtn');
@@ -19281,6 +19983,10 @@
                 checkinBtn.addEventListener('click', function() {
                     performCheckin();
                 });
+            }
+            var monthlyRewardBtn = document.getElementById('monthlyRewardOverviewBtn');
+            if (monthlyRewardBtn) {
+                monthlyRewardBtn.addEventListener('click', openMonthlyRewardOverview);
             }
             var milestoneBtn = document.getElementById('milestoneInfoBtn');
             if (milestoneBtn) {
@@ -19347,6 +20053,117 @@
                     '<div style="text-align: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid #f0f0f0;">' +
                         '<span style="font-size: 13px; color: #888;">当前连续签到：<strong style="color: #667eea;">' + streak + '</strong> 天</span>' +
                     '</div>' +
+                '</div>';
+            
+            document.body.appendChild(overlay);
+            
+            var closeBtn = overlay.querySelector('.milestone-close');
+            closeBtn.addEventListener('click', function() {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            });
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                }
+            });
+        }
+        
+        // 打开本月奖励一览弹窗
+        function openMonthlyRewardOverview() {
+            var today = new Date();
+            var year = today.getFullYear();
+            var month = today.getMonth();
+            var daysInMonth = new Date(year, month + 1, 0).getDate();
+            var todayDate = today.getDate();
+
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) { return u.username === currentUser.username; });
+
+            // 构建每天的奖励条目
+            var rowsHtml = '';
+            var weekdayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            var totalExp = 0;
+            var totalCoin = 0;
+            var itemCountMap = {}; // { itemId: { name, qty, icon, color } }
+            
+            for (var day = 1; day <= daysInMonth; day++) {
+                var dateObj = new Date(year, month, day);
+                var dayStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
+                var rewardInfo = parseUtc8Date(dateObj);
+                var weekday = rewardInfo.weekday;
+
+                // EXP + PRE Coin（根据连续签到等级，但预览页用基础值 + 里程碑值说明）
+                // 简化：显示基础范围
+                var expRange = '30~100 EXP';
+                var coinRange = '20~80 PRE';
+                
+                // 限时道具
+                var dayItems = getDailyCheckinReward(dayStr, user);
+                var itemHtml = '';
+                if (dayItems.length > 0) {
+                    dayItems.forEach(function(it) {
+                        if (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId]) {
+                            var wi = WAREHOUSE_ITEMS[it.itemId];
+                            itemHtml += '<span class="mr-item-tag" style="background:' + wi.color + '22;color:' + wi.color + ';" title="' + wi.name + ' ×' + it.qty + '">' + wi.name + ' ×' + it.qty + '</span>';
+                            // 汇总统计
+                            if (!itemCountMap[it.itemId]) {
+                                itemCountMap[it.itemId] = { name: wi.name, qty: 0, icon: wi.icon, color: wi.color };
+                            }
+                            itemCountMap[it.itemId].qty += it.qty;
+                        }
+                    });
+                } else {
+                    itemHtml = '<span class="mr-item-empty">（无）</span>';
+                }
+
+                var isWeekend = (weekday === 0 || weekday === 6);
+                var isTodayRow = day === todayDate;
+                var rowClass = 'mr-row' + (isWeekend ? ' mr-weekend' : '') + (isTodayRow ? ' mr-today-row' : '');
+
+                rowsHtml += '<div class="' + rowClass + '">' +
+                    '<div class="mr-day-cell">' +
+                        '<span class="mr-day-num">' + day + '</span>' +
+                        '<span class="mr-day-wd">' + weekdayNames[weekday] + '</span>' +
+                    '</div>' +
+                    '<div class="mr-rewards">' +
+                        '<div class="mr-reward-row"><i class="fas fa-star" style="color:#9b59b6;"></i> EXP ' + expRange + '</div>' +
+                        '<div class="mr-reward-row"><i class="fas fa-coins" style="color:#f39c12;"></i> PRE ' + coinRange + '</div>' +
+                        '<div class="mr-reward-row mr-items">' +
+                            '<i class="fas fa-box" style="color:#27ae60;"></i>' + itemHtml +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            // 汇总统计
+            var summaryHtml = '<div class="mr-summary">' +
+                '<h4><i class="fas fa-chart-pie"></i> 本月限时道具汇总（全月每日发放）</h4>' +
+                '<div class="mr-summary-items">';
+            var summaryKeys = Object.keys(itemCountMap);
+            if (summaryKeys.length === 0) {
+                summaryHtml += '<span class="mr-summary-empty">本月暂无道具</span>';
+            } else {
+                summaryKeys.forEach(function(id) {
+                    var info = itemCountMap[id];
+                    summaryHtml += '<span class="mr-summary-item">' +
+                        '<i class="' + info.icon + '" style="color:' + info.color + ';"></i>' + info.name + ' ×' + info.qty +
+                    '</span>';
+                });
+            }
+            summaryHtml += '</div></div>';
+
+            var overlay = document.createElement('div');
+            overlay.className = 'milestone-modal-overlay';
+            overlay.innerHTML = 
+                '<div class="milestone-modal mr-override">' +
+                    '<div class="milestone-modal-header">' +
+                        '<h3><i class="fas fa-calendar-check" style="color: #667eea;"></i> ' + year + '年' + (month + 1) + '月 · 每日奖励一览</h3>' +
+                        '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
+                    '</div>' +
+                    '<div class="mr-tip"><i class="fas fa-info-circle"></i> 每日签到除 EXP 和 PRE Coin 外，还可获得限时道具（有效期14天）。工作日物品随周数提升等级，周末发放固定简单物品（补签卡 / 幸运币）。</div>' +
+                    summaryHtml +
+                    '<div class="mr-days-list">' + rowsHtml + '</div>' +
                 '</div>';
             
             document.body.appendChild(overlay);
@@ -19567,15 +20384,30 @@
                 var isToday = day === todayDate;
                 var isChecked = historyMap[day];
                 var streakOnDay = isChecked ? historyMap[day].streak : 0;
-                
+
+                // 获取该日期的限时道具（用于日历卡显示）
+                var dayDateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
+                var dayItems = getDailyCheckinReward(dayDateStr, user);
+                var itemLabel = '';
+                var itemColor = '';
+                if (dayItems.length > 0) {
+                    // 只显示第一个道具的缩写（日历卡空间有限）
+                    var firstItem = dayItems[0];
+                    itemLabel = CHECKIN_ITEM_ABBREV[firstItem.itemId] || '';
+                    itemColor = CHECKIN_ITEM_COLOR[firstItem.itemId] || '#666';
+                }
+
                 var classes = 'calendar-day';
                 if (isChecked) classes += ' checked';
                 if (isToday) classes += ' today';
                 if (isFuture) classes += ' future';
                 if (isChecked && streakOnDay >= 7) classes += ' streak-high';
                 
+                var itemHtml = itemLabel ? '<span class="day-item" style="color:' + itemColor + ';">' + itemLabel + '</span>' : '';
+                
                 html += '<div class="' + classes + '">' +
                     '<span class="day-num">' + day + '</span>' +
+                    itemHtml +
                     (isChecked ? '<span class="day-check"><i class="fas fa-check"></i></span>' : '') +
                     '</div>';
             }
@@ -19707,6 +20539,21 @@
                 addPreCoin(totalPreCoinGained, '每日签到（连续 ' + streak + ' 天）');
             }
 
+            // ============ 限时签到道具发放 ============
+            var timedItemsGiven = [];
+            var todayDateObj = new Date();
+            var timedItemsToday = getDailyCheckinReward(todayDateObj, user);
+            if (timedItemsToday.length > 0 && typeof warehouseAddTimedItems === 'function') {
+                // 批量发放限时道具（有效期14天）
+                warehouseAddTimedItems(timedItemsToday, '签到奖励 · ' + (todayDateObj.getMonth() + 1) + '/' + todayDateObj.getDate(), 14);
+                timedItemsGiven = timedItemsToday;
+                // 更新月度限额追踪
+                consumeMonthlyCheckinCaps(user, timedItemsToday);
+                // 保存更新后的限额
+                users[userIndex] = user;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+            }
+
             // 每日任务：标记签到完成
             if (typeof dailyTaskMarkProgress === 'function') {
                 dailyTaskMarkProgress('checkin');
@@ -19731,6 +20578,16 @@
                     message += '<br>🎊 ' + p.label + '：<b style="color:#e67e22;">+' + p.coin + ' PRE</b>';
                 });
                 message += '<br>💴 本次合计获得 <b style="color:#c0392b;">' + totalPreCoinGained + ' PRE Coin</b>';
+            }
+            if (timedItemsGiven.length > 0 && typeof WAREHOUSE_ITEMS !== 'undefined') {
+                message += '<hr style="border:none;border-top:1px dashed #ddd;margin:8px 0;">';
+                message += '<br><i class="fas fa-box" style="color:#27ae60;"></i> 限时签到道具（14天有效）：';
+                timedItemsGiven.forEach(function(it) {
+                    var wi = WAREHOUSE_ITEMS[it.itemId];
+                    if (wi) {
+                        message += '<br>  · ' + wi.name + ' ×' + it.qty + '（限时）';
+                    }
+                });
             }
             if (result.leveledUp) {
                 message += '<br>🎊 升级啦！当前等级 Lv.' + result.newLevel;
@@ -19836,9 +20693,11 @@
         function showDevButtons() {
             var levelBtn = document.getElementById('devLevelBtn');
             var checkinBtn = document.getElementById('devCheckinBtn');
+            var customCheckinBtn = document.getElementById('devCustomCheckinBtn');
             var show = isDevModeEnabled();
             if (levelBtn) levelBtn.style.display = show ? 'inline-flex' : 'none';
             if (checkinBtn) checkinBtn.style.display = show ? 'inline-flex' : 'none';
+            if (customCheckinBtn) customCheckinBtn.style.display = show ? 'inline-flex' : 'none';
         }
         
         function initDevModeButtons() {
@@ -19846,12 +20705,16 @@
             
             var levelBtn = document.getElementById('devLevelBtn');
             var checkinBtn = document.getElementById('devCheckinBtn');
+            var customCheckinBtn = document.getElementById('devCustomCheckinBtn');
             
             if (levelBtn) {
                 levelBtn.addEventListener('click', openDevLevelModal);
             }
             if (checkinBtn) {
                 checkinBtn.addEventListener('click', openDevCheckinModal);
+            }
+            if (customCheckinBtn) {
+                customCheckinBtn.addEventListener('click', openDevCustomCheckinModal);
             }
         }
         
@@ -20157,7 +21020,268 @@
             
             updatePreview();
         }
-        
+
+        // 开发者模式：自定义签到天数弹窗
+        function openDevCustomCheckinModal() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var userIndex = users.findIndex(function(u) { return u.username === currentUser.username; });
+            if (userIndex === -1) return;
+            var user = users[userIndex];
+            initUserExpData(user);
+
+            var now = new Date();
+            var year = now.getFullYear();
+            var month = now.getMonth();
+            var daysInMonth = new Date(year, month + 1, 0).getDate();
+            var todayDate = now.getDate();
+
+            // 已有签到历史（本月）
+            if (!user.userProfile) user.userProfile = {};
+            if (!user.userProfile.checkinStats) user.userProfile.checkinStats = { streak: 0, total: 0, history: [] };
+            var history = user.userProfile.checkinStats.history || [];
+            var thisMonthHistory = history.filter(function(h) {
+                var d = new Date(h.timestamp);
+                return d.getFullYear() === year && d.getMonth() === month;
+            });
+            var alreadyClaimedDays = {};
+            thisMonthHistory.forEach(function(h) {
+                var d = new Date(h.timestamp).getDate();
+                alreadyClaimedDays[d] = h;
+            });
+            var remainingDays = daysInMonth - Object.keys(alreadyClaimedDays).length;
+
+            var overlay = document.createElement('div');
+            overlay.className = 'dev-modal-overlay';
+            overlay.innerHTML = ''
+                + '<div class="dev-modal dev-custom-checkin-modal">'
+                + '  <div class="dev-modal-header">'
+                + '    <h3><i class="fas fa-code"></i> 自定义签到天数 (Dev)</h3>'
+                + '    <button class="dev-modal-close" title="关闭">&times;</button>'
+                + '  </div>'
+                + '  <div class="dev-sync-info">'
+                + '    <i class="fas fa-info-circle"></i> 当前月份：' + year + '年' + (month + 1) + '月 共 ' + daysInMonth + ' 天。'
+                + '  </div>'
+                + '  <div class="dcc-status">'
+                + '    <div class="dcc-status-row"><span>已签到天数</span><b style="color:#27ae60;">' + Object.keys(alreadyClaimedDays).length + ' / ' + daysInMonth + '</b></div>'
+                + '    <div class="dcc-status-row"><span>剩余可领取</span><b style="color:#f39c12;">' + remainingDays + ' 天</b></div>'
+                + '    <div class="dcc-status-row"><span>连续签到</span><b>' + (user.userProfile.checkinStats.streak || 0) + ' 天</b></div>'
+                + '  </div>'
+                + '  <div class="dcc-section">'
+                + '    <h4><i class="fas fa-check-double"></i> 领取全部剩余天数</h4>'
+                + '    <p class="dcc-desc">一次性领取本月剩余所有天数的奖励（EXP + PRE Coin + 限时道具），会消耗月度限额。</p>'
+                + '    <button class="dev-btn dev-btn-primary dcc-btn-full" id="dccClaimAllBtn" style="width:100%;">'
+                + '      <i class="fas fa-bolt"></i> 领取全部剩余 ' + remainingDays + ' 天'
+                + '    </button>'
+                + '  </div>'
+                + '  <div class="dcc-section">'
+                + '    <h4><i class="fas fa-sliders-h"></i> 自定义领取天数</h4>'
+                + '    <p class="dcc-desc">仅领取指定天数的奖励，从今天开始连续领取。</p>'
+                + '    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
+                + '      <input type="range" class="dev-slider" id="dccCustomSlider" min="1" max="' + Math.max(remainingDays, 1) + '" value="1">'
+                + '      <span class="dev-value-display" id="dccCustomValue">1 天</span>'
+                + '    </div>'
+                + '    <button class="dev-btn dev-btn-primary dcc-btn-custom" id="dccClaimCustomBtn" style="width:100%;">'
+                + '      <i class="fas fa-magic"></i> 领取指定天数'
+                + '    </button>'
+                + '  </div>'
+                + '  <div class="dcc-section dcc-danger">'
+                + '    <h4><i class="fas fa-eraser"></i> 清除本月已签到状态</h4>'
+                + '    <p class="dcc-desc">清除本月所有签到记录与连续签到状态，<b>不会扣除</b>已领取过的 EXP、PRE Coin 和限时道具。</p>'
+                + '    <button class="dev-btn dev-btn-secondary dcc-btn-clear" id="dccClearBtn" style="width:100%;background:#e74c3c;color:white;border-color:#e74c3c;">'
+                + '      <i class="fas fa-trash"></i> 清除本月已签到状态'
+                + '    </button>'
+                + '  </div>'
+                + '  <div class="dev-modal-actions">'
+                + '    <button class="dev-btn dev-btn-secondary" id="dccCloseBtn">关闭</button>'
+                + '  </div>'
+                + '</div>';
+            document.body.appendChild(overlay);
+
+            function closeModal() {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }
+
+            overlay.querySelector('.dev-modal-close').addEventListener('click', closeModal);
+            overlay.querySelector('#dccCloseBtn').addEventListener('click', closeModal);
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) closeModal(); });
+
+            var customSlider = overlay.querySelector('#dccCustomSlider');
+            var customValue = overlay.querySelector('#dccCustomValue');
+            customSlider.addEventListener('input', function() {
+                customValue.textContent = customSlider.value + ' 天';
+            });
+
+            // ============ 批量领取核心逻辑 ============
+            function batchClaimDays(numDays, startFromToday) {
+                // numDays: 要领取的天数；startFromToday: true=从今天开始, false=从昨天之前补齐
+                // 策略：逐日模拟 performCheckin 的奖励计算，但一次性写入
+                // 奖励结算：每天独立计算 streak / EXP / PRE / 限时道具
+                var totalExp = 0, totalCoin = 0;
+                var totalTimedItems = [];
+                var dailyStreaks = [];
+
+                // 确定起始日期
+                var startDay, endDay;
+                if (startFromToday) {
+                    startDay = todayDate;
+                    endDay = Math.min(startDay + numDays - 1, daysInMonth);
+                } else {
+                    // 补齐过去的日期：取最早未签到的日期
+                    var earliest = null;
+                    for (var d = 1; d <= todayDate; d++) {
+                        if (!alreadyClaimedDays[d]) { earliest = d; break; }
+                    }
+                    if (earliest === null) earliest = todayDate;
+                    startDay = earliest;
+                    endDay = Math.min(startDay + numDays - 1, daysInMonth);
+                }
+
+                // 从已有 streak 延续
+                var curStreak = (user.userProfile.checkinStats.streak || 0);
+                var prevClaimed = alreadyClaimedDays[startDay - 1]; // 前一天是否已领
+
+                for (var day = startDay; day <= endDay; day++) {
+                    // 跳过已领过的日期
+                    if (alreadyClaimedDays[day]) {
+                        curStreak++;
+                        continue;
+                    }
+                    var dayDateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
+
+                    // 连续签到判定
+                    var isContinuous = (prevClaimed && curStreak > 0) || (day === startDay && prevClaimed);
+                    if (isContinuous) {
+                        curStreak++;
+                    } else {
+                        curStreak = 1;
+                    }
+                    prevClaimed = true;
+
+                    // EXP
+                    var dailyExp = getCheckinExpReward(curStreak);
+                    var bonuses = getCheckinBonuses(curStreak, isContinuous);
+                    var dayExp = dailyExp;
+                    bonuses.forEach(function(b) { dayExp += b.exp; });
+                    totalExp += dayExp;
+
+                    // PRE Coin
+                    var dailyCoin = typeof getPreCoinDailyCheckinReward === 'function' ? getPreCoinDailyCheckinReward(curStreak) : 0;
+                    totalCoin += dailyCoin;
+                    if (isContinuous && typeof PRECOIN_CHECKIN_MILESTONE_BONUSES !== 'undefined') {
+                        PRECOIN_CHECKIN_MILESTONE_BONUSES.forEach(function(m) {
+                            if (curStreak === m.days) totalCoin += m.coin;
+                        });
+                    }
+
+                    // 限时道具（用模拟 Date 对象调用 getDailyCheckinReward）
+                    var simulatedDate = new Date(year, month, day);
+                    var timedItems = getDailyCheckinReward(simulatedDate, user);
+                    if (timedItems.length > 0) {
+                        timedItems.forEach(function(it) {
+                            // 先累加到 totalTimedItems，最后一起发放
+                            var found = null;
+                            for (var k = 0; k < totalTimedItems.length; k++) {
+                                if (totalTimedItems[k].itemId === it.itemId) { found = totalTimedItems[k]; break; }
+                            }
+                            if (found) found.qty += it.qty;
+                            else totalTimedItems.push({ itemId: it.itemId, qty: it.qty });
+                        });
+                        consumeMonthlyCheckinCaps(user, timedItems);
+                    }
+
+                    dailyStreaks.push({ day: day, streak: curStreak, dateStr: dayDateStr });
+                    user.userProfile.checkinStats.history.push({
+                        date: new Date(year, month, day).toDateString(),
+                        timestamp: new Date(year, month, day).getTime(),
+                        streak: curStreak
+                    });
+                    alreadyClaimedDays[day] = { streak: curStreak };
+                }
+
+                // 更新总数据
+                if (dailyStreaks.length === 0) {
+                    showAlert('所有日期已领取过，无可领取内容。');
+                    return;
+                }
+                user.userProfile.checkinStats.streak = curStreak;
+                user.userProfile.checkinStats.total = (user.userProfile.checkinStats.total || 0) + dailyStreaks.length;
+                user.userProfile.checkinStats.lastCheckin = new Date(year, month, endDay).toDateString();
+
+                // 经验加成
+                if (typeof getWarehouseExpMultiplier === 'function') {
+                    var mult = getWarehouseExpMultiplier();
+                    if (mult > 1) totalExp = Math.round(totalExp * mult);
+                }
+                addExpToUser(user, totalExp);
+
+                // PRE Coin
+                if (totalCoin > 0 && typeof addPreCoin === 'function') {
+                    addPreCoin(totalCoin, '开发者批量签到（' + dailyStreaks.length + ' 天）');
+                }
+
+                // 限时道具
+                if (totalTimedItems.length > 0 && typeof warehouseAddTimedItems === 'function') {
+                    warehouseAddTimedItems(totalTimedItems, '签到奖励 · 开发者批量领取', 14);
+                }
+
+                // 保存
+                users[userIndex] = user;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+                loadCheckinData();
+                showAlert('🎉 开发者批量签到完成<br>累计 ' + dailyStreaks.length + ' 天<br>获得 ' + totalExp + ' EXP<br>获得 ' + totalCoin + ' PRE Coin<br>限时道具：' + (totalTimedItems.length > 0 ? totalTimedItems.map(function(it) { return (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId] ? WAREHOUSE_ITEMS[it.itemId].name : it.itemId) + ' ×' + it.qty; }).join('、') : '无'));
+                closeModal();
+            }
+
+            // 领取全部剩余
+            overlay.querySelector('#dccClaimAllBtn').addEventListener('click', function() {
+                if (remainingDays <= 0) { showAlert('本月已全部领完'); return; }
+                batchClaimDays(remainingDays, true);
+            });
+
+            // 自定义天数
+            overlay.querySelector('#dccClaimCustomBtn').addEventListener('click', function() {
+                var n = parseInt(customSlider.value, 10);
+                if (n <= 0) { showAlert('请选择天数'); return; }
+                batchClaimDays(n, true);
+            });
+
+            // 清除本月签到
+            overlay.querySelector('#dccClearBtn').addEventListener('click', function() {
+                var count = Object.keys(alreadyClaimedDays).length;
+                if (count === 0) { showAlert('本月尚无签到记录'); return; }
+                if (!confirm('确认清除本月 ' + count + ' 天的签到记录？\n已领取的 EXP、PRE Coin 和限时道具不会被扣除。')) return;
+
+                // 过滤 history，仅保留非本月记录
+                var history2 = user.userProfile.checkinStats.history || [];
+                user.userProfile.checkinStats.history = history2.filter(function(h) {
+                    var d = new Date(h.timestamp);
+                    return !(d.getFullYear() === year && d.getMonth() === month);
+                });
+                // streak 重置（因为清除后断签了）
+                user.userProfile.checkinStats.streak = 0;
+                // total 减去本月天数
+                user.userProfile.checkinStats.total = Math.max(0, (user.userProfile.checkinStats.total || 0) - count);
+                // lastCheckin 改为清除前最后一个非本月日期
+                var lastHistory = user.userProfile.checkinStats.history;
+                user.userProfile.checkinStats.lastCheckin = lastHistory.length > 0
+                    ? new Date(lastHistory[lastHistory.length - 1].timestamp).toDateString()
+                    : null;
+                // 重置月度限额
+                var monthKey = year + '-' + ('0' + (month + 1)).slice(-2);
+                if (user.userProfile.checkinStats.monthlyCaps) {
+                    user.userProfile.checkinStats.monthlyCaps = { month: monthKey, exp_supply_4_given: 0, exp_boost_3_given: 0 };
+                }
+
+                users[userIndex] = user;
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+                loadCheckinData();
+                showAlert('已清除本月 ' + count + ' 天签到状态（奖励未扣除）');
+                closeModal();
+            });
+        }
+
         // ========== 开发者模式功能结束 ==========
         
         function showTermsModal() {
@@ -25354,6 +26478,13 @@
             // 初始化徽章数据供弹窗使用
             initBadgesData(allBadges);
             
+            // 获取个人荣勋（仓库中徽章类道具，自动包含后续新增勋章）
+            var allHonors = getHonorsAllData();
+            var honors = allHonors.filter(function(h) { return h.unlocked; });
+            
+            // 初始化荣勋数据供弹窗使用
+            initHonorsData(allHonors);
+            
             // 模态框内容 - 改为邮件弹窗风格
             modal.innerHTML = `
                 <div class="about-fullscreen">
@@ -25464,6 +26595,33 @@
                                                                 </div>
                                                             </div>
                                                         ` : '<p class="empty-text">暂无成就徽章</p>'}
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'honors') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-medal"></i> 个人荣勋</h4>
+                                                        <button class="section-action-btn" id="viewAllHonorsBtn" onclick="showHonorsListModal()">
+                                                            <span>查看全部</span>
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        ${honors.length > 0 ? `
+                                                            <div class="badges-scroll-container">
+                                                                <div class="badges-grid">
+                                                                    ${honors.map(h => `
+                                                                        <div class="badge-item unlocked" onclick="showHonorDetailModal('${h.id}')">
+                                                                            <div class="badge-icon" style="background: linear-gradient(135deg, ${h.color} 0%, ${h.color}dd 100%);">
+                                                                                <i class="${h.icon}"></i>
+                                                                            </div>
+                                                                            <span class="badge-name">${h.name}</span>
+                                                                        </div>
+                                                                    `).join('')}
+                                                                </div>
+                                                            </div>
+                                                        ` : '<p class="empty-text">暂无个人荣勋</p>'}
                                                     </div>
                                                 </div>`;
                                             }
@@ -29613,6 +30771,7 @@
                 profile: {
                     signature: { visible: true, order: 1, name: '个人签名', icon: 'fas fa-signature' },
                     badges: { visible: true, order: 2, name: '成就徽章', icon: 'fas fa-award' },
+                    honors: { visible: true, order: 2.5, name: '个人荣勋', icon: 'fas fa-medal' },
                     social: { visible: true, order: 3, name: '社交数据', icon: 'fas fa-users' }
                 },
                 growth: {
@@ -30249,6 +31408,83 @@
                 }
                 #userCardModal .empty-section-state i {
                     color: ${style.accentColor} !important;
+                }
+                /* ===== 内部容器与文本跟随名片主题 ===== */
+                /* 区块标题图标 / 查看全部按钮 */
+                #userCardModal .card-section-header h4 i {
+                    color: ${style.accentColor} !important;
+                }
+                #userCardModal .card-section-body {
+                    color: ${style.subtextColor} !important;
+                }
+                #userCardModal .card-section .section-action-btn {
+                    border-color: ${style.accentColor}4d !important;
+                }
+                #userCardModal .card-section .section-action-btn span,
+                #userCardModal .card-section .section-action-btn i {
+                    color: ${style.accentColor} !important;
+                }
+                #userCardModal .card-section .section-action-btn:hover {
+                    background: ${style.accentColor}1a !important;
+                    border-color: ${style.accentColor} !important;
+                }
+                /* 内部浅色容器改为主题色淡染底（个人签名/统计卡/成就卡/最近游戏/收藏） */
+                #userCardModal .user-signature,
+                #userCardModal .stat-card,
+                #userCardModal .game-achievement-card,
+                #userCardModal .recent-game-item {
+                    background: linear-gradient(135deg, ${style.accentColor}1f 0%, ${style.accentColor}0d 100%) !important;
+                    border: 1px solid ${style.borderColor} !important;
+                }
+                #userCardModal .favorite-item {
+                    background: linear-gradient(135deg, ${style.accentColor}1f 0%, ${style.accentColor}0d 100%) !important;
+                    border-color: ${style.borderColor} !important;
+                }
+                #userCardModal .game-achievement-card:hover,
+                #userCardModal .favorite-item:hover {
+                    background: linear-gradient(135deg, ${style.accentColor}33 0%, ${style.accentColor}1a 100%) !important;
+                    border-color: ${style.accentColor} !important;
+                }
+                /* 容器内主题色图标底（仅限无内联配色、跟随统计卡的图标） */
+                #userCardModal .stat-card i {
+                    background: linear-gradient(135deg, ${style.accentColor} 0%, ${style.accentColor}cc 100%) !important;
+                }
+                /* 主文本：使用主题正文色保证对比度（优先级高于卡片 span 兜底规则） */
+                #userCardModal .card-section .user-signature,
+                #userCardModal .card-section .stat-value,
+                #userCardModal .card-section .game-achievement-name,
+                #userCardModal .card-section .favorite-name,
+                #userCardModal .card-section .recent-game-name,
+                #userCardModal .card-section .badge-name {
+                    color: ${style.textColor} !important;
+                }
+                /* 次要文本：使用主题次级色 */
+                #userCardModal .card-section .stat-label,
+                #userCardModal .card-section .game-achievement-count,
+                #userCardModal .card-section .recent-game-time,
+                #userCardModal .card-section .social-stat-label,
+                #userCardModal .card-section .empty-text,
+                #userCardModal .card-section .progress-text {
+                    color: ${style.subtextColor} !important;
+                }
+                /* 强调数值（社交数据）与完成度徽章跟随主题强调色 */
+                #userCardModal .card-section .social-stat-value {
+                    color: ${style.accentColor} !important;
+                }
+                #userCardModal .card-section .completion-badge {
+                    background: linear-gradient(135deg, ${style.accentColor} 0%, ${style.accentColor}cc 100%) !important;
+                    color: white !important;
+                }
+                /* 进度条轨道与填充跟随主题 */
+                #userCardModal .exp-bar,
+                #userCardModal .progress-bar-large,
+                #userCardModal .game-achievement-progress-bar {
+                    background: ${style.borderColor} !important;
+                }
+                #userCardModal .exp-fill,
+                #userCardModal .progress-fill-large,
+                #userCardModal .game-achievement-progress-fill {
+                    background: linear-gradient(90deg, ${style.accentColor}, ${style.accentColor}cc) !important;
                 }
             `;
 
