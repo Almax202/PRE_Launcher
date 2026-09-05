@@ -636,6 +636,29 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 13,
+            date: "2026-09-05",
+            mails: [
+                {
+                    id: 'compensation_mail_20260905',
+                    title: '2026-09-05 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n在本次更新中，我们新增了全新重置改版的「音乐播放器」，并对其余功能进行了修复和优化。 \n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上版本更新补偿：经验值补给卡 Ⅰ ×1。 \n\n本邮件发放对象为 2026-09-05 16:00:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-09-12 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        },
+                    ],
+                    startTime: "2026-09-05 16:00:00",
+                    endTime: "2026-09-12 23:59:59",
+                    requireRegisteredBefore: "2026-09-05 16:00:00"
+                }
+            ]
+        },
 
     ],
     
