@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 3.0.2.1 (c3)",
+    login: "RC 3.0.2.2 (c3)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.2 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20260903.3021.c3.130.l5",
+    launcher: "20260905.3022.c3.130.l5",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -173,6 +173,28 @@ const versionInfo = {
                 "切换UI后自动保存设置，下次访问自动应用",
                 "支持版本信息查看，了解组件更新历史"
             ]
+        },
+        soundtrack: {
+            name: "音乐播放器",
+            icon: "fas fa-music",
+            iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            iconColor: "#ffffff",
+            version: "RC 1.0.0",
+            releaseDate: "2026-09-04",
+            updateDate: "2026-09-05",
+            status: "公开正式版",
+            developer: "PREAlmax",
+            copyright: "© 2014-2026 PREAlmax, All rights reserved.",
+            description: "PRE Launcher 内置音乐播放器组件，双栏布局独立播放界面，支持多播放列表管理、本地音频导入、专辑浏览、自定义曲目背景与随音乐律动的播放样式可视化，全部设置本地持久化保存",
+            features: [
+                "双栏播放界面：左侧播放列表，右侧主播放区",
+                "播放列表管理：新建、重命名、删除（内置默认列表受保护）、多列表快速切换，支持导入本地音频文件（mp3/ogg/wav/flac/m4a/aac/opus），音频数据通过 IndexedDB 持久化保存",
+                "专辑浏览：专辑卡片总览，侧边栏引导选择专辑，选中后展示专辑曲目并可随时返回重新选择，专辑仅需配置曲目 id 即可快速制作",
+                "自定义背景图片：按曲目独立设置专属背景，折页悬浮预览、点击完全展开，展开状态自动持久化恢复",
+                "音乐律动播放样式：基于 Web Audio 实时频谱分析，提供音浪、波纹、流光波浪三种随音乐律动的可视化效果，设置面板内实时预览",
+                "播放器个性化：组件位置九宫格预设与缩放、唱片/歌曲信息显隐、底部控制条行为均可独立调整并自动保存",
+                "底部全局播放控制条：切换到其他页面时音乐不中断，悬浮控制条固定于视口底部随时可控，与主播放界面双向同步",
+            ]
         }
     }
 };
@@ -181,8 +203,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),    
-    buildDate: "2026-09-03",
-    patchDate: "2026-09-03",
+    buildDate: "2026-09-05",
+    patchDate: "2026-09-05",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",

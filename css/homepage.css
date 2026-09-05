@@ -636,6 +636,7 @@
             gap: 12px;
             box-sizing: border-box;
             min-width: 0;
+            overflow: hidden;
         }
 
         /* 游戏卡片菜单按钮 */
@@ -844,7 +845,46 @@
 
         .game-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+        }
+
+        .game-card:hover .game-logo {
+            transform: scale(1.08) rotate(-5deg);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .game-card:hover .game-logo::after {
+            opacity: 0.5;
+        }
+
+        .game-card:hover .play-btn {
+            transform: scale(1.06);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .game-card:hover .game-card-content h2 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .game-card.disabled-card {
@@ -879,6 +919,20 @@
             color: white;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             align-self: end;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+
+        .game-logo::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: inherit;
+            z-index: -1;
+            opacity: 0;
+            filter: blur(12px);
+            transition: opacity 0.3s ease;
         }
 
         .game-card-content {
@@ -896,6 +950,7 @@
             color: #333;
             font-weight: 600;
             flex-shrink: 0;
+            transition: color 0.3s ease;
         }
 
         .game-card-content p {
@@ -925,10 +980,26 @@
             flex-shrink: 0;
             justify-self: start;
             align-self: end;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .play-btn:hover::before {
+            left: 100%;
         }
 
         .play-btn:hover {
-            transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
@@ -1480,26 +1551,30 @@
             
             /* 百宝箱卡片小屏幕适配 */
             .treasure-card {
-                padding: 15px;
+                padding: 16px;
+                gap: 10px;
             }
             
-            .treasure-card h2 {
-                font-size: 18px;
+            .treasure-card h2,
+            .treasure-card-content h2 {
+                font-size: 16px;
             }
             
-            .treasure-card p {
-                font-size: 13px;
+            .treasure-card p,
+            .treasure-card-content p {
+                font-size: 12px;
             }
             
             .treasure-btn,
             .fortune-btn {
-                font-size: 14px;
-                padding: 8px 20px;
+                font-size: 13px;
+                padding: 7px 20px;
             }
             
             .treasure-icon {
                 width: 80px;
                 height: 80px;
+                font-size: 36px;
             }
             
             /* 每日签到日历小屏幕适配 */
@@ -1647,9 +1722,9 @@
         }
 
         .treasure-area {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
             width: 100%;
             margin: 0 auto;
             position: relative;
@@ -1660,49 +1735,117 @@
 
         .treasure-card {
             background: white;
-            border-radius: 15px;
-            padding: 25px;
+            border-radius: 14px;
+            padding: 20px;
             width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e8e8e8;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-rows: 1fr auto;
+            grid-template-areas:
+                "content logo"
+                "button logo";
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
             margin-top: 0;
+            min-height: 180px;
+            box-sizing: border-box;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .treasure-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
         }
 
         .treasure-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .treasure-card:hover::before {
+            opacity: 1;
+        }
+
+        .treasure-card:hover .treasure-icon {
+            transform: scale(1.08) rotate(-5deg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .treasure-card:hover .treasure-btn {
+            transform: scale(1.06);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .treasure-card:hover .treasure-card-content h2 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .treasure-icon {
-            width: 80px;
-            height: 80px;
+            grid-area: logo;
+            width: 100px;
+            height: 100px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 36px;
+            font-size: 44px;
             flex-shrink: 0;
-            padding: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            align-self: end;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+
+        .treasure-icon::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: inherit;
+            z-index: -1;
+            opacity: 0;
+            filter: blur(12px);
+            transition: opacity 0.3s ease;
+        }
+
+        .treasure-card:hover .treasure-icon::after {
+            opacity: 0.5;
         }
 
         .treasure-card-content {
-            flex: 1;
+            grid-area: content;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
+            text-align: left;
+            align-self: start;
+            overflow: hidden;
         }
 
         .treasure-card h2 {
-            font-size: 22px;
+            font-size: 18px;
             margin: 0;
             color: #333;
+            font-weight: 600;
+            transition: color 0.3s ease;
         }
 
         .luck-value {
@@ -1729,20 +1872,39 @@
         }
 
         .treasure-btn {
+            grid-area: button;
+            justify-self: start;
+            align-self: end;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 10px 25px;
+            padding: 9px 28px;
             border-radius: 25px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .treasure-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .treasure-btn:hover::before {
+            left: 100%;
         }
 
         .treasure-btn:hover {
-            transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
@@ -2303,33 +2465,56 @@
             box-shadow: none;
         }
 
+        @media (max-width: 1200px) {
+            .treasure-area {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
         @media (max-width: 768px) {
+            .treasure-area {
+                grid-template-columns: 1fr;
+                padding: 16px;
+                gap: 14px;
+            }
+
             .treasure-card {
-                flex-direction: column;
+                grid-template-columns: 1fr auto;
+                grid-template-rows: auto auto auto;
+                grid-template-areas:
+                    "logo logo"
+                    "content content"
+                    "button button";
                 text-align: center;
                 padding: 20px;
+                min-height: auto;
             }
 
             .treasure-card-content {
                 align-items: center;
+                text-align: center;
             }
 
             .treasure-btn,
             .fortune-btn {
                 width: 100%;
+                justify-self: stretch;
+            }
+            
+            .treasure-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 32px;
+                justify-self: center;
+                align-self: center;
             }
             
             .treasure-card h2 {
-                font-size: 22px;
+                font-size: 20px;
             }
             
             .treasure-card p {
                 font-size: 14px;
-            }
-            
-            .treasure-icon {
-                width: 80px;
-                height: 80px;
             }
             
             /* 每日签到日历适配 */
@@ -4237,21 +4422,27 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        body.dark-mode .treasure-card:hover::before {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+        }
+
         body.dark-mode .treasure-card h2 {
             color: #e0e0e0;
         }
 
-        body.dark-mode .treasure-card p {
+        body.dark-mode .treasure-card p,
+        body.dark-mode .treasure-card-content p {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .treasure-card-content .luck-desc,
+        body.dark-mode .treasure-card-content .fortune-desc {
             color: #b0b0b0;
         }
 
         body.dark-mode .treasure-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-        }
-
-        body.dark-mode .treasure-btn:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
 
         body.dark-mode .checkin-calendar {

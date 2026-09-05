@@ -10,9 +10,11 @@
 var LC_ImageAssets = {
     // 卡池横幅背景图
     poolBanners: {
-        // 当期卡池子卡池：我出剪刀，你呢？
+        // 当期卡池子卡池：迁居申请 - 格里高尔
+        'lc-current-gregor': 'images/limbus0003.png',
+        // 过往卡池子卡池：我出剪刀，你呢？
         'lc-current-rps': 'sucai/limbus0001.png',
-        // 当期卡池子卡池：Cinq协会 东部三科 鸿路
+        // 过往卡池子卡池：Cinq协会 东部三科 鸿路
         // TODO: 用户自行设置卡池背景图路径（替换下方空字符串即可）
         'lc-current-hongru': 'sucai/limbus0003.png',
         // 当期卡池子卡池：欢迎新经理（新手池）
@@ -73,6 +75,7 @@ var LC_ItemImages = {
         'p3_032': 'sucai/mes010.webp', // [Dieci协会南部4科科长]默尔索
         'p3_033': 'sucai/mes011.webp', // [Cinq协会西部3科]默尔索
         'p3_034': 'sucai/mes012.webp', // [拇指东部 指挥官Ⅲ] 默尔索
+        'p3_089': 'sucai/mes016.webp', // [拇指东部 指挥官Ⅲ] 默尔索
 
         'p3_035': 'sucai/hl007.webp', // [豆豆帮帮主]鸿璐
         'p3_036': 'sucai/hl008.webp', // [K公司3级摘除人员]鸿璐
@@ -234,13 +237,15 @@ var LC_ItemImages = {
         'ego_027': '', // [提灯]格里高尔
         'ego_028': 'sucai/tjkdego001.webp', // [我出剪刀,你呢?]堂吉诃德
         'ego_029': '', // [步入晚霞]罗佳
-        'ego_030': ''  // [低泣]辛克莱
+        'ego_030': '', // [低泣]辛克莱
+        'ego_031': ''  // [迁居申请]格里高尔
     },
 
     // 播报员图片映射
     narrators: {
         'narrator_001': '', // 瓦伦希娜/卢西奥
-        'narrator_002': ''  // 卡利斯托/阿尔比娜
+        'narrator_002': '', // 卡利斯托/阿尔比娜
+        'narrator_003': ''  // 李恩/空
     },
 
     /**
@@ -305,6 +310,18 @@ var LC_ItemImages = {
 // 理想兑换配置（每个卡池可兑换的物品）
 // ========================================
 var LC_ExchangeConfig = {
+    // 迁居申请 - 格里高尔 卡池
+    'lc-current-gregor': [
+        {
+            id: 'ego_031',
+            type: 'ego',
+            rarity: 'ego',
+            name: '[迁居申请]格里高尔',
+            title: '迁居申请',
+            charName: '格里高尔',
+            description: '迁居申请 主题E.G.O'
+        }
+    ],
     // 我出剪刀，你呢？卡池
     'lc-current-rps': [
         {
@@ -343,7 +360,36 @@ var LC_ExchangeConfig = {
 //  写死的UP概率优先使用，其余未指定物品在本类总概率中平分剩余
 // ========================================
 var LC_PoolRatesConfig = {
-    // =============== 当期卡池 - 我出剪刀，你呢？ ===============
+    // =============== 当期卡池 - 迁居申请 - 格里高尔 ===============
+    'lc-current-gregor': {
+        narrator: {
+            // 新播报员：李恩/空 独占播报员1.3%概率
+            '李恩/空': 1.3000
+        },
+        ego: {
+            // 当期UP的EGO：[迁居申请]格里高尔，硬编码个体概率 0.6500%
+            // 其余30个EGO平分：(E.G.O总1.3% - 0.65%) / 30 = 0.0217% / 个
+            '[迁居申请]格里高尔': 0.6500
+        },
+        // 人格无UP：88个三星人格平分2.9%总概率 = 约0.0330%/个
+        '3star': {},
+        '2star': {},
+        '1star': {}
+    },
+    // =============== 特殊卡池 - 牢九门限定抽出（娱乐卡池，仅人格） ===============
+    'lc-laojiumen': {
+        // 无播报员、无EGO（由 LC_PoolContentConfig 整类排除）
+        narrator: {},
+        ego: {},
+        '3star': {
+            // 隐藏人格[LCB罪人]夯尔索：固定0.1000%，比9位牢九门人格(各0.3222%)更低、更难抽出
+            // 其余9位指定人格平分剩余(3.0% - 0.1%) = 2.9%（原有三星总概率），各0.3222%
+            'p3_089': 0.1000
+        },
+        '2star': {},
+        '1star': {}
+    },
+    // =============== 当期卡池 - 我出剪刀，你呢？（已移入过往卡池） ===============
     'lc-current-rps': {
         narrator: {
             // 播报员：瓦伦希娜/卢西奥 独占播报员1.3%概率
@@ -405,19 +451,64 @@ var LC_PoolRatesConfig = {
 // ⑤ 每次新增"当期池专属内容"（新播报员/新EGO）后，只需在本配置中新增一条登记；之前所有旧池、过往池、常驻池、新手池自动被排除，无需修改旧池代码
 var LC_RestrictedItems = {
     // === 常驻人格：[Cinq协会 东部三科]鸿路（id=p3_088）===
-    // 只出现在：当期新池 lc-current-hongru、常驻池 lc-permanent、新手池 lc-welcome；
-    // 过往卡池（例如 lc-current-rps / lc-past 分组下的所有池子）均不出现，不参与旧池概率平分
-    'p3_088': { restrictedToPools: ['lc-current-hongru', 'lc-permanent', 'lc-welcome'] },
-    '[Cinq协会 东部三科]鸿路': { restrictedToPools: ['lc-current-hongru', 'lc-permanent', 'lc-welcome'] },
+    // 出现在：当期新池 lc-current-gregor、鸿路池 lc-current-hongru、常驻池 lc-permanent、新手池 lc-welcome；
+    // 其他过往卡池（例如 lc-current-rps）不出现，不参与旧池概率平分
+    'p3_088': { restrictedToPools: ['lc-current-gregor', 'lc-current-hongru', 'lc-permanent', 'lc-welcome'] },
+    '[Cinq协会 东部三科]鸿路': { restrictedToPools: ['lc-current-gregor', 'lc-current-hongru', 'lc-permanent', 'lc-welcome'] },
 
     // === 限定播报员：卡利斯托/阿尔比娜 播报员（id=narrator_002）===
-    // 只出现在当期新池 lc-current-hongru；过往卡池、常驻池、新手池均不出现
+    // 只出现在鸿路池 lc-current-hongru；其他卡池（含当期新池）、常驻池、新手池均不出现
     'narrator_002': { restrictedToPools: ['lc-current-hongru'] },
-    '卡利斯托/阿尔比娜': { restrictedToPools: ['lc-current-hongru'] }
+    '卡利斯托/阿尔比娜': { restrictedToPools: ['lc-current-hongru'] },
+
+    // === 限定播报员：李恩/空 播报员（id=narrator_003）===
+    // 只出现在当期新池 lc-current-gregor；过往卡池、常驻池、新手池均不出现
+    'narrator_003': { restrictedToPools: ['lc-current-gregor'] },
+    '李恩/空': { restrictedToPools: ['lc-current-gregor'] },
+
+    // === 限定E.G.O：[迁居申请]格里高尔（id=ego_031）===
+    // 只出现在当期新池 lc-current-gregor；过往卡池、常驻池、新手池均不出现
+    'ego_031': { restrictedToPools: ['lc-current-gregor'] },
+    '[迁居申请]格里高尔': { restrictedToPools: ['lc-current-gregor'] },
+
+    // === 隐藏三星人格：[LCB罪人]夯尔索（id=p3_089）===
+    // 只能在特殊娱乐卡池"牢九门限定抽出"(lc-laojiumen)出现；其他所有卡池均不可见
+    'p3_089': { restrictedToPools: ['lc-laojiumen'] },
+    '[LCB罪人]夯尔索': { restrictedToPools: ['lc-laojiumen'] }
 };
 
 // ========================================
-// 播报员数据（共2个）
+// 卡池内容配置（整类排除 / 类别内白名单）
+// 与 LC_RestrictedItems（按物品登记）互补，本表按"卡池"登记：
+//   excludeCategories: 该池完全不含的稀有度类别（'narrator'/'ego'/'3star'/'2star'/'1star'）
+//   <rarityKey>.includeIds: 该类别下仅这些物品（按id匹配）允许出现，其余全部排除
+// 未登记的卡池行为不变（所有未被 LC_RestrictedItems 限制的物品正常出现）
+// ========================================
+var LC_PoolContentConfig = {
+    // === 特殊卡池·娱乐卡池：牢九门限定抽出（lc-laojiumen）===
+    // 不含任何播报员与EGO；三星人格仅为9位"牢"门人格 + 隐藏人格夯尔索
+    'lc-laojiumen': {
+        excludeCategories: ['narrator', 'ego'],
+        '3star': {
+            includeIds: [
+                'p3_001', // [剑契组杀手]李箱
+                'p3_008', // [LCEE.G.O :: 次元撕裂者]李箱
+                'p3_023', // [黑云会若众]良秀
+                'p3_029', // [W公司2级 清扫人员]默尔索
+                'p3_030', // [N公司大锤]默尔索
+                'p3_042', // [脑叶公司E.G.O:狐雨]希斯克利夫
+                'p3_056', // [黑云会若众]罗佳
+                'p3_057', // [玫瑰扳手工坊代表]罗佳
+                'p3_079', // [G公司科长代理]格里高尔
+                'p3_089'  // [LCB罪人]夯尔索（隐藏人格）
+            ]
+        }
+        // 2star / 1star 不配置：全部41+12个人格正常出现，数量与概率不变
+    }
+};
+
+// ========================================
+// 播报员数据（共3个）
 // ========================================
 var LC_NarratorData = [
     {
@@ -439,11 +530,21 @@ var LC_NarratorData = [
         type: 'narrator',
         description: 'Cinq协会专属播报员',
         icon: 'fa-microphone'
+    },
+    {
+        id: 'narrator_003',
+        name: '李恩/空',
+        title: '',
+        charName: '李恩/空',
+        rarity: 'narrator',
+        type: 'narrator',
+        description: '迁居申请专属播报员',
+        icon: 'fa-microphone'
     }
 ];
 
 // ========================================
-// E.G.O 数据（共30个）
+// E.G.O 数据（共31个）
 // 不会重复提取，获取后从卡池移除
 // ========================================
 var LC_EgoData = [];
@@ -501,8 +602,10 @@ var LC_EgoData = [];
 '[步入晚霞]罗佳',
 
 '[低泣]辛克莱',
+
+'[迁居申请]格里高尔',
     ];
-    for (var i = 0; i < 30; i++) {
+    for (var i = 0; i < egoNames.length; i++) {
         var rawName = egoNames[i] || ('E.G.O ' + (i + 1));
         var parsed = parseBracketName(rawName);
         LC_EgoData.push({
@@ -736,87 +839,87 @@ var LC_PersonalityData = [];
 // 2★人格（41个）
 (function() {
     var stars2Names = [
-        '[Seven协会南部6科]李箱',
+        '[Seven协会南部6科] 李箱',
 
-'[裴廓德号大副]李箱',
+'[裴廓德号大副] 李箱',
 
-'[Dieci协会南部4科]李箱',
+'[Dieci协会南部4科] 李箱',
 
-'[W公司2级 清扫人员]浮士德',
+'[W公司2级 清扫人员] 浮士德',
 
-'[脑叶公司幸存者]浮士德',
+'[脑叶公司幸存者] 浮士德',
 
-'[Zwei协会南部4科]浮士德',
+'[Zwei协会南部4科] 浮士德',
 
-'[呼啸山庄 管家]浮士德',
+'[呼啸山庄 管家] 浮士德',
 
-'[し协会南部5科科长]堂吉诃德',
+'[し协会南部5科科长] 堂吉诃德',
 
-'[N公司中锤]堂吉诃德',
+'[N公司中锤] 堂吉诃德',
 
-'[Seven协会南部6科]良秀',
+'[Seven协会南部6科] 良秀',
 
-'[LCCB系长]良秀',
+'[LCCB系长] 良秀',
 
-'[六协会南部4科]良秀',
+'[六协会南部4科] 良秀',
 
-'[六协会南部6科]默尔索',
+'[六协会南部6科] 默尔索',
 
-'[玫瑰扳手工坊收尾人]默尔索',
+'[玫瑰扳手工坊收尾人] 默尔索',
 
-'[中指幼弟]默尔索',
+'[中指幼弟] 默尔索',
 
-'[死兔帮 老大]默尔索',
+'[死兔帮 老大] 默尔索',
 
-'[黑云会 若众]鸿璐',
+'[黑云会 若众] 鸿璐',
 
-'[六协会南部5科]鸿璐',
+'[六协会南部5科] 鸿璐',
 
-'[W公司2级清扫人员]鸿璐',
+'[W公司2级清扫人员] 鸿璐',
 
-'[猎牙事务所收尾人]鸿璐',
+'[猎牙事务所收尾人] 鸿璐',
 
-'[し协会南部5科]希斯克利夫',
+'[し协会南部5科] 希斯克利夫',
 
-'[N公司小锤]希斯克利夫',
+'[N公司小锤] 希斯克利夫',
 
-'[Seven协会南部4科]希斯克利夫',
+'[Seven协会南部4科] 希斯克利夫',
 
-'[し协会南部5科]以实玛利',
+'[し协会南部5科] 以实玛利',
 
-'[LCCB系长]以实玛利',
+'[LCCB系长] 以实玛利',
 
-'[脑叶公司E.G.O :: 荡漾]以实玛利',
+'[脑叶公司E.G.O :: 荡漾] 以实玛利',
 
-'[埃德加家族 管家]以实玛利',
+'[埃德加家族 管家] 以实玛利',
 
-'[LCCB系长]罗佳',
+'[LCCB系长] 罗佳',
 
-'[N公司中锤]罗佳',
+'[N公司中锤] 罗佳',
 
-'[Zwei协会南部5科]罗佳',
+'[Zwei协会南部5科] 罗佳',
 
-'[T公司2级征收人员]罗佳',
+'[T公司2级征收人员] 罗佳',
 
-'[Zwei协会南部6科]辛克莱',
+'[Zwei协会南部6科] 辛克莱',
 
-'[流浪乐队老大]辛克莱',
+'[流浪乐队老大] 辛克莱',
 
-'[脑叶公司E.G.O :: 朱符]辛克莱',
+'[脑叶公司E.G.O :: 朱符] 辛克莱',
 
-'[Zwei协会西部3科]辛克莱',
+'[Zwei协会西部3科] 辛克莱',
 
-'[剑契组杀手]奥提斯',
+'[剑契组杀手] 奥提斯',
 
-'[G公司部长]奥提斯',
+'[G公司部长] 奥提斯',
 
-'[Cinq协会南部4科]奥提斯',
+'[Cinq协会南部4科] 奥提斯',
 
-'[环指 点彩派 学徒]奥提斯',
+'[环指 点彩派 学徒] 奥提斯',
 
-'[六协会南部6科]格里高尔',
+'[六协会南部6科] 格里高尔',
 
-'[玫瑰扳手工坊收尾人]格里高尔',
+'[玫瑰扳手工坊收尾人] 格里高尔',
 
     ];
     for (var i = 0; i < 41; i++) {
@@ -840,28 +943,28 @@ var LC_PersonalityData = [];
 (function() {
     var stars1Names = [
         
-        '[LCB 罪人]李箱',
-        '[LCB罪人]浮士德',
+        '[LCB 罪人] 李箱',
+        '[LCB罪人] 浮士德',
 
-'[LCB罪人]堂吉诃德',
+'[LCB罪人] 堂吉诃德',
 
-'[LCB罪人]良秀',
+'[LCB罪人] 良秀',
 
-'[LCB罪人]默尔索',
+'[LCB罪人] 默尔索',
 
-'[LCB罪人]鸿璐',
+'[LCB罪人] 鸿璐',
 
-'[LCB罪人]希斯克利夫',
+'[LCB罪人] 希斯克利夫',
 
-'[LCB罪人]以实玛利',
+'[LCB罪人] 以实玛利',
 
-'[LCB罪人]罗佳',
+'[LCB罪人] 罗佳',
 
-'[LCB罪人]辛克莱',
+'[LCB罪人] 辛克莱',
 
-'[LCB罪人]奥提斯',
+'[LCB罪人] 奥提斯',
 
-'[LCB罪人]格里高尔',
+'[LCB罪人] 格里高尔',
 
     ];
     for (var i = 0; i < 12; i++) {
@@ -880,6 +983,22 @@ var LC_PersonalityData = [];
         });
     }
 })();
+
+// ========================================
+// 隐藏三星人格（仅特殊娱乐卡池"牢九门限定抽出"可获取，不加入任何常规卡池）
+// ========================================
+LC_PersonalityData.push({
+    id: 'p3_089',
+    name: '[LCB罪人]夯尔索',
+    title: 'LCB罪人',
+    charName: '夯尔索',
+    rarity: '3star',
+    type: 'personality',
+    stars: 3,
+    index: 89,
+    description: '隐藏三星人格（娱乐卡池限定）',
+    hidden: true
+});
 
 // ========================================
 // 数据访问辅助函数
@@ -921,10 +1040,32 @@ var LC_DataHelper = {
 
     // 批量过滤：只保留 poolId 允许的物品（影响物品计数与概率平分）
     _filterItemsByPool: function(items, poolId) {
-        if (!poolId || !items || items.length === 0) return items || [];
-        if (typeof LC_RestrictedItems === 'undefined') return items;
+        if (!items || items.length === 0) return items || [];
         var self = this;
-        return items.filter(function(it) { return self._isItemAllowedInPool(it, poolId); });
+        var result = items;
+        // ① LC_RestrictedItems 按物品的池限制
+        if (poolId && typeof LC_RestrictedItems !== 'undefined') {
+            result = result.filter(function(it) { return self._isItemAllowedInPool(it, poolId); });
+        }
+        // ② LC_PoolContentConfig 按卡池的内容配置（整类排除 + 类别内白名单）
+        if (poolId && typeof LC_PoolContentConfig !== 'undefined') {
+            var cfg = LC_PoolContentConfig[poolId];
+            if (cfg) {
+                var rarityKey = (result.length > 0 ? result[0].rarity : (items.length > 0 ? items[0].rarity : null));
+                if (rarityKey && cfg.excludeCategories && cfg.excludeCategories.indexOf(rarityKey) !== -1) {
+                    return [];
+                }
+                var catCfg = rarityKey ? cfg[rarityKey] : null;
+                if (catCfg && catCfg.includeIds) {
+                    result = result.filter(function(it) {
+                        if (it.id && catCfg.includeIds.indexOf(it.id) !== -1) return true;
+                        if (it.name && catCfg.includeIds.indexOf(it.name) !== -1) return true;
+                        return false;
+                    });
+                }
+            }
+        }
+        return result;
     },
     
     // 检查某个EGO在指定池子中是否已获取

@@ -31,6 +31,7 @@
     <script src="./js/event.js" defer></script>
     <script src="./js/identity_ego.js" defer></script>
     <script src="./js/account-settings.js" defer></script>
+    <script src="./js/soundtrack.js" defer></script>
     
     <script>
         window.addEventListener('error', function(e) {
@@ -11160,49 +11161,46 @@
                             <div class="treasure-area" id="treasureArea" style="display: none;">
                                 <!-- 今日人品卡片 -->
                                 <div class="treasure-card">
-                                    <div class="treasure-icon treasure-icon-luck">
-                                        <i class="fas fa-star"></i>
-                                    </div>
                                     <div class="treasure-card-content">
                                         <h2>今日人品</h2>
                                         <div class="luck-desc">点击下方按钮查看今日人品</div>
                                     </div>
                                     <button class="treasure-btn" id="checkLuckBtn">查看今日人品</button>
+                                    <div class="treasure-icon treasure-icon-luck">
+                                        <i class="fas fa-star"></i>
+                                    </div>
                                 </div>
                                 
                                 <!-- 今日运势卡片 -->
                                 <div class="treasure-card">
-                                    <div class="treasure-icon treasure-icon-fortune">
-                                        <i class="fas fa-sun"></i>
-                                    </div>
                                     <div class="treasure-card-content">
                                         <h2>今日运势</h2>
                                         <div class="fortune-desc">点击下方按钮查看今日运势</div>
                                     </div>
                                     <button class="treasure-btn" id="checkFortuneBtn">查看运势</button>
+                                    <div class="treasure-icon treasure-icon-fortune">
+                                        <i class="fas fa-sun"></i>
+                                    </div>
                                 </div>
                                 
                                 <!-- 每日一句卡片 -->
                                 <div class="treasure-card">
-                                    <div class="treasure-icon treasure-icon-quote">
-                                        <i class="fas fa-quote-left"></i>
-                                    </div>
                                     <div class="treasure-card-content">
                                         <h2>每日“N”句</h2>
                                         <div class="quote-box" id="quoteBox">
-                                            <div class="quote-content" id="quoteContent">
+                                            <div class="quote-content" id="treasureQuoteContent">
                                                 <p class="quote-text">加载中...</p>
                                             </div>
                                         </div>
-                                        <button class="treasure-btn quote-btn" id="refreshQuoteBtn">换一句</button>
+                                    </div>
+                                    <button class="treasure-btn quote-btn" id="refreshQuoteBtn">换一句</button>
+                                    <div class="treasure-icon treasure-icon-quote">
+                                        <i class="fas fa-quote-left"></i>
                                     </div>
                                 </div>
                                 
                                 <!-- 随机数字卡片 -->
                                 <div class="treasure-card">
-                                    <div class="treasure-icon treasure-icon-random">
-                                        <i class="fas fa-dice"></i>
-                                    </div>
                                     <div class="treasure-card-content">
                                         <h2>随机数字</h2>
                                         <div class="random-number" id="randomNumber">--</div>
@@ -11216,15 +11214,15 @@
                                                 <input type="number" id="maxValue" value="100" min="1" max="10000">
                                             </div>
                                         </div>
-                                        <button class="treasure-btn" id="randomNumberBtn">生成随机数</button>
+                                    </div>
+                                    <button class="treasure-btn" id="randomNumberBtn">生成随机数</button>
+                                    <div class="treasure-icon treasure-icon-random">
+                                        <i class="fas fa-dice"></i>
                                     </div>
                                 </div>
                                 
                                 <!-- 骰子投掷器卡片 -->
                                 <div class="treasure-card">
-                                    <div class="treasure-icon treasure-icon-dice">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </div>
                                     <div class="treasure-card-content">
                                         <h2>骰子投掷</h2>
                                         <div class="dice-result" id="diceResult">
@@ -11237,30 +11235,30 @@
                                                 <button class="dice-option" data-sides="20">20面</button>
                                             </div>
                                         </div>
-                                        <button class="treasure-btn" id="rollDiceBtn">投掷骰子</button>
+                                    </div>
+                                    <button class="treasure-btn" id="rollDiceBtn">投掷骰子</button>
+                                    <div class="treasure-icon treasure-icon-dice">
+                                        <i class="fas fa-dice-d20"></i>
                                     </div>
                                 </div>
                                 
                                 <!-- 抛硬币卡片 -->
                                 <div class="treasure-card">
-                                    <div class="treasure-icon treasure-icon-coin">
-                                        <i class="fas fa-coins"></i>
-                                    </div>
                                     <div class="treasure-card-content">
                                         <h2>抛硬币</h2>
                                         <div class="coin-result" id="coinResult">
                                             <i class="fas fa-question-circle"></i>
                                         </div>
                                         <p class="coin-text" id="coinText">点击按钮抛硬币</p>
-                                        <button class="treasure-btn" id="flipCoinBtn">抛硬币</button>
+                                    </div>
+                                    <button class="treasure-btn" id="flipCoinBtn">抛硬币</button>
+                                    <div class="treasure-icon treasure-icon-coin">
+                                        <i class="fas fa-coins"></i>
                                     </div>
                                 </div>
                                 
                                 <!-- 密码生成器卡片 -->
                                 <div class="treasure-card">
-                                    <div class="treasure-icon treasure-icon-password">
-                                        <i class="fas fa-key"></i>
-                                    </div>
                                     <div class="treasure-card-content">
                                         <h2>密码生成器</h2>
                                         <div class="password-result" id="passwordResult">点击生成</div>
@@ -11282,7 +11280,10 @@
                                                 <input type="number" id="passwordLength" value="12" min="6" max="32">
                                             </div>
                                         </div>
-                                        <button class="treasure-btn" id="generatePasswordBtn">生成密码</button>
+                                    </div>
+                                    <button class="treasure-btn" id="generatePasswordBtn">生成密码</button>
+                                    <div class="treasure-icon treasure-icon-password">
+                                        <i class="fas fa-key"></i>
                                     </div>
                                 </div>
                             </div>
@@ -11520,7 +11521,10 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
+                            <!-- 音乐播放器区域（默认隐藏，UI 与逻辑由 js/soundtrack.js 渲染） -->
+                            <div class="soundtrack-area" id="soundtrackArea" style="display: none;"></div>
+
                             <!-- 抽卡自定义弹窗 -->
                             <div class="gacha-modal-overlay" id="gachaModalOverlay" style="display: none;">
                                 <div class="gacha-modal-container" id="gachaModalContainer">
@@ -11530,6 +11534,53 @@
                                     </div>
                                     <div class="gacha-modal-body" id="gachaModalBody"></div>
                                     <div class="gacha-modal-footer" id="gachaModalFooter"></div>
+                                </div>
+                            </div>
+
+                            <!-- 抽卡模拟器进入声明弹窗 -->
+                            <div class="gacha-modal-overlay" id="gachaDisclaimerOverlay" style="display: none;">
+                                <div class="gacha-modal-container gacha-disclaimer-container">
+                                    <div class="gacha-modal-header">
+                                        <h3>声明</h3>
+                                    </div>
+                                    <div class="gacha-modal-body">
+                                        <div class="gacha-disclaimer-body">
+                                            <p>该抽卡模拟器仅供娱乐，请勿较真。本模拟器概率纯属猜测，与官方不一定一致，因此结果没有参考价值。</p>
+                                            <p>本模拟器不会对您的游戏数据造成任何影响。</p>
+                                            <p>本模拟器与游戏官方无关，模拟器中所有的图片资源及其他素材的版权及所有权归 Project Moon 和其他游戏官方所有。</p>
+                                            <p>若您已知悉，请点击 <strong>“确定”</strong> 按钮以关闭该弹窗。</p>
+                                            <label class="gacha-disclaimer-checkbox">
+                                                <input type="checkbox" id="gachaDisclaimerDontShow">
+                                                <span>今日内不再显示</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="gacha-modal-footer">
+                                        <button class="gacha-modal-btn primary" id="gachaDisclaimerConfirmBtn">确定</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 娱乐卡池进入声明弹窗 -->
+                            <div class="gacha-modal-overlay" id="gachaFunDisclaimerOverlay" style="display: none;">
+                                <div class="gacha-modal-container gacha-disclaimer-container">
+                                    <div class="gacha-modal-header">
+                                        <h3>声明</h3>
+                                    </div>
+                                    <div class="gacha-modal-body">
+                                        <div class="gacha-disclaimer-body">
+                                            <p>该卡池为本模拟器自己创建的娱乐性质卡池，该卡池的概率和卡池详情不属于 LimbusCompany 游戏中原有内容，请注意甄别。</p>
+                                            <p>本模拟器与游戏官方无关，模拟器中所有的图片资源及其他素材的版权及所有权归 Project Moon 和其他游戏官方所有。</p>
+                                            <p>若您已知悉，请点击 <strong>“确定”</strong> 按钮以关闭该弹窗。</p>
+                                            <label class="gacha-disclaimer-checkbox">
+                                                <input type="checkbox" id="gachaFunDisclaimerDontShow">
+                                                <span>今日内不再显示</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="gacha-modal-footer">
+                                        <button class="gacha-modal-btn primary" id="gachaFunDisclaimerConfirmBtn">确定</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -11600,6 +11651,10 @@
                             <div class="ui-min-dropdown-item" data-nav="gacha-simulator">
                                 <i class="fas fa-dice-d20"></i>
                                 <span>抽卡模拟器</span>
+                            </div>
+                            <div class="ui-min-dropdown-item" data-nav="soundtrack">
+                                <i class="fas fa-music"></i>
+                                <span>音乐播放器</span>
                             </div>
                         </div>
                     </div>
@@ -11706,7 +11761,9 @@
                             if (nav === 'gamecenter') {
                                 switchGameCenterSubPage('games');
                             } else if (nav === 'gacha-simulator') {
-                                switchGameCenterSubPage('gacha');
+                                openGachaWithDisclaimer();
+                            } else if (nav === 'soundtrack') {
+                                switchGameCenterSubPage('soundtrack');
                             } else if (nav === 'event-center') {
                                 if (typeof showEventCenterModal === 'function') {
                                     showEventCenterModal();
@@ -11968,6 +12025,7 @@
                     gap: 12px;
                     box-sizing: border-box;
                     min-width: 0;
+                    overflow: hidden;
                 }
                 
                 /* 游戏卡片菜单按钮 */
@@ -12176,7 +12234,46 @@
                 
                 .game-card:hover {
                     transform: translateY(-5px);
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+                    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+                }
+                
+                .game-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    border-radius: 14px;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.3s ease;
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+                }
+
+                .game-card:hover::before {
+                    opacity: 1;
+                }
+
+                .game-card:hover .game-logo {
+                    transform: scale(1.08) rotate(-5deg);
+                    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+                }
+
+                .game-card:hover .game-logo::after {
+                    opacity: 0.5;
+                }
+
+                .game-card:hover .play-btn {
+                    transform: scale(1.06);
+                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+                }
+
+                .game-card:hover .game-card-content h2 {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
                 }
                 
                 .game-logo {
@@ -12192,6 +12289,20 @@
                     color: white;
                     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
                     align-self: end;
+                    position: relative;
+                    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+                }
+
+                .game-logo::after {
+                    content: '';
+                    position: absolute;
+                    inset: -3px;
+                    border-radius: 50%;
+                    background: inherit;
+                    z-index: -1;
+                    opacity: 0;
+                    filter: blur(12px);
+                    transition: opacity 0.3s ease;
                 }
                 
                 .game-logo-square {
@@ -12247,6 +12358,7 @@
                     color: #333;
                     font-weight: 600;
                     flex-shrink: 0;
+                    transition: color 0.3s ease;
                 }
                 
                 .game-card-content p {
@@ -12276,10 +12388,26 @@
                     flex-shrink: 0;
                     justify-self: start;
                     align-self: end;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .play-btn::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+                    transition: left 0.5s ease;
+                }
+
+                .play-btn:hover::before {
+                    left: 100%;
                 }
                 
                 .play-btn:hover {
-                    transform: scale(1.02);
                     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
                 }
                 
@@ -12294,41 +12422,111 @@
                     cursor: not-allowed;
                 }
                 
-                /* 百宝箱区域样式 */
+                /* 百宝箱区域样式 - Grid布局 */
                 .treasure-area {
                     display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 20px;
-                    padding: 28px;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 16px;
+                    width: 100%;
+                    margin: 0 auto;
+                    padding: 30px 40px;
+                    min-height: 600px;
+                    align-items: stretch;
                 }
                 
-                /* 百宝箱卡片样式 */
+                /* 百宝箱卡片样式 - 类似游戏中心 */
                 .treasure-card {
                     background: white;
                     border-radius: 14px;
                     padding: 20px;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
                     border: 1px solid #e0e0e0;
-                    min-height: 260px;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
+                    min-height: 180px;
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    grid-template-rows: 1fr auto;
+                    grid-template-areas:
+                        "content logo"
+                        "button logo";
+                    gap: 12px;
                     box-sizing: border-box;
                     min-width: 0;
+                    position: relative;
+                    overflow: hidden;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                
+                .treasure-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    border-radius: 14px;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.3s ease;
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+                }
+                
+                .treasure-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                }
+                
+                .treasure-card:hover::before {
+                    opacity: 1;
+                }
+                
+                .treasure-card:hover .treasure-icon {
+                    transform: scale(1.08) rotate(-5deg);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+                }
+                
+                .treasure-card:hover .treasure-btn {
+                    transform: scale(1.06);
+                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+                }
+                
+                .treasure-card:hover .treasure-card-content h2 {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
                 }
                 
                 .treasure-icon {
-                    width: 70px;
-                    height: 70px;
+                    grid-area: logo;
+                    width: 100px;
+                    height: 100px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin: 0 auto 14px auto;
                     flex-shrink: 0;
-                    font-size: 32px;
+                    font-size: 44px;
                     color: white;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+                    align-self: end;
+                    position: relative;
+                    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+                }
+                
+                .treasure-icon::after {
+                    content: '';
+                    position: absolute;
+                    inset: -3px;
+                    border-radius: 50%;
+                    background: inherit;
+                    z-index: -1;
+                    opacity: 0;
+                    filter: blur(12px);
+                    transition: opacity 0.3s ease;
+                }
+                
+                .treasure-card:hover .treasure-icon::after {
+                    opacity: 0.5;
                 }
                 
                 .treasure-icon-luck {
@@ -12360,22 +12558,26 @@
                 }
                 
                 .treasure-card-content {
-                    flex: 1;
+                    grid-area: content;
                     display: flex;
                     flex-direction: column;
+                    gap: 8px;
                     overflow: hidden;
-                    text-align: center;
+                    text-align: left;
+                    align-self: start;
                 }
                 
                 .treasure-card-content h2 {
-                    margin: 0 0 8px 0;
-                    font-size: 17px;
+                    margin: 0;
+                    font-size: 18px;
                     color: #333;
+                    font-weight: 600;
                     flex-shrink: 0;
+                    transition: color 0.3s ease;
                 }
                 
                 .treasure-card-content p {
-                    margin: 0 0 12px 0;
+                    margin: 0;
                     font-size: 13px;
                     color: #666;
                     line-height: 1.5;
@@ -12385,7 +12587,6 @@
                 /* 描述区填满卡片空间 */
                 .treasure-card-content .luck-desc,
                 .treasure-card-content .fortune-desc {
-                    flex: 1;
                     display: flex;
                     flex-direction: column;
                     margin: 0;
@@ -12396,27 +12597,45 @@
                 
                 /* 名言方框填满卡片空间 */
                 .treasure-card-content .quote-box {
-                    flex: 1;
                     display: flex;
                     flex-direction: column;
                 }
                 
                 .treasure-btn {
-                    margin-top: auto;
-                    padding: 10px 20px;
-                    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                    grid-area: button;
+                    justify-self: start;
+                    align-self: end;
+                    padding: 9px 28px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
                     border: none;
-                    border-radius: 8px;
+                    border-radius: 25px;
                     font-size: 14px;
+                    font-weight: bold;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     flex-shrink: 0;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .treasure-btn::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+                    transition: left 0.5s ease;
+                }
+                
+                .treasure-btn:hover::before {
+                    left: 100%;
                 }
                 
                 .treasure-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
                 }
                 
                 /* 百宝箱内特殊元素样式 */
@@ -14272,6 +14491,80 @@
                     flex-direction: column;
                     gap: 6px;
                 }
+
+                /* 侧边栏分类（模拟器卡池/特殊卡池） */
+                .gacha-category-wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+
+                .gacha-category-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 10px 14px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #888;
+                    background: rgba(212, 93, 121, 0.05);
+                    border: 1px solid rgba(212, 93, 121, 0.12);
+                }
+
+                .gacha-category-item:hover {
+                    background: rgba(212, 93, 121, 0.1);
+                    color: #d45d79;
+                    border-color: rgba(212, 93, 121, 0.25);
+                }
+
+                .gacha-category-item.active {
+                    color: #d45d79;
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.12) 0%, rgba(230, 126, 138, 0.07) 100%);
+                    border-color: rgba(212, 93, 121, 0.2);
+                }
+
+                .gacha-category-item .category-dot {
+                    width: 7px;
+                    height: 7px;
+                    border-radius: 50%;
+                    background: #c9c9d6;
+                    flex-shrink: 0;
+                    transition: all 0.2s ease;
+                }
+
+                .gacha-category-item.active .category-dot {
+                    background: #d45d79;
+                    box-shadow: 0 0 6px rgba(212, 93, 121, 0.5);
+                }
+
+                .gacha-category-item .category-name {
+                    flex: 1;
+                }
+
+                .gacha-category-pools {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    padding-left: 8px;
+                }
+
+                body.dark-mode .gacha-category-item {
+                    background: rgba(212, 93, 121, 0.08);
+                    border-color: rgba(212, 93, 121, 0.18);
+                    color: #a89098;
+                }
+
+                body.dark-mode .gacha-category-item:hover {
+                    background: rgba(212, 93, 121, 0.14);
+                    color: #e894a6;
+                }
+
+                body.dark-mode .gacha-category-item.active {
+                    color: #e894a6;
+                }
                 
                 .gacha-pool-item {
                     display: flex;
@@ -15762,6 +16055,65 @@
                 body.dark-mode .gacha-modal-body {
                     color: #e0e0e0;
                 }
+
+                /* 抽卡模拟器进入声明弹窗 */
+                .gacha-disclaimer-container {
+                    max-width: 460px;
+                }
+
+                .gacha-disclaimer-container .gacha-modal-header h3 {
+                    text-align: center;
+                    width: 100%;
+                }
+
+                .gacha-disclaimer-container .gacha-modal-footer {
+                    justify-content: center;
+                }
+
+                .gacha-disclaimer-body {
+                    font-size: 14px;
+                    line-height: 1.9;
+                    color: #555;
+                }
+
+                .gacha-disclaimer-body p {
+                    margin: 0 0 12px 0;
+                }
+
+                .gacha-disclaimer-body p strong {
+                    color: #d45d79;
+                }
+
+                .gacha-disclaimer-checkbox {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-top: 18px;
+                    padding-top: 14px;
+                    border-top: 1px dashed #e0e0e0;
+                    cursor: pointer;
+                    font-size: 14px;
+                    color: #333;
+                    user-select: none;
+                }
+
+                .gacha-disclaimer-checkbox input[type="checkbox"] {
+                    width: 16px;
+                    height: 16px;
+                    margin: 0;
+                    cursor: pointer;
+                    accent-color: #d45d79;
+                    flex-shrink: 0;
+                }
+
+                body.dark-mode .gacha-disclaimer-body {
+                    color: #b0b0b0;
+                }
+
+                body.dark-mode .gacha-disclaimer-checkbox {
+                    color: #e0e0e0;
+                    border-top-color: rgba(255, 255, 255, 0.12);
+                }
                 
                 body.dark-mode .history-record-card {
                     background: rgba(255, 255, 255, 0.04);
@@ -16077,10 +16429,12 @@
                             var treasureArea = document.getElementById('treasureArea');
                             var checkinArea = document.getElementById('checkinArea');
                             var gachaArea = document.getElementById('gachaArea');
+                            var soundtrackAreaSidebar = document.getElementById('soundtrackArea');
                             if (gameArea) gameArea.style.display = 'none';
                             if (treasureArea) treasureArea.style.display = 'none';
                             if (checkinArea) checkinArea.style.display = 'none';
                             if (gachaArea) gachaArea.style.display = 'none';
+                            if (soundtrackAreaSidebar) soundtrackAreaSidebar.style.display = 'none';
                             
                             if (menuId === 'menuGames' && gameArea) {
                                 gameArea.style.display = 'grid';
@@ -16453,17 +16807,19 @@
             initGachaSimulator();
         }
         
-        // 切换游戏中心子页面（games: 休闲小游戏, gacha: 抽卡模拟器）
+        // 切换游戏中心子页面（games: 休闲小游戏, gacha: 抽卡模拟器, soundtrack: 音乐播放器）
         function switchGameCenterSubPage(subPage) {
             var gameArea = document.getElementById('gameArea');
             var gachaArea = document.getElementById('gachaArea');
             var treasureArea = document.getElementById('treasureArea');
             var checkinArea = document.getElementById('checkinArea');
-            
+            var soundtrackArea = document.getElementById('soundtrackArea');
+
             if (gameArea) gameArea.style.display = 'none';
             if (gachaArea) gachaArea.style.display = 'none';
             if (treasureArea) treasureArea.style.display = 'none';
             if (checkinArea) checkinArea.style.display = 'none';
+            if (soundtrackArea) soundtrackArea.style.display = 'none';
             
             // 同步侧边栏菜单的active状态
             var sidebarItems = document.querySelectorAll('.sidebar-menu .menu-item');
@@ -16487,6 +16843,11 @@
                     if (p) p.textContent = '体验抽卡的乐趣，祝你欧气满满';
                     if (gachaArea) gachaArea.style.display = 'block';
                     if (typeof updatePoolDisplay === 'function') updatePoolDisplay();
+                } else if (subPage === 'soundtrack') {
+                    if (h1) h1.textContent = '音乐播放器';
+                    if (p) p.textContent = '聆听精彩的原声音乐，享受悠闲时光';
+                    if (soundtrackArea) soundtrackArea.style.display = 'block';
+                    if (typeof initSoundtrackPlayer === 'function') initSoundtrackPlayer();
                 }
             }
             
@@ -16510,7 +16871,7 @@
                 m.classList.remove('active');
             });
             
-            var targetDataNav = subPage === 'gacha' ? 'gacha-simulator' : 'gamecenter';
+            var targetDataNav = subPage === 'gacha' ? 'gacha-simulator' : (subPage === 'soundtrack' ? 'soundtrack' : 'gamecenter');
             var dropdownItem = centerNav.querySelector('.ui-min-dropdown-item[data-nav="' + targetDataNav + '"]');
             if (dropdownItem) {
                 dropdownItem.classList.add('active');
@@ -16523,6 +16884,114 @@
             }
         }
         
+        // ===== 抽卡模拟器进入声明弹窗 =====
+        var GACHA_DISCLAIMER_KEY = 'lc_gacha_disclaimer_dismissed_date';
+
+        // 获取 UTC+8 当前日期字符串（YYYY-MM-DD）
+        function getGachaDisclaimerDateStr() {
+            var now = new Date();
+            var utc8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+            var y = utc8.getUTCFullYear();
+            var m = String(utc8.getUTCMonth() + 1).padStart(2, '0');
+            var d = String(utc8.getUTCDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        // 今日是否已勾选"今日内不再显示"
+        function isGachaDisclaimerDismissedToday() {
+            try {
+                return localStorage.getItem(GACHA_DISCLAIMER_KEY) === getGachaDisclaimerDateStr();
+            } catch(e) { return false; }
+        }
+
+        // 显示声明弹窗
+        function showGachaDisclaimer() {
+            var overlay = document.getElementById('gachaDisclaimerOverlay');
+            if (!overlay) { switchGameCenterSubPage('gacha'); return; }
+            // 每次打开重置复选框状态
+            var checkbox = document.getElementById('gachaDisclaimerDontShow');
+            if (checkbox) checkbox.checked = false;
+            overlay.style.display = 'flex';
+            setTimeout(function() {
+                overlay.classList.add('show');
+            }, 10);
+        }
+
+        // 关闭声明弹窗
+        function closeGachaDisclaimer() {
+            var overlay = document.getElementById('gachaDisclaimerOverlay');
+            if (!overlay) return;
+            overlay.classList.remove('show');
+            setTimeout(function() {
+                overlay.style.display = 'none';
+            }, 200);
+        }
+
+        // 点击"确定"：勾选了"今日内不再显示"则记录今日日期，然后进入抽卡模拟器
+        function confirmGachaDisclaimer() {
+            var checkbox = document.getElementById('gachaDisclaimerDontShow');
+            if (checkbox && checkbox.checked) {
+                try {
+                    localStorage.setItem(GACHA_DISCLAIMER_KEY, getGachaDisclaimerDateStr());
+                } catch(e) { /* 静默失败 */ }
+            }
+            closeGachaDisclaimer();
+            switchGameCenterSubPage('gacha');
+        }
+
+        // 从多级菜单进入抽卡模拟器的统一入口：今日未勾选"不再显示"则先弹声明
+        function openGachaWithDisclaimer() {
+            if (isGachaDisclaimerDismissedToday()) {
+                switchGameCenterSubPage('gacha');
+            } else {
+                showGachaDisclaimer();
+            }
+        }
+
+        // ===== 娱乐卡池进入声明弹窗（今日内不再显示，UTC+8） =====
+        var GACHA_FUN_DISCLAIMER_KEY = 'lc_gacha_fun_disclaimer_dismissed_date';
+
+        function isGachaFunDisclaimerDismissedToday() {
+            try {
+                return localStorage.getItem(GACHA_FUN_DISCLAIMER_KEY) === getGachaDisclaimerDateStr();
+            } catch(e) { return false; }
+        }
+
+        // onConfirm：弹窗确认（或今日已勾选不再显示）后执行的回调（展开并进入娱乐卡池）
+        function openGachaFunDisclaimer(onConfirm) {
+            if (isGachaFunDisclaimerDismissedToday()) {
+                if (onConfirm) onConfirm();
+                return;
+            }
+            var overlay = document.getElementById('gachaFunDisclaimerOverlay');
+            if (!overlay) { if (onConfirm) onConfirm(); return; }
+            // 每次打开重置复选框
+            var checkbox = document.getElementById('gachaFunDisclaimerDontShow');
+            if (checkbox) checkbox.checked = false;
+            overlay.style.display = 'flex';
+            setTimeout(function() {
+                overlay.classList.add('show');
+            }, 10);
+
+            var btn = document.getElementById('gachaFunDisclaimerConfirmBtn');
+            if (btn) {
+                // 每次打开重新绑定，确保回调为本次点击对应的卡池
+                btn.onclick = function() {
+                    var cb = document.getElementById('gachaFunDisclaimerDontShow');
+                    if (cb && cb.checked) {
+                        try {
+                            localStorage.setItem(GACHA_FUN_DISCLAIMER_KEY, getGachaDisclaimerDateStr());
+                        } catch(e) { /* 静默失败 */ }
+                    }
+                    overlay.classList.remove('show');
+                    setTimeout(function() {
+                        overlay.style.display = 'none';
+                    }, 200);
+                    if (onConfirm) onConfirm();
+                };
+            }
+        }
+
         // 抽卡自定义弹窗
         function showGachaModal(title, bodyHTML, buttons) {
             var overlay = document.getElementById('gachaModalOverlay');
@@ -16575,7 +17044,12 @@
                     icon: 'fa-building',
                     iconImg: 'images/limbuslogo.png',
                     color: '#d45d79',
-                    pools: [
+                    // 侧边栏分类（"模拟器卡池"始终显示在第一位）
+                    categories: [
+                        {
+                            id: 'cat-sim',
+                            name: '模拟器卡池',
+                            pools: [
                         {
                             id: 'lc-current',
                             name: '当期卡池',
@@ -16584,9 +17058,9 @@
                             rates: { 'narrator': 1.3, 'ego': 1.3, '3star': 2.9, '2star': 12.8, '1star': 81.7 },
                             subPools: [
                                 {
-                                    id: 'lc-current-hongru',
-                                    name: 'Cinq协会 东部三科 鸿路',
-                                    subtitle: 'Cinq协会 东部三科 UP主题卡池'
+                                    id: 'lc-current-gregor',
+                                    name: '迁居申请 - 格里高尔',
+                                    subtitle: '迁居申请 UP主题卡池'
                                 }
                             ]
                         },
@@ -16597,6 +17071,11 @@
                             type: 'past',
                             rates: { 'narrator': 1.3, 'ego': 1.3, '3star': 2.9, '2star': 12.8, '1star': 81.7 },
                             subPools: [
+                                {
+                                    id: 'lc-current-hongru',
+                                    name: 'Cinq协会 东部三科 鸿路',
+                                    subtitle: 'Cinq协会 东部三科 UP主题卡池'
+                                },
                                 {
                                     id: 'lc-current-rps',
                                     name: '我出剪刀，你呢？',
@@ -16629,6 +17108,35 @@
                             hasNarrator: false,
                             subPools: []
                         }
+                            ]
+                        },
+                        {
+                            id: 'cat-special',
+                            name: '特殊卡池',
+                            pools: [
+                                {
+                                    id: 'lc-entertainment',
+                                    name: '娱乐卡池',
+                                    subtitle: '模拟器原创 · 娱乐性质卡池',
+                                    type: 'special',
+                                    // 纯人格池：不含播报员、不含EGO
+                                    // 三星总概率3.0% = 9位"牢"门人格各0.3222%（合计2.9%，平分原有三星总概率）+ 隐藏人格夯尔索0.1%（更低更稀有）
+                                    // 二星/一星人格池数量与概率不变（12.8% / 84.2%）
+                                    rates: { '3star': 3.0, '2star': 12.8, '1star': 84.2 },
+                                    personalityOnly: true,
+                                    hasNarrator: false,
+                                    // 点击进入前需先弹出娱乐卡池声明（今日内不再显示）
+                                    requireDisclaimer: 'fun',
+                                    subPools: [
+                                        {
+                                            id: 'lc-laojiumen',
+                                            name: '牢九门限定抽出',
+                                            subtitle: '九位"牢"门人格限定 · 娱乐卡池'
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
                     ]
                 }
             ];
@@ -16636,7 +17144,7 @@
             // ===== 当前状态 =====
             var currentGameId = 'limbuscompany';
             var currentPoolGroupId = 'lc-current';
-            var currentSubPoolId = 'lc-current-hongru';
+            var currentSubPoolId = 'lc-current-gregor';
             var gachaStats = { total: 0, 'narrator': 0, 'ego': 0, '3star': 0, '2star': 0, '1star': 0, totalCost: 0 };
             var diamond = 5000;
             var gachaHistory = [];
@@ -16737,6 +17245,26 @@
             var ratesPity10 = { 'narrator': 1.3, 'ego': 1.3, '3star': 2.9, '2star': 94.5 };
             
             var expandedPoolGroups = {};
+            var expandedCategories = {}; // 侧边栏分类（模拟器卡池/特殊卡池）展开状态
+
+            // 汇总某游戏下所有卡池分组（兼容旧的 game.pools 扁平结构与新的 game.categories 分组结构）
+            function getAllPoolGroups(game) {
+                if (!game) return [];
+                if (game.categories && game.categories.length > 0) {
+                    var list = [];
+                    game.categories.forEach(function(cat) {
+                        (cat.pools || []).forEach(function(p) { list.push(p); });
+                    });
+                    return list;
+                }
+                return game.pools || [];
+            }
+
+            // 根据分类ID查找分类对象
+            function getCategoryById(game, categoryId) {
+                if (!game || !game.categories) return null;
+                return game.categories.find(function(c) { return c.id === categoryId; }) || null;
+            }
             
             // ===== 辅助函数 =====
             function getStarsHTML(star) {
@@ -16750,7 +17278,7 @@
             function getPoolGroup() {
                 var game = gachaGames.find(function(g) { return g.id === currentGameId; });
                 if (!game) return null;
-                return game.pools.find(function(p) { return p.id === currentPoolGroupId; });
+                return getAllPoolGroups(game).find(function(p) { return p.id === currentPoolGroupId; });
             }
             
             function getCurrentSubPool() {
@@ -16784,6 +17312,12 @@
             var modalCloseBtn = document.getElementById('gachaModalClose');
             if (modalCloseBtn) {
                 modalCloseBtn.addEventListener('click', closeGachaModal);
+            }
+
+            // 抽卡模拟器进入声明弹窗：确定按钮
+            var disclaimerConfirmBtn = document.getElementById('gachaDisclaimerConfirmBtn');
+            if (disclaimerConfirmBtn) {
+                disclaimerConfirmBtn.addEventListener('click', confirmGachaDisclaimer);
             }
             var modalOverlay = document.getElementById('gachaModalOverlay');
             if (modalOverlay) {
@@ -16832,17 +17366,18 @@
                     
                     var poolsList = document.createElement('div');
                     poolsList.className = 'gacha-pools-list';
-                    
-                    game.pools.forEach(function(poolGroup) {
+
+                    // 渲染单个卡池分组（含子卡池），追加到 parentContainer
+                    function renderPoolGroup(poolGroup, parentContainer) {
                         var hasSubPools = poolGroup.subPools && poolGroup.subPools.length > 0;
-                        
+
                         if (hasSubPools) {
                             var expanded = expandedPoolGroups[poolGroup.id] || poolGroup.id === currentPoolGroupId;
                             if (expanded) expandedPoolGroups[poolGroup.id] = true;
-                            
+
                             var groupWrapper = document.createElement('div');
                             groupWrapper.className = 'gacha-pool-group-wrapper';
-                            
+
                             var groupItem = document.createElement('div');
                             groupItem.className = 'gacha-pool-item pool-group-item' + (expanded ? ' active' : '');
                             groupItem.setAttribute('data-pool-group-id', poolGroup.id);
@@ -16851,33 +17386,42 @@
                                 <span class="pool-name">${poolGroup.name}</span>
                                 <i class="fas fa-chevron-down pool-group-chevron" style="font-size: 8px; margin-left: auto; color: #999; transition: transform 0.2s; ${expanded ? 'transform: rotate(180deg);' : ''}"></i>
                             `;
-                            
+
+                            var subPoolsContainer = document.createElement('div');
+                            subPoolsContainer.className = 'gacha-subpools-list';
+                            subPoolsContainer.style.display = expanded ? 'flex' : 'none';
+
                             groupItem.addEventListener('click', function() {
                                 var isExpanded = expandedPoolGroups[poolGroup.id];
                                 if (isExpanded) {
+                                    // 已展开：再次点击直接收起
                                     expandedPoolGroups[poolGroup.id] = false;
                                     groupItem.classList.remove('active');
                                     subPoolsContainer.style.display = 'none';
                                 } else {
-                                    expandedPoolGroups[poolGroup.id] = true;
-                                    groupItem.classList.add('active');
-                                    subPoolsContainer.style.display = 'flex';
-                                    
-                                    if (!poolGroup.subPoolsExpanded) {
-                                        poolGroup.subPoolsExpanded = true;
-                                        if (poolGroup.subPools[0]) {
-                                            selectPool(game.id, poolGroup.id, poolGroup.subPools[0].id);
+                                    // 展开并进入第一个子卡池（娱乐卡池需先弹声明）
+                                    var doExpandAndEnter = function() {
+                                        expandedPoolGroups[poolGroup.id] = true;
+                                        groupItem.classList.add('active');
+                                        subPoolsContainer.style.display = 'flex';
+
+                                        if (!poolGroup.subPoolsExpanded) {
+                                            poolGroup.subPoolsExpanded = true;
+                                            if (poolGroup.subPools[0]) {
+                                                selectPool(game.id, poolGroup.id, poolGroup.subPools[0].id);
+                                            }
                                         }
+                                    };
+                                    if (poolGroup.requireDisclaimer === 'fun') {
+                                        openGachaFunDisclaimer(doExpandAndEnter);
+                                    } else {
+                                        doExpandAndEnter();
                                     }
                                 }
                             });
-                            
+
                             groupWrapper.appendChild(groupItem);
-                            
-                            var subPoolsContainer = document.createElement('div');
-                            subPoolsContainer.className = 'gacha-subpools-list';
-                            subPoolsContainer.style.display = expanded ? 'flex' : 'none';
-                            
+
                             poolGroup.subPools.forEach(function(subPool) {
                                 var subItem = document.createElement('div');
                                 subItem.className = 'gacha-subpool-item' + (subPool.id === currentSubPoolId && poolGroup.id === currentPoolGroupId ? ' active' : '');
@@ -16886,17 +17430,23 @@
                                     <span class="subpool-dot"></span>
                                     <span class="subpool-name">${subPool.name}</span>
                                 `;
-                                
+
                                 subItem.addEventListener('click', function(e) {
                                     e.stopPropagation();
-                                    selectPool(game.id, poolGroup.id, subPool.id);
+                                    if (poolGroup.requireDisclaimer === 'fun') {
+                                        openGachaFunDisclaimer(function() {
+                                            selectPool(game.id, poolGroup.id, subPool.id);
+                                        });
+                                    } else {
+                                        selectPool(game.id, poolGroup.id, subPool.id);
+                                    }
                                 });
-                                
+
                                 subPoolsContainer.appendChild(subItem);
                             });
-                            
+
                             groupWrapper.appendChild(subPoolsContainer);
-                            poolsList.appendChild(groupWrapper);
+                            parentContainer.appendChild(groupWrapper);
                         } else {
                             var poolItem = document.createElement('div');
                             poolItem.className = 'gacha-pool-item' + (poolGroup.id === currentPoolGroupId ? ' active' : '');
@@ -16905,15 +17455,69 @@
                                 <span class="pool-dot"></span>
                                 <span class="pool-name">${poolGroup.name}</span>
                             `;
-                            
+
                             poolItem.addEventListener('click', function() {
                                 selectPool(game.id, poolGroup.id, poolGroup.id);
                             });
-                            
-                            poolsList.appendChild(poolItem);
+
+                            parentContainer.appendChild(poolItem);
+                        }
+                    }
+
+                    // 分类层级（模拟器卡池/特殊卡池…）；无 categories 的旧结构直接平铺
+                    var categories = (game.categories && game.categories.length > 0)
+                        ? game.categories
+                        : [{ id: 'cat-default-' + game.id, name: '', pools: getAllPoolGroups(game) }];
+
+                    categories.forEach(function(category, catIndex) {
+                        var catPoolsBox = document.createElement('div');
+                        catPoolsBox.className = 'gacha-category-pools';
+
+                        if (category.name) {
+                            // 分类默认展开：包含当前选中池的分类，或第一个分类（模拟器卡池始终展开）
+                            var containsCurrent = (category.pools || []).some(function(p) { return p.id === currentPoolGroupId; });
+                            var catExpanded = (expandedCategories[category.id] !== undefined)
+                                ? expandedCategories[category.id]
+                                : (catIndex === 0 || containsCurrent);
+                            expandedCategories[category.id] = catExpanded;
+
+                            var catWrapper = document.createElement('div');
+                            catWrapper.className = 'gacha-category-wrapper';
+
+                            var catItem = document.createElement('div');
+                            catItem.className = 'gacha-category-item' + (catExpanded ? ' active' : '');
+                            catItem.setAttribute('data-category-id', category.id);
+                            catItem.innerHTML = `
+                                <span class="category-dot"></span>
+                                <span class="category-name">${category.name}</span>
+                                <i class="fas fa-chevron-down category-chevron" style="font-size: 9px; margin-left: auto; color: #aaa; transition: transform 0.2s; ${catExpanded ? 'transform: rotate(180deg);' : ''}"></i>
+                            `;
+                            catPoolsBox.style.display = catExpanded ? 'block' : 'none';
+
+                            catItem.addEventListener('click', function() {
+                                var isOpen = catPoolsBox.style.display !== 'none';
+                                catPoolsBox.style.display = isOpen ? 'none' : 'block';
+                                expandedCategories[category.id] = !isOpen;
+                                catItem.classList.toggle('active', !isOpen);
+                                var chev = catItem.querySelector('.category-chevron');
+                                if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+                            });
+
+                            (category.pools || []).forEach(function(poolGroup) {
+                                renderPoolGroup(poolGroup, catPoolsBox);
+                            });
+
+                            catWrapper.appendChild(catItem);
+                            catWrapper.appendChild(catPoolsBox);
+                            poolsList.appendChild(catWrapper);
+                        } else {
+                            (category.pools || []).forEach(function(poolGroup) {
+                                renderPoolGroup(poolGroup, catPoolsBox);
+                            });
+                            poolsList.appendChild(catPoolsBox);
                         }
                     });
-                    
+
                     gameItem.appendChild(poolsList);
                     gamesList.appendChild(gameItem);
                 });
@@ -16978,6 +17582,7 @@
                 
                 // 卡池横幅图片映射（硬编码回退 + identity_ego.js）
                 var bannerMap = {
+                    'lc-current-gregor': 'images/limbus0003.png',
                     'lc-current-rps': 'images/limbus0001.png',
                     // TODO: 用户自行设置"Cinq协会 东部三科 鸿路"卡池背景图路径（替换下方空字符串，或修改 identity_ego.js 的 poolBanners）
                     'lc-current-hongru': '',
@@ -19747,7 +20352,7 @@
         
         // 刷新名言 - 使用hitokoto API
         function refreshQuote() {
-            var quoteContent = document.getElementById('quoteContent');
+            var quoteContent = document.getElementById('treasureQuoteContent');
             if (!quoteContent) return;
             
             // 显示加载状态
@@ -19783,7 +20388,7 @@
         
         // 显示名言
         function displayQuote(quote) {
-            var quoteContent = document.getElementById('quoteContent');
+            var quoteContent = document.getElementById('treasureQuoteContent');
             if (!quoteContent) return;
             
             quoteContent.style.opacity = '0';
