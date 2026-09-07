@@ -432,7 +432,7 @@ function isDailyTaskDevMode() {
     if (!name) return false;
     try {
         var dm = JSON.parse(localStorage.getItem('devModeData') || '{}');
-        return !!(dm[name] && dm[name].enabled);
+        return !!(dm[name] && dm[name].enabled) || !!(dm['__global__'] && dm['__global__'].enabled);
     } catch (e) { return false; }
 }
 

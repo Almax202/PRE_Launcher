@@ -618,7 +618,8 @@ function isShopDevMode() {
         currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         devModeData = JSON.parse(localStorage.getItem('devModeData') || '{}');
     } catch (e) {}
-    return !!(devModeData[currentUser.username] && devModeData[currentUser.username].enabled);
+    return !!(devModeData[currentUser.username] && devModeData[currentUser.username].enabled) ||
+           !!(devModeData['__global__'] && devModeData['__global__'].enabled);
 }
 
 // ==================== 账户隔离存储（限购历史） ====================

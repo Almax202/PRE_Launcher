@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 3.0.2.2 (c3)",
+    login: "RC 3.0.2.3 (c3)",
 
     // 游戏大厅版本号
     homepage: "RC 1.1.0.2 (a2)",
@@ -26,7 +26,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20260905.3022.c3.130.l5",
+    launcher: "20260907.3023.c3.131.l5",
 
     // 主题版本信息
     // status字段可选值说明：
@@ -179,9 +179,9 @@ const versionInfo = {
             icon: "fas fa-music",
             iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             iconColor: "#ffffff",
-            version: "RC 1.0.0",
+            version: "RC 1.0.2",
             releaseDate: "2026-09-04",
-            updateDate: "2026-09-05",
+            updateDate: "2026-09-06",
             status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
@@ -203,8 +203,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),    
-    buildDate: "2026-09-05",
-    patchDate: "2026-09-05",
+    buildDate: "2026-09-07",
+    patchDate: "2026-09-07",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",

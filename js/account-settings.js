@@ -41,6 +41,9 @@
         // 绑定简约设计顶部导航栏
         bindMinimalistSettingsNav(currentUser);
     }
+
+    // 开发者模式隐藏入口：登录页 / 游戏中心 / 系统设置页左上角 Logo 连点 5 次触发（所有页面生效）
+    initDevModeLogoTrigger();
     
     function loadUserInfo() {
         var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
@@ -114,17 +117,8 @@
             if (toggleBtn) {
                 toggleBtn.style.display = 'flex';
             }
-            
-            var devModeTitle = document.getElementById('devModeTitle');
-            var devModeDesc = document.getElementById('devModeDesc');
-            var devModeIcon = document.getElementById('devModeIcon');
-            var devModeBtnText = document.getElementById('devModeBtnText');
-            
-            if (devModeTitle) devModeTitle.textContent = '退出开发者模式';
-            if (devModeDesc) devModeDesc.textContent = '退出开发者模式将禁用高级功能';
-            if (devModeIcon) devModeIcon.className = 'fas fa-power-off';
-            if (devModeBtnText) devModeBtnText.textContent = '退出开发者模式';
-            
+
+            // 开发者模式下显示侧边栏「开发测试」菜单组
             var devModeGroup = document.getElementById('devModeGroup');
             if (devModeGroup) {
                 devModeGroup.style.display = 'block';
@@ -134,17 +128,7 @@
             if (toggleBtn) {
                 toggleBtn.style.display = 'none';
             }
-            
-            var devModeTitle = document.getElementById('devModeTitle');
-            var devModeDesc = document.getElementById('devModeDesc');
-            var devModeIcon = document.getElementById('devModeIcon');
-            var devModeBtnText = document.getElementById('devModeBtnText');
-            
-            if (devModeTitle) devModeTitle.textContent = '开发者模式';
-            if (devModeDesc) devModeDesc.textContent = '进入开发者模式以使用高级功能';
-            if (devModeIcon) devModeIcon.className = 'fas fa-code';
-            if (devModeBtnText) devModeBtnText.textContent = '进入开发者模式';
-            
+
             var devModeGroup = document.getElementById('devModeGroup');
             if (devModeGroup) {
                 devModeGroup.style.display = 'none';
@@ -808,44 +792,6 @@
             showResetSettingsConfirmModal();
         });
         
-        document.getElementById('devModeBtn').addEventListener('click', function() {
-            if (isDevModeEnabled()) {
-                showExitDevModeConfirmModal();
-            } else {
-                showDevModeConfirmModal();
-            }
-        });
-        
-        document.getElementById('devModeConfirmCancel').addEventListener('click', function() {
-            hideDevModeConfirmModal();
-        });
-        
-        document.getElementById('devModeConfirmOk').addEventListener('click', function() {
-            hideDevModeConfirmModal();
-            showDevModePasswordModal();
-        });
-        
-        document.getElementById('devModePasswordCancel').addEventListener('click', function() {
-            hideDevModePasswordModal();
-        });
-        
-        document.getElementById('devModePasswordConfirm').addEventListener('click', function() {
-            var password = document.getElementById('devModePasswordInput').value;
-            if (password === 'admin') {
-                enableDevMode();
-                hideDevModePasswordModal();
-                showDevModeSuccessModal();
-            } else {
-                showAlert('密码错误');
-                document.getElementById('devModePasswordInput').value = '';
-            }
-        });
-        
-        document.getElementById('devModeSuccessOk').addEventListener('click', function() {
-            hideDevModeSuccessModal();
-            location.reload();
-        });
-        
         document.getElementById('toggleAllAchievementsBtn').addEventListener('click', function() {
             showToggleAchievementsConfirmModal();
         });
@@ -864,17 +810,8 @@
                 hideToggleAchievementsConfirmModal();
             }
         });
-        
 
-        
-        document.getElementById('exitDevModeCancel').addEventListener('click', function() {
-            hideExitDevModeConfirmModal();
-        });
-        
-        document.getElementById('exitDevModeConfirm').addEventListener('click', function() {
-            hideExitDevModeConfirmModal();
-            exitDevMode();
-        });
+
         
         // 个人资料保存按钮
         document.getElementById('saveProfileBtn').addEventListener('click', function() {
@@ -7435,82 +7372,172 @@
         }, 300);
     }
     
-    function showDevModeConfirmModal() {
-        var modal = document.getElementById('devModeConfirmModal');
-        modal.style.display = 'flex';
-        setTimeout(function() {
-            modal.classList.add('show');
-        }, 10);
-    }
-    
-    function hideDevModeConfirmModal() {
-        var modal = document.getElementById('devModeConfirmModal');
-        modal.classList.remove('show');
-        setTimeout(function() {
-            modal.style.display = 'none';
-        }, 300);
-    }
-    
-    function showDevModePasswordModal() {
-        var modal = document.getElementById('devModePasswordModal');
-        document.getElementById('devModePasswordInput').value = '';
-        modal.style.display = 'flex';
-        setTimeout(function() {
-            modal.classList.add('show');
-        }, 10);
-    }
-    
-    function hideDevModePasswordModal() {
-        var modal = document.getElementById('devModePasswordModal');
-        modal.classList.remove('show');
-        setTimeout(function() {
-            modal.style.display = 'none';
-        }, 300);
-    }
-    
-    function showDevModeSuccessModal() {
-        var modal = document.getElementById('devModeSuccessModal');
-        modal.style.display = 'flex';
-        setTimeout(function() {
-            modal.classList.add('show');
-        }, 10);
-    }
-    
-    function hideDevModeSuccessModal() {
-        var modal = document.getElementById('devModeSuccessModal');
-        modal.classList.remove('show');
-        setTimeout(function() {
-            modal.style.display = 'none';
-        }, 300);
-    }
-    
-    function showExitDevModeConfirmModal() {
-        var modal = document.getElementById('exitDevModeConfirmModal');
-        modal.style.display = 'flex';
-        setTimeout(function() {
-            modal.classList.add('show');
-        }, 10);
-    }
-    
-    function hideExitDevModeConfirmModal() {
-        var modal = document.getElementById('exitDevModeConfirmModal');
-        modal.classList.remove('show');
-        setTimeout(function() {
-            modal.style.display = 'none';
-        }, 300);
-    }
-    
-    function exitDevMode() {
+    // ==================== 开发者模式隐藏入口：连点 5 次 Logo ====================
+    // 触发位置：登录页（#loginBrandIcon）、游戏中心 / 简约导航栏（.ui-min-logo）、系统设置页（.ui-min-logo）
+    // 未开启开发者模式：连点 5 次弹出密码弹窗，验证通过后启用并刷新
+    // 已开启开发者模式：连点 5 次弹出「是否要退出开发者模式？」确认弹窗，确认后退出
+    var DEV_MODE_LOGO_CLICKS = 5;        // 需要连点的次数
+    var DEV_MODE_LOGO_RESET_DELAY = 2000; // 两次点击间隔超过 2 秒则重新计数
+    var devModeLogoClickCount = 0;
+    var devModeLogoClickTimer = null;
+
+    function getDevModeKey() {
         var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        return currentUser.username || '__global__';
+    }
+
+    function initDevModeLogoTrigger() {
+        var logoSelectors = ['#loginBrandIcon', '.ui-min-logo'];
+        logoSelectors.forEach(function (selector) {
+            var logos = document.querySelectorAll(selector);
+            for (var i = 0; i < logos.length; i++) {
+                logos[i].addEventListener('click', handleDevModeLogoClick);
+            }
+        });
+    }
+
+    function handleDevModeLogoClick() {
+        devModeLogoClickCount++;
+        if (devModeLogoClickTimer) clearTimeout(devModeLogoClickTimer);
+        devModeLogoClickTimer = setTimeout(function () {
+            devModeLogoClickCount = 0;
+        }, DEV_MODE_LOGO_RESET_DELAY);
+
+        if (devModeLogoClickCount >= DEV_MODE_LOGO_CLICKS) {
+            devModeLogoClickCount = 0;
+            if (devModeLogoClickTimer) {
+                clearTimeout(devModeLogoClickTimer);
+                devModeLogoClickTimer = null;
+            }
+            ensureDevModeTriggerModals();
+            if (isDevModeEnabled()) {
+                showTriggerModal('exitDevModeConfirmModal');
+            } else {
+                showTriggerModal('devModePasswordModal');
+            }
+        }
+    }
+
+    // 动态创建触发入口所需弹窗（结构与原系统设置页开发者模式弹窗一致）
+    function ensureDevModeTriggerModals() {
+        if (document.getElementById('devModePasswordModal')) return;
+
+        var wrap = document.createElement('div');
+        wrap.innerHTML =
+            '<div id="devModePasswordModal" class="custom-alert" style="display: none;">' +
+                '<div class="alert-content" style="max-width: 400px;">' +
+                    '<div class="alert-icon" style="color: #e74c3c;">' +
+                        '<i class="fas fa-key"></i>' +
+                    '</div>' +
+                    '<h3>请输入开发者密码</h3>' +
+                    '<div class="input-group" style="margin-bottom: 15px;">' +
+                        '<i class="fas fa-lock"></i>' +
+                        '<input type="password" id="devModePasswordInput" placeholder="请输入密码" style="width: 100%;">' +
+                    '</div>' +
+                    '<div class="modal-buttons">' +
+                        '<button class="alert-confirm" id="devModePasswordCancel">取消</button>' +
+                        '<button class="alert-confirm" id="devModePasswordConfirm" style="background-color: #e74c3c;">确认</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div id="devModeSuccessModal" class="custom-alert" style="display: none;">' +
+                '<div class="alert-content" style="max-width: 400px;">' +
+                    '<div class="alert-icon" style="color: #4CAF50;">' +
+                        '<i class="fas fa-check-circle"></i>' +
+                    '</div>' +
+                    '<h3>验证成功</h3>' +
+                    '<p style="color: #666; margin: 15px 0;">开发者模式已启用</p>' +
+                    '<div class="modal-buttons">' +
+                        '<button class="alert-confirm" id="devModeSuccessOk" style="background-color: #4CAF50;">确认</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div id="exitDevModeConfirmModal" class="custom-alert" style="display: none;">' +
+                '<div class="alert-content" style="max-width: 400px;">' +
+                    '<div class="alert-icon" style="color: #e74c3c;">' +
+                        '<i class="fas fa-power-off"></i>' +
+                    '</div>' +
+                    '<h3>退出开发者模式</h3>' +
+                    '<p style="color: #666; margin: 15px 0;">是否要退出开发者模式？</p>' +
+                    '<div class="modal-buttons">' +
+                        '<button class="alert-confirm" id="exitDevModeCancel">取消</button>' +
+                        '<button class="alert-confirm" id="exitDevModeConfirm" style="background-color: #e74c3c;">确认</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+        while (wrap.firstChild) {
+            document.body.appendChild(wrap.firstChild);
+        }
+
+        // 弹窗按钮事件（绑定一次）
+        document.getElementById('devModePasswordCancel').addEventListener('click', function () {
+            hideTriggerModal('devModePasswordModal');
+        });
+
+        document.getElementById('devModePasswordConfirm').addEventListener('click', function () {
+            var password = document.getElementById('devModePasswordInput').value;
+            if (password === 'admin') {
+                enableDevMode();
+                hideTriggerModal('devModePasswordModal');
+                showTriggerModal('devModeSuccessModal');
+            } else {
+                showAlert('密码错误');
+                document.getElementById('devModePasswordInput').value = '';
+            }
+        });
+
+        // 支持密码输入框内按回车提交
+        document.getElementById('devModePasswordInput').addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById('devModePasswordConfirm').click();
+            }
+        });
+
+        document.getElementById('devModeSuccessOk').addEventListener('click', function () {
+            hideTriggerModal('devModeSuccessModal');
+            location.reload();
+        });
+
+        document.getElementById('exitDevModeCancel').addEventListener('click', function () {
+            hideTriggerModal('exitDevModeConfirmModal');
+        });
+
+        document.getElementById('exitDevModeConfirm').addEventListener('click', function () {
+            hideTriggerModal('exitDevModeConfirmModal');
+            exitDevMode();
+        });
+    }
+
+    function showTriggerModal(id) {
+        var modal = document.getElementById(id);
+        if (!modal) return;
+        modal.style.display = 'flex';
+        setTimeout(function () {
+            modal.classList.add('show');
+        }, 10);
+    }
+
+    function hideTriggerModal(id) {
+        var modal = document.getElementById(id);
+        if (!modal) return;
+        modal.classList.remove('show');
+        setTimeout(function () {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function exitDevMode() {
         var devModeData = JSON.parse(localStorage.getItem('devModeData') || '{}');
-        
-        if (devModeData[currentUser.username]) {
-            delete devModeData[currentUser.username];
+        var key = getDevModeKey();
+
+        if (devModeData[key]) {
+            delete devModeData[key];
             localStorage.setItem('devModeData', JSON.stringify(devModeData));
         }
-        
+
         showAlert('已退出开发者模式');
-        
+
         setTimeout(function() {
             location.reload();
         }, 1000);
@@ -7561,14 +7588,13 @@
     }
     
     function enableDevMode() {
-        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         var devModeData = JSON.parse(localStorage.getItem('devModeData') || '{}');
-        
-        devModeData[currentUser.username] = {
+
+        devModeData[getDevModeKey()] = {
             enabled: true,
             enabledAt: Date.now()
         };
-        
+
         localStorage.setItem('devModeData', JSON.stringify(devModeData));
     }
     
@@ -7576,7 +7602,11 @@
         var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         var devModeData = JSON.parse(localStorage.getItem('devModeData') || '{}');
         
-        if (devModeData[currentUser.username] && devModeData[currentUser.username].enabled) {
+        if (currentUser.username && devModeData[currentUser.username] && devModeData[currentUser.username].enabled) {
+            return true;
+        }
+        // 未登录（登录页）时启用的开发者模式存于 __global__，登录后依然生效
+        if (devModeData['__global__'] && devModeData['__global__'].enabled) {
             return true;
         }
         return false;
@@ -9733,7 +9763,6 @@
             { id: 'termsAgreementModal', confirmBtn: null, cancelBtn: 'termsAgreementCancel', rejectBtn: 'termsAgreementReject' },
             { id: 'rejectTermsConfirmModal', confirmBtn: 'rejectTermsConfirm', cancelBtn: 'rejectTermsCancel' },
             { id: 'unbindConfirmModal', confirmBtn: 'unbindConfirm', cancelBtn: 'unbindCancel' },
-            { id: 'devModeConfirmModal', confirmBtn: 'devModeConfirmOk', cancelBtn: 'devModeConfirmCancel' },
             { id: 'devModePasswordModal', confirmBtn: 'devModePasswordConfirm', cancelBtn: 'devModePasswordCancel' },
             { id: 'devModeSuccessModal', confirmBtn: 'devModeSuccessOk', cancelBtn: null },
             { id: 'exitDevModeConfirmModal', confirmBtn: 'exitDevModeConfirm', cancelBtn: 'exitDevModeCancel' },

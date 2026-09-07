@@ -2825,8 +2825,9 @@
         function updateDevModeUI() {
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             var devModeData = JSON.parse(localStorage.getItem('devModeData') || '{}');
-            var isDevMode = devModeData[currentUser.username] && devModeData[currentUser.username].enabled;
-            
+            var isDevMode = !!(devModeData[currentUser.username] && devModeData[currentUser.username].enabled) ||
+                            !!(devModeData['__global__'] && devModeData['__global__'].enabled);
+
             var toggleAllBtn = document.getElementById('toggleAllCheckinBtn');
             if (toggleAllBtn) {
                 if (isDevMode) {

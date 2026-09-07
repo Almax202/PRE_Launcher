@@ -1995,21 +1995,6 @@
                                     重置所有设置
                                 </button>
                             </div>
-                            <div class="two-factor-item danger-item" id="devModeItem">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-code" style="color: #e53e3e; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;" id="devModeTitle">开发者模式</h4>
-                                        </div>
-                                    </div>
-                                    <p style="margin: 0; font-size: 13px; color: #666;" id="devModeDesc">进入开发者模式以使用高级功能</p>
-                                </div>
-                                <button class="two-factor-btn danger" id="devModeBtn">
-                                    <i class="fas fa-code" id="devModeIcon"></i>
-                                    <span id="devModeBtnText">进入开发者模式</span>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -2776,64 +2761,6 @@
             <div class="modal-buttons">
                 <button class="alert-confirm" id="unbindCancel">取消</button>
                 <button class="alert-confirm" id="unbindConfirm" style="background-color: #e74c3c;">确认解绑</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="devModeConfirmModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 400px;">
-            <div class="alert-icon" style="color: #e74c3c;">
-                <i class="fas fa-code"></i>
-            </div>
-            <h3>进入开发者模式</h3>
-            <p style="color: #666; margin: 15px 0;">是否要进入开发者模式？</p>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="devModeConfirmCancel">取消</button>
-                <button class="alert-confirm" id="devModeConfirmOk" style="background-color: #e74c3c;">确认</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="devModePasswordModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 400px;">
-            <div class="alert-icon" style="color: #e74c3c;">
-                <i class="fas fa-key"></i>
-            </div>
-            <h3>请输入开发者密码</h3>
-            <div class="input-group" style="margin-bottom: 15px;">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="devModePasswordInput" placeholder="请输入密码" style="width: 100%;">
-            </div>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="devModePasswordCancel">取消</button>
-                <button class="alert-confirm" id="devModePasswordConfirm" style="background-color: #e74c3c;">确认</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="devModeSuccessModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 400px;">
-            <div class="alert-icon" style="color: #4CAF50;">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h3>验证成功</h3>
-            <p style="color: #666; margin: 15px 0;">开发者模式已启用</p>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="devModeSuccessOk" style="background-color: #4CAF50;">确认</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="exitDevModeConfirmModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 400px;">
-            <div class="alert-icon" style="color: #e74c3c;">
-                <i class="fas fa-power-off"></i>
-            </div>
-            <h3>退出开发者模式</h3>
-            <p style="color: #666; margin: 15px 0;">是否要退出开发者模式？</p>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="exitDevModeCancel">取消</button>
-                <button class="alert-confirm" id="exitDevModeConfirm" style="background-color: #e74c3c;">确认</button>
             </div>
         </div>
     </div>

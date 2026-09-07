@@ -5,7 +5,10 @@
  * 【如何添加音乐】
  *   1. 将音频文件（.mp3 / .ogg / .wav 等）放入项目根目录下的 sounds/ 目录；
  *   2. 在下方 SOUNDTRACK_TRACKS 数组中追加一条曲目信息即可，
- *      播放器会自动加载并显示，无需改动其它任何代码。
+ *      播放器会自动加载并显示，无需改动其它任何代码；
+ *   3. 如需歌词：将 .lrc 歌词文件放入 sounds/lrc/ 目录（文件名与歌曲对应），
+ *      并在该曲目信息中新增一行 lrc: 'sounds/lrc/歌名.lrc' 即可，
+ *      播放器会在点击"显示歌词"按钮后随时间轴滚动展示歌词。
  * ============================================================ */
 (function () {
     'use strict';
@@ -16,65 +19,244 @@
             id: 'track-01',
             title: 'SAIKAI',
             artist: 'Mili',
-            album: 'Limbus Company',
+            album: '边狱巴士公司',
             src: 'sounds/SAIKAI.mp3',
-            colors: ['#667eea', '#764ba2']
+            lrc: 'sounds/lrc/SAIKAI.lrc',
+            colors: ['#fa709a', '#feb47b']
         },
         {
             id: 'track-02',
             title: 'TIAN TIAN',
             artist: 'Mili',
-            album: 'Limbus Company',
+            album: '边狱巴士公司',
             src: 'sounds/TIAN TIAN.mp3',
-            colors: ['#f093fb', '#f5576c']
+            lrc: 'sounds/lrc/TIAN TIAN.lrc',
+            colors: ['#fa709a', '#feb47b']
         },
         {
             id: 'track-03',
             title: 'HERO',
             artist: 'Mili',
-            album: 'Limbus Company',
+            album: '边狱巴士公司',
             src: 'sounds/HERO.mp3',
-            colors: ['#4facfe', '#00c6fb']
+            lrc: 'sounds/lrc/HERO.lrc',
+            colors: ['#fa709a', '#feb47b']
         },
         {
             id: 'track-04',
             title: 'Through Patches of Violet',
             artist: 'Mili',
-            album: 'Limbus Company',
+            album: '边狱巴士公司',
             src: 'sounds/Through Patches of Violet.mp3',
-            colors: ['#43e97b', '#38f9d7']
+            lrc: 'sounds/lrc/Through Patches of Violet.lrc',
+            colors: ['#fa709a', '#feb47b']
         },
         {
             id: 'track-05',
             title: 'Compass',
             artist: 'Mili',
-            album: 'Limbus Company',
+            album: '边狱巴士公司',
             src: 'sounds/Compass.mp3',
+            lrc: 'sounds/lrc/Compass.lrc',
             colors: ['#fa709a', '#feb47b']
         },
         {
             id: 'track-06',
             title: 'Fly, My Wings',
             artist: 'Mili',
-            album: 'Limbus Company',
+            album: '边狱巴士公司',
             src: 'sounds/Fly, My Wings.mp3',
-            colors: ['#5b73e8', '#30cfd0']
+            lrc: 'sounds/lrc/Fly, My Wings.lrc',
+            colors: ['#fa709a', '#feb47b']
         },
         {
             id: 'track-07',
             title: '危机合约 - 涤墨作战',
             artist: '塞壬唱片-MSR',
-            album: 'Arknights',
+            album: '明日方舟',
             src: 'sounds/Battleplan Obliteration.mp3',
-            colors: ['#5b73e8', '#30cfd0']
+            lrc: 'sounds/lrc/Battleplan Obliteration.lrc',
+            colors: ['#4facfe', '#00c6fb']
         },
         {
             id: 'track-08',
             title: '直到大地变成一颗酸橙',
             artist: '塞壬唱片-MSR',
-            album: 'Arknights',
+            album: '明日方舟',
             src: 'sounds/直到大地变成一颗酸橙.mp3',
+            lrc: 'sounds/lrc/直到大地变成一颗酸橙.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-09',
+            title: 'Color Your Night',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/Color Your Night.mp3',
+            lrc: 'sounds/lrc/Color Your Night.lrc',
             colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-10',
+            title: 'Its Going Down Now',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/Its Going Down Now.mp3',
+            lrc: 'sounds/lrc/Its Going Down Now.lrc',
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-11',
+            title: 'Mass Destruction',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/Mass Destruction.mp3',
+            lrc: 'sounds/lrc/Mass Destruction.lrc',
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-12',
+            title: 'Want To Be Close',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/Want To Be Close.mp3',
+            lrc: 'sounds/lrc/Want To Be Close.lrc',
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-13',
+            title: '全人类的灵魂之战',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/全人类的灵魂之战.mp3',
+            lrc: 'sounds/lrc/全人类的灵魂之战.lrc',
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-14',
+            title: '全人类灵魂之诗',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/全人类灵魂之诗.mp3',
+            lrc: 'sounds/lrc/全人类灵魂之诗.lrc',
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-15',
+            title: '田中时价购物网',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/时价网络田中.mp3',
+            lrc: 'sounds/lrc/时价网络田中.lrc',
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-16',
+            title: '凡常恩典',
+            artist: 'ATLUS GAME MUSIC',
+            album: '女神异闻录3 Reload',
+            src: 'sounds/月行水上-主界面BGM.mp3',
+            lrc: 'sounds/lrc/月行水上-主界面BGM.lrc',
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'track-17',
+            title: 'Mirror Mode',
+            artist: '铁痕电台-MSR',
+            album: '明日方舟终末地',
+            src: 'sounds/Mirror mode.mp3',
+            lrc: 'sounds/lrc/Mirror mode.lrc',
+            colors: ['#fffb01ff', '#bebebe8e']
+        },
+        {
+            id: 'track-18',
+            title: '沉沦者梦呓',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/沉沦者梦呓.mp3',
+            lrc: 'sounds/lrc/沉沦者梦呓.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-19',
+            title: '【黑流树海】主界面曲变奏',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/【黑流树海】主界面曲变奏.mp3',
+            lrc: 'sounds/lrc/【黑流树海】主界面曲变奏.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-20',
+            title: '树海晕动症',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/树海晕动症.mp3',
+            lrc: 'sounds/lrc/树海晕动症.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-21',
+            title: '居民们的狂欢节',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/居民们的狂欢节.mp3',
+            lrc: 'sounds/lrc/居民们的狂欢节.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-22',
+            title: '致命寻回',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/致命寻回.mp3',
+            lrc: 'sounds/lrc/致命寻回.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-23',
+            title: '肿瘤=心脏',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/肿瘤=心脏.mp3',
+            lrc: 'sounds/lrc/肿瘤=心脏.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-24',
+            title: '黑流=羊水',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/黑流=羊水.mp3',
+            lrc: 'sounds/lrc/黑流=羊水.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-25',
+            title: 'Theory-4',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/Theory-4.mp3',
+            lrc: 'sounds/lrc/Theory-4.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-26',
+            title: 'Reconquista?',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/Reconquista.mp3',
+            lrc: 'sounds/lrc/Reconquista.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-27',
+            title: '致幻的占卜',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/致幻的占卜.mp3',
+            lrc: 'sounds/lrc/致幻的占卜.lrc',
+            colors: ['#4facfe', '#00c6fb']
         },
     ];
 
@@ -89,18 +271,32 @@
     var SOUNDTRACK_ALBUMS = [
         {
             id: 'album-limbus',
-            name: 'Limbus Company',
+            name: '边狱巴士公司',
             description: 'Mili · 6 首',
             trackIds: ['track-01', 'track-02', 'track-03', 'track-04', 'track-05', 'track-06'],
-            colors: ['#667eea', '#d45d79']
+            colors: ['#fa709a', '#feb47b']
         },
         {
             id: 'album-arknights',
-            name: 'Arknights',
-            description: '塞壬唱片-MSR · 2 首',
-            trackIds: ['track-07', 'track-08'],
+            name: '明日方舟',
+            description: '塞壬唱片-MSR · 12 首',
+            trackIds: ['track-07', 'track-08','track-18','track-19','track-20','track-21','track-22','track-23','track-24','track-25','track-26','track-27'],
             colors: ['#4facfe', '#00c6fb']
-        }
+        },
+        {
+            id: 'album-3reload',
+            name: '女神异闻录3 Reload',
+            description: 'ATLUS GAME MUSIC · 6 首',
+            trackIds: ['track-09', 'track-10', 'track-11', 'track-12', 'track-13', 'track-14', 'track-15', 'track-16'],
+            colors: ['#5b73e8', '#30cfd0']
+        },
+        {
+            id: 'album-arknightsend',
+            name: '明日方舟终末地',
+            description: '铁痕电台-MSR · 1 首',
+            trackIds: ['track-17'],
+            colors: ['#fffb01ff', '#bebebe8e']
+        },
         // ← 新增专辑示例（复制下面这行按需注释启用即可）：
         // { id: 'album-new', name: '新专辑名', description: '艺人 · N 首', trackIds: ['track-01','track-02'], colors: ['#667eea','#764ba2'] },
     ];
@@ -175,16 +371,31 @@
 
         // 底部播放控制条行为
         miniBar: {
-            showAfterLeave: true   // 离开音乐播放器后始终显示底部控制条
+            showAfterLeave: true,   // 离开音乐播放器后始终显示底部控制条
+            showToggleBtn: true,    // 在控制条内显示收起/展开按钮
+            quickJump: true         // 离开播放器后点击控制条当前播放曲目快速跳回音乐播放器
         },
 
         // 播放样式（随音乐律动的可视化）：'none' | 'bars' | 'ripple' | 'wave'
         playStyle: 'none',
 
+        // 歌词显示：开启后随播放进度滚动展示 LRC 歌词
+        lyricsOn: false,
+
         // 组件布局：位置预设 + 整体缩放
         layout: {
             position: 'center',   // 对应 LAYOUT_PRESETS 的 key
             scale: 1              // 0.7 ~ 1.3
+        },
+
+        // 调音器：EQ 各段增益（dB，±12）、低音/高音（dB）、主音量（0~1 叠加在原生音量之上）、立体声（-1~1）、预设
+        mixer: {
+            eq: [0, 0, 0, 0, 0, 0, 0],
+            bass: 0,
+            treble: 0,
+            master: 1.0,
+            pan: 0,
+            preset: 'flat'
         }
     };
 
@@ -236,7 +447,9 @@
                 sidebarCollapsed: state.sidebarCollapsed,
                 components: state.components,
                 miniBar: state.miniBar,
-                playStyle: state.playStyle
+                playStyle: state.playStyle,
+                lyricsOn: state.lyricsOn,
+                mixer: state.mixer
             }));
         } catch (e) { /* 存储不可用时静默 */ }
     }
@@ -276,12 +489,33 @@
                 if (typeof s.components.songInfo === 'boolean') state.components.songInfo = s.components.songInfo;
             }
             // 底部控制条行为
-            if (s.miniBar && typeof s.miniBar === 'object' && typeof s.miniBar.showAfterLeave === 'boolean') {
-                state.miniBar.showAfterLeave = s.miniBar.showAfterLeave;
+            if (s.miniBar && typeof s.miniBar === 'object') {
+                if (typeof s.miniBar.showAfterLeave === 'boolean') {
+                    state.miniBar.showAfterLeave = s.miniBar.showAfterLeave;
+                }
+                if (typeof s.miniBar.showToggleBtn === 'boolean') {
+                    state.miniBar.showToggleBtn = s.miniBar.showToggleBtn;
+                }
+                if (typeof s.miniBar.quickJump === 'boolean') {
+                    state.miniBar.quickJump = s.miniBar.quickJump;
+                }
             }
             // 播放样式（律动可视化）
             if (s.playStyle === 'none' || s.playStyle === 'bars' || s.playStyle === 'ripple' || s.playStyle === 'wave') {
                 state.playStyle = s.playStyle;
+            }
+            // 歌词显示开关
+            if (typeof s.lyricsOn === 'boolean') {
+                state.lyricsOn = s.lyricsOn;
+            }
+            // 调音器
+            if (s.mixer && typeof s.mixer === 'object') {
+                if (Array.isArray(s.mixer.eq) && s.mixer.eq.length === 7) state.mixer.eq = s.mixer.eq.slice();
+                if (typeof s.mixer.bass === 'number') state.mixer.bass = s.mixer.bass;
+                if (typeof s.mixer.treble === 'number') state.mixer.treble = s.mixer.treble;
+                if (typeof s.mixer.master === 'number') state.mixer.master = s.mixer.master;
+                if (typeof s.mixer.pan === 'number') state.mixer.pan = s.mixer.pan;
+                if (typeof s.mixer.preset === 'string') state.mixer.preset = s.mixer.preset;
             }
         } catch (e) { /* 配置损坏时使用默认值 */ }
     }
@@ -407,7 +641,9 @@
                     id: p.id,
                     name: p.name,
                     tracks: p.tracks.map(function (t) {
-                        return { id: t.id, title: t.title, artist: t.artist, album: t.album || '', colors: t.colors, custom: true };
+                        var rec = { id: t.id, title: t.title, artist: t.artist, album: t.album || '', colors: t.colors, custom: true };
+                        if (t.lrcText) rec.lrcText = t.lrcText;
+                        return rec;
                     })
                 };
             });
@@ -433,7 +669,7 @@
                             id: String(p.id),
                             name: String(p.name || '新建播放列表'),
                             tracks: p.tracks.map(function (t) {
-                                return {
+                                var rec = {
                                     id: String(t.id),
                                     title: String(t.title || '未知曲目'),
                                     artist: String(t.artist || '本地音乐'),
@@ -442,6 +678,8 @@
                                     colors: (t.colors && t.colors.length === 2) ? t.colors : CUSTOM_TRACK_COLORS[0],
                                     custom: true
                                 };
+                                if (t.lrcText) rec.lrcText = String(t.lrcText);
+                                return rec;
                             })
                         });
                     });
@@ -675,6 +913,21 @@
             '.stk-btn-play { width: 64px; height: 64px; font-size: 24px; color: #fff; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #d45d79 100%); box-shadow: 0 8px 22px rgba(118,75,162,0.4); }',
             '.stk-btn-play:hover { color: #fff; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #d45d79 100%); transform: scale(1.06); }',
             '.stk-btn-play::after { display: none; }',
+
+            /* 歌词滚动显示区（位于唱片与歌曲信息之间，点击"显示歌词"按钮开启） */
+            '.stk-lyrics { display: none; width: 100%; max-width: 560px; height: 120px; margin: 18px 0 2px; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%); animation: stkLyricsIn 0.35s ease; }',
+            '.stk-main.lyrics-on .stk-lyrics { display: block; }',
+            '.stk-lyrics-scroll { height: 100%; overflow-y: auto; scroll-behavior: smooth; scrollbar-width: none; text-align: center; }',
+            '.stk-lyrics-scroll::-webkit-scrollbar { display: none; }',
+            '.stk-lyrics-list { position: relative; padding: 60px 12px; }',
+            '.stk-lyrics-list p { margin: 0; padding: 6px 0; font-size: 15px; line-height: 1.55; color: #9a9aa8; transition: color 0.25s ease, transform 0.25s ease; }',
+            '.stk-lyrics-list p.active { color: transparent; background: linear-gradient(90deg, #667eea, #d45d79); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; transform: scale(1.06); }',
+            '.stk-lyrics-list p.stk-lyrics-blank { min-height: 18px; }',
+            '.stk-lyrics-list p.stk-lyrics-empty { color: #b0b0c0; font-size: 13px; font-weight: 400; padding: 0; transform: none; }',
+            '@keyframes stkLyricsIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }',
+            'body.dark-mode .stk-lyrics-list p { color: #8a8aa0; }',
+            'body.dark-mode .stk-lyrics-list p.active { background: linear-gradient(90deg, #8ea1ff, #e88aa3); -webkit-background-clip: text; background-clip: text; }',
+            'body.dark-mode .stk-lyrics-list p.stk-lyrics-empty { color: #777; }',
 
             /* 音量 */
             '.stk-volume-area { display: flex; align-items: center; gap: 10px; margin-top: 22px; z-index: 1; }',
@@ -1043,6 +1296,9 @@
             '.stk-mini-info { width: 168px; flex-shrink: 0; min-width: 0; }',
             '.stk-mini-title { font-size: 13.5px; font-weight: 700; color: #2c2c3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
             '.stk-mini-artist { font-size: 11.5px; color: #999; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+            '.stk-mini-info.stk-clickable { cursor: pointer; }',
+            '.stk-mini-info.stk-clickable .stk-mini-title { transition: color 0.2s ease; }',
+            '.stk-mini-info.stk-clickable:hover .stk-mini-title { color: #6a5cff; }',
             '.stk-mini-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }',
             '.stk-mini-controls .stk-btn { width: 38px; height: 38px; font-size: 15px; }',
             '.stk-mini-controls .stk-btn-play { width: 46px; height: 46px; font-size: 17px; }',
@@ -1053,11 +1309,73 @@
             '.stk-mini-volume .stk-btn { width: 34px; height: 34px; font-size: 14px; }',
             '.stk-mini-volume .stk-volume-slider { width: 96px; }',
             'body.dark-mode .stk-mini-bar { background: rgba(30,30,44,0.94); border-color: rgba(255,255,255,0.1); box-shadow: 0 18px 50px rgba(0,0,0,0.5); }',
+            '.stk-mini-hide-btn { margin-right: -10px; flex-shrink: 0; }',
+
+            /* 底部小凸起图标：控制条被手动隐藏后贴底显示，点击重新弹出控制条 */
+            '.stk-mini-bump { position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 100%); z-index: 3499; width: 60px; height: 20px; border: none; border-radius: 14px 14px 0 0; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; cursor: pointer; display: flex; align-items: flex-start; justify-content: center; padding: 0; box-shadow: 0 -6px 18px rgba(118,75,162,0.4); opacity: 0; pointer-events: none; transition: transform 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease, height 0.2s ease; }',
+            '.stk-mini-bump i { font-size: 11px; margin-top: 4px; transition: transform 0.2s ease; }',
+            '.stk-mini-bump:hover { height: 26px; }',
+            '.stk-mini-bump:hover i { transform: translateY(2px); }',
+            '.stk-mini-bump.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }',
+            'body.dark-mode .stk-mini-bump { background: linear-gradient(135deg, #8ea1ff, #d45d79); }',
             'body.dark-mode .stk-mini-title { color: #f0f0f5; }',
             'body.dark-mode .stk-mini-artist { color: #888; }',
+            'body.dark-mode .stk-mini-info.stk-clickable:hover .stk-mini-title { color: #8b7dff; }',
             'body.dark-mode .stk-mini-time { color: #888; }',
             '@media (max-width: 980px) { .stk-mini-info { display: none; } }',
             '@media (max-width: 680px) { .stk-mini-volume { display: none; } .stk-mini-bar { gap: 10px; padding: 10px 14px; border-radius: 22px; } }',
+
+            /* ===== 调音器（内置 stk-main，从右侧滑入） ===== */
+            '.stk-mixer-panel { position: absolute; top: 0; right: 0; height: 100%; width: 360px; max-width: 90%; background: rgba(255,255,255,0.98); backdrop-filter: blur(14px); border-left: 1px solid rgba(102,126,234,0.16); border-radius: 0 18px 18px 0; box-shadow: -12px 0 36px rgba(60,50,120,0.18); padding: 0; transform: translateX(100%); transition: transform 0.38s cubic-bezier(0.33,1,0.68,1); z-index: 12; display: flex; flex-direction: column; overflow: hidden; }',
+            '.stk-mixer-panel.open { transform: translateX(0); }',
+            '.stk-mixer-panel.disabled { opacity: 0.5; pointer-events: none; filter: grayscale(0.4); }',
+            '.stk-mixer-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(102,126,234,0.12); background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08)); }',
+            '.stk-mixer-header-left { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; color: #3a3a55; }',
+            '.stk-mixer-header-left i { color: #764ba2; font-size: 16px; }',
+            '.stk-mixer-close { width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(0,0,0,0.06); color: #777; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.2s; }',
+            '.stk-mixer-close:hover { background: rgba(230,76,60,0.12); color: #e74c3c; }',
+            '.stk-mixer-body { flex: 1; overflow-y: auto; padding: 18px 20px 24px; scrollbar-width: thin; scrollbar-color: rgba(118,75,162,0.35) transparent; }',
+            '.stk-mixer-section { margin-bottom: 22px; }',
+            '.stk-mixer-section:last-child { margin-bottom: 0; }',
+            '.stk-mixer-section-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }',
+            '.stk-mixer-section-title i { color: #764ba2; font-size: 11px; }',
+            '.stk-mixer-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }',
+            '.stk-mixer-preset { border: 1px solid rgba(102,126,234,0.22); background: rgba(102,126,234,0.04); color: #5a4f8a; border-radius: 10px; padding: 8px 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.18s; font-family: inherit; }',
+            '.stk-mixer-preset:hover { background: rgba(102,126,234,0.12); border-color: rgba(102,126,234,0.4); color: #6a4cba; }',
+            '.stk-mixer-preset.active { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; color: #fff; box-shadow: 0 3px 10px rgba(118,75,162,0.35); }',
+            '.stk-mixer-eq { display: flex; justify-content: space-between; gap: 4px; height: 180px; padding: 4px 0; }',
+            '.stk-mixer-eq-band { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }',
+            '.stk-mixer-eq-band input[type="range"] { writing-mode: vertical-rl; -webkit-writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 20px; height: 150px; accent-color: #764ba2; cursor: pointer; }',
+            '.stk-mixer-eq-label { font-size: 10px; color: #888; font-weight: 600; text-align: center; line-height: 1.1; }',
+            '.stk-mixer-eq-gain { font-size: 9px; color: #aaa; font-weight: 500; }',
+            '.stk-mixer-extra { display: flex; flex-direction: column; gap: 14px; }',
+            '.stk-mixer-slider-item { display: flex; flex-direction: column; gap: 4px; }',
+            '.stk-mixer-slider-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: #555; }',
+            '.stk-mixer-slider-val { font-size: 11px; color: #764ba2; font-weight: 700; }',
+            '.stk-mixer-range { -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 5px; background: linear-gradient(90deg, #764ba2 0%, #667eea 100%); outline: none; cursor: pointer; }',
+            '.stk-mixer-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #764ba2; box-shadow: 0 2px 5px rgba(0,0,0,0.18); cursor: pointer; }',
+            '.stk-mixer-range::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2.5px solid #764ba2; cursor: pointer; }',
+            '.stk-mixer-pan-wrap { display: flex; align-items: center; gap: 6px; }',
+            '.stk-mixer-pan-wrap .stk-mixer-range { flex: 1; }',
+            '.stk-mixer-pan-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(102,126,234,0.28); background: rgba(102,126,234,0.05); color: #764ba2; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }',
+            '.stk-mixer-pan-btn:hover { background: rgba(102,126,234,0.18); }',
+            '.stk-mixer-quick { display: flex; gap: 10px; }',
+            '.stk-mixer-quick-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(102,126,234,0.25); background: rgba(102,126,234,0.04); color: #5a4f8a; border-radius: 10px; padding: 10px 0; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.18s; font-family: inherit; }',
+            '.stk-mixer-quick-btn:hover { background: rgba(102,126,234,0.1); }',
+            '.stk-mixer-btn { position: relative; }',
+            '.stk-mixer-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; box-shadow: 0 2px 8px rgba(118,75,162,0.3); }',
+            'body.dark-mode .stk-mixer-panel { background: rgba(30,30,44,0.98); border-left-color: rgba(102,126,234,0.25); }',
+            'body.dark-mode .stk-mixer-header { border-bottom-color: rgba(255,255,255,0.08); background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.12)); }',
+            'body.dark-mode .stk-mixer-header-left { color: #e0e0f0; }',
+            'body.dark-mode .stk-mixer-close { background: rgba(255,255,255,0.08); color: #aaa; }',
+            'body.dark-mode .stk-mixer-close:hover { background: rgba(230,76,60,0.2); color: #ff7675; }',
+            'body.dark-mode .stk-mixer-section-title { color: #888; }',
+            'body.dark-mode .stk-mixer-preset { border-color: rgba(102,126,234,0.35); background: rgba(102,126,234,0.08); color: #b5a8e8; }',
+            'body.dark-mode .stk-mixer-preset:hover { background: rgba(102,126,234,0.18); color: #d5c6ff; }',
+            'body.dark-mode .stk-mixer-slider-head { color: #ddd; }',
+            'body.dark-mode .stk-mixer-pan-btn { border-color: rgba(102,126,234,0.35); background: rgba(102,126,234,0.08); color: #a78bfa; }',
+            'body.dark-mode .stk-mixer-quick-btn { border-color: rgba(102,126,234,0.3); background: rgba(102,126,234,0.08); color: #b5a8e8; }',
+            'body.dark-mode .stk-mixer-quick-btn:hover { background: rgba(102,126,234,0.16); }',
 
             /* ===== 头部"专辑"按钮（位于更多按钮左侧） ===== */
             '.stk-header-album-btn { width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(118,75,162,0.08); color: #764ba2; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.25s ease; flex-shrink: 0; }',
@@ -1154,6 +1472,91 @@
             '#stkPanelComponentInfo .component-copyright { font-size: 11px; color: #aaa; text-align: center; width: 100%; }',
             'body.dark-mode #stkPanelComponentInfo .component-copyright { color: #777; }',
 
+            /* ===== 添加自定义歌词文件面板 ===== */
+            '.stk-lyr-tip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; background: rgba(246,211,101,0.14); border: 1px solid rgba(246,211,101,0.4); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; }',
+            '.stk-lyr-tip i { color: #f0a93b; }',
+            '.stk-lyr-pl-row { margin-bottom: 16px; }',
+            '.stk-lyr-pl-select { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid #e0e0ea; background: #fafafe; font-size: 14px; color: #333; cursor: pointer; outline: none; transition: border-color 0.2s; }',
+            '.stk-lyr-pl-select:focus { border-color: #667eea; }',
+            'body.dark-mode .stk-lyr-tip { color: #ddd; background: rgba(246,211,101,0.1); border-color: rgba(246,211,101,0.25); }',
+            'body.dark-mode .stk-lyr-pl-select { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: #eee; }',
+            '.stk-lyr-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 20px; text-align: center; color: #999; }',
+            '.stk-lyr-empty i { font-size: 36px; color: #c8c8d8; }',
+            '.stk-lyr-empty > div { font-size: 14px; }',
+            '.stk-lyr-empty.small { padding: 24px 20px; }',
+            '.stk-lyr-empty.small i { font-size: 28px; }',
+            'body.dark-mode .stk-lyr-empty { color: #777; }',
+            'body.dark-mode .stk-lyr-empty i { color: #555; }',
+            '.stk-lyr-track-list { display: flex; flex-direction: column; gap: 10px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }',
+            '.stk-lyr-track-list::-webkit-scrollbar { width: 6px; }',
+            '.stk-lyr-track-list::-webkit-scrollbar-thumb { background: rgba(118,75,162,0.3); border-radius: 6px; }',
+            '.stk-lyr-track-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid #ececf4; background: #fafafe; cursor: pointer; transition: all 0.2s ease; }',
+            '.stk-lyr-track-item:hover { border-color: #667eea; background: rgba(102,126,234,0.06); transform: translateY(-1px); }',
+            '.stk-lyr-track-cover { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; flex-shrink: 0; }',
+            '.stk-lyr-track-meta { flex: 1; min-width: 0; }',
+            '.stk-lyr-track-name { font-size: 14px; font-weight: 600; color: #2c2c3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+            '.stk-lyr-track-artist { font-size: 12px; color: #999; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+            '.stk-lyr-track-status { flex-shrink: 0; }',
+            '.stk-lyr-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 10px; border-radius: 10px; font-weight: 600; }',
+            '.stk-lyr-tag.has { background: rgba(67,233,123,0.15); color: #2bb673; }',
+            '.stk-lyr-tag.no { background: rgba(102,126,234,0.12); color: #667eea; }',
+            'body.dark-mode .stk-lyr-track-item { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }',
+            'body.dark-mode .stk-lyr-track-item:hover { border-color: #764ba2; background: rgba(118,75,162,0.15); }',
+            'body.dark-mode .stk-lyr-track-name { color: #eee; }',
+            'body.dark-mode .stk-lyr-track-artist { color: #888; }',
+
+            /* ===== LRC 上传弹窗 ===== */
+            '.stk-lrc-box { width: 420px; }',
+            '.stk-lrc-track-name { margin-bottom: 16px !important; font-weight: 600; color: #667eea !important; word-break: break-all; }',
+            '.stk-lrc-drop { border: 2px dashed #d4d4e4; border-radius: 14px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.2s ease; background: #fafafe; }',
+            '.stk-lrc-drop:hover { border-color: #667eea; background: rgba(102,126,234,0.05); }',
+            '.stk-lrc-drop.dragover { border-color: #764ba2; background: rgba(118,75,162,0.08); }',
+            '.stk-lrc-drop i { font-size: 32px; color: #b8b8cc; margin-bottom: 8px; }',
+            '.stk-lrc-drop-text { font-size: 14px; color: #555; font-weight: 600; }',
+            '.stk-lrc-drop-hint { font-size: 12px; color: #aaa; margin-top: 4px; }',
+            '.stk-lrc-file-info { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; background: rgba(102,126,234,0.08); border-radius: 10px; font-size: 13px; color: #555; }',
+            '.stk-lrc-file-info i { color: #667eea; }',
+            '.stk-lrc-file-info span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+            '.stk-lrc-file-info button { border: none; background: transparent; cursor: pointer; color: #aaa; padding: 2px 6px; border-radius: 6px; transition: all 0.2s; }',
+            '.stk-lrc-file-info button:hover { color: #d45d79; background: rgba(212,93,121,0.1); }',
+            '.stk-confirm-box .stk-confirm-actions button#stkLrcOk:disabled { opacity: 0.5; cursor: not-allowed; }',
+            'body.dark-mode .stk-lrc-track-name { color: #8ea1ff !important; }',
+            'body.dark-mode .stk-lrc-drop { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.15); }',
+            'body.dark-mode .stk-lrc-drop:hover { border-color: #8ea1ff; }',
+            'body.dark-mode .stk-lrc-drop i { color: #666; }',
+            'body.dark-mode .stk-lrc-drop-text { color: #ddd; }',
+            'body.dark-mode .stk-lrc-file-info { background: rgba(102,126,234,0.15); color: #ccc; }',
+
+            /* ===== 重置对播放器的设置面板 ===== */
+            '.stk-reset-list { display: flex; flex-direction: column; gap: 10px; }',
+            '.stk-reset-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 1px solid #e4e4ee; border-radius: 12px; background: #fafafe; cursor: pointer; transition: all 0.2s ease; }',
+            '.stk-reset-item:hover { border-color: rgba(230,76,60,0.4); background: #fff; }',
+            '.stk-reset-item.checked { border-color: rgba(230,76,60,0.5); background: rgba(230,76,60,0.05); }',
+            '.stk-reset-item input[type="checkbox"] { width: 16px; height: 16px; margin: 2px 0 0; accent-color: #e64c3c; cursor: pointer; flex-shrink: 0; }',
+            '.stk-reset-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }',
+            '.stk-reset-item-label { font-size: 13.5px; font-weight: 600; color: #2c2c3a; }',
+            '.stk-reset-item-desc { font-size: 11.5px; color: #999; line-height: 1.5; }',
+            '.stk-reset-actions { display: flex; gap: 10px; margin-top: 14px; }',
+            '.stk-reset-actions button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; padding: 11px 0; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s ease; }',
+            '#stkResetSelectedBtn { border: 1px solid #f5c6c3; background: #fef7f6; color: #e64c3c; }',
+            '#stkResetSelectedBtn:hover:not(:disabled) { background: #fdecea; }',
+            '#stkResetSelectedBtn:disabled { opacity: 0.45; cursor: not-allowed; }',
+            '#stkResetAllBtn { border: none; background: linear-gradient(135deg, #ff512f, #dd2476); color: #fff; box-shadow: 0 4px 12px rgba(221,36,118,0.3); }',
+            '#stkResetAllBtn:hover { filter: brightness(1.06); }',
+            '#stkResetConfirmCancel { background: rgba(0,0,0,0.06); color: #666; }',
+            '#stkResetConfirmCancel:hover { background: rgba(0,0,0,0.12); }',
+            '#stkResetConfirmOk { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; box-shadow: 0 4px 12px rgba(231,76,60,0.3); }',
+            '#stkResetConfirmOk:hover { filter: brightness(1.06); }',
+            'body.dark-mode .stk-reset-item { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }',
+            'body.dark-mode .stk-reset-item:hover { background: rgba(255,255,255,0.07); }',
+            'body.dark-mode .stk-reset-item.checked { border-color: rgba(230,76,60,0.55); background: rgba(230,76,60,0.12); }',
+            'body.dark-mode .stk-reset-item-label { color: #f0f0f5; }',
+            'body.dark-mode .stk-reset-item-desc { color: #888; }',
+            'body.dark-mode #stkResetSelectedBtn { background: rgba(230,76,60,0.12); border-color: rgba(230,76,60,0.4); color: #ff7675; }',
+            'body.dark-mode #stkResetSelectedBtn:hover:not(:disabled) { background: rgba(230,76,60,0.2); }',
+            'body.dark-mode #stkResetConfirmCancel { background: rgba(255,255,255,0.08); color: #bbb; }',
+            'body.dark-mode #stkResetConfirmCancel:hover { background: rgba(255,255,255,0.14); }',
+
         ].join('\n');
         document.head.appendChild(style);
     }
@@ -1184,7 +1587,7 @@
                         '<div class="stk-settings-entry" data-section="background">' +
                             '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"><i class="fas fa-image"></i></div>' +
                             '<div class="stk-settings-entry-text">' +
-                                '<div class="stk-settings-entry-label">添加自定义背景图片</div>' +
+                                '<div class="stk-settings-entry-label">自定义背景图片</div>' +
                                 '<div class="stk-settings-entry-desc">按曲目独立设置</div>' +
                             '</div>' +
                             '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
@@ -1192,7 +1595,7 @@
                         '<div class="stk-settings-entry" data-section="layout">' +
                             '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);"><i class="fas fa-up-down-left-right"></i></div>' +
                             '<div class="stk-settings-entry-text">' +
-                                '<div class="stk-settings-entry-label">调整播放器组件位置和大小</div>' +
+                                '<div class="stk-settings-entry-label">组件位置和大小</div>' +
                                 '<div class="stk-settings-entry-desc">九宫格位置与整体缩放</div>' +
                             '</div>' +
                             '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
@@ -1200,7 +1603,7 @@
                         '<div class="stk-settings-entry" data-section="components">' +
                             '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #4facfe, #00c6fb);"><i class="fas fa-eye"></i></div>' +
                             '<div class="stk-settings-entry-text">' +
-                                '<div class="stk-settings-entry-label">调整播放器组件显示状态</div>' +
+                                '<div class="stk-settings-entry-label">组件显示状态</div>' +
                                 '<div class="stk-settings-entry-desc">唱片与歌曲信息的显隐</div>' +
                             '</div>' +
                             '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
@@ -1208,7 +1611,7 @@
                         '<div class="stk-settings-entry" data-section="minibar">' +
                             '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"><i class="fas fa-sliders"></i></div>' +
                             '<div class="stk-settings-entry-text">' +
-                                '<div class="stk-settings-entry-label">调整播放器控制条设置</div>' +
+                                '<div class="stk-settings-entry-label">控制条设置</div>' +
                                 '<div class="stk-settings-entry-desc">离开播放器后的显示行为</div>' +
                             '</div>' +
                             '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
@@ -1216,16 +1619,32 @@
                         '<div class="stk-settings-entry" data-section="playstyle">' +
                             '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #fa709a, #fecfef);"><i class="fas fa-wave-square"></i></div>' +
                             '<div class="stk-settings-entry-text">' +
-                                '<div class="stk-settings-entry-label">调整播放器音乐播放样式</div>' +
+                                '<div class="stk-settings-entry-label">音乐播放样式</div>' +
                                 '<div class="stk-settings-entry-desc">音浪 / 波纹等律动效果</div>' +
+                            '</div>' +
+                            '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
+                        '</div>' +
+                        '<div class="stk-settings-entry" data-section="lyricsfile">' +
+                            '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #f6d365, #fda085);"><i class="fas fa-file-lines"></i></div>' +
+                            '<div class="stk-settings-entry-text">' +
+                                '<div class="stk-settings-entry-label">自定义歌词文件</div>' +
+                                '<div class="stk-settings-entry-desc">为导入歌曲添加 LRC 歌词</div>' +
                             '</div>' +
                             '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
                         '</div>' +
                         '<div class="stk-settings-entry" data-section="componentinfo">' +
                             '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #5b86e5, #36d1dc);"><i class="fas fa-circle-info"></i></div>' +
                             '<div class="stk-settings-entry-text">' +
-                                '<div class="stk-settings-entry-label">播放器组件版本</div>' +
+                                '<div class="stk-settings-entry-label">组件版本</div>' +
                                 '<div class="stk-settings-entry-desc">查看组件版本与功能信息</div>' +
+                            '</div>' +
+                            '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
+                        '</div>' +
+                        '<div class="stk-settings-entry" data-section="reset">' +
+                            '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #ff512f, #dd2476);"><i class="fas fa-rotate-left"></i></div>' +
+                            '<div class="stk-settings-entry-text">' +
+                                '<div class="stk-settings-entry-label">重置设置</div>' +
+                                '<div class="stk-settings-entry-desc">清除播放列表 / 歌词 / 背景等数据</div>' +
                             '</div>' +
                             '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
                         '</div>' +
@@ -1251,6 +1670,11 @@
                         '<div class="stk-disc-label" id="stkDiscLabel"><i class="fas fa-music"></i></div>' +
                         '<div class="stk-disc-hole"></div>' +
                     '</div>' +
+                    '<div class="stk-lyrics" id="stkLyrics">' +
+                        '<div class="stk-lyrics-scroll" id="stkLyricsScroll">' +
+                            '<div class="stk-lyrics-list" id="stkLyricsList"></div>' +
+                        '</div>' +
+                    '</div>' +
                     '<div class="stk-song-info">' +
                         '<h2 class="stk-song-title" id="stkSongTitle">未在播放</h2>' +
                         '<p class="stk-song-artist" id="stkSongArtist">从左侧列表选择一首音乐开始聆听</p>' +
@@ -1273,8 +1697,10 @@
                         '<button class="stk-btn" id="stkBtnRepeat" title="循环模式"><i class="fas fa-repeat"></i></button>' +
                     '</div>' +
                     '<div class="stk-volume-area">' +
+                        '<button class="stk-btn" id="stkBtnLyrics" title="显示歌词"><i class="fas fa-closed-captioning"></i></button>' +
                         '<button class="stk-btn" id="stkBtnMute" title="静音"><i class="fas fa-volume-high"></i></button>' +
                         '<input type="range" class="stk-volume-slider" id="stkVolumeSlider" min="0" max="100" value="80" aria-label="音量调节">' +
+                        '<button class="stk-btn stk-mixer-btn" id="stkBtnMixer" title="调音器"><i class="fas fa-sliders-h"></i></button>' +
                     '</div>' +
                     '<div class="stk-status" id="stkStatus"></div>' +
                     '</div>' +
@@ -1338,8 +1764,10 @@
                             '<p class="stk-settings-card-sub">控制底部悬浮控制条在离开播放器后的显示行为，更改即时生效</p>' +
                             '<div class="stk-comp-toggle-row">' +
                                 '<label class="stk-comp-toggle"><input type="checkbox" id="stkMiniBarShowAfterLeave" checked><span class="stk-comp-switch"></span><span class="stk-comp-label"><i class="fas fa-down-left-and-up-right-to-center"></i>离开音乐播放器后始终显示底部控制条</span></label>' +
+                                '<label class="stk-comp-toggle"><input type="checkbox" id="stkMiniBarShowToggleBtn" checked><span class="stk-comp-switch"></span><span class="stk-comp-label"><i class="fas fa-chevron-down"></i>在控制条内显示收起/展开按钮</span></label>' +
+                                '<label class="stk-comp-toggle"><input type="checkbox" id="stkMiniBarQuickJump" checked><span class="stk-comp-switch"></span><span class="stk-comp-label"><i class="fas fa-location-arrow"></i>离开音乐播放器后点击控制条当前播放曲目快速跳转</span></label>' +
                             '</div>' +
-                            '<div class="stk-comp-hint"><i class="fas fa-circle-info"></i>开启后，正在播放音乐时切换到其他页面仍会显示底部控制条；关闭后，离开播放器将不再显示。</div>' +
+                            '<div class="stk-comp-hint"><i class="fas fa-circle-info"></i>开启后，正在播放音乐时切换到其他页面仍会显示底部控制条；关闭后，离开播放器将不再显示。点击控制条左侧曲目标题可快速跳回音乐播放器，可通过上方开关关闭。</div>' +
                         '</div>' +
                         '<div class="stk-settings-card" id="stkPanelPlayStyle">' +
                             '<h4 class="stk-settings-card-title"><i class="fas fa-wave-square"></i>调整播放器音乐播放样式</h4>' +
@@ -1356,11 +1784,71 @@
                             '</div>' +
                             '<div class="stk-comp-hint"><i class="fas fa-circle-info"></i>音浪 / 波纹 / 流光波浪会实时分析正在播放的音乐并随之律动，播放暂停时自动恢复平静。所选样式会自动保存，刷新后仍然生效。</div>' +
                         '</div>' +
+                        '<div class="stk-settings-card" id="stkPanelLyricsFile"></div>' +
                         '<div class="stk-settings-card stk-cinfo-card" id="stkPanelComponentInfo"></div>' +
+                        '<div class="stk-settings-card" id="stkPanelReset"></div>' +
+                    '</div>' +
+                    '<div class="stk-mixer-panel" id="stkMixerPanel">' +
+                        '<div class="stk-mixer-header">' +
+                            '<div class="stk-mixer-header-left"><i class="fas fa-sliders-h"></i><span>调音器</span></div>' +
+                            '<button class="stk-mixer-close" id="stkMixerCloseBtn" title="关闭调音器"><i class="fas fa-times"></i></button>' +
+                        '</div>' +
+                        '<div class="stk-mixer-body">' +
+                            '<div class="stk-mixer-section">' +
+                                '<div class="stk-mixer-section-title"><i class="fas fa-star"></i>预设混音</div>' +
+                                '<div class="stk-mixer-presets" id="stkMixerPresets">' +
+                                    '<button class="stk-mixer-preset" data-preset="flat"><span>Flat</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="bass"><span>Bass</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="treble"><span>Treble</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="vocal"><span>Vocal</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="rock"><span>Rock</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="pop"><span>Pop</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="classical"><span>Classical</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="jazz"><span>Jazz</span></button>' +
+                                    '<button class="stk-mixer-preset" data-preset="electronic"><span>Electronic</span></button>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="stk-mixer-section">' +
+                                '<div class="stk-mixer-section-title"><i class="fas fa-wave-square"></i>7 段均衡器</div>' +
+                                '<div class="stk-mixer-eq" id="stkMixerEq"></div>' +
+                            '</div>' +
+                            '<div class="stk-mixer-section">' +
+                                '<div class="stk-mixer-section-title"><i class="fas fa-adjust"></i>额外调节</div>' +
+                                '<div class="stk-mixer-extra">' +
+                                    '<div class="stk-mixer-slider-item">' +
+                                        '<div class="stk-mixer-slider-head"><span>低音增强</span><span class="stk-mixer-slider-val" id="stkMixerBassVal">0 dB</span></div>' +
+                                        '<input type="range" class="stk-mixer-range" id="stkMixerBass" min="-12" max="12" step="1" value="0">' +
+                                    '</div>' +
+                                    '<div class="stk-mixer-slider-item">' +
+                                        '<div class="stk-mixer-slider-head"><span>高音增强</span><span class="stk-mixer-slider-val" id="stkMixerTrebleVal">0 dB</span></div>' +
+                                        '<input type="range" class="stk-mixer-range" id="stkMixerTreble" min="-12" max="12" step="1" value="0">' +
+                                    '</div>' +
+                                    '<div class="stk-mixer-slider-item">' +
+                                        '<div class="stk-mixer-slider-head"><span>主音量</span><span class="stk-mixer-slider-val" id="stkMixerMasterVal">100%</span></div>' +
+                                        '<input type="range" class="stk-mixer-range" id="stkMixerMaster" min="50" max="150" step="1" value="100">' +
+                                    '</div>' +
+                                    '<div class="stk-mixer-slider-item">' +
+                                        '<div class="stk-mixer-slider-head"><span>立体声</span><span class="stk-mixer-slider-val" id="stkMixerPanVal">居中</span></div>' +
+                                        '<div class="stk-mixer-pan-wrap">' +
+                                            '<button class="stk-mixer-pan-btn" data-pan="-0.75" title="偏左"><i class="fas fa-chevron-left"></i></button>' +
+                                            '<input type="range" class="stk-mixer-range stk-mixer-pan" id="stkMixerPan" min="-100" max="100" step="1" value="0">' +
+                                            '<button class="stk-mixer-pan-btn" data-pan="0.75" title="偏右"><i class="fas fa-chevron-right"></i></button>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="stk-mixer-section">' +
+                                '<div class="stk-mixer-section-title"><i class="fas fa-equals"></i>快速操作</div>' +
+                                '<div class="stk-mixer-quick">' +
+                                    '<button class="stk-mixer-quick-btn" id="stkMixerApplyPresetBtn"><i class="fas fa-check"></i>应用预设</button>' +
+                                    '<button class="stk-mixer-quick-btn" id="stkMixerResetBtn"><i class="fas fa-rotate-left"></i>全部重置</button>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
                     '</div>' +
                 '</main>' +
                 '<div class="stk-mini-bar" id="stkMiniBar" aria-label="播放控制条">' +
-                    '<div class="stk-mini-info">' +
+                    '<div class="stk-mini-info" id="stkMiniInfo">' +
                         '<div class="stk-mini-title" id="stkMiniTitle">未在播放</div>' +
                         '<div class="stk-mini-artist" id="stkMiniArtist">—</div>' +
                     '</div>' +
@@ -1383,6 +1871,7 @@
                         '<button class="stk-btn" id="stkMiniBtnMute" title="静音"><i class="fas fa-volume-high"></i></button>' +
                         '<input type="range" class="stk-volume-slider" id="stkMiniVolumeSlider" min="0" max="100" value="80" aria-label="音量调节">' +
                     '</div>' +
+                    '<button class="stk-btn stk-mini-hide-btn" id="stkMiniBtnHide" title="隐藏/展开"><i class="fas fa-chevron-down"></i></button>' +
                 '</div>' +
             '</div>';
     }
@@ -1628,9 +2117,15 @@
         ui.btnNext = document.getElementById('stkBtnNext');
         ui.btnShuffle = document.getElementById('stkBtnShuffle');
         ui.btnRepeat = document.getElementById('stkBtnRepeat');
+        ui.btnLyrics = document.getElementById('stkBtnLyrics');
         ui.btnMute = document.getElementById('stkBtnMute');
         ui.volumeSlider = document.getElementById('stkVolumeSlider');
         ui.status = document.getElementById('stkStatus');
+
+        // 歌词滚动显示区
+        ui.lyrics = document.getElementById('stkLyrics');
+        ui.lyricsScroll = document.getElementById('stkLyricsScroll');
+        ui.lyricsList = document.getElementById('stkLyricsList');
 
         // 背景层、折页、内容包裹层
         ui.bgLayer = document.getElementById('stkBgLayer');
@@ -1688,7 +2183,26 @@
         ui.vizPreview = document.getElementById('stkVizPreview');
         ui.vizPreviewCanvas = document.getElementById('stkVizPreviewCanvas');
         ui.vizGrid = document.getElementById('stkVizGrid');
+        ui.panelLyricsFile = document.getElementById('stkPanelLyricsFile');
         ui.panelComponentInfo = document.getElementById('stkPanelComponentInfo');
+        ui.panelReset = document.getElementById('stkPanelReset');
+
+        // 调音器（滑出面板）
+        ui.mixerPanel = document.getElementById('stkMixerPanel');
+        ui.mixerCloseBtn = document.getElementById('stkMixerCloseBtn');
+        ui.mixerBtn = document.getElementById('stkBtnMixer');
+        ui.mixerPresets = document.getElementById('stkMixerPresets');
+        ui.mixerEqWrap = document.getElementById('stkMixerEq');
+        ui.mixerBass = document.getElementById('stkMixerBass');
+        ui.mixerTreble = document.getElementById('stkMixerTreble');
+        ui.mixerMaster = document.getElementById('stkMixerMaster');
+        ui.mixerPan = document.getElementById('stkMixerPan');
+        ui.mixerBassVal = document.getElementById('stkMixerBassVal');
+        ui.mixerTrebleVal = document.getElementById('stkMixerTrebleVal');
+        ui.mixerMasterVal = document.getElementById('stkMixerMasterVal');
+        ui.mixerPanVal = document.getElementById('stkMixerPanVal');
+        ui.mixerResetBtn = document.getElementById('stkMixerResetBtn');
+        ui.mixerApplyPresetBtn = document.getElementById('stkMixerApplyPresetBtn');
 
         // 底部播放控制条
         ui.miniBar = document.getElementById('stkMiniBar');
@@ -1706,6 +2220,10 @@
         ui.miniProgressThumb = document.getElementById('stkMiniProgressThumb');
         ui.miniCurrentTime = document.getElementById('stkMiniCurrentTime');
         ui.miniDuration = document.getElementById('stkMiniDuration');
+        ui.miniBtnHide = document.getElementById('stkMiniBtnHide');
+        ui.miniBarShowToggleBtn = document.getElementById('stkMiniBarShowToggleBtn');
+        ui.miniBarQuickJump = document.getElementById('stkMiniBarQuickJump');
+        ui.miniInfo = document.getElementById('stkMiniInfo');
     }
 
     // ==================== 播放列表菜单 / 确认弹窗（挂载到 body，避免侧边栏裁剪） ====================
@@ -1748,6 +2266,59 @@
         ui.confirmText = document.getElementById('stkConfirmText');
         ui.confirmCancelBtn = document.getElementById('stkConfirmCancel');
         ui.confirmOkBtn = document.getElementById('stkConfirmOk');
+
+        // LRC 歌词上传弹窗
+        ui.lrcMask = document.createElement('div');
+        ui.lrcMask.className = 'stk-confirm-mask stk-lrc-mask';
+        ui.lrcMask.innerHTML =
+            '<div class="stk-confirm-box stk-lrc-box">' +
+                '<div class="stk-confirm-icon" style="background: linear-gradient(135deg, #f6d365, #fda085);"><i class="fas fa-file-lines"></i></div>' +
+                '<h4>添加 LRC 歌词</h4>' +
+                '<p class="stk-lrc-track-name" id="stkLrcTrackName"></p>' +
+                '<div class="stk-lrc-drop" id="stkLrcDrop">' +
+                    '<i class="fas fa-cloud-arrow-up"></i>' +
+                    '<div class="stk-lrc-drop-text">点击选择或拖入 LRC 歌词文件</div>' +
+                    '<div class="stk-lrc-drop-hint">仅支持 .lrc 格式文件</div>' +
+                    '<input type="file" id="stkLrcFileInput" accept=".lrc" hidden>' +
+                '</div>' +
+                '<div class="stk-lrc-file-info" id="stkLrcFileInfo" style="display:none;">' +
+                    '<i class="fas fa-file-lines"></i>' +
+                    '<span id="stkLrcFileName"></span>' +
+                    '<button type="button" id="stkLrcFileClear" title="移除"><i class="fas fa-xmark"></i></button>' +
+                '</div>' +
+                '<div class="stk-confirm-actions">' +
+                    '<button id="stkLrcCancel" type="button">取消</button>' +
+                    '<button id="stkLrcOk" type="button" disabled>确定</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(ui.lrcMask);
+
+        // 重置设置二次确认弹窗（清除所选条目 / 全部数据）
+        ui.resetConfirmMask = document.createElement('div');
+        ui.resetConfirmMask.className = 'stk-confirm-mask';
+        ui.resetConfirmMask.innerHTML =
+            '<div class="stk-confirm-box">' +
+                '<div class="stk-confirm-icon" style="background: linear-gradient(135deg, #ff512f, #dd2476);"><i class="fas fa-trash-can"></i></div>' +
+                '<h4>清除播放器设置</h4>' +
+                '<p id="stkResetConfirmText"></p>' +
+                '<div class="stk-confirm-actions">' +
+                    '<button id="stkResetConfirmCancel" type="button">取消</button>' +
+                    '<button id="stkResetConfirmOk" type="button">确定清除</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(ui.resetConfirmMask);
+        ui.resetConfirmText = document.getElementById('stkResetConfirmText');
+        ui.resetConfirmCancelBtn = document.getElementById('stkResetConfirmCancel');
+        ui.resetConfirmOkBtn = document.getElementById('stkResetConfirmOk');
+
+        // 底部小凸起图标：控制条被手动隐藏后显示，点击重新弹出控制条（fixed 贴浏览器底部，不受滚动影响）
+        ui.miniBump = document.createElement('button');
+        ui.miniBump.id = 'stkMiniBump';
+        ui.miniBump.className = 'stk-mini-bump';
+        ui.miniBump.title = '展开播放控制条';
+        ui.miniBump.setAttribute('aria-label', '展开播放控制条');
+        ui.miniBump.innerHTML = '<i class="fas fa-chevron-up"></i>';
+        document.body.appendChild(ui.miniBump);
     }
 
     // -------- 下拉菜单定位与开关 --------
@@ -1899,6 +2470,200 @@
         ui.importBar.classList.toggle('show', !!(pl && !pl.builtin));
     }
 
+    // ==================== 歌词（LRC 解析与滚动展示） ====================
+    var lyricsCache = {};   // lrc 路径 → { error: boolean, lines: [{ time, text }] }
+    var lyricsRuntime = { lines: [], activeIndex: -1, loadToken: 0 };
+
+    // 解析 LRC 文本：支持多时间戳行 [mm:ss.xx][mm:ss.xx]歌词、元数据标签与 offset 偏移
+    function parseLrc(text) {
+        var lines = [];
+        if (!text) return lines;
+        var offsetSec = 0;
+        var rawLines = text.split(/\r\n|\n|\r/);
+        var tagRe = /^\[(ti|ar|al|by|au|offset|re|ve|tool|length|kana|encoding):(.*)\]\s*$/i;
+        var timeRe = /\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g;
+        for (var i = 0; i < rawLines.length; i++) {
+            var line = rawLines[i].trim();
+            if (!line) continue;
+            var tag = line.match(tagRe);
+            if (tag) {
+                if (tag[1].toLowerCase() === 'offset') {
+                    var offMs = parseInt(tag[2], 10);
+                    if (!isNaN(offMs)) offsetSec = offMs / 1000;   // 正值整体提前，负值延后
+                }
+                continue;
+            }
+            timeRe.lastIndex = 0;
+            var m, times = [], lastEnd = 0;
+            while ((m = timeRe.exec(line)) !== null) {
+                var min = parseInt(m[1], 10);
+                var sec = parseInt(m[2], 10);
+                var fracStr = m[3] || '';
+                var frac = fracStr ? parseInt(fracStr, 10) / Math.pow(10, fracStr.length) : 0;
+                times.push(min * 60 + sec + frac);
+                lastEnd = timeRe.lastIndex;
+            }
+            if (!times.length) continue;
+            var textPart = line.slice(lastEnd).trim();
+            for (var t = 0; t < times.length; t++) {
+                lines.push({ time: times[t] - offsetSec, text: textPart });
+            }
+        }
+        lines.sort(function (a, b) { return a.time - b.time; });
+        return lines;
+    }
+
+    // 加载文本：优先 fetch（http/https），失败时回退 XHR（兼容本地 file:// 场景）
+    function fetchText(url, cb) {
+        var settled = false;
+        function finish(err, text) {
+            if (settled) return;
+            settled = true;
+            cb(err, text);
+        }
+        var usedFallback = false;
+        function fallback() {
+            if (usedFallback) { finish(new Error('load failed')); return; }
+            usedFallback = true;
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onload = function () {
+                    if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
+                        finish(null, xhr.responseText);
+                    } else {
+                        finish(new Error('HTTP ' + xhr.status));
+                    }
+                };
+                xhr.onerror = function () { finish(new Error('network error')); };
+                xhr.send();
+            } catch (e) { finish(e); }
+        }
+        try {
+            fetch(url).then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.text();
+            }).then(function (t) { finish(null, t); }).catch(function (e) {
+                // http(s) 下 404 即文件不存在，无需再走 XHR 回退
+                if (e && e.message === 'HTTP 404') { finish(e); return; }
+                fallback();
+            });
+        } catch (e) { fallback(); }
+    }
+
+    function renderLyricsMessage(msg) {
+        if (!ui.lyricsList) return;
+        lyricsRuntime.lines = [];
+        lyricsRuntime.activeIndex = -1;
+        ui.lyricsList.innerHTML = msg
+            ? '<p class="stk-lyrics-empty">' + esc(msg) + '</p>'
+            : '';
+    }
+
+    function renderLyricsLines() {
+        if (!ui.lyricsList) return;
+        ui.lyricsList.innerHTML = lyricsRuntime.lines.map(function (l) {
+            return '<p' + (l.text ? '' : ' class="stk-lyrics-blank"') + '>' + esc(l.text) + '</p>';
+        }).join('');
+    }
+
+    // 加载当前曲目的歌词（歌词关闭 / 未选曲 / 无 lrc 字段时清空显示区）
+    function loadLyricsForCurrentTrack() {
+        var track = getTrack(state.currentIndex);
+        var token = ++lyricsRuntime.loadToken;
+        if (!ui.lyricsList) return;
+        if (!track || (!track.lrc && !track.lrcText)) {
+            renderLyricsMessage(state.lyricsOn ? '暂无歌词' : '');
+            return;
+        }
+        if (!state.lyricsOn) {
+            renderLyricsMessage('');
+            return;
+        }
+        // 自定义导入的内联歌词文本（LRC）
+        if (track.lrcText) {
+            var lines = parseLrc(track.lrcText);
+            lyricsRuntime.lines = lines;
+            lyricsRuntime.activeIndex = -1;
+            renderLyricsLines();
+            syncLyrics(audio.currentTime || 0, true);
+            return;
+        }
+        var cached = lyricsCache[track.lrc];
+        if (cached) {
+            if (cached.error) {
+                renderLyricsMessage('暂无歌词');
+            } else {
+                lyricsRuntime.lines = cached.lines;
+                lyricsRuntime.activeIndex = -1;
+                renderLyricsLines();
+                syncLyrics(audio.currentTime || 0, true);
+            }
+            return;
+        }
+        renderLyricsMessage('歌词加载中…');
+        fetchText(track.lrc, function (err, text) {
+            if (token !== lyricsRuntime.loadToken) return;   // 加载期间已切歌/关歌词
+            if (err || !text) {
+                lyricsCache[track.lrc] = { error: true, lines: [] };
+                renderLyricsMessage('暂无歌词');
+                return;
+            }
+            var lines = parseLrc(text);
+            lyricsCache[track.lrc] = { error: false, lines: lines };
+            var cur = getTrack(state.currentIndex);
+            if (!cur || cur.lrc !== track.lrc) return;       // 防御：缓存的归属校验
+            lyricsRuntime.lines = lines;
+            lyricsRuntime.activeIndex = -1;
+            renderLyricsLines();
+            syncLyrics(audio.currentTime || 0, true);
+        });
+    }
+
+    // 依据播放进度高亮当前行并平滑滚动到歌词区中心
+    function syncLyrics(time, force) {
+        if (!state.lyricsOn || !ui.lyricsList || !lyricsRuntime.lines.length) return;
+        var lines = lyricsRuntime.lines;
+        var idx = -1;
+        for (var i = 0; i < lines.length; i++) {
+            if (lines[i].time <= time) idx = i;
+            else break;
+        }
+        if (idx === lyricsRuntime.activeIndex && !force) return;
+        lyricsRuntime.activeIndex = idx;
+        var ps = ui.lyricsList.querySelectorAll('p');
+        for (var j = 0; j < ps.length; j++) {
+            ps[j].classList.toggle('active', j === idx);
+        }
+        if (ui.lyricsScroll) {
+            if (idx >= 0 && ps[idx]) {
+                var el = ps[idx];
+                ui.lyricsScroll.scrollTop = el.offsetTop - ui.lyricsScroll.clientHeight / 2 + el.offsetHeight / 2;
+            } else {
+                ui.lyricsScroll.scrollTop = 0;
+            }
+        }
+    }
+
+    function toggleLyrics() {
+        state.lyricsOn = !state.lyricsOn;
+        updateLyricsUI();
+        if (state.lyricsOn) {
+            loadLyricsForCurrentTrack();
+        } else if (ui.lyricsScroll) {
+            ui.lyricsScroll.scrollTop = 0;
+        }
+        saveSettings();
+    }
+
+    function updateLyricsUI() {
+        if (ui.btnLyrics) {
+            ui.btnLyrics.classList.toggle('active', state.lyricsOn);
+            ui.btnLyrics.title = state.lyricsOn ? '关闭歌词' : '显示歌词';
+        }
+        if (ui.main) ui.main.classList.toggle('lyrics-on', state.lyricsOn);
+    }
+
     // ==================== 播放逻辑 ====================
     function createAudio() {
         audio = new Audio();
@@ -1913,6 +2678,7 @@
 
         audio.addEventListener('timeupdate', function () {
             if (activeSeekCount === 0) updateProgress();
+            syncLyrics(audio.currentTime);
         });
 
         audio.addEventListener('durationchange', function () {
@@ -1983,6 +2749,7 @@
 
         // 更新"正在播放"信息（主界面 + 底部控制条）
         setNowPlayingInfo(track);
+        loadLyricsForCurrentTrack();   // 切歌后加载对应 LRC 歌词（歌词关闭时仅重置显示区）
         ui.currentTime.textContent = '0:00';
         ui.duration.textContent = '0:00';
         if (ui.miniCurrentTime) ui.miniCurrentTime.textContent = '0:00';
@@ -2030,6 +2797,31 @@
     // 通过 Web Audio AnalyserNode 实时分析正在播放的音频频谱，驱动 Canvas 绘制
     // 三种律动样式：bars 音浪频谱 / ripple 波纹涟漪 / wave 流光波浪；'none' 为默认无律动。
     var VIZ_STYLES = ['none', 'bars', 'ripple', 'wave'];
+    // EQ 频带：频率标签与默认增益（单位 dB，范围 ±12）
+    var EQ_BAND_DEFS = [
+        { key: 'eq0', label: '60Hz',  freq: 60,   type: 'lowshelf' },
+        { key: 'eq1', label: '160Hz', freq: 160,  type: 'peaking' },
+        { key: 'eq2', label: '420Hz', freq: 420,  type: 'peaking' },
+        { key: 'eq3', label: '1kHz',  freq: 1000, type: 'peaking' },
+        { key: 'eq4', label: '2.4kHz', freq: 2400, type: 'peaking' },
+        { key: 'eq5', label: '6kHz',  freq: 6000, type: 'peaking' },
+        { key: 'eq6', label: '12kHz', freq: 12000, type: 'highshelf' }
+    ];
+    // 调音器预设：每个 EQ 带的增益（dB）；bass / treble 为额外的低架 / 高架
+    var MIXER_PRESETS = {
+        flat:     { eq: [0,0,0,0,0,0,0], bass: 0, treble: 0, master: 0, pan: 0 },
+        bass:     { eq: [6,4,2,0,0,0,0], bass: 8,  treble: -2, master: 0, pan: 0 },
+        treble:   { eq: [-2,0,0,0,2,4,6], bass: -4, treble: 8,  master: 0, pan: 0 },
+        vocal:    { eq: [-2,-1,2,4,3,1,0], bass: -3, treble: 1,  master: 0, pan: 0 },
+        rock:     { eq: [4,3,1,0,2,3,4], bass: 6,  treble: 4,  master: 0, pan: 0 },
+        pop:      { eq: [0,1,2,3,2,1,0], bass: 2,  treble: 2,  master: 0, pan: 0 },
+        classical:{ eq: [0,0,1,2,1,0,0], bass: 2,  treble: 0,  master: 0, pan: 0 },
+        jazz:     { eq: [0,0,2,1,1,0,0], bass: 4,  treble: -2, master: 0, pan: 0 },
+        electronic:{eq: [5,3,1,0,1,3,5], bass: 8,  treble: 5,  master: 0, pan: 0 }
+    };
+
+    var mixer = { built: false, preGain: null, postGain: null, eqBands: null, bass: null, treble: null, panner: null, ctx: null };
+
     var viz = {
         raf: 0,
         lastT: 0,
@@ -2044,47 +2836,365 @@
         smooth: { bass: 0, mid: 0, treble: 0, all: 0 }   // 平滑后的能量值（0~1）
     };
 
-    // 懒创建音频分析链路（必须在用户手势触发的播放中调用，符合浏览器自动播放策略）
-    // 安全策略：只有启用了律动样式时才创建音频图；且先建立"输出链路"（analyser→destination），
-    // 最后才创建 MediaElementSource（该节点一旦创建就会永久接管音频元素的输出，
-    // 若此后连接失败会导致"进度条在走但没有声音"，所以必须保证元素被接管时链路已完整）。
+    // 懒创建音频链路（必须在用户手势触发的播放中调用，符合浏览器自动播放策略）
+    // 安全策略：先建立完整输出链路（postGain → analyser → destination），
+    // 再插入 MediaElementSource（该节点一旦创建就永久接管音频元素输出，
+    // 若此后连接失败会导致"进度条在走但没有声音"，必须保证元素被接管时链路已完整）。
+    // 调音器链路：srcNode → [preGain → eqBands × 7 → bassShelf → trebleShelf → panner] → postGain → analyser → destination
     function ensureAudioGraph() {
-        if (viz.analyser || viz.failed) return viz.analyser;
-        // 未启用任何律动样式 → 完全不触碰音频元素，保证原生发声路径不受影响
-        if (state.playStyle === 'none') return null;
+        // 已存在链路：返回 analyser（不管来自律动还是调音器）
+        if (viz.analyser) return viz.analyser;
+        if (viz.failed) return null;
         if (!window.AudioContext && !window.webkitAudioContext) { viz.failed = true; return null; }
         try {
             var AC = window.AudioContext || window.webkitAudioContext;
-
-            // 第一步：创建上下文与分析器，并先把输出链路接通到扬声器
             var ctx = new AC();
+
+            // ====== 1. 先建立"纯输出链路"到扬声器 ======
+            var postGain = ctx.createGain();
             var analyser = ctx.createAnalyser();
             analyser.fftSize = 512;
             analyser.smoothingTimeConstant = 0.82;
-            analyser.connect(ctx.destination);   // 输出链路先就绪
+            postGain.connect(analyser);
+            analyser.connect(ctx.destination);
             var freq = new Uint8Array(analyser.frequencyBinCount);
 
-            // 第二步：输出链路就绪后，才接管音频元素并接入分析器
-            var srcNode = ctx.createMediaElementSource(audio);
-            srcNode.connect(analyser);
+            // ====== 2. 在 srcNode 和 postGain 之间插入调音器节点 ======
+            var preGain = ctx.createGain();
+            var bass = ctx.createBiquadFilter();
+            bass.type = 'lowshelf';
+            bass.frequency.value = 120;
+            var treble = ctx.createBiquadFilter();
+            treble.type = 'highshelf';
+            treble.frequency.value = 8000;
+            var panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
 
-            // 全部成功后再提交到 viz（提交即代表链路完整可用）
+            // 7 段 PEQ：频率覆盖 60Hz ~ 12kHz
+            var eqBands = [
+                { f: 60,  type: 'lowshelf' },
+                { f: 160, type: 'peaking' },
+                { f: 420, type: 'peaking' },
+                { f: 1000, type: 'peaking' },
+                { f: 2400, type: 'peaking' },
+                { f: 6000, type: 'peaking' },
+                { f: 12000, type: 'highshelf' }
+            ].map(function (b) {
+                var f = ctx.createBiquadFilter();
+                f.type = b.type;
+                f.frequency.value = b.f;
+                if (b.type === 'peaking') f.Q.value = 1.0;
+                return f;
+            });
+
+            // 串联：preGain → eqBands[0..6] → bass → treble → panner → postGain
+            var chain = [preGain].concat(eqBands).concat([bass, treble]);
+            if (panner) chain.push(panner);
+            for (var i = 0; i < chain.length - 1; i++) {
+                chain[i].connect(chain[i + 1]);
+            }
+            chain[chain.length - 1].connect(postGain);
+
+            // ====== 3. 最后接管音频元素并接入链路 ======
+            var srcNode = ctx.createMediaElementSource(audio);
+            srcNode.connect(preGain);
+
+            // ====== 4. 提交到 viz 与 mixer ======
             viz.audioCtx = ctx;
             viz.analyser = analyser;
             viz.srcNode = srcNode;
             viz.freq = freq;
+
+            mixer = {
+                preGain: preGain,
+                postGain: postGain,
+                eqBands: eqBands,
+                bass: bass,
+                treble: treble,
+                panner: panner,
+                ctx: ctx,
+                built: true
+            };
+
+            applyMixerState();   // 将 UI / 持久化设置应用到滤波器节点
             if (ctx.state === 'suspended') {
                 ctx.resume()['catch'](function () { /* 自动播放策略拦截时静默，等待下次手势 */ });
             }
             return analyser;
         } catch (e) {
-            // 创建失败：保持音频元素原生发声路径不受影响，下次播放时再重试
             viz.audioCtx = null;
             viz.analyser = null;
             viz.srcNode = null;
             viz.freq = null;
+            mixer = { built: false };
             return null;
         }
+    }
+
+    // ======== 调音器 UI 构建与交互 ========
+
+    // 构建 7 段 EQ 垂直滑块到 DOM
+    function buildMixerEQ() {
+        if (!ui.mixerEqWrap) return;
+        ui.mixerEqWrap.innerHTML = EQ_BAND_DEFS.map(function (def, i) {
+            var gain = state.mixer.eq[i] || 0;
+            return '<div class="stk-mixer-eq-band" data-eq-idx="' + i + '">' +
+                '<input type="range" class="stk-mixer-eq-slider" min="-12" max="12" step="1" value="' + gain + '" data-eq-idx="' + i + '">' +
+                '<span class="stk-mixer-eq-gain">' + (gain >= 0 ? '+' : '') + gain + ' dB</span>' +
+                '<span class="stk-mixer-eq-label">' + def.label + '</span>' +
+            '</div>';
+        }).join('');
+    }
+
+    // 将 state.mixer 应用到 Web Audio 节点（调音器链路已建立时）
+    function applyMixerState() {
+        if (!mixer.built) return;
+        // 7 段 EQ
+        for (var i = 0; i < mixer.eqBands.length; i++) {
+            var db = (state.mixer.eq[i] != null ? state.mixer.eq[i] : 0);
+            // BiquadFilter.gain 单位为 dB → 内部用线性倍率；AudioParam 接受 dB 值
+            mixer.eqBands[i].gain.setTargetAtTime(db, mixer.ctx.currentTime, 0.01);
+        }
+        // 低音 / 高音 shelf
+        mixer.bass.gain.setTargetAtTime(state.mixer.bass || 0, mixer.ctx.currentTime, 0.01);
+        mixer.treble.gain.setTargetAtTime(state.mixer.treble || 0, mixer.ctx.currentTime, 0.01);
+        // 主音量（叠加在原生音量之上，范围 0.5 ~ 1.5 → GainNode 倍率）
+        mixer.postGain.gain.setTargetAtTime(state.mixer.master || 1.0, mixer.ctx.currentTime, 0.01);
+        // 立体声
+        if (mixer.panner) {
+            mixer.panner.pan.setTargetAtTime(state.mixer.pan || 0, mixer.ctx.currentTime, 0.01);
+        }
+    }
+
+    // 将 state.mixer 同步到 UI 控件
+    function applyMixerUIFromState() {
+        if (!ui.mixerPanel) return;
+        // EQ
+        var sliders = ui.mixerEqWrap ? ui.mixerEqWrap.querySelectorAll('.stk-mixer-eq-slider') : [];
+        for (var i = 0; i < sliders.length; i++) {
+            var gain = state.mixer.eq[i] || 0;
+            sliders[i].value = gain;
+            var label = sliders[i].parentElement.querySelector('.stk-mixer-eq-gain');
+            if (label) label.textContent = (gain >= 0 ? '+' : '') + gain + ' dB';
+        }
+        // 低音 / 高音
+        if (ui.mixerBass) ui.mixerBass.value = state.mixer.bass || 0;
+        if (ui.mixerTreble) ui.mixerTreble.value = state.mixer.treble || 0;
+        if (ui.mixerBassVal) ui.mixerBassVal.textContent = (state.mixer.bass || 0) + ' dB';
+        if (ui.mixerTrebleVal) ui.mixerTrebleVal.textContent = (state.mixer.treble || 0) + ' dB';
+        // 主音量（百分比）
+        var masterPct = Math.round((state.mixer.master || 1.0) * 100);
+        if (ui.mixerMaster) ui.mixerMaster.value = masterPct;
+        if (ui.mixerMasterVal) ui.mixerMasterVal.textContent = masterPct + '%';
+        // 立体声
+        var panPct = Math.round((state.mixer.pan || 0) * 100);
+        if (ui.mixerPan) ui.mixerPan.value = panPct;
+        if (ui.mixerPanVal) {
+            if (Math.abs(panPct) < 3) ui.mixerPanVal.textContent = '居中';
+            else if (panPct < 0) ui.mixerPanVal.textContent = '左 ' + Math.abs(panPct) + '%';
+            else ui.mixerPanVal.textContent = '右 ' + panPct + '%';
+        }
+        // 预设高亮
+        var preset = state.mixer.preset || 'flat';
+        if (ui.mixerPresets) {
+            var presetBtns = ui.mixerPresets.querySelectorAll('.stk-mixer-preset');
+            for (var i = 0; i < presetBtns.length; i++) {
+                presetBtns[i].classList.toggle('active', presetBtns[i].getAttribute('data-preset') === preset);
+            }
+        }
+    }
+
+    // 打开调音器面板（确保链路已就绪 → 需用户手势触发）
+    function openMixerPanel() {
+        if (!ui.mixerPanel) return;
+        buildMixerEQ();
+        applyMixerUIFromState();
+        ui.mixerPanel.classList.add('open');
+        if (ui.mixerBtn) ui.mixerBtn.classList.add('active');
+        // 打开面板时确保音频链路已就绪（用户已通过按钮点击触发手势）
+        ensureAudioGraph();
+        // 如果 ensureAudioGraph 返回空（浏览器不支持 Web Audio 或已失败），禁用控件并提示
+        if (!mixer || !mixer.built) {
+            ui.mixerPanel.classList.add('disabled');
+            if (typeof window.showToastWarn === 'function') {
+                window.showToastWarn('当前浏览器不支持 Web Audio API，调音器调整不会生效', '调音器');
+            }
+        } else {
+            ui.mixerPanel.classList.remove('disabled');
+        }
+        // 互斥：关闭设置面板
+        if (state.settingsMode) exitSettingsMode();
+    }
+
+    function closeMixerPanel() {
+        if (!ui.mixerPanel) return;
+        ui.mixerPanel.classList.remove('open');
+        if (ui.mixerBtn) ui.mixerBtn.classList.remove('active');
+    }
+
+    function toggleMixerPanel() {
+        if (!ui.mixerPanel) return;
+        if (ui.mixerPanel.classList.contains('open')) closeMixerPanel();
+        else openMixerPanel();
+    }
+
+    // 设置调音器状态（由 UI 控件触发，自动应用到 Web Audio 节点）
+    function setMixerState(partial) {
+        if (partial.eq) state.mixer.eq = partial.eq.slice(0, 7);
+        if (typeof partial.bass === 'number') state.mixer.bass = partial.bass;
+        if (typeof partial.treble === 'number') state.mixer.treble = partial.treble;
+        if (typeof partial.master === 'number') state.mixer.master = partial.master;
+        if (typeof partial.pan === 'number') state.mixer.pan = partial.pan;
+        if (typeof partial.preset === 'string') state.mixer.preset = partial.preset;
+        applyMixerState();
+        saveSettings();
+    }
+
+    // 应用预设到 state.mixer
+    function applyMixerPreset(name) {
+        var p = MIXER_PRESETS[name];
+        if (!p) return;
+        state.mixer.eq = p.eq.slice();
+        state.mixer.bass = p.bass;
+        state.mixer.treble = p.treble;
+        state.mixer.master = Math.pow(10, p.master / 20);   // dB → 倍率
+        state.mixer.pan = p.pan;
+        state.mixer.preset = name;
+        applyMixerState();
+        applyMixerUIFromState();
+        saveSettings();
+    }
+
+    // 绑定调音器 UI 事件（在 cacheElements 之后调用）
+    function setupMixerEvents() {
+        if (!ui.mixerPanel) return;
+
+        // 打开 / 关闭
+        if (ui.mixerBtn) {
+            ui.mixerBtn.addEventListener('click', toggleMixerPanel);
+        }
+        if (ui.mixerCloseBtn) {
+            ui.mixerCloseBtn.addEventListener('click', closeMixerPanel);
+        }
+
+        // 预设
+        if (ui.mixerPresets) {
+            ui.mixerPresets.addEventListener('click', function (e) {
+                var btn = e.target.closest('.stk-mixer-preset');
+                if (!btn) return;
+                applyMixerPreset(btn.getAttribute('data-preset'));
+            });
+        }
+
+        // 7 段 EQ（事件委托）
+        if (ui.mixerEqWrap) {
+            ui.mixerEqWrap.addEventListener('input', function (e) {
+                var slider = e.target.closest('.stk-mixer-eq-slider');
+                if (!slider) return;
+                var idx = parseInt(slider.getAttribute('data-eq-idx'), 10);
+                var val = parseFloat(slider.value);
+                state.mixer.eq[idx] = val;
+                var label = slider.parentElement.querySelector('.stk-mixer-eq-gain');
+                if (label) label.textContent = (val >= 0 ? '+' : '') + val + ' dB';
+                state.mixer.preset = 'custom';
+                applyMixerState();
+                applyMixerUIFromState();
+                saveSettings();
+            });
+        }
+
+        // 低音
+        if (ui.mixerBass) ui.mixerBass.addEventListener('input', function () {
+            var val = parseFloat(ui.mixerBass.value);
+            state.mixer.bass = val;
+            state.mixer.preset = 'custom';
+            if (ui.mixerBassVal) ui.mixerBassVal.textContent = val + ' dB';
+            applyMixerState();
+            applyMixerUIFromState();
+            saveSettings();
+        });
+
+        // 高音
+        if (ui.mixerTreble) ui.mixerTreble.addEventListener('input', function () {
+            var val = parseFloat(ui.mixerTreble.value);
+            state.mixer.treble = val;
+            state.mixer.preset = 'custom';
+            if (ui.mixerTrebleVal) ui.mixerTrebleVal.textContent = val + ' dB';
+            applyMixerState();
+            applyMixerUIFromState();
+            saveSettings();
+        });
+
+        // 主音量（百分比 → 倍率）
+        if (ui.mixerMaster) ui.mixerMaster.addEventListener('input', function () {
+            var pct = parseFloat(ui.mixerMaster.value);
+            state.mixer.master = pct / 100;
+            state.mixer.preset = 'custom';
+            if (ui.mixerMasterVal) ui.mixerMasterVal.textContent = pct + '%';
+            applyMixerState();
+            saveSettings();
+        });
+
+        // 立体声（百分比 → -1~1）
+        if (ui.mixerPan) ui.mixerPan.addEventListener('input', function () {
+            var pct = parseFloat(ui.mixerPan.value);
+            state.mixer.pan = pct / 100;
+            state.mixer.preset = 'custom';
+            if (ui.mixerPanVal) {
+                if (Math.abs(pct) < 3) ui.mixerPanVal.textContent = '居中';
+                else if (pct < 0) ui.mixerPanVal.textContent = '左 ' + Math.abs(pct) + '%';
+                else ui.mixerPanVal.textContent = '右 ' + pct + '%';
+            }
+            applyMixerState();
+            saveSettings();
+        });
+
+        // 立体声快速按钮
+        if (ui.mixerPanel) {
+            ui.mixerPanel.addEventListener('click', function (e) {
+                var btn = e.target.closest('.stk-mixer-pan-btn');
+                if (!btn) return;
+                var pan = parseFloat(btn.getAttribute('data-pan'));
+                state.mixer.pan = pan;
+                state.mixer.preset = 'custom';
+                applyMixerState();
+                applyMixerUIFromState();
+                saveSettings();
+            });
+        }
+
+        // 重置
+        if (ui.mixerResetBtn) {
+            ui.mixerResetBtn.addEventListener('click', function () {
+                applyMixerPreset('flat');
+            });
+        }
+
+        // 应用当前预设（手动触发 applyMixerState + 持久化）
+        if (ui.mixerApplyPresetBtn) {
+            ui.mixerApplyPresetBtn.addEventListener('click', function () {
+                applyMixerState();
+                saveSettings();
+            });
+        }
+
+        // 点击调音器面板外部（stk-main 内除面板 / 按钮 / 可交互区域外）关闭
+        ui.main.addEventListener('click', function (e) {
+            if (!ui.mixerPanel || !ui.mixerPanel.classList.contains('open')) return;
+            if (e.target.closest('.stk-mixer-panel')) return;
+            if (e.target.closest('.stk-mixer-btn')) return;
+            // 不拦截播放器其他可交互区域（进度条 / 音量条 / 控制按钮 / 设置面板 / 列表 / 折页 / 按钮族）
+            var interactiveExclude = '.stk-btn, .stk-progress-area, .stk-volume-area, .stk-controls, ' +
+                '.stk-settings-panel, .stk-list-area, .stk-fold-hitzone, .stk-fold-btn, .stk-disc-wrap, .stk-lyrics-area';
+            if (e.target.closest(interactiveExclude)) return;
+            closeMixerPanel();
+        });
+
+        // ESC 键关闭调音器
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && ui.mixerPanel && ui.mixerPanel.classList.contains('open')) {
+                closeMixerPanel();
+            }
+        });
     }
 
     function setPlayStyle(style) {
@@ -2117,7 +3227,7 @@
         var desc = entry.querySelector('.stk-settings-entry-desc');
         if (desc) {
             desc.textContent = locked
-                ? '律动样式启用时已锁定（组件固定为系统默认位置）'
+                ? '律动样式启用时禁用（固定为系统默认）'
                 : '九宫格位置与整体缩放';
         }
     }
@@ -2143,6 +3253,169 @@
         var btns = ui.vizGrid.querySelectorAll('button[data-style]');
         for (var i = 0; i < btns.length; i++) {
             btns[i].classList.toggle('active', btns[i].getAttribute('data-style') === state.playStyle);
+        }
+    }
+
+    // ==================== 自定义歌词文件（LRC）设置面板 ====================
+    var lyricsFileCtx = { selectedPlaylistId: null, selectedTrackId: null, pendingLrcText: null, pendingFileName: '' };
+
+    // 渲染自定义歌词文件面板：先提示选择播放列表，再展示该列表中的导入歌曲
+    function syncLyricsFilePanel() {
+        if (!ui.panelLyricsFile) return;
+        var customLists = (state.playlists || []).filter(function (p) { return !p.builtin; });
+        if (!customLists.length) {
+            ui.panelLyricsFile.innerHTML =
+                '<h4 class="stk-settings-card-title"><i class="fas fa-file-lines"></i>添加自定义歌词文件</h4>' +
+                '<p class="stk-settings-card-sub">为导入歌曲添加 LRC 歌词</p>' +
+                '<div class="stk-lyr-empty">' +
+                    '<i class="fas fa-folder-open"></i>' +
+                    '<div>当前没有可选择的播放列表，请先创建一个自定义播放列表</div>' +
+                '</div>';
+            return;
+        }
+        // 若已选列表已被删除则清空
+        if (lyricsFileCtx.selectedPlaylistId && !getPlaylistById(lyricsFileCtx.selectedPlaylistId)) {
+            lyricsFileCtx.selectedPlaylistId = null;
+        }
+        var selectedPl = lyricsFileCtx.selectedPlaylistId ? getPlaylistById(lyricsFileCtx.selectedPlaylistId) : null;
+        var html =
+            '<h4 class="stk-settings-card-title"><i class="fas fa-file-lines"></i>添加自定义歌词文件</h4>' +
+            '<p class="stk-settings-card-sub">为导入歌曲添加 LRC 歌词</p>' +
+            '<div class="stk-lyr-tip"><i class="fas fa-circle-info"></i>请先选择一个播放列表（不包括默认列表）</div>' +
+            '<div class="stk-lyr-pl-row">' +
+                '<select class="stk-lyr-pl-select" id="stkLyrPlSelect">' +
+                    '<option value="">— 选择播放列表 —</option>' +
+                    customLists.map(function (p) {
+                        return '<option value="' + esc(p.id) + '"' + (selectedPl && selectedPl.id === p.id ? ' selected' : '') + '>' +
+                            esc(p.name) + '（' + p.tracks.length + '首）</option>';
+                    }).join('') +
+                '</select>' +
+            '</div>';
+        if (selectedPl) {
+            var tracks = selectedPl.tracks || [];
+            if (!tracks.length) {
+                html += '<div class="stk-lyr-empty small"><i class="fas fa-music"></i><div>该播放列表中还没有导入歌曲</div></div>';
+            } else {
+                html += '<div class="stk-lyr-track-list">' +
+                    tracks.map(function (t) {
+                        var hasLrc = !!t.lrcText;
+                        var c0 = (t.colors && t.colors[0]) || '#667eea';
+                        var c1 = (t.colors && t.colors[1]) || '#764ba2';
+                        return '<div class="stk-lyr-track-item" data-track-id="' + esc(t.id) + '">' +
+                            '<div class="stk-lyr-track-cover" style="background: linear-gradient(135deg, ' + c0 + ', ' + c1 + ');"><i class="fas fa-music"></i></div>' +
+                            '<div class="stk-lyr-track-meta">' +
+                                '<div class="stk-lyr-track-name">' + esc(t.title) + '</div>' +
+                                '<div class="stk-lyr-track-artist">' + esc(t.artist) + '</div>' +
+                            '</div>' +
+                            '<div class="stk-lyr-track-status">' +
+                                (hasLrc
+                                    ? '<span class="stk-lyr-tag has"><i class="fas fa-check"></i>已添加歌词</span>'
+                                    : '<span class="stk-lyr-tag no"><i class="fas fa-plus"></i>添加歌词</span>') +
+                            '</div>' +
+                        '</div>';
+                    }).join('') +
+                '</div>';
+            }
+        }
+        ui.panelLyricsFile.innerHTML = html;
+
+        var sel = document.getElementById('stkLyrPlSelect');
+        if (sel) {
+            sel.addEventListener('change', function () {
+                lyricsFileCtx.selectedPlaylistId = sel.value || null;
+                syncLyricsFilePanel();
+            });
+        }
+        var items = ui.panelLyricsFile.querySelectorAll('.stk-lyr-track-item');
+        for (var i = 0; i < items.length; i++) {
+            items[i].addEventListener('click', function () {
+                openLrcUploadModal(this.getAttribute('data-track-id'));
+            });
+        }
+    }
+
+    // 打开 LRC 歌词上传弹窗
+    function openLrcUploadModal(trackId) {
+        var pl = lyricsFileCtx.selectedPlaylistId ? getPlaylistById(lyricsFileCtx.selectedPlaylistId) : null;
+        if (!pl) return;
+        var track = null;
+        for (var i = 0; i < pl.tracks.length; i++) {
+            if (pl.tracks[i].id === trackId) { track = pl.tracks[i]; break; }
+        }
+        if (!track) return;
+        lyricsFileCtx.selectedTrackId = trackId;
+        lyricsFileCtx.pendingLrcText = null;
+        lyricsFileCtx.pendingFileName = '';
+        var nameEl = document.getElementById('stkLrcTrackName');
+        if (nameEl) nameEl.textContent = track.title + ' — ' + track.artist;
+        var info = document.getElementById('stkLrcFileInfo');
+        if (info) info.style.display = 'none';
+        var okBtn = document.getElementById('stkLrcOk');
+        if (okBtn) okBtn.disabled = true;
+        var fnEl = document.getElementById('stkLrcFileName');
+        if (fnEl) fnEl.textContent = '';
+        var input = document.getElementById('stkLrcFileInput');
+        if (input) input.value = '';
+        if (ui.lrcMask) ui.lrcMask.classList.add('show');
+    }
+
+    function closeLrcUploadModal() {
+        if (ui.lrcMask) ui.lrcMask.classList.remove('show');
+        lyricsFileCtx.pendingLrcText = null;
+        lyricsFileCtx.pendingFileName = '';
+    }
+
+    // 校验并读取 LRC 文件（仅允许 .lrc 格式）
+    function handleLrcFileSelect(file) {
+        if (!file) return;
+        var name = file.name || '';
+        if (!/\.lrc$/i.test(name)) {
+            toastWarning('仅支持 LRC 格式的歌词文件');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function () {
+            lyricsFileCtx.pendingLrcText = reader.result;
+            lyricsFileCtx.pendingFileName = name;
+            var info = document.getElementById('stkLrcFileInfo');
+            if (info) info.style.display = '';
+            var fnEl = document.getElementById('stkLrcFileName');
+            if (fnEl) fnEl.textContent = name;
+            var okBtn = document.getElementById('stkLrcOk');
+            if (okBtn) okBtn.disabled = false;
+        };
+        reader.onerror = function () {
+            toastWarning('读取歌词文件失败');
+        };
+        reader.readAsText(file, 'utf-8');
+    }
+
+    // 确认导入 LRC 歌词
+    function confirmLrcImport() {
+        if (!lyricsFileCtx.pendingLrcText || !lyricsFileCtx.selectedTrackId) {
+            toastWarning('请先选择 LRC 歌词文件');
+            return;
+        }
+        var pl = lyricsFileCtx.selectedPlaylistId ? getPlaylistById(lyricsFileCtx.selectedPlaylistId) : null;
+        if (!pl) return;
+        var track = null;
+        for (var i = 0; i < pl.tracks.length; i++) {
+            if (pl.tracks[i].id === lyricsFileCtx.selectedTrackId) { track = pl.tracks[i]; break; }
+        }
+        if (!track) return;
+        track.lrcText = lyricsFileCtx.pendingLrcText;
+        // 清除该曲目可能存在的 URL 歌词缓存
+        if (track.lrc) delete lyricsCache[track.lrc];
+        savePlaylists();
+        // 若当前正在播放该曲目，立即重新加载歌词
+        var cur = getTrack(state.currentIndex);
+        if (cur && cur.id === track.id) {
+            loadLyricsForCurrentTrack();
+        }
+        closeLrcUploadModal();
+        syncLyricsFilePanel();
+        if (typeof window.showToastSuccess === 'function') {
+            window.showToastSuccess('已为「' + track.title + '」导入 LRC 歌词', '音乐播放器');
         }
     }
 
@@ -2194,6 +3467,174 @@
             '<div class="component-modal-footer">' +
                 '<div class="component-copyright">' + info.copyright + '</div>' +
             '</div>';
+    }
+
+    // ==================== 重置对播放器的设置（可勾选清除 + 二次确认） ====================
+    // 可清除的设置分类：自定义播放列表 / 自定义歌词文件 / 自定义曲目背景图片 / 对播放器组件的功能调整
+    var RESET_ITEMS = [
+        { key: 'playlists', label: '自定义播放列表', desc: '删除全部自定义播放列表及其中导入的歌曲（含本地音频数据）' },
+        { key: 'lyrics', label: '自定义歌词文件', desc: '移除为导入歌曲绑定的 LRC 歌词内容' },
+        { key: 'backgrounds', label: '自定义曲目背景图片', desc: '清除全部曲目绑定的自定义背景图片' },
+        { key: 'components', label: '对播放器组件的功能调整', desc: '重置组件位置与大小、显隐状态、控制条设置与播放样式' }
+    ];
+    var pendingResetKeys = null;   // null 表示全部清除，否则为勾选的 key 数组
+
+    function renderResetPanel() {
+        if (!ui.panelReset) return;
+        ui.panelReset.innerHTML =
+            '<h4 class="stk-settings-card-title"><i class="fas fa-rotate-left"></i>重置对播放器的设置</h4>' +
+            '<p class="stk-settings-card-sub">重置播放器功能，包括但不限于以下内容：自定义播放列表、自定义歌词文件、自定义曲目背景图片、对播放器组件的功能调整等内容。勾选需要清除的条目后点击下方按钮执行清除。</p>' +
+            '<div class="stk-reset-list">' +
+                RESET_ITEMS.map(function (item) {
+                    return '<label class="stk-reset-item" data-reset-key="' + item.key + '">' +
+                        '<input type="checkbox" data-reset-key="' + item.key + '">' +
+                        '<span class="stk-reset-item-text">' +
+                            '<span class="stk-reset-item-label">' + item.label + '</span>' +
+                            '<span class="stk-reset-item-desc">' + item.desc + '</span>' +
+                        '</span>' +
+                    '</label>';
+                }).join('') +
+            '</div>' +
+            '<div class="stk-comp-hint"><i class="fas fa-triangle-exclamation"></i>清除操作在确认后立即生效且不可恢复，请谨慎选择。</div>' +
+            '<div class="stk-reset-actions">' +
+                '<button type="button" id="stkResetSelectedBtn" disabled><i class="fas fa-trash-can"></i>清除所选设置</button>' +
+                '<button type="button" id="stkResetAllBtn"><i class="fas fa-broom"></i>清除所有设置</button>' +
+            '</div>';
+
+        var checkboxes = ui.panelReset.querySelectorAll('input[type="checkbox"][data-reset-key]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].addEventListener('change', function () {
+                this.closest('.stk-reset-item').classList.toggle('checked', this.checked);
+                syncResetSelectedBtn();
+            });
+        }
+        var selBtn = document.getElementById('stkResetSelectedBtn');
+        var allBtn = document.getElementById('stkResetAllBtn');
+        if (selBtn) {
+            selBtn.addEventListener('click', function () {
+                var keys = getCheckedResetKeys();
+                if (!keys.length) return;
+                openResetConfirm(keys);
+            });
+        }
+        if (allBtn) {
+            allBtn.addEventListener('click', function () {
+                openResetConfirm(null);
+            });
+        }
+    }
+
+    function getCheckedResetKeys() {
+        if (!ui.panelReset) return [];
+        var keys = [];
+        var boxes = ui.panelReset.querySelectorAll('input[type="checkbox"][data-reset-key]:checked');
+        for (var i = 0; i < boxes.length; i++) keys.push(boxes[i].getAttribute('data-reset-key'));
+        return keys;
+    }
+
+    function syncResetSelectedBtn() {
+        var btn = document.getElementById('stkResetSelectedBtn');
+        if (btn) btn.disabled = !getCheckedResetKeys().length;
+    }
+
+    function getResetItemLabel(key) {
+        for (var i = 0; i < RESET_ITEMS.length; i++) {
+            if (RESET_ITEMS[i].key === key) return RESET_ITEMS[i].label;
+        }
+        return key;
+    }
+
+    // 二次确认弹窗：清除所选条目 / 全部数据
+    function openResetConfirm(keys) {
+        pendingResetKeys = keys;
+        if (ui.resetConfirmText) {
+            ui.resetConfirmText.textContent = keys
+                ? '是否要清除「' + keys.map(getResetItemLabel).join('、') + '」数据？清除后将立即生效，不可恢复'
+                : '是否要清除全部数据？清除后将立即生效，不可恢复';
+        }
+        if (ui.resetConfirmMask) ui.resetConfirmMask.classList.add('show');
+    }
+
+    function hideResetConfirm() {
+        pendingResetKeys = null;
+        if (ui.resetConfirmMask) ui.resetConfirmMask.classList.remove('show');
+    }
+
+    // 执行清除：keys 为 null 时清除全部
+    function performReset(keys) {
+        var has = function (k) { return !keys || keys.indexOf(k) !== -1; };
+        var done = [];
+
+        // 自定义播放列表（含导入歌曲的音频数据清理）
+        if (has('playlists')) {
+            state.playlists.forEach(function (pl) {
+                pl.tracks.forEach(function (t) {
+                    if (t.custom) {
+                        idbDeleteAudio(t.id);
+                        if (t.src) { try { URL.revokeObjectURL(t.src); } catch (e) { } }
+                    }
+                });
+            });
+            state.playlists = state.playlists.filter(function (p) { return p.builtin; });
+            try { localStorage.removeItem(STORAGE_KEY_PLAYLISTS); } catch (e) { }
+            lyricsFileCtx.selectedPlaylistId = null;
+            if (state.activePlaylistId !== state.playlists[0].id) {
+                switchPlaylist(state.playlists[0].id);   // 当前为自定义列表时：自动暂停播放并切回默认列表
+            } else {
+                savePlaylists();                          // 本就在默认列表：仅持久化清除结果，不打断内置曲目播放
+            }
+            renderDeleteSubmenu();
+            done.push('自定义播放列表');
+        }
+
+        // 自定义歌词文件（移除导入歌曲绑定的 lrcText）
+        if (has('lyrics')) {
+            state.playlists.forEach(function (pl) {
+                pl.tracks.forEach(function (t) {
+                    if (t.lrcText) delete t.lrcText;
+                });
+            });
+            savePlaylists();
+            loadLyricsForCurrentTrack();
+            done.push('自定义歌词文件');
+        }
+
+        // 自定义曲目背景图片
+        if (has('backgrounds')) {
+            state.backgrounds = {};
+            try { localStorage.removeItem(STORAGE_KEY_BACKGROUNDS); } catch (e) { }
+            applyCurrentTrackBackground();
+            if (state.settingsSection === 'background') syncBackgroundPanel();
+            done.push('自定义曲目背景图片');
+        }
+
+        // 对播放器组件的功能调整（布局 / 显隐 / 控制条 / 播放样式）
+        if (has('components')) {
+            state.layout = { position: 'center', scale: 1 };
+            state.components = { disc: true, songInfo: true };
+            state.miniBar = { showAfterLeave: true, showToggleBtn: true, quickJump: true };
+            state.playStyle = 'none';
+            state.mixer = { eq: [0, 0, 0, 0, 0, 0, 0], bass: 0, treble: 0, master: 1.0, pan: 0, preset: 'flat' };
+            saveSettings();
+            applyLayout();
+            applyComponentsVisibility();
+            applyPlayStyle();          // 停止律动可视化并解锁布局条目
+            applyMixerState();         // 调音器重置：Web Audio 节点也恢复默认
+            closeMixerPanel();
+            syncLayoutPanel();
+            syncComponentsPanel();
+            syncMiniBarPanel();
+            miniBarUserHidden = false;
+            updateMiniBarVisibility();
+            done.push('对播放器组件的功能调整');
+        }
+
+        if (typeof window.showToastSuccess === 'function') {
+            var msg = keys ? ('已清除：' + done.join('、')) : '已清除全部播放器设置';
+            window.showToastSuccess(msg, '音乐播放器');
+        }
+        // 清除完成后刷新面板（复选框恢复未勾选状态）
+        if (state.settingsSection === 'reset') renderResetPanel();
     }
 
     function startVizLoop() {
@@ -2867,6 +4308,9 @@
         // 循环模式：关闭 → 列表循环 → 单曲循环
         ui.btnRepeat.addEventListener('click', cycleRepeat);
 
+        // 歌词显示开关
+        if (ui.btnLyrics) ui.btnLyrics.addEventListener('click', toggleLyrics);
+
         // 静音
         ui.btnMute.addEventListener('click', toggleMute);
 
@@ -2929,6 +4373,10 @@
             if (e.key !== 'Escape') return;
             if (ui.confirmMask && ui.confirmMask.classList.contains('show')) {
                 hideConfirmDelete();
+                return;
+            }
+            if (ui.resetConfirmMask && ui.resetConfirmMask.classList.contains('show')) {
+                hideResetConfirm();
                 return;
             }
             if (closeAllDropdowns()) return;
@@ -3119,6 +4567,63 @@
             if (e.target === ui.confirmMask) hideConfirmDelete(); // 点击遮罩关闭
         });
 
+        // ===== 重置设置二次确认弹窗 =====
+        if (ui.resetConfirmOkBtn) {
+            ui.resetConfirmOkBtn.addEventListener('click', function () {
+                var keys = pendingResetKeys;
+                hideResetConfirm();
+                performReset(keys);   // keys 为 null 时清除全部
+            });
+        }
+        if (ui.resetConfirmCancelBtn) {
+            ui.resetConfirmCancelBtn.addEventListener('click', hideResetConfirm);
+        }
+        if (ui.resetConfirmMask) {
+            ui.resetConfirmMask.addEventListener('click', function (e) {
+                if (e.target === ui.resetConfirmMask) hideResetConfirm(); // 点击遮罩关闭
+            });
+        }
+
+        // ===== LRC 歌词上传弹窗 =====
+        var lrcDrop = document.getElementById('stkLrcDrop');
+        var lrcInput = document.getElementById('stkLrcFileInput');
+        var lrcFileClear = document.getElementById('stkLrcFileClear');
+        var lrcOk = document.getElementById('stkLrcOk');
+        var lrcCancel = document.getElementById('stkLrcCancel');
+        if (lrcDrop && lrcInput) {
+            lrcDrop.addEventListener('click', function () { lrcInput.click(); });
+            lrcInput.addEventListener('change', function () {
+                var file = lrcInput.files && lrcInput.files[0];
+                handleLrcFileSelect(file);
+                lrcInput.value = '';
+            });
+            // 拖拽支持
+            lrcDrop.addEventListener('dragover', function (e) { e.preventDefault(); lrcDrop.classList.add('dragover'); });
+            lrcDrop.addEventListener('dragleave', function () { lrcDrop.classList.remove('dragover'); });
+            lrcDrop.addEventListener('drop', function (e) {
+                e.preventDefault();
+                lrcDrop.classList.remove('dragover');
+                var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+                handleLrcFileSelect(file);
+            });
+        }
+        if (lrcFileClear) {
+            lrcFileClear.addEventListener('click', function () {
+                lyricsFileCtx.pendingLrcText = null;
+                lyricsFileCtx.pendingFileName = '';
+                var info = document.getElementById('stkLrcFileInfo');
+                if (info) info.style.display = 'none';
+                if (lrcOk) lrcOk.disabled = true;
+            });
+        }
+        if (lrcOk) lrcOk.addEventListener('click', confirmLrcImport);
+        if (lrcCancel) lrcCancel.addEventListener('click', closeLrcUploadModal);
+        if (ui.lrcMask) {
+            ui.lrcMask.addEventListener('click', function (e) {
+                if (e.target === ui.lrcMask) closeLrcUploadModal();
+            });
+        }
+
         // ===== 点击外部区域 / 滚动 / 缩放时处理下拉菜单 =====
         document.addEventListener('click', function (e) {
             if (!anyDropdownOpen()) return;
@@ -3238,6 +4743,66 @@
         ui.miniVolumeSlider.addEventListener('input', function () {
             setVolumeFromSlider(ui.miniVolumeSlider);
         });
+
+        // ===== 控制条收起 / 展开（手动隐藏后通过底部小凸起恢复） =====
+        if (ui.miniBtnHide) {
+            ui.miniBtnHide.addEventListener('click', function () {
+                miniBarUserHidden = true;
+                updateMiniBarVisibility();
+            });
+        }
+        if (ui.miniBump) {
+            ui.miniBump.addEventListener('click', function () {
+                miniBarUserHidden = false;
+                updateMiniBarVisibility();
+            });
+        }
+        if (ui.miniBarShowToggleBtn) {
+            ui.miniBarShowToggleBtn.addEventListener('change', function () {
+                state.miniBar.showToggleBtn = !!ui.miniBarShowToggleBtn.checked;
+                // 关闭开关时同时清除手动隐藏状态，避免控制条既没有按钮也没有凸起导致无法找回
+                if (!state.miniBar.showToggleBtn) miniBarUserHidden = false;
+                updateMiniBarVisibility();
+                saveSettings();
+            });
+        }
+
+        if (ui.miniBarQuickJump) {
+            ui.miniBarQuickJump.addEventListener('change', function () {
+                state.miniBar.quickJump = !!ui.miniBarQuickJump.checked;
+                updateMiniBarVisibility();
+                saveSettings();
+            });
+        }
+
+        // ===== 控制条曲目标题快速跳转：离开播放器后点击左侧曲目区域快速跳回音乐播放器 =====
+        if (ui.miniInfo) {
+            ui.miniInfo.addEventListener('click', quickJumpToPlayer);
+        }
+
+        // ===== 调音器 =====
+        setupMixerEvents();
+    }
+
+    // 点击控制条左侧当前播放曲目快速跳回音乐播放器（由「快速跳转」开关控制，默认开启）
+    function quickJumpToPlayer() {
+        if (!state.miniBar.quickJump) return;
+        if (state.currentIndex < 0) return;   // 未加载曲目时不响应
+        // 播放器可见但处于设置模式：直接关闭设置面板返回播放器主界面
+        if (state.settingsMode && isPlayerAreaVisible()) {
+            exitSettingsMode();
+            return;
+        }
+        // 已离开音乐播放器（播放器区域不可见）：触发顶部导航「游戏中心 → 音乐播放器」跳转；设置模式仍开着时一并退出
+        if (!isPlayerAreaVisible()) {
+            if (state.settingsMode) exitSettingsMode();
+            var navItem = document.querySelector('#uiMinTopnav [data-nav="soundtrack"]');
+            if (navItem) {
+                navItem.click();
+            } else if (typeof window.switchGameCenterSubPage === 'function') {
+                window.switchGameCenterSubPage('soundtrack');
+            }
+        }
     }
 
     // ==================== 播放器设置模式（侧边栏设置菜单 + 右侧设置面板 + 底部控制条） ====================
@@ -3246,6 +4811,7 @@
     function enterSettingsMode() {
         if (state.settingsMode) return;
         if (state.albumMode) exitAlbumMode();   // 与专辑浏览互斥，兜底防御
+        closeMixerPanel();                      // 与调音器面板互斥
         state.settingsMode = true;
         state.settingsSection = null;
         closeAllDropdowns();
@@ -3312,13 +4878,17 @@
         ui.panelComponents.classList.toggle('show', state.settingsSection === 'components');
         ui.panelMiniBar.classList.toggle('show', state.settingsSection === 'minibar');
         if (ui.panelPlayStyle) ui.panelPlayStyle.classList.toggle('show', state.settingsSection === 'playstyle');
+        if (ui.panelLyricsFile) ui.panelLyricsFile.classList.toggle('show', state.settingsSection === 'lyricsfile');
         if (ui.panelComponentInfo) ui.panelComponentInfo.classList.toggle('show', state.settingsSection === 'componentinfo');
+        if (ui.panelReset) ui.panelReset.classList.toggle('show', state.settingsSection === 'reset');
         if (state.settingsSection === 'background') syncBackgroundPanel();
         else if (state.settingsSection === 'layout') syncLayoutPanel();
         else if (state.settingsSection === 'components') syncComponentsPanel();
         else if (state.settingsSection === 'minibar') syncMiniBarPanel();
         else if (state.settingsSection === 'playstyle') syncPlayStylePanel();
+        else if (state.settingsSection === 'lyricsfile') syncLyricsFilePanel();
         else if (state.settingsSection === 'componentinfo') renderComponentInfoPanel();
+        else if (state.settingsSection === 'reset') renderResetPanel();
     }
 
     // 同步背景设置面板（跟随当前曲目）
@@ -3361,14 +4931,31 @@
     // 同步控制条设置面板控件状态
     function syncMiniBarPanel() {
         if (ui.miniBarShowAfterLeave) ui.miniBarShowAfterLeave.checked = state.miniBar.showAfterLeave;
+        if (ui.miniBarShowToggleBtn) ui.miniBarShowToggleBtn.checked = state.miniBar.showToggleBtn;
+        if (ui.miniBarQuickJump) ui.miniBarQuickJump.checked = state.miniBar.quickJump;
     }
 
-    // 底部播放控制条显隐：已加载曲目时，设置模式始终显示；离开播放器的其他页面按「离开音乐播放器后始终显示底部控制条」开关决定
+    // 控制条的手动隐藏状态（"暂时"隐藏，不持久化；刷新后恢复显示）
+    var miniBarUserHidden = false;
+
+    // 底部播放控制条显隐：已加载曲目时，设置模式始终显示；离开播放器的其他页面按「离开音乐播放器后始终显示底部控制条」开关决定。
+    // 被收起/展开按钮手动隐藏时，控制条滑出页面，同时底部中心显示小凸起图标供恢复。
     function updateMiniBarVisibility() {
         if (!ui.miniBar) return;
-        var show = state.currentIndex >= 0 &&
+        var base = state.currentIndex >= 0 &&
             (state.settingsMode || (!isPlayerAreaVisible() && state.miniBar.showAfterLeave));
+        var show = base && !miniBarUserHidden;
         ui.miniBar.classList.toggle('show', show);
+        // 控制条内收起/展开按钮的显隐（由设置开关控制，默认开启）
+        if (ui.miniBtnHide) ui.miniBtnHide.style.display = state.miniBar.showToggleBtn ? '' : 'none';
+        // 快速跳转：开关开启且已加载曲目时，左侧曲目区域可点击跳回播放器
+        if (ui.miniInfo) {
+            var canJump = state.miniBar.quickJump && state.currentIndex >= 0;
+            ui.miniInfo.classList.toggle('stk-clickable', canJump);
+            ui.miniInfo.title = canJump ? '点击返回音乐播放器' : '';
+        }
+        // 底部小凸起：仅在控制条本应显示但被手动隐藏时出现
+        if (ui.miniBump) ui.miniBump.classList.toggle('show', base && miniBarUserHidden);
     }
 
     // 播放器区域当前是否可见（被页面切换隐藏时返回 false）
@@ -3415,6 +5002,7 @@
         // 应用持久化设置
         updateShuffleUI();
         updateRepeatUI();
+        updateLyricsUI();   // 恢复歌词显示开关状态（按钮高亮 + 显示区可见性）
         updateVolumeUI();
         applyLayout();
         applyComponentsVisibility();
@@ -3426,6 +5014,7 @@
             var track = state.tracks[state.currentIndex];
             if (track.src) audio.src = track.src;
             setNowPlayingInfo(track);
+            loadLyricsForCurrentTrack();   // 歌词开启时直接加载上次曲目的歌词
             applyCurrentTrackBackground();
             updateActiveTrackItem();
             updatePlayUI();
