@@ -13,6 +13,7 @@
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="./css/denglu.css" as="style">
     <link rel="stylesheet" href="./css/denglu.css">
+    <link rel="stylesheet" href="./css/homenav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='./css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" onerror="this.onerror=null; window.JSZipFallback=true" defer></script>
@@ -32,6 +33,7 @@
     <script src="./js/identity_ego.js" defer></script>
     <script src="./js/account-settings.js" defer></script>
     <script src="./js/soundtrack.js" defer></script>
+    <script src="./js/homeNav.js" defer></script>
     
     <script>
         window.addEventListener('error', function(e) {
@@ -8639,56 +8641,50 @@
     </div>
 
     <div id="debugModal" class="custom-alert">
-        <div class="alert-content settings-modal-content">
-            <div class="register-header">
-                <div class="alert-icon">
-                    <i class="fas fa-cog"></i>
+        <div class="gf-fullscreen">
+            <div class="gf-topline"></div>
+            <div class="gf-header">
+                <div class="gf-title">
+                    <h2>全局设置</h2>
                 </div>
-                <h3>全局设置</h3>
+                <button class="mail-desktop-close" id="debugCloseBtn" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            
-            <div class="register-main">
-                <div class="register-inner-container">
-                    <div class="setting-section">
-                        <div class="setting-item">
-                            <div class="setting-label">
-                                <i class="fas fa-language"></i>
-                                <span>语言</span>
+            <div class="gf-content">
+                <div class="gf-section">
+                    <div class="gf-entry-label">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>切换功能</span>
+                    </div>
+                    <div class="gf-entry-desc">选择启动器的核心使用模式，此后可随时在此更改</div>
+                    <div class="gf-mode-options">
+                        <div class="gf-mode-option" data-mode="home">
+                            <div class="gf-mode-icon gf-mode-icon-home">
+                                <i class="fas fa-compass"></i>
                             </div>
-                            <select id="languageSelect" class="language-select">
-                                <option value="zh">中文</option>
-                                <option value="en">English</option>
-                                <option value="ja">日本語</option>
-                                <option value="ko">한국어</option>
-                            </select>
+                            <div class="gf-mode-text">
+                                <div class="gf-mode-name">浏览器首页导航模式</div>
+                                <div class="gf-mode-desc">将启动器作为浏览器首页导航及其他辅助功能使用：内置搜索、常用网站快捷导航、时钟与完整音乐播放器等，支持高度自定义</div>
+                            </div>
+                            <div class="gf-mode-check"><i class="fas fa-check"></i></div>
                         </div>
-                        
-                        <div class="setting-item">
-                            <div class="setting-label">
-                                <i class="fas fa-server"></i>
-                                <span>游戏服务器</span>
+                        <div class="gf-mode-option" data-mode="full">
+                            <div class="gf-mode-icon gf-mode-icon-full">
+                                <i class="fas fa-rocket"></i>
                             </div>
-                            <select id="serverSelect" class="server-select">
-                                <option value="official">默认服务器</option>
-                                <option value="custom">自定义服务器</option>
-                            </select>
-                        </div>
-                        
-                        <div class="setting-item" id="customServerInput" style="display: none;">
-                            <div class="input-group">
-                                <i class="fas fa-link"></i>
-                                <input type="text" id="apiUrlInput" placeholder="请输入调试地址" style="width: 100%;">
+                            <div class="gf-mode-text">
+                                <div class="gf-mode-name">使用完整的启动器功能</div>
+                                <div class="gf-mode-desc">保持现状，继续使用账号登录、游戏中心、仓库、商店、每日任务等完整启动器功能</div>
                             </div>
+                            <div class="gf-mode-check"><i class="fas fa-check"></i></div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="register-footer">
-                <div class="debug-buttons">
-                    <button class="alert-confirm" id="debugCancel">取消</button>
-                    <button class="alert-confirm" id="debugConfirm" style="background-color: #4CAF50;">确定</button>
-                </div>
+            <div class="gf-footer">
+                <button class="gf-btn gf-btn-cancel" id="debugCancel">取消</button>
+                <button class="gf-btn gf-btn-confirm" id="debugConfirm">确定</button>
             </div>
         </div>
     </div>
@@ -8899,6 +8895,45 @@
             <div class="modal-buttons">
                 <button class="alert-confirm" id="silentUpdateGoToVersion">跳转到版本更新</button>
                 <button class="alert-confirm" id="silentUpdateConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 启动器核心功能模式选择弹窗（首次启动 / 未选择模式时显示，最高优先级） -->
+    <div id="launcherModeModal" class="custom-alert" style="z-index: 30000;">
+        <div class="lm-content">
+            <div class="lm-topline"></div>
+            <div class="lm-header">
+                <div class="lm-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3>您想如何使用本启动器？</h3>
+                <p class="lm-subtitle">选择启动器的核心功能模式，此后可随时在「全局设置 → 切换功能」中更改</p>
+            </div>
+            <div class="lm-options">
+                <button class="lm-option" id="modeOptionHome" type="button">
+                    <span class="lm-option-icon lm-option-icon-home"><i class="fas fa-compass"></i></span>
+                    <span class="lm-option-text">
+                        <span class="lm-option-name">将启动器作为浏览器首页导航及其他辅助功能使用</span>
+                        <span class="lm-option-desc">内置搜索、常用网站快捷导航、时钟与完整音乐播放器等辅助功能，支持高度自定义</span>
+                    </span>
+                    <span class="lm-option-check"><i class="fas fa-check"></i></span>
+                </button>
+                <button class="lm-option" id="modeOptionFull" type="button">
+                    <span class="lm-option-icon lm-option-icon-full"><i class="fas fa-th-large"></i></span>
+                    <span class="lm-option-text">
+                        <span class="lm-option-name">使用完整的启动器功能</span>
+                        <span class="lm-option-desc">保持现状，继续使用账号登录、游戏中心、仓库、商店、每日任务等完整启动器功能</span>
+                    </span>
+                    <span class="lm-option-check"><i class="fas fa-check"></i></span>
+                </button>
+            </div>
+            <div class="lm-footer">
+                <p class="lm-hint">您也可以选择关闭本弹窗并于稍后进行选择</p>
+                <div class="lm-buttons">
+                    <button class="lm-btn lm-btn-close" id="launcherModeClose" type="button">关闭</button>
+                    <button class="lm-btn lm-btn-confirm" id="launcherModeConfirm" type="button" disabled>确定</button>
+                </div>
             </div>
         </div>
     </div>
@@ -9465,6 +9500,72 @@
             }
         }
         
+        // ==================== 启动器核心功能模式选择弹窗 ====================
+        // 首次启动（未选择过模式）时显示，优先级高于版本更新提示弹窗；
+        // 关闭弹窗不保存选择，下次启动会再次弹出，直到用户做出选择为止
+        function initLauncherModePopup() {
+            var modal = document.getElementById('launcherModeModal');
+            if (!modal) return;
+            if (localStorage.getItem('launcher_mode')) return;
+            
+            var confirmBtn = document.getElementById('launcherModeConfirm');
+            var closeBtn = document.getElementById('launcherModeClose');
+            
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+            
+            function applyOptionUI(mode) {
+                document.getElementById('modeOptionHome').classList.toggle('selected', mode === 'home');
+                document.getElementById('modeOptionFull').classList.toggle('selected', mode === 'full');
+                confirmBtn.disabled = !mode;
+            }
+            
+            document.getElementById('modeOptionHome').addEventListener('click', function() {
+                applyOptionUI('home');
+            });
+            document.getElementById('modeOptionFull').addEventListener('click', function() {
+                applyOptionUI('full');
+            });
+            
+            confirmBtn.addEventListener('click', function() {
+                var selected = document.querySelector('#launcherModeModal .lm-option.selected');
+                if (!selected) return;
+                
+                var mode = selected.id === 'modeOptionHome' ? 'home' : 'full';
+                localStorage.setItem('launcher_mode', mode);
+                
+                closeLauncherModeModal();
+                
+                if (mode === 'home' && typeof HomeNav !== 'undefined') {
+                    setTimeout(function() {
+                        HomeNav.show();
+                    }, 350);
+                }
+            });
+            
+            closeBtn.addEventListener('click', function() {
+                closeLauncherModeModal();
+            });
+            
+            // 点击遮罩空白处等同于关闭（稍后再选）
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeLauncherModeModal();
+                }
+            });
+        }
+        
+        function closeLauncherModeModal() {
+            var modal = document.getElementById('launcherModeModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.add('page-transition-in');
             setTimeout(function() {
@@ -9493,16 +9594,11 @@
             
             checkLoginVersionUpdate();
             
+            // 启动器核心功能模式选择弹窗（未选择过模式时显示，优先级最高）
+            initLauncherModePopup();
+            
             document.getElementById('captchaImage').addEventListener('click', function(e) {
                 fetchCaptcha(e);
-            });
-            
-            document.getElementById('languageSelect').addEventListener('change', function() {
-                changeLanguage(this.value);
-            });
-            
-            document.getElementById('serverSelect').addEventListener('change', function() {
-                toggleCustomServer(this.value === 'custom');
             });
             
             window.addEventListener('online', function() {
@@ -9879,7 +9975,29 @@
             const imageUrl = `https://dummyimage.com/100x40/${randomColor.substring(1)}/ffffff&text=${code}&t=${timestamp}`;
             
             const img = new Image();
+            let captchaTimeout = null;
+            let captchaResolved = false;
+            
+            const resolveCaptcha = function() {
+                if (captchaResolved) return;
+                captchaResolved = true;
+                if (captchaTimeout) {
+                    clearTimeout(captchaTimeout);
+                    captchaTimeout = null;
+                }
+            };
+            
+            captchaTimeout = setTimeout(function() {
+                if (!captchaResolved) {
+                    resolveCaptcha();
+                    console.warn('验证码图片加载超时，切换到本地生成');
+                    generateLocalCaptcha(elementId, codeVariableName);
+                }
+            }, 3000);
+            
             img.onload = function() {
+                if (captchaResolved) return;
+                resolveCaptcha();
                 captchaEl.innerHTML = `<img src="${imageUrl}" alt="验证码" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">`;
                 captchaEl.addEventListener('click', function(e) {
                     fetchCaptcha(e);
@@ -9889,6 +10007,8 @@
                 captchaRetryCount = 0;
             };
             img.onerror = function() {
+                if (captchaResolved) return;
+                resolveCaptcha();
                 console.error('验证码图片加载失败，切换到本地生成');
                 generateLocalCaptcha(elementId, codeVariableName);
             };
@@ -11585,6 +11705,12 @@
                             </div>
                         </div>
                     `;
+                }
+
+                // 切换音乐播放器宿主到游戏中心容器
+                // 首页导航可能已经把播放器挂在 hnSoundtrackArea 里了，这里需要迁移
+                if (typeof window.setSoundtrackContainer === 'function') {
+                    window.setSoundtrackContainer('soundtrackArea');
                 }
                 
                 // 添加游戏大厅的CSS样式
@@ -23413,6 +23539,14 @@
             var password = document.getElementById('password').value;
             var captcha = document.getElementById('captcha').value;
             
+            // 快速登录模式下，密码输入框被隐藏，从 localStorage 读取保存的密码
+            if (isQuickLogin) {
+                var savedPwd = localStorage.getItem('savedPassword');
+                if (savedPwd) {
+                    password = savedPwd;
+                }
+            }
+            
             if (!username) {
                 showAlert(getLanguageText('enterAccount'));
                 return;
@@ -23465,10 +23599,16 @@
             
             if (!validUser) {
                 showAlert(getLanguageText('loginError'));
-                fetchCaptcha();
-                document.getElementById('captcha').value = '';
-                document.getElementById('password').value = '';
-                document.getElementById('password').focus();
+                if (isQuickLogin) {
+                    // 快速登录模式下验证失败，退出快速登录模式
+                    disableQuickLoginMode();
+                    fetchCaptcha();
+                } else {
+                    fetchCaptcha();
+                    document.getElementById('captcha').value = '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
+                }
                 return;
             }
             
@@ -23730,21 +23870,10 @@
             setTimeout(function() {
                 debugModal.classList.add('show');
                 
-                // 为服务器选择器添加事件监听器
-                var serverSelect = document.getElementById('serverSelect');
-                if (serverSelect) {
-                    // 移除可能存在的旧事件监听器
-                    serverSelect.removeEventListener('change', serverSelectChangeHandler);
-                    // 添加新的事件监听器
-                    serverSelect.addEventListener('change', serverSelectChangeHandler);
-                }
+                // 同步「切换功能」条目的当前选中模式
+                syncSwitchFeatureSelection();
             }, 10);
         });
-        
-        // 服务器选择器的事件处理函数
-        function serverSelectChangeHandler() {
-            toggleCustomServer(this.value === 'custom');
-        }
 
         document.getElementById('sidebarVersion').addEventListener('click', function() {
             // 检查网络连接
@@ -24172,41 +24301,51 @@
             }, 300);
         });
         
+        // 全屏样式右上角关闭按钮（与取消按钮行为一致）
+        document.getElementById('debugCloseBtn').addEventListener('click', function() {
+            document.getElementById('debugCancel').click();
+        });
+        
+        // 「切换功能」模式选项点击选中（单选）
+        document.querySelectorAll('#debugModal .gf-mode-option').forEach(function(option) {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('#debugModal .gf-mode-option').forEach(function(opt) {
+                    opt.classList.remove('selected');
+                });
+                option.classList.add('selected');
+            });
+        });
+        
+        // 同步「切换功能」条目的选中状态为当前生效模式
+        function syncSwitchFeatureSelection() {
+            var currentMode = localStorage.getItem('launcher_mode') || 'full';
+            document.querySelectorAll('#debugModal .gf-mode-option').forEach(function(opt) {
+                opt.classList.toggle('selected', opt.getAttribute('data-mode') === currentMode);
+            });
+        }
+        
         document.getElementById('debugConfirm').addEventListener('click', function() {
-            var apiUrl = document.getElementById('apiUrlInput').value;
-            var serverType = document.getElementById('serverSelect').value;
-            var language = document.getElementById('languageSelect').value;
-            var initialServerType = window.initialServerType;
-            var initialCustomUrl = window.initialCustomUrl;
-            var initialLanguage = window.initialLanguage;
+            var selectedOption = document.querySelector('#debugModal .gf-mode-option.selected');
+            var newMode = selectedOption ? selectedOption.getAttribute('data-mode') : 'full';
+            var oldMode = localStorage.getItem('launcher_mode') || 'full';
             
-            if (serverType === 'custom' && apiUrl) {
-                localStorage.setItem('gameServerUrl', apiUrl);
-            } else if (serverType === 'official') {
-                localStorage.removeItem('gameServerUrl');
-            }
-            
-            localStorage.setItem('serverType', serverType);
-            localStorage.setItem('language', language);
-            
-            // 只在服务器类型改变时显示提示
-            if (serverType !== initialServerType) {
-                if (serverType === 'official') {
-                    showAlert(getLanguageText('officialServer'));
-                } else if (serverType === 'custom') {
-                    showAlert(getLanguageText('serverSaved'));
+            if (newMode !== oldMode) {
+                localStorage.setItem('launcher_mode', newMode);
+                
+                if (newMode === 'home') {
+                    // 切换到浏览器首页导航模式
+                    if (typeof HomeNav !== 'undefined') {
+                        HomeNav.show();
+                    }
+                    showToastSuccess('已切换为「浏览器首页导航模式」');
+                } else {
+                    // 切换回完整启动器模式
+                    if (typeof HomeNav !== 'undefined') {
+                        HomeNav.hide();
+                    }
+                    showToastSuccess('已切换为「完整启动器模式」');
                 }
             }
-            
-            // 如果语言改变，重新加载语言
-            if (language !== initialLanguage) {
-                changeLanguage(language);
-            }
-            
-            // 更新初始状态
-            window.initialServerType = serverType;
-            window.initialCustomUrl = apiUrl || '';
-            window.initialLanguage = language;
             
             document.getElementById('debugCancel').click();
         });
@@ -25574,21 +25713,7 @@
             SettingsManager.init();
             
             const language = localStorage.getItem('language') || 'zh';
-            document.getElementById('languageSelect').value = language;
             changeLanguage(language);
-            
-            const serverType = localStorage.getItem('serverType') || 'official';
-            document.getElementById('serverSelect').value = serverType;
-            toggleCustomServer(serverType === 'custom');
-            
-            const customUrl = localStorage.getItem('gameServerUrl');
-            if (customUrl) {
-                document.getElementById('apiUrlInput').value = customUrl;
-            }
-            
-            window.initialServerType = serverType;
-            window.initialCustomUrl = customUrl || '';
-            window.initialLanguage = language;
         }
 
         function toggleDarkMode(enabled) {
@@ -25597,15 +25722,6 @@
 
         function changeLanguage(lang) {
             LangManager.changeLanguage(lang);
-        }
-
-        function toggleCustomServer(show) {
-            const customServerInput = document.getElementById('customServerInput');
-            if (show) {
-                customServerInput.style.display = 'flex';
-            } else {
-                customServerInput.style.display = 'none';
-            }
         }
 
         function getLanguageText(key) {

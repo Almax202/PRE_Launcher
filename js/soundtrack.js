@@ -258,6 +258,96 @@
             lrc: 'sounds/lrc/致幻的占卜.lrc',
             colors: ['#4facfe', '#00c6fb']
         },
+        {
+            id: 'track-28',
+            title: 'Eclipse',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/Eclipse.mp3',
+            lrc: 'sounds/lrc/Eclipse.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-29',
+            title: '巴别塔 - 主界面',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/巴别塔 - 主界面.mp3',
+            lrc: 'sounds/lrc/巴别塔 - 主界面.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-30',
+            title: '潮曦作战 - 战斗BGM1',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/潮曦作战 - 战斗BGM1.mp3',
+            lrc: 'sounds/lrc/潮曦作战 - 战斗BGM1.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-31',
+            title: '潮曦作战 - 战斗BGM2',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/潮曦作战 - 战斗BGM2.mp3',
+            lrc: 'sounds/lrc/潮曦作战 - 战斗BGM2.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-32',
+            title: '潮曦作战 - 主界面',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/潮曦作战 - 主界面.mp3',
+            lrc: 'sounds/lrc/潮曦作战 - 主界面.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-33',
+            title: '崔林特尔梅之金 - 战斗BGM1',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/崔林特尔梅之金 - 战斗BGM1.mp3',
+            lrc: 'sounds/lrc/崔林特尔梅之金 - 战斗BGM1.lrc', 
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-34',
+            title: '崔林特尔梅之金 - 战斗BGM2',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/崔林特尔梅之金 - 战斗BGM2.mp3',
+            lrc: 'sounds/lrc/崔林特尔梅之金 - 战斗BGM2.lrc', 
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-35',
+            title: '崔林特尔梅之金 - 主界面',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/崔林特尔梅之金 - 主界面.mp3',
+            lrc: 'sounds/lrc/崔林特尔梅之金 - 主界面.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-36',
+            title: '弧光作战 - 主界面',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/弧光作战 - 主界面.mp3',
+            lrc: 'sounds/lrc/弧光作战 - 主界面.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
+        {
+            id: 'track-37',
+            title: '浊燃作战 - 主界面',
+            artist: '塞壬唱片-MSR',
+            album: '明日方舟',
+            src: 'sounds/浊燃作战 - 主界面.mp3',
+            lrc: 'sounds/lrc/浊燃作战 - 主界面.lrc',
+            colors: ['#4facfe', '#00c6fb']
+        },
     ];
 
     // ==================== 专辑数据（曲目合集快速配置） ====================
@@ -280,7 +370,10 @@
             id: 'album-arknights',
             name: '明日方舟',
             description: '塞壬唱片-MSR · 12 首',
-            trackIds: ['track-07', 'track-08','track-18','track-19','track-20','track-21','track-22','track-23','track-24','track-25','track-26','track-27'],
+            trackIds: ['track-07', 'track-08','track-18','track-19','track-20','track-21','track-22'
+                ,'track-23','track-24','track-25','track-26','track-27','track-28','track-29','track-30',
+                'track-31','track-32','track-33','track-34','track-35','track-36','track-37',
+            ],
             colors: ['#4facfe', '#00c6fb']
         },
         {
@@ -402,6 +495,8 @@
     var audio = null;
     var ui = {};
     var initialized = false;
+    // 当前播放器挂载的容器 id，用于支持多个 UI 模式（游戏中心 / 首页导航）各自独立渲染
+    var _currentContainerId = 'soundtrackArea';
 
     // ==================== 工具函数 ====================
     function formatTime(sec) {
@@ -848,7 +943,7 @@
         style.id = 'soundtrackPlayerStyles';
         style.textContent = [
             '/* ===== 音乐播放器（soundtrack.js） ===== */',
-            '#soundtrackArea { padding: 8px 12px; width: 100%; box-sizing: border-box; }',
+            '#soundtrackArea, #hnSoundtrackArea { padding: 8px 12px; width: 100%; box-sizing: border-box; }',
             '.stk-player { width: 100%; display: flex; gap: 16px; height: calc(100vh - 130px); min-height: 580px; position: relative; }',
 
             /* 左侧播放列表 */
@@ -4960,7 +5055,7 @@
 
     // 播放器区域当前是否可见（被页面切换隐藏时返回 false）
     function isPlayerAreaVisible() {
-        var area = document.getElementById('soundtrackArea');
+        var area = document.getElementById(_currentContainerId);
         if (!area) return false;
         var rect = area.getBoundingClientRect();
         return rect.width > 0 && rect.height > 0;
@@ -4973,10 +5068,26 @@
     }
 
     // ==================== 初始化入口 ====================
-    function initSoundtrackPlayer() {
-        if (initialized) return;
-        var container = document.getElementById('soundtrackArea');
-        if (!container) return; // 游戏中心内容尚未生成时跳过，打开时会再次调用
+    function initSoundtrackPlayer(containerId) {
+        var targetId = containerId || _currentContainerId || 'soundtrackArea';
+        var container = document.getElementById(targetId);
+        if (!container) return; // 容器尚未生成时跳过，打开时会再次调用
+
+        if (initialized) {
+            // 已初始化 → 将已渲染的播放器 DOM 迁移到新容器，保持内部状态（audio/轨道/设置）不变
+            var playerRoot = ui.main ? ui.main.closest('.stk-player') : null;
+            if (playerRoot && playerRoot.parentElement !== container) {
+                container.innerHTML = ''; // 清除容器内可能存在的空占位
+                container.appendChild(playerRoot);
+                _currentContainerId = targetId;
+                updateMiniBarVisibility();
+            } else {
+                _currentContainerId = targetId;
+            }
+            return;
+        }
+
+        _currentContainerId = targetId;
 
         injectStyles();
         loadPlaylists();      // 先加载播放列表（state.tracks 指向活动列表），再恢复设置
@@ -5045,8 +5156,29 @@
 
     // 对外暴露
     window.initSoundtrackPlayer = initSoundtrackPlayer;
+
+    // 切换播放器宿主容器（不强制初始化，已初始化时执行 DOM 迁移）
+    // 支持多个 UI 模式（游戏中心 soundtrackArea / 首页导航 hnSoundtrackArea）各自独立渲染
+    window.setSoundtrackContainer = function (containerId) {
+        var targetId = containerId || 'soundtrackArea';
+        if (targetId === _currentContainerId) return;
+
+        if (initialized) {
+            var container = document.getElementById(targetId);
+            var playerRoot = ui.main ? ui.main.closest('.stk-player') : null;
+            if (container && playerRoot) {
+                container.innerHTML = '';
+                container.appendChild(playerRoot);
+                _currentContainerId = targetId;
+                updateMiniBarVisibility();
+            }
+        } else {
+            _currentContainerId = targetId;
+        }
+    };
+
     window.openSoundtrackPlayer = function () {
-        initSoundtrackPlayer();
+        initSoundtrackPlayer('soundtrackArea');
         if (typeof window.switchGameCenterSubPage === 'function') {
             window.switchGameCenterSubPage('soundtrack');
         }

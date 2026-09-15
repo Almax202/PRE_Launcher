@@ -717,13 +717,9 @@ const LangManager = (function() {
         document.querySelector('label[for="autoLogin"]').textContent = texts.autoLogin;
         document.getElementById('loginButton').innerHTML = '<i class="fas fa-sign-in-alt"></i> ' + texts.loginBtn;
         
-        // 更新全局设置模态框
-        document.querySelector('#debugModal h3').textContent = texts.settingsTitle;
-        document.querySelectorAll('.setting-label span')[0].textContent = texts.language;
-        document.querySelectorAll('.setting-label span')[1].textContent = texts.gameServer;
-        document.querySelector('#serverSelect option[value="official"]').textContent = texts.officialServer;
-        document.querySelector('#serverSelect option[value="custom"]').textContent = texts.customServer;
-        document.getElementById('apiUrlInput').placeholder = texts.debugAddress;
+        // 更新全局设置模态框（已改为全屏样式，仅保留切换功能条目与取消/确定按钮）
+        var debugModalTitle = document.querySelector('#debugModal h2');
+        if (debugModalTitle) debugModalTitle.textContent = texts.settingsTitle;
         document.getElementById('debugCancel').textContent = texts.cancel;
         document.getElementById('debugConfirm').textContent = texts.confirm;
         

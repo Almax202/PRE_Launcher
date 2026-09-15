@@ -164,7 +164,7 @@ var SHOP_ITEM_PRICES = {
 //     ★ start 留空 '' = 立即开始；end 留空 '' = 永不结束
 //     ★ 到点自动开始 / 到点自动结束，无需手动干预
 var SHOP_GLOBAL_PROMO = {
-    enabled: true,
+    enabled: false,
     discount: 20,                     // ★ 全场促销折扣百分比，修改此单一数值即可
     start: '2026-08-30 00:00:00',     // 促销开始时间（UTC+8）
     end: '2026-09-13 23:59:59'        // 促销截止时间（UTC+8）
@@ -1654,7 +1654,7 @@ function buildShopSpecialCardHTML(itemId) {
     if (owned) {
         stockHtml = '<div class="shop-stock shop-stock-total"><i class="fas fa-check-circle"></i> 已拥有该' + typeNoun + '，每账号限购 1 件</div>';
     } else if (eventBlocked) {
-        stockHtml = '<div class="shop-stock shop-stock-daily"><i class="fas fa-lock"></i> 包含该' + typeNoun + '的活动进行中，暂未开放售卖</div>';
+        stockHtml = '<div class="shop-stock shop-stock-daily"><i class="fas fa-lock"></i> 包含该' + typeNoun + '的活动正在进行中，暂不开放售卖</div>';
     } else {
         stockHtml = '<div class="shop-stock shop-stock-total"><i class="fas fa-infinity"></i> 每账号限购 1 件</div>';
     }
