@@ -1,5 +1,5 @@
 var mailSystem = {
-    MAX_MAILS: 100,
+    MAX_MAILS: 200,
     MAX_HISTORY: 200,
     
     MAIL_STORAGE_KEYS: {
@@ -29,6 +29,19 @@ var mailSystem = {
     getMails: function() {
         var mails = localStorage.getItem(this.getStorageKey(this.MAIL_STORAGE_KEYS.MAILS));
         return mails ? JSON.parse(mails) : [];
+    },
+
+    // 获取当前在有效期内的邮件（无 expireTime 或尚未过期）
+    getValidMails: function() {
+        var now = Date.now();
+        return this.getMails().filter(function(m) {
+            return !m.expireTime || m.expireTime >= now;
+        });
+    },
+
+    // 获取在有效期内的邮件数量
+    getValidMailCount: function() {
+        return this.getValidMails().length;
     },
     
     saveMails: function(mails) {
@@ -705,6 +718,35 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 16,
+            date: "2026-09-17",
+            mails: [
+                {
+                    id: 'compensation_mail_20260917',
+                    title: '2026-09-17 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上版本更新补偿：经验值补给卡 Ⅰ ×1 和 经验值加成卡 Ⅰ，所有物品领取后将发放至您的仓库。\n\n本邮件发放对象为 2026-09-17 17:00:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-09-24 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        },
+                        {
+                            name: '经验值加成卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_boost_small',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-09-17 17:00:00",
+                    endTime: "2026-09-24 23:59:59",
+                    requireRegisteredBefore: "2026-09-17 17:00:00"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {
@@ -819,6 +861,7 @@ var mailSystem = {
 };
 
 var currentMailId = null;
+var currentHistoryFilter = null; // null = 全部, 'YYYY-MM' = 指定月份
 
 function initMailSystem() {
     console.log('[MailSystem] initMailSystem called');
@@ -999,10 +1042,28 @@ function switchMailTab(tab) {
     currentMailId = null;
 }
 
+// 更新邮件弹窗标题的容量标签：共计 当前数/上限 封邮件（仅统计在有效期内的邮件）
+function updateMailCountBadge() {
+    var badge = document.getElementById('mailCountBadge');
+    if (!badge) return;
+    var count = mailSystem.getValidMailCount();
+    badge.textContent = '共计 ' + count + '/' + mailSystem.MAX_MAILS + ' 封邮件';
+}
+
+// 更新领取记录弹窗标题的容量说明标签：显示上限与当前已保留数量
+function updateMailHistoryCapBadge() {
+    var badge = document.getElementById('mailHistoryCapBadge');
+    if (!badge) return;
+    var count = mailSystem.getMailHistory().length;
+    badge.textContent = '可保留' + mailSystem.MAX_HISTORY + '条领取记录，超过上限的记录将会被删除（已保留' + count + '条）';
+}
+
 function renderMailList() {
     var mailList = document.getElementById('mailList');
     if (!mailList) return;
-    
+
+    updateMailCountBadge();
+
     var mails = mailSystem.getMails();
     
     if (mails.length === 0) {
@@ -1478,6 +1539,10 @@ function showMailHistoryModal() {
     var modal = document.getElementById('mailHistoryModal');
     if (!modal) return;
     
+    // 重置筛选状态
+    currentHistoryFilter = null;
+    updateHistoryFilterBtn();
+    
     renderMailHistoryList();
     
     modal.style.display = 'flex';
@@ -1517,6 +1582,10 @@ function setupMailHistoryModalEventDelegation() {
             case 'mailHistoryClearBtn':
                 clearMailHistory();
                 break;
+            case 'mailHistoryFilterBtn':
+                e.stopPropagation();
+                toggleHistoryFilterDropdown();
+                break;
         }
     };
     
@@ -1536,26 +1605,156 @@ function closeMailHistoryModal() {
 function clearMailHistory() {
     showConfirm('确认清空', '确定要全部清空吗？清空后不可恢复', function() {
         localStorage.removeItem(mailSystem.getStorageKey(mailSystem.MAIL_STORAGE_KEYS.MAIL_HISTORY));
+        // 重置筛选状态
+        currentHistoryFilter = null;
+        updateHistoryFilterBtn();
+        closeHistoryFilterDropdown();
         renderMailHistoryList();
         showAlert('领取记录已清空');
     });
 }
 
+// 从领取记录中提取所有可用的月份，返回 [{ key: 'YYYY-MM', label: 'YYYY年M月' }, ...]
+function getAvailableHistoryMonths() {
+    var history = mailSystem.getMailHistory();
+    var monthMap = {};
+    history.forEach(function(item) {
+        var d = new Date(item.claimTime);
+        var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        if (!monthMap[key]) {
+            monthMap[key] = {
+                key: key,
+                label: d.getFullYear() + '年' + (d.getMonth() + 1) + '月'
+            };
+        }
+    });
+    // 按时间倒序排列（最新的月份在前）
+    var result = Object.values(monthMap);
+    result.sort(function(a, b) {
+        return b.key.localeCompare(a.key);
+    });
+    return result;
+}
+
+// 渲染筛选下拉菜单的月份选项
+function renderHistoryFilterDropdown() {
+    var dropdown = document.getElementById('mailHistoryFilterDropdown');
+    if (!dropdown) return;
+    
+    var months = getAvailableHistoryMonths();
+    var html = '<div class="mail-history-filter-option' + (currentHistoryFilter === null ? ' active' : '') + '" data-month="all">全部</div>';
+    
+    if (months.length === 0) {
+        html += '<div class="mail-history-filter-empty">暂无记录</div>';
+    } else {
+        months.forEach(function(m) {
+            html += '<div class="mail-history-filter-option' + (currentHistoryFilter === m.key ? ' active' : '') + '" data-month="' + m.key + '">' + m.label + '</div>';
+        });
+    }
+    
+    dropdown.innerHTML = html;
+    
+    // 绑定选项点击事件
+    dropdown.querySelectorAll('.mail-history-filter-option').forEach(function(opt) {
+        opt.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var month = this.dataset.month;
+            currentHistoryFilter = (month === 'all') ? null : month;
+            renderHistoryFilterDropdown(); // 重新渲染以更新 active 状态
+            updateHistoryFilterBtn();
+            renderMailHistoryList();
+            closeHistoryFilterDropdown();
+        });
+    });
+}
+
+// 更新筛选按钮的 active 状态和文字
+function updateHistoryFilterBtn() {
+    var btn = document.getElementById('mailHistoryFilterBtn');
+    if (!btn) return;
+    
+    if (currentHistoryFilter) {
+        btn.classList.add('active');
+        var months = getAvailableHistoryMonths();
+        var match = months.find(function(m) { return m.key === currentHistoryFilter; });
+        btn.querySelector('span').textContent = match ? match.label : '筛选';
+    } else {
+        btn.classList.remove('active');
+        btn.querySelector('span').textContent = '筛选';
+    }
+}
+
+// 切换筛选下拉菜单显示
+function toggleHistoryFilterDropdown() {
+    var dropdown = document.getElementById('mailHistoryFilterDropdown');
+    var btn = document.getElementById('mailHistoryFilterBtn');
+    if (!dropdown || !btn) return;
+    
+    if (dropdown.classList.contains('show')) {
+        closeHistoryFilterDropdown();
+    } else {
+        renderHistoryFilterDropdown();
+        dropdown.classList.add('show');
+        btn.classList.add('open');
+        
+        // 点击外部关闭
+        setTimeout(function() {
+            document.addEventListener('click', outsideHistoryFilterClick, { once: true });
+        }, 0);
+    }
+}
+
+// 关闭筛选下拉菜单
+function closeHistoryFilterDropdown() {
+    var dropdown = document.getElementById('mailHistoryFilterDropdown');
+    var btn = document.getElementById('mailHistoryFilterBtn');
+    if (dropdown) dropdown.classList.remove('show');
+    if (btn) btn.classList.remove('open');
+    document.removeEventListener('click', outsideHistoryFilterClick);
+}
+
+// 点击外部关闭筛选下拉的处理
+function outsideHistoryFilterClick(e) {
+    var wrapper = document.querySelector('.mail-history-filter-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        closeHistoryFilterDropdown();
+    } else {
+        // 如果点击在按钮内部（但由按钮自身处理toggle），重新绑定
+        document.addEventListener('click', outsideHistoryFilterClick, { once: true });
+    }
+}
+
 function renderMailHistoryList() {
     var list = document.getElementById('mailHistoryList');
     if (!list) return;
-    
+
+    updateMailHistoryCapBadge();
+
     var history = mailSystem.getMailHistory();
     var currentUser = localStorage.getItem('currentUser');
     var username = currentUser ? JSON.parse(currentUser).username : '未知用户';
     
+    // 应用月份筛选
+    if (currentHistoryFilter) {
+        var filterParts = currentHistoryFilter.split('-');
+        var filterYear = parseInt(filterParts[0], 10);
+        var filterMonth = parseInt(filterParts[1], 10) - 1; // 0-based
+        history = history.filter(function(item) {
+            var d = new Date(item.claimTime);
+            return d.getFullYear() === filterYear && d.getMonth() === filterMonth;
+        });
+    }
+    
     list.innerHTML = '';
     
     if (history.length === 0) {
+        var emptyMsg = currentHistoryFilter
+            ? '该月份暂无领取记录'
+            : '暂无领取记录';
         list.innerHTML = `
             <div class="mail-history-empty">
                 <i class="fas fa-history"></i>
-                <p>暂无领取记录</p>
+                <p>${emptyMsg}</p>
             </div>
         `;
         return;

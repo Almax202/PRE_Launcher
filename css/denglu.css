@@ -8464,6 +8464,7 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 .mail-desktop-title {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 15px;
 }
 
@@ -8480,6 +8481,19 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
     margin: 0;
     font-weight: 600;
     letter-spacing: 1px;
+}
+
+.mail-count-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 13px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #d45d79;
+    background: rgba(212, 93, 121, 0.1);
+    border-radius: 13px;
+    white-space: nowrap;
 }
 
 .mail-desktop-close {
@@ -9178,10 +9192,125 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
     color: #333;
 }
 
+.mail-history-title-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+}
+
+.mail-history-cap-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 11px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #b06a7d;
+    background: rgba(212, 93, 121, 0.08);
+    border-radius: 11px;
+}
+
 .mail-history-actions {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.mail-history-filter-wrapper {
+    position: relative;
+}
+
+.mail-history-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #5a8fd4;
+    background: rgba(90, 143, 212, 0.1);
+    border: 1px solid rgba(90, 143, 212, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mail-history-filter-btn:hover {
+    background: rgba(90, 143, 212, 0.15);
+    border-color: rgba(90, 143, 212, 0.3);
+}
+
+.mail-history-filter-btn.active {
+    background: rgba(90, 143, 212, 0.2);
+    border-color: rgba(90, 143, 212, 0.4);
+}
+
+.mail-history-filter-chevron {
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.mail-history-filter-btn.open .mail-history-filter-chevron {
+    transform: rotate(180deg);
+}
+
+.mail-history-filter-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 140px;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    z-index: 10000;
+    display: none;
+    animation: mailHistoryFilterFadeIn 0.15s ease;
+}
+
+.mail-history-filter-dropdown.show {
+    display: block;
+}
+
+@keyframes mailHistoryFilterFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mail-history-filter-option {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.mail-history-filter-option:hover {
+    background: rgba(90, 143, 212, 0.1);
+}
+
+.mail-history-filter-option.active {
+    color: #5a8fd4;
+    font-weight: 600;
+    background: rgba(90, 143, 212, 0.1);
+}
+
+.mail-history-filter-empty {
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #999;
+    text-align: center;
 }
 
 .mail-history-clear-btn {
@@ -9398,6 +9527,11 @@ body.dark-mode .mail-desktop-title h2 {
     color: #e0e0e0;
 }
 
+body.dark-mode .mail-count-badge {
+    color: #ff8fa3;
+    background: rgba(212, 93, 121, 0.18);
+}
+
 body.dark-mode .mail-desktop-close {
     background: rgba(255, 255, 255, 0.08);
     color: #ccc;
@@ -9591,6 +9725,50 @@ body.dark-mode .mail-history-header {
 
 body.dark-mode .mail-history-header h2 {
     color: #e0e0e0;
+}
+
+body.dark-mode .mail-history-cap-badge {
+    color: #e6a8b8;
+    background: rgba(212, 93, 121, 0.15);
+}
+
+body.dark-mode .mail-history-filter-btn {
+    color: #7fb3f0;
+    background: rgba(90, 143, 212, 0.2);
+    border-color: rgba(90, 143, 212, 0.35);
+}
+
+body.dark-mode .mail-history-filter-btn:hover {
+    background: rgba(90, 143, 212, 0.3);
+    border-color: rgba(90, 143, 212, 0.5);
+}
+
+body.dark-mode .mail-history-filter-btn.active {
+    background: rgba(90, 143, 212, 0.35);
+    border-color: rgba(90, 143, 212, 0.6);
+}
+
+body.dark-mode .mail-history-filter-dropdown {
+    background: #2a2a3a;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .mail-history-filter-option {
+    color: #ddd;
+}
+
+body.dark-mode .mail-history-filter-option:hover {
+    background: rgba(90, 143, 212, 0.2);
+}
+
+body.dark-mode .mail-history-filter-option.active {
+    color: #7fb3f0;
+    background: rgba(90, 143, 212, 0.2);
+}
+
+body.dark-mode .mail-history-filter-empty {
+    color: #777;
 }
 
 body.dark-mode .mail-history-clear-btn {
@@ -9808,6 +9986,46 @@ body.transparent-mode #mailHistoryModal .alert-content {
 
 body.transparent-mode .mail-history-header h2 {
     color: rgba(255, 255, 255, 0.95);
+}
+
+body.transparent-mode .mail-history-filter-btn {
+    color: #9cc4f4;
+    background: rgba(90, 143, 212, 0.2);
+    border-color: rgba(90, 143, 212, 0.35);
+}
+
+body.transparent-mode .mail-history-filter-btn:hover {
+    background: rgba(90, 143, 212, 0.3);
+    border-color: rgba(90, 143, 212, 0.5);
+}
+
+body.transparent-mode .mail-history-filter-btn.active {
+    background: rgba(90, 143, 212, 0.35);
+    border-color: rgba(90, 143, 212, 0.6);
+}
+
+body.transparent-mode .mail-history-filter-dropdown {
+    background: rgba(30, 30, 50, 0.95);
+    backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+body.transparent-mode .mail-history-filter-option {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.transparent-mode .mail-history-filter-option:hover {
+    background: rgba(90, 143, 212, 0.25);
+}
+
+body.transparent-mode .mail-history-filter-option.active {
+    color: #9cc4f4;
+    background: rgba(90, 143, 212, 0.25);
+}
+
+body.transparent-mode .mail-history-filter-empty {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 body.transparent-mode .mail-history-clear-btn {
@@ -10478,6 +10696,32 @@ body.transparent-mode #userCardModal .card-action-btn:hover {
     margin-top: 3px;
 }
 
+/* 活动中心：操作按钮固定在顶部公告图区最右侧（一行排列） */
+.event-banner-center .event-banner-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-banner-actions {
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 11;
+}
+
+.event-banner-actions .event-action-btn {
+    padding: 10px 22px;
+    font-size: 13px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
 /* 空状态 */
 .event-detail-empty {
     flex: 1;
@@ -10934,13 +11178,16 @@ body.transparent-mode .event-banner-area {
         padding: 20px;
     }
     
-    .event-center-actions {
-        flex-direction: column;
+    .event-banner-actions {
+        gap: 8px;
     }
-    
-    .event-action-btn {
-        width: 100%;
-        justify-content: center;
+
+    .event-banner-actions .event-action-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+        gap: 6px;
+        white-space: nowrap;
     }
 }
 

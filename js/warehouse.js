@@ -117,6 +117,18 @@ var WAREHOUSE_ITEMS = {
         category: 'badge', rarity: 'legendary', showSource: true,
         desc: 'PRE Launcher 半周年限定纪念徽章。',
         source: '半周年活动', usable: false
+    },
+    diligent_medal: {
+        name: '勤奋者勋章', icon: 'fas fa-ribbon', color: '#27ae60',
+        category: 'badge', rarity: 'legendary', showSource: true,
+        desc: '授予连续签到满180天用户的荣誉勋章，镌刻着持之以恒的勤奋。',
+        source: '签到里程碑 · 连续签到180天', usable: false
+    },
+    persistent_medal: {
+        name: '坚持者勋章', icon: 'fas fa-gem', color: '#9b59b6',
+        category: 'badge', rarity: 'legendary', showSource: true,
+        desc: '授予连续签到满365天用户的至高荣誉勋章，见证一整年的不懈坚持。',
+        source: '签到里程碑 · 连续签到365天', usable: false
     }
 };
 
@@ -323,10 +335,57 @@ function warehouseRemoveItem(itemId, qty) {
     return true;
 }
 
-// 查询道具数量
+// 查询道具数量（仅普通/无期限道具）
 function warehouseGetItemCount(itemId) {
     var data = getWarehouseData();
     return data.items[itemId] ? data.items[itemId].qty : 0;
+}
+
+// 查询道具总数量（普通 + 限时，自动清理过期）
+function warehouseGetTotalItemCount(itemId) {
+    var count = warehouseGetItemCount(itemId);
+    count += warehouseGetTimedItemCount(itemId);
+    return count;
+}
+
+// 消耗道具：优先消耗普通道具，普通不足时消耗限时道具
+// 返回 true 表示成功消耗，false 表示数量不足
+function warehouseConsumeItem(itemId, qty) {
+    if (!WAREHOUSE_ITEMS[itemId]) return false;
+    qty = qty || 1;
+    var remain = qty;
+    // 优先扣普通
+    var normal = warehouseGetItemCount(itemId);
+    if (normal > 0) {
+        var takeNormal = Math.min(normal, remain);
+        if (!warehouseRemoveItem(itemId, takeNormal)) return false;
+        remain -= takeNormal;
+    }
+    if (remain > 0) {
+        // 再扣限时（按过期时间升序扣，先扣早过期的）
+        var timedList = getActiveTimedItems().filter(function(t) { return t.itemId === itemId; });
+        // 按 expiresAt 排序
+        timedList.sort(function(a, b) { return new Date(a.expiresAt) - new Date(b.expiresAt); });
+        for (var i = 0; i < timedList.length && remain > 0; i++) {
+            var entry = timedList[i];
+            var takeOne = Math.min(entry.qty, remain);
+            for (var j = 0; j < takeOne; j++) {
+                // warehouseUseTimedItem 每次扣1
+                if (!warehouseUseTimedItem(entry.uid)) return false;
+            }
+            remain -= takeOne;
+        }
+    }
+    return remain === 0;
+}
+
+// 查找指定 itemId 的任意一个可用的限时道具 uid（用于需要精确操作限时道具的场景）
+function warehouseFindTimedItemUid(itemId) {
+    var list = getActiveTimedItems().filter(function(t) { return t.itemId === itemId && t.qty > 0; });
+    if (list.length === 0) return null;
+    // 返回最早过期的
+    list.sort(function(a, b) { return new Date(a.expiresAt) - new Date(b.expiresAt); });
+    return list[0].uid;
 }
 
 // ==================== 道具效果接入 ====================
@@ -401,26 +460,39 @@ function activateWarehouseLucky() {
 }
 
 // 幸运币：提取时调用——若幸运状态激活则消耗1枚幸运币并返回true（仅提升一次）
+// 支持普通幸运币和限时幸运币
 function warehouseTakeLuckyBoost() {
     var data = getWarehouseData();
     if (!data.luckyActive) return false;
-    if (!data.items['luck_coin']) {
+    // 优先扣普通幸运币
+    if (data.items['luck_coin']) {
+        data.items['luck_coin'].qty -= 1;
+        if (data.items['luck_coin'].qty <= 0) delete data.items['luck_coin'];
         data.luckyActive = false;
         saveWarehouseData(data);
-        return false;
+        return true;
     }
-    data.items['luck_coin'].qty -= 1;
-    if (data.items['luck_coin'].qty <= 0) delete data.items['luck_coin'];
+    // 否则扣限时幸运币
+    var timedList = getActiveTimedItems().filter(function(t) { return t.itemId === 'luck_coin' && t.qty > 0; });
+    timedList.sort(function(a, b) { return new Date(a.expiresAt) - new Date(b.expiresAt); });
+    if (timedList.length > 0) {
+        warehouseUseTimedItem(timedList[0].uid);
+        data.luckyActive = false;
+        saveWarehouseData(data);
+        return true;
+    }
+    // 都没有了，关闭幸运状态
     data.luckyActive = false;
     saveWarehouseData(data);
-    return true;
+    return false;
 }
 
 // 补签卡：解锁活动签到的指定天（写入 makeupDays，仅解锁该天）
+// 支持普通补签卡和限时补签卡（优先消耗普通的，不足时消耗限时的）
 function warehouseUseMakeupCard(eventId, day) {
-    if (warehouseGetItemCount('makeup_card') <= 0) return false;
+    if (warehouseGetTotalItemCount('makeup_card') <= 0) return false;
     if (typeof getCheckinData !== 'function' || typeof saveCheckinData !== 'function') return false;
-    if (!warehouseRemoveItem('makeup_card', 1)) return false;
+    if (!warehouseConsumeItem('makeup_card', 1)) return false;
 
     var data = getCheckinData(eventId);
     if (!data.makeupDays) data.makeupDays = [];
@@ -432,7 +504,7 @@ function warehouseUseMakeupCard(eventId, day) {
 // 补签卡：弹窗询问是否使用（在签到页点击未解锁的奖励卡时调用）
 // callback(used)：used=true 表示已消耗补签卡并解锁，可继续领取奖励
 function warehousePromptMakeupCard(eventId, day, callback) {
-    if (warehouseGetItemCount('makeup_card') <= 0) {
+    if (warehouseGetTotalItemCount('makeup_card') <= 0) {
         if (typeof showToast === 'function') {
             showToast({ type: 'info', title: '暂未解锁', message: '该奖励卡暂未解锁，请明天登录后继续签到以推进进度' });
         }
@@ -882,6 +954,20 @@ function useWarehouseItem(itemId, timedUid) {
             }
             return;
         }
+        // 激活已将最新 expBuffs 写入存储；此处必须重新读取数据再扣减，
+        // 否则用函数开头的旧快照保存会把刚激活的 expBuffs 覆盖丢失
+        data = getWarehouseData();
+        timedEntry = null;
+        normalEntry = null;
+        if (timedUid) {
+            for (var bi = 0; bi < (data.timedItems || []).length; bi++) {
+                if (data.timedItems[bi].uid === timedUid) { timedEntry = data.timedItems[bi]; break; }
+            }
+            if (!timedEntry || timedEntry.qty <= 0) return;
+        } else {
+            normalEntry = data.items[itemId];
+            if (!normalEntry || normalEntry.qty <= 0) return;
+        }
         deductOne();
 
         // 通知
@@ -892,9 +978,24 @@ function useWarehouseItem(itemId, timedUid) {
             if (actResult.refreshed) {
                 showToast({ type: 'success', title: '经验加成已刷新', message: timedLabel + '「' + item.name + '」同类型已生效，时长已刷新（至 ' + hh + ':' + mm + '）' });
             } else {
-                var totalMult = getWarehouseExpMultiplier();
-                showToast({ type: 'success', title: '经验加成已激活', message: timedLabel + '「' + item.name + '」已激活，叠加后经验获取 ×' + totalMult.toFixed(2) + '（至 ' + hh + ':' + mm + '）' });
+                var cardMult = getWarehouseExpMultiplier();
+                // 限时等级倍率提速活动进行中时，提示活动与加成卡叠加后的合计总倍率
+                var activeEventMult = (typeof getEventExpMultiplier === 'function') ? getEventExpMultiplier() : 1;
+                var rateMessage;
+                if (activeEventMult > 1) {
+                    var combinedMult = (typeof getTotalExpMultiplier === 'function')
+                        ? getTotalExpMultiplier()
+                        : Math.round(activeEventMult * cardMult * 10000) / 10000;
+                    rateMessage = '加成卡 ×' + cardMult.toFixed(2) + '，叠加限时活动后合计经验获取 ×' + combinedMult.toFixed(2);
+                } else {
+                    rateMessage = '叠加后经验获取 ×' + cardMult.toFixed(2);
+                }
+                showToast({ type: 'success', title: '经验加成已激活', message: timedLabel + '「' + item.name + '」已激活，' + rateMessage + '（至 ' + hh + ':' + mm + '）' });
             }
+        }
+        // 同步刷新签到/名片页的经验倍率条目
+        if (typeof updateExpBoostDisplay === 'function') {
+            try { updateExpBoostDisplay(); } catch (e) {}
         }
         renderWarehouseItems();
         return;

@@ -16,6 +16,19 @@ const EVENT_STORAGE_KEYS = {
     }
 })();
 
+// ==================== 限时等级倍率提速活动配置（时间的唯一权威来源，UTC+8） ====================
+// 共14天：第1-7天 ×1.25，第8-14天 ×1.50；活动结束后恢复正常 ×1.00
+// 活动固定倍率与仓库「经验值加成卡」倍率相乘叠加，加成卡自身叠加规则不变
+var LIMITED_LEVEL_BOOST = {
+    eventId: 'center_004',
+    announcementId: 'event_level_boost',
+    startTime: '2026-09-17 17:00:00',   // 第1天 17:00 开始
+    phase2Time: '2026-09-24 10:00:00',  // 第8天 10:00 进入第二阶段
+    endTime: '2026-10-01 23:59:59',     // 第14天 23:59:59 结束
+    phase1Multiplier: 1.25,
+    phase2Multiplier: 1.50
+};
+
 // ==================== 活动公告数据 ====================
 var eventAnnouncementData = {
     categories: [
@@ -24,8 +37,20 @@ var eventAnnouncementData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 公告侧边栏排序配置：按数组顺序显示
-    sortOrder: ['event_autumn_sale', 'event_001', 'event_daily_checkin'],
+    sortOrder: ['event_level_boost', 'event_autumn_sale', 'event_001', 'event_daily_checkin'],
     announcements: [
+        {
+            id: 'event_level_boost',
+            category: 'current',
+            title: '限时等级倍率提速活动',
+            date: '2026-09-17',
+            endDate: '2026-10-01',
+            startTime: LIMITED_LEVEL_BOOST.startTime,
+            endTime: LIMITED_LEVEL_BOOST.endTime,
+            description: '活动期间全账户成长等级经验获取倍率限时提升：前7天 ×1.25，第8-14天提升至 ×1.50，可与经验值加成卡叠加，共14天。',
+            content: '<h2>限时等级倍率提速活动</h2><p>金秋提速，等级成长快人一步！活动期间，<span style="color:#d45d79;font-weight:600;">所有账户的成长等级经验获取倍率将限时提升</span>，无需报名，登录即自动生效。</p><h3>活动时间</h3><p>起始时间：2026年9月17日 17:00:00（UTC+8）<br>结束时间：2026年10月1日 23:59:59（UTC+8）<br>活动共计 14 天，结束后倍率自动恢复为正常的 ×1.00</p><h3>倍率安排</h3><ul><li><strong>第一阶段（第1-7天）：</strong>2026年9月17日 10:00 至 9月24日 10:00，经验倍率提升至 <span style="color:#d45d79;font-weight:600;">×1.25</span></li><li><strong>第二阶段（第8-14天）：</strong>2026年9月24日 10:00 至 10月1日 23:59:59，经验倍率提升至 <span style="color:#d45d79;font-weight:600;">×1.50</span></li><li><strong>活动结束后：</strong>经验倍率恢复正常 ×1.00</li></ul><h3>叠加规则</h3><ul><li>本活动的<span style="color:#d45d79;font-weight:600;">固定加成倍率可与仓库「经验值加成卡」的提升倍率叠加</span>，总倍率 = 活动倍率 × 加成卡倍率</li><li>使用经验值加成卡后，仍遵循加成卡原有叠加规则：不同类型（Ⅰ/Ⅱ/Ⅲ）可同时生效，同类型不可叠加，最多同时 3 张，每张持续 30 分钟</li><li>举例：第二阶段（×1.50）同时激活 Ⅰ+Ⅱ+Ⅲ 三种加成卡时，总倍率为 ×1.50 × ×1.50 = <span style="color:#d45d79;font-weight:600;">×2.25</span></li></ul><h3>适用范围</h3><p>每日签到、签到里程碑奖励、活动中心签到奖励、邮件经验附件、经验值补给卡等所有成长等级经验获取途径，均享受活动倍率加成。</p><h3>参与方式</h3><p>无需报名或领取，活动期间全账户自动生效。成长等级卡片中的「经验倍率」条目会实时显示当前总倍率与生效时间。</p><h3>温馨提示</h3><p>活动倍率按服务器时间（UTC+8）自动切换阶段，无需刷新页面；活动结束后加成卡若仍在有效期内，将继续按加成卡自身倍率生效，直至时长耗尽。</p>',
+            banner: ''
+        },
         {
             id: 'event_autumn_sale',
             category: 'current',
@@ -70,8 +95,22 @@ var eventCenterData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 活动侧边栏排序配置：按数组顺序显示
-    sortOrder: ['center_003', 'center_002', 'center_001'],
+    sortOrder: ['center_004', 'center_003', 'center_002', 'center_001'],
     events: [
+        {
+            id: 'center_004',
+            category: 'special',
+            title: '限时等级倍率提速活动',
+            subtitle: '全账户经验倍率限时提升 · 共14天',
+            status: 'active',
+            description: '活动期间全账户成长等级经验获取倍率限时提升，等级成长快人一步，无需报名自动生效！<p>第一阶段（第1-7天，9月17日 17:00 - 9月24日 10:00）：经验倍率 ×1.25</p><p>第二阶段（第8-14天，9月24日 10:00 - 10月1日 23:59）：经验倍率 ×1.50</p><p>活动固定倍率可与仓库经验值加成卡叠加（总倍率 = 活动倍率 × 加成卡倍率），活动结束后恢复 ×1.00</p>',
+            icon: 'fa-gauge-high',
+            announcementId: 'event_level_boost',
+            showParticipate: false,
+            startTime: LIMITED_LEVEL_BOOST.startTime,
+            endTime: LIMITED_LEVEL_BOOST.endTime
+        },
+
         {
             id: 'center_003',
             category: 'featured',
@@ -190,6 +229,54 @@ setInterval(function() {
 
 // 页面加载时立即应用一次时间状态
 applyTimedEventStates();
+
+// ==================== 限时等级倍率提速：经验倍率计算（纯时间驱动，不依赖本地存储） ====================
+
+// 获取限时提速活动当前状态
+// 返回 { active, phase, multiplier, phaseEnd, eventEnd }
+//   active=false 时 multiplier=1；phase: 0=未开始/已结束, 1=第一阶段(×1.25), 2=第二阶段(×1.50)
+//   phaseEnd: 当前阶段倍率的持续终点时间戳（阶段1→阶段2切换点；阶段2→活动结束点）
+function getLevelBoostEventState(now) {
+    var nowMs = (now === undefined) ? Date.now() : now;
+    var start = parseEventTimeUtc8(LIMITED_LEVEL_BOOST.startTime);
+    var phase2 = parseEventTimeUtc8(LIMITED_LEVEL_BOOST.phase2Time);
+    var end = parseEventTimeUtc8(LIMITED_LEVEL_BOOST.endTime);
+
+    if (nowMs < start) {
+        return { active: false, phase: 0, multiplier: 1, phaseEnd: null, eventEnd: end, started: false };
+    }
+    if (nowMs > end) {
+        return { active: false, phase: 0, multiplier: 1, phaseEnd: null, eventEnd: end, ended: true };
+    }
+    if (nowMs < phase2) {
+        return { active: true, phase: 1, multiplier: LIMITED_LEVEL_BOOST.phase1Multiplier, phaseEnd: phase2, eventEnd: end };
+    }
+    return { active: true, phase: 2, multiplier: LIMITED_LEVEL_BOOST.phase2Multiplier, phaseEnd: end, eventEnd: end };
+}
+
+// 限时活动提供的固定经验倍率（活动外为 1）
+function getEventExpMultiplier() {
+    return getLevelBoostEventState().multiplier;
+}
+
+// 当前经验获取总倍率 = 活动固定倍率 × 仓库经验值加成卡倍率
+// 加成卡仍严格遵循其自身叠加规则（不同类型可叠加、同类型不可叠加、最多同时3张）
+function getTotalExpMultiplier() {
+    var eventMult = getEventExpMultiplier();
+    var cardMult = (typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1;
+    return Math.round(eventMult * cardMult * 10000) / 10000;
+}
+
+// 将时间戳格式化为 'MM-DD HH:mm'
+function formatEventBoostTime(ts) {
+    if (!ts) return '';
+    var d = new Date(ts);
+    var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+    var dd = ('0' + d.getDate()).slice(-2);
+    var hh = ('0' + d.getHours()).slice(-2);
+    var mi = ('0' + d.getMinutes()).slice(-2);
+    return mm + '-' + dd + ' ' + hh + ':' + mi;
+}
 
 // ==================== 活动排序工具 ====================
 
@@ -700,13 +787,41 @@ function showEventCenterDetail(id) {
                     ${getEventStatusText(evt.status)}
                 </div>
                 <div class="event-center-desc">${evt.description}</div>
-                <div class="event-center-actions">
-                    ${actionButtonsHtml}
-                </div>
             </div>
         `;
 
-        detailEl.querySelectorAll('.event-action-btn').forEach(function(btn) {
+        // 操作按钮统一渲染在顶部公告图区最右侧，并在 banner 重建后绑定（见函数末尾）
+
+        if (hasCheckin && checkinEl) {
+            checkinEl.style.display = 'block';
+            checkinEl.innerHTML = generateCheckinSection(id);
+            bindCheckinInteractions(id);
+        } else if (checkinEl) {
+            checkinEl.style.display = 'none';
+            checkinEl.innerHTML = '';
+        }
+    }
+
+    if (bannerArea) {
+        bannerArea.style.display = '';
+        bannerArea.classList.remove('banner-content-enter');
+        // 「立即参与」「活动规则」按钮固定在公告图区最右侧，一行排列；无立即参与配置的活动仅显示活动规则
+        var bannerActionsHtml = (typeof actionButtonsHtml !== 'undefined' && actionButtonsHtml)
+            ? '<div class="event-banner-actions">' + actionButtonsHtml + '</div>'
+            : '';
+        bannerArea.innerHTML = `
+            <div class="event-banner-default event-banner-center">
+                <div class="event-banner-icon"><i class="fas ${evt.icon}"></i></div>
+                <div class="event-banner-title">${evt.title}</div>
+                ${bannerActionsHtml}
+            </div>
+        `;
+
+        // 按钮已随 banner 重建，需在新 DOM 上重新绑定（内容区不再包含操作按钮）
+        var centerModalForBtns = document.getElementById('eventCenterModal');
+        (centerModalForBtns || document).querySelectorAll('.event-action-btn').forEach(function(btn) {
+            if (btn.getAttribute('data-bound') === '1') return;
+            btn.setAttribute('data-bound', '1');
             btn.addEventListener('click', function() {
                 var action = this.getAttribute('data-action');
                 var eventId = this.getAttribute('data-event-id');
@@ -770,26 +885,6 @@ function showEventCenterDetail(id) {
                 }
             });
         });
-
-        if (hasCheckin && checkinEl) {
-            checkinEl.style.display = 'block';
-            checkinEl.innerHTML = generateCheckinSection(id);
-            bindCheckinInteractions(id);
-        } else if (checkinEl) {
-            checkinEl.style.display = 'none';
-            checkinEl.innerHTML = '';
-        }
-    }
-
-    if (bannerArea) {
-        bannerArea.style.display = '';
-        bannerArea.classList.remove('banner-content-enter');
-        bannerArea.innerHTML = `
-            <div class="event-banner-default event-banner-center">
-                <div class="event-banner-icon"><i class="fas ${evt.icon}"></i></div>
-                <div class="event-banner-title">${evt.title}</div>
-            </div>
-        `;
         triggerBannerSweep(bannerArea);
     }
 }
@@ -1302,11 +1397,11 @@ function addCheckinExp(amount) {
     var foundUser = users.find(function(u) { return u.username === currentUser.username; });
     if (!foundUser) return;
 
-    // 仓库经验加成卡：结算时应用经验倍率
-    if (typeof getWarehouseExpMultiplier === 'function') {
-        var expMult = getWarehouseExpMultiplier();
-        if (expMult > 1) amount = Math.round(amount * expMult);
-    }
+    // 经验倍率结算：限时提速活动固定倍率 × 仓库经验加成卡倍率（叠加规则各自独立）
+    var expMult = (typeof getTotalExpMultiplier === 'function')
+        ? getTotalExpMultiplier()
+        : ((typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1);
+    if (expMult > 1) amount = Math.round(amount * expMult);
 
     if (!foundUser.gameData) foundUser.gameData = {};
     if (foundUser.gameData.level === undefined) foundUser.gameData.level = 1;
@@ -1384,3 +1479,7 @@ function closeEventCenterModal() {
 
 window.eventAnnouncementData = eventAnnouncementData;
 window.eventCenterData = eventCenterData;
+window.getLevelBoostEventState = getLevelBoostEventState;
+window.getEventExpMultiplier = getEventExpMultiplier;
+window.getTotalExpMultiplier = getTotalExpMultiplier;
+window.formatEventBoostTime = formatEventBoostTime;

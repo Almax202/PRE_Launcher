@@ -11,8 +11,8 @@
     <title>LauncherLogin</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="./css/denglu.css" as="style">
-    <link rel="stylesheet" href="./css/denglu.css">
+    <link rel="preload" href="./css/denglu.css?v=2.2" as="style">
+    <link rel="stylesheet" href="./css/denglu.css?v=2.2">
     <link rel="stylesheet" href="./css/homenav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='./css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
@@ -20,16 +20,16 @@
     <script src="./js/settings.js" defer></script>
     <script src="./js/versionHistory.js" defer></script>
     <script src="./js/precoin.js" defer></script>
-    <script src="./js/warehouse.js" defer></script>
+    <script src="./js/warehouse.js?v=2.3" defer></script>
     <script src="./js/dailytasks.js" defer></script>
     <script src="./js/shop.js" defer></script>
-    <script src="./js/premail.js?v=1.6" defer></script>
+    <script src="./js/premail.js?v=1.8" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
     <script src="./js/lang.js" defer></script>
     <script src="./js/announcement.js" defer></script>
-    <script src="./js/event.js" defer></script>
+    <script src="./js/event.js?v=1.1" defer></script>
     <script src="./js/identity_ego.js" defer></script>
     <script src="./js/account-settings.js" defer></script>
     <script src="./js/soundtrack.js" defer></script>
@@ -11448,6 +11448,11 @@
                                                 <span class="stat-value" id="maxLevelStat">60</span>
                                                 <span class="stat-label">最高等级</span>
                                             </div>
+                                            <div class="level-stat-divider"></div>
+                                            <div class="level-stat-item">
+                                                <span class="stat-value" id="expBoostValue">无加成</span>
+                                                <span class="stat-label" id="expBoostLabel">经验倍率</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -11497,7 +11502,7 @@
                                         <div class="reward-item clickable" id="milestoneInfoBtn" title="查看所有里程碑">
                                             <i class="fas fa-gift"></i>
                                             <div class="reward-info">
-                                                <span class="reward-label">下一里程碑 <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></span>
+                                                <span class="reward-label">下一里程碑 <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i><span class="milestone-claim-badge" id="milestoneClaimBadge" style="display:none;"><i class="fas fa-gift"></i> 有可领取奖励</span></span>
                                                 <span class="reward-value" id="nextBonusPreview">距离连续7天奖励还有 7 天</span>
                                             </div>
                                         </div>
@@ -11774,6 +11779,10 @@
                                 <i class="fas fa-gamepad"></i>
                                 <span>休闲小游戏</span>
                             </div>
+                            <div class="ui-min-dropdown-item" data-nav="treasure">
+                                <i class="fas fa-box-open"></i>
+                                <span>百宝箱</span>
+                            </div>
                             <div class="ui-min-dropdown-item" data-nav="gacha-simulator">
                                 <i class="fas fa-dice-d20"></i>
                                 <span>抽卡模拟器</span>
@@ -11784,10 +11793,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ui-min-nav-item" data-nav="treasure">
-                        <i class="fas fa-box-open"></i>
-                        <span>百宝箱</span>
-                    </div>
                     <div class="ui-min-nav-item" data-nav="warehouse" id="uiMinWarehouse">
                         <i class="fas fa-warehouse"></i>
                         <span>仓库</span>
@@ -11796,13 +11801,22 @@
                         <i class="fas fa-store"></i>
                         <span>商店</span>
                     </div>
-                    <div class="ui-min-nav-item" data-nav="checkin">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>每日签到</span>
-                    </div>
-                    <div class="ui-min-nav-item" data-nav="dailytask" id="uiMinDailyTask">
-                        <i class="fas fa-tasks"></i>
-                        <span>每日任务</span>
+                    <div class="ui-min-dropdown-menu" data-menu="task-center">
+                        <div class="ui-min-nav-item" data-nav="task-center">
+                            <i class="fas fa-tasks"></i>
+                            <span>任务</span>
+                            <i class="fas fa-chevron-down ui-min-arrow"></i>
+                        </div>
+                        <div class="ui-min-dropdown-panel">
+                            <div class="ui-min-dropdown-item" data-nav="checkin">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>每日签到</span>
+                            </div>
+                            <div class="ui-min-dropdown-item" data-nav="dailytask" id="uiMinDailyTask">
+                                <i class="fas fa-list-check"></i>
+                                <span>每日任务</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="ui-min-nav-item" data-nav="feedback" id="uiMinFeedback">
                         <i class="fas fa-comment-dots"></i>
@@ -11886,10 +11900,19 @@
                             // 执行导航
                             if (nav === 'gamecenter') {
                                 switchGameCenterSubPage('games');
+                            } else if (nav === 'treasure') {
+                                var treasureBtn = document.getElementById('menuTreasure');
+                                if (treasureBtn) treasureBtn.click();
+                                if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('treasure');
                             } else if (nav === 'gacha-simulator') {
                                 openGachaWithDisclaimer();
                             } else if (nav === 'soundtrack') {
                                 switchGameCenterSubPage('soundtrack');
+                            } else if (nav === 'checkin') {
+                                var checkinBtn = document.getElementById('menuCheckin');
+                                if (checkinBtn) checkinBtn.click();
+                            } else if (nav === 'dailytask') {
+                                if (typeof showDailyTaskModal === 'function') showDailyTaskModal();
                             } else if (nav === 'event-center') {
                                 if (typeof showEventCenterModal === 'function') {
                                     showEventCenterModal();
@@ -11913,7 +11936,7 @@
                 centerNav.querySelectorAll('.ui-min-nav-item[data-nav]').forEach(function(item) {
                     item.addEventListener('click', function() {
                         var nav = this.getAttribute('data-nav');
-                        if (nav === 'gamecenter-main' || nav === 'announcement-center') return; // 主菜单由dropdown处理
+                        if (nav === 'gamecenter-main' || nav === 'announcement-center' || nav === 'task-center') return; // 主菜单由dropdown处理
                         
                         // 关闭所有打开的下拉菜单
                         centerNav.querySelectorAll('.ui-min-dropdown-menu.open').forEach(function(m) {
@@ -11932,39 +11955,16 @@
                         });
                         this.classList.add('active');
                         
-                        if (nav === 'treasure') {
-                            var treasureBtn = document.getElementById('menuTreasure');
-                            if (treasureBtn) treasureBtn.click();
-                            if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('treasure');
-                        } else if (nav === 'warehouse') {
+                        if (nav === 'warehouse') {
                             if (typeof showWarehouseModal === 'function') {
                                 showWarehouseModal();
                             }
                             if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('warehouse');
                         } else if (nav === 'shop') {
                             if (typeof showShopModal === 'function') showShopModal();
-                        } else if (nav === 'checkin') {
-                            var checkinBtn = document.getElementById('menuCheckin');
-                            if (checkinBtn) checkinBtn.click();
-                        } else if (nav === 'dailytask') {
-                            if (typeof showDailyTaskModal === 'function') showDailyTaskModal();
                         } else if (nav === 'feedback') {
                             var feedbackBtn = document.getElementById('sidebarFeedback');
                             if (feedbackBtn) feedbackBtn.click();
-                        } else if (nav === 'event-center') {
-                            if (typeof showEventCenterModal === 'function') {
-                                showEventCenterModal();
-                            }
-                        } else if (nav === 'event-announcement') {
-                            if (typeof showEventAnnouncementModal === 'function') {
-                                showEventAnnouncementModal();
-                            }
-                        } else if (nav === 'version') {
-                            var versionBtn = document.getElementById('sidebarVersion');
-                            if (versionBtn) versionBtn.click();
-                        } else if (nav === 'announcement') {
-                            var announcementBtn = document.getElementById('sidebarAnnouncement');
-                            if (announcementBtn) announcementBtn.click();
                         } else if (nav === 'mail') {
                             if (typeof showMailModal === 'function') {
                                 showMailModal();
@@ -13417,9 +13417,9 @@
                 .milestone-modal {
                     background: white;
                     border-radius: 16px;
-                    padding: 28px;
-                    width: 90%;
-                    max-width: 580px;
+                    padding: 24px 26px;
+                    width: 94%;
+                    max-width: 980px;
                     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
                 }
                 
@@ -13461,20 +13461,25 @@
                     padding: 0;
                     margin: 0;
                     display: grid;
-                    grid-template-columns: 1fr 1fr;
+                    grid-template-columns: repeat(3, 1fr);
                     gap: 12px;
+                    align-items: stretch;
                 }
-                
+
                 .milestone-item {
                     display: flex;
                     flex-direction: column;
                     align-items: flex-start;
-                    padding: 14px 16px;
+                    padding: 12px 14px;
                     border-radius: 12px;
                     background: #f8f9fa;
-                    border: 1px solid #f0f0f0;
-                    transition: all 0.2s;
+                    border: 2px solid #f0f0f0;
+                    transition: transform 0.2s, box-shadow 0.2s;
                     position: relative;
+                    box-sizing: border-box;
+                    /* 所有卡片固定为同一高度：3 行布局按视口自适应，保证弹窗不出现滚动条 */
+                    height: min(198px, calc((100vh - 202px) / 3));
+                    overflow: hidden;
                 }
                 
                 .milestone-item:hover {
@@ -13482,21 +13487,70 @@
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
                 }
                 
-                .milestone-item.achieved {
+                /* 可领取：粉色高亮 + 脉动边框 + 可点击 */
+                .milestone-item.claimable {
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.06) 0%, rgba(230, 126, 138, 0.06) 100%);
+                    border: 2px solid #d45d79;
+                    cursor: pointer;
+                    box-shadow: 0 0 0 0 rgba(212, 93, 121, 0.45);
+                    animation: milestoneClaimPulse 1.8s ease-in-out infinite;
+                }
+
+                .milestone-item.claimable:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 20px rgba(212, 93, 121, 0.22);
+                    animation: none;
+                }
+
+                .milestone-item.claimable .milestone-status {
+                    color: #d45d79;
+                    font-weight: 700;
+                }
+
+                @keyframes milestoneClaimPulse {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 93, 121, 0.35); }
+                    50% { box-shadow: 0 0 0 5px rgba(212, 93, 121, 0.08); }
+                }
+
+                .milestone-claim-btn {
+                    position: absolute;
+                    left: 14px;
+                    right: 14px;
+                    bottom: 10px;
+                    width: auto;
+                    box-sizing: border-box;
+                    text-align: center;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #fff;
+                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                    border-radius: 8px;
+                    padding: 5px 0;
+                    letter-spacing: 1px;
+                    white-space: nowrap;
+                }
+
+                /* 可领取态：奖励区底部给悬浮按钮预留空间，内容不被遮挡 */
+                .milestone-item.claimable .milestone-reward {
+                    padding-bottom: 34px;
+                }
+
+                /* 已领取：紫色渐变 */
+                .milestone-item.claimed {
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
                     border-color: transparent;
                 }
-                
-                .milestone-item.achieved .milestone-reward {
+
+                .milestone-item.claimed .milestone-reward {
                     color: white;
                 }
-                
-                .milestone-item.achieved .milestone-days {
+
+                .milestone-item.claimed .milestone-days {
                     color: rgba(255, 255, 255, 0.85);
                 }
-                
-                .milestone-item.achieved .milestone-status {
+
+                .milestone-item.claimed .milestone-status {
                     color: rgba(255, 255, 255, 0.9);
                 }
                 
@@ -13505,7 +13559,8 @@
                     align-items: center;
                     gap: 10px;
                     width: 100%;
-                    margin-bottom: 8px;
+                    margin-bottom: 6px;
+                    flex-shrink: 0;
                 }
                 
                 .milestone-icon {
@@ -13521,7 +13576,7 @@
                     flex-shrink: 0;
                 }
                 
-                .milestone-item.achieved .milestone-icon {
+                .milestone-item.claimed .milestone-icon {
                     background: rgba(255, 255, 255, 0.25);
                 }
                 
@@ -13556,10 +13611,15 @@
                     color: #667eea;
                     display: flex;
                     flex-direction: column;
-                    gap: 4px;
+                    gap: 3px;
+                    flex: 1 1 auto;
+                    min-height: 0;
+                    width: 100%;
+                    overflow: hidden;
                 }
                 .milestone-exp {
                     font-size: 14px;
+                    flex-shrink: 0;
                 }
                 .milestone-coin {
                     display: inline-flex;
@@ -13571,8 +13631,29 @@
                     padding: 2px 8px;
                     border-radius: 10px;
                     width: fit-content;
+                    flex-shrink: 0;
                 }
                 .milestone-coin i { font-size: 10px; }
+
+                .milestone-extra {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    font-size: 12px;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    width: fit-content;
+                    flex-shrink: 0;
+                }
+                .milestone-extra i { font-size: 10px; }
+                .milestone-extra.card {
+                    color: #0f766e;
+                    background: rgba(22, 160, 133, 0.1);
+                }
+                .milestone-extra.medal {
+                    color: #8e44ad;
+                    background: rgba(155, 89, 182, 0.1);
+                }
 
                 .milestone-status {
                     position: absolute;
@@ -13582,7 +13663,28 @@
                     color: #999;
                     font-weight: 500;
                 }
-                
+
+                .milestone-modal-footer {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 14px;
+                    margin-top: 16px;
+                    padding-top: 14px;
+                    border-top: 1px solid #f0f0f0;
+                    font-size: 13px;
+                    color: #888;
+                }
+
+                .milestone-modal-footer strong {
+                    color: #667eea;
+                }
+
+                .milestone-footer-hint {
+                    color: #d45d79;
+                    font-weight: 700;
+                }
+
                 body.dark-mode .milestone-modal {
                     background: #2a2a2a;
                     color: #eee;
@@ -13667,11 +13769,36 @@
                     color: #ffb74d;
                     background: rgba(230, 126, 34, 0.18);
                 }
+                body.dark-mode .milestone-extra.card {
+                    color: #4fd1c5;
+                    background: rgba(22, 160, 133, 0.2);
+                }
+                body.dark-mode .milestone-extra.medal {
+                    color: #ce93d8;
+                    background: rgba(155, 89, 182, 0.22);
+                }
 
                 body.dark-mode .milestone-status {
                     color: #888;
                 }
-                
+
+                body.dark-mode .milestone-modal-footer {
+                    border-top-color: #3a3a3a;
+                }
+
+                body.dark-mode .milestone-item.claimable {
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.16) 0%, rgba(230, 126, 138, 0.14) 100%);
+                    border-color: #d45d79;
+                }
+
+                body.dark-mode .milestone-item.claimable .milestone-status {
+                    color: #ff8fab;
+                }
+
+                body.dark-mode .milestone-item.claimed {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                }
+
                 body.dark-mode .milestone-item:hover {
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
                 }
@@ -13712,25 +13839,27 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 30px;
+                    gap: 24px;
                 }
-                
+
                 .level-stat-item {
                     text-align: center;
                 }
-                
+
                 .level-stat-item .stat-value {
                     display: block;
                     font-size: 18px;
                     font-weight: bold;
                     color: #333;
+                    white-space: nowrap;
                 }
-                
+
                 .level-stat-item .stat-label {
                     display: block;
                     font-size: 12px;
                     color: #999;
                     margin-top: 2px;
+                    white-space: nowrap;
                 }
                 
                 .level-stat-divider {
@@ -13815,7 +13944,34 @@
                     font-size: 12px;
                     color: #888;
                 }
-                
+
+                /* 里程碑可领取奖励红点标签 */
+                .milestone-claim-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    margin-left: 10px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    font-style: normal;
+                    color: #fff;
+                    background: linear-gradient(135deg, #ff5f6d 0%, #d45d79 100%);
+                    border-radius: 999px;
+                    vertical-align: middle;
+                    box-shadow: 0 2px 6px rgba(212, 93, 121, 0.4);
+                    animation: badgeGlow 1.6s ease-in-out infinite;
+                }
+
+                .milestone-claim-badge i {
+                    font-size: 10px;
+                }
+
+                @keyframes badgeGlow {
+                    0%, 100% { box-shadow: 0 2px 6px rgba(212, 93, 121, 0.4); }
+                    50% { box-shadow: 0 2px 10px rgba(255, 95, 109, 0.75); }
+                }
+
                 .reward-value {
                     font-size: 14px;
                     font-weight: bold;
@@ -14457,6 +14613,50 @@
                     .growth-level-display {
                         flex-direction: column;
                         gap: 20px;
+                    }
+
+                    .milestone-list {
+                        grid-template-columns: 1fr;
+                        gap: 10px;
+                    }
+
+                    /* 手机端单列 7 行无法一屏展示，保留弹窗内滚动作为兜底，卡片仍固定高度 */
+                    .milestone-modal {
+                        padding: 18px;
+                        max-height: 92vh;
+                        overflow-y: auto;
+                    }
+
+                    .milestone-item {
+                        height: 150px;
+                    }
+                }
+
+                /* 里程碑弹窗：中窄屏降为两列（4 行），高度按视口固定，弹窗不滚动 */
+                @media (min-width: 769px) and (max-width: 1000px) {
+                    .milestone-list {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+
+                    .milestone-item {
+                        height: min(180px, calc((100vh - 212px) / 4));
+                    }
+                }
+
+                /* 桌面端矮视口：压缩卡片内边距，保证 3 行卡片始终完整放入且无滚动条 */
+                @media (min-width: 1001px) and (max-height: 800px) {
+                    .milestone-item {
+                        padding: 10px 12px;
+                    }
+
+                    .milestone-icon {
+                        width: 32px;
+                        height: 32px;
+                        font-size: 14px;
+                    }
+
+                    .milestone-item-top {
+                        margin-bottom: 4px;
                     }
                 }
                 
@@ -17795,14 +17995,14 @@
                 var cost10 = 1300;
                 var perCost = (requestedCount === 10) ? cost10 : cost1;
 
-                // 0. 仓库卡券优先抵扣（单抽卡券/十连卡券：免费提取）
+                // 0. 仓库卡券优先抵扣（单抽卡券/十连卡券：免费提取，支持限时卡券）
                 var usedTicket = false;
-                if (requestedCount === 1 && typeof warehouseGetItemCount === 'function' && warehouseGetItemCount('gacha_single') > 0 && typeof warehouseRemoveItem === 'function') {
-                    warehouseRemoveItem('gacha_single', 1);
+                if (requestedCount === 1 && typeof warehouseGetTotalItemCount === 'function' && warehouseGetTotalItemCount('gacha_single') > 0 && typeof warehouseConsumeItem === 'function') {
+                    warehouseConsumeItem('gacha_single', 1);
                     usedTicket = true;
                     showToastWarning('已使用1张单抽卡券，本次提取免费！');
-                } else if (requestedCount === 10 && typeof warehouseGetItemCount === 'function' && warehouseGetItemCount('gacha_ten') > 0 && typeof warehouseRemoveItem === 'function') {
-                    warehouseRemoveItem('gacha_ten', 1);
+                } else if (requestedCount === 10 && typeof warehouseGetTotalItemCount === 'function' && warehouseGetTotalItemCount('gacha_ten') > 0 && typeof warehouseConsumeItem === 'function') {
+                    warehouseConsumeItem('gacha_ten', 1);
                     usedTicket = true;
                     showToastWarning('已使用1张十连卡券，本次提取免费！');
                 }
@@ -20727,67 +20927,131 @@
             initDevModeButtons();
         }
         
-        // 打开里程碑弹窗
+        // 打开里程碑弹窗（奖励需手动点击领取，每轮连续签到各领一次）
         function openMilestoneModal() {
-            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-            var user = users.find(function(u) { return u.username === currentUser.username; });
-            if (!user) return;
-            
-            var streak = 0;
-            if (user.userProfile && user.userProfile.checkinStats) {
-                streak = user.userProfile.checkinStats.streak || 0;
-            }
-
-            // 里程碑：exp 奖励保持不变，在此基础上新增 PRE Coin 奖励（coin 字段）
-            var milestones = [
-                { days: 7,   name: '连续签到7天',   expReward: '+500 EXP',    coin: 100, icon: '🎁', description: '首次达成' },
-                { days: 15,  name: '连续签到15天',  expReward: '每日 100 EXP', coin: 100, icon: '⭐', description: '每日最高奖励' },
-                { days: 30,  name: '连续签到30天',  expReward: '+1000 EXP',   coin: 200, icon: '🏆', description: '每月循环奖励' },
-                { days: 60,  name: '连续签到60天',  expReward: '+1000 EXP',   coin: 200, icon: '🏆', description: '每月循环奖励' },
-                { days: 90,  name: '连续签到90天',  expReward: '+1000 EXP',   coin: 250, icon: '🏆', description: '每季度奖励' },
-                { days: 180, name: '连续签到180天', expReward: '+1000 EXP',   coin: 250, icon: '💎', description: '每半年奖励' },
-                { days: 365, name: '连续签到365天', expReward: '+1000 EXP',   coin: 500, icon: '👑', description: '年度奖励' }
-            ];
-
-            var itemsHTML = '';
-            milestones.forEach(function(m) {
-                var achieved = streak >= m.days;
-                var daysText = achieved ? '已达成' : '需连续签到 ' + m.days + ' 天';
-                var statusText = achieved ? '✓ 已达成' : (streak > 0 && streak < m.days ? '还差 ' + (m.days - streak) + ' 天' : '未达成');
-                var coinRewardHtml = m.coin > 0 ? '<div class="milestone-coin"><i class="fas fa-coins"></i> +' + m.coin + ' PRE</div>' : '';
-                itemsHTML += '<li class="milestone-item' + (achieved ? ' achieved' : '') + '">' +
-                    '<span class="milestone-status">' + statusText + '</span>' +
-                    '<div class="milestone-item-top">' +
-                        '<div class="milestone-icon"><i class="fas fa-' + (m.days === 7 ? 'gift' : m.days === 15 ? 'star' : m.days === 365 ? 'crown' : 'trophy') + '"></i></div>' +
-                        '<div class="milestone-info">' +
-                            '<div class="milestone-name">' + m.name + '</div>' +
-                            '<div class="milestone-days">' + daysText + '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="milestone-reward">' +
-                        '<div class="milestone-exp">' + m.expReward + '</div>' +
-                        coinRewardHtml +
-                    '</div>' +
-                '</li>';
-            });
-            
             var overlay = document.createElement('div');
             overlay.className = 'milestone-modal-overlay';
-            overlay.innerHTML = 
+            overlay.innerHTML =
                 '<div class="milestone-modal">' +
                     '<div class="milestone-modal-header">' +
                         '<h3><i class="fas fa-flag" style="color: #667eea;"></i> 签到里程碑</h3>' +
                         '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
                     '</div>' +
-                    '<ul class="milestone-list">' + itemsHTML + '</ul>' +
-                    '<div style="text-align: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid #f0f0f0;">' +
-                        '<span style="font-size: 13px; color: #888;">当前连续签到：<strong style="color: #667eea;">' + streak + '</strong> 天</span>' +
+                    '<ul class="milestone-list"></ul>' +
+                    '<div class="milestone-modal-footer">' +
+                        '<span class="milestone-footer-streak">当前连续签到：<strong id="milestoneFooterStreak">0</strong> 天</span>' +
+                        '<span class="milestone-footer-hint" id="milestoneFooterHint"></span>' +
                     '</div>' +
                 '</div>';
-            
+
             document.body.appendChild(overlay);
-            
+
+            var listEl = overlay.querySelector('.milestone-list');
+            var streakEl = overlay.querySelector('#milestoneFooterStreak');
+            var hintEl = overlay.querySelector('#milestoneFooterHint');
+
+            // 读取当前登录用户的最新数据
+            function loadCurrentUser() {
+                var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                var idx = users.findIndex(function(u) { return u.username === currentUser.username; });
+                return { users: users, index: idx, user: idx >= 0 ? users[idx] : null };
+            }
+
+            // 渲染列表（每次领取后重新读取数据并重绘）
+            function render() {
+                var data = loadCurrentUser();
+                var user = data.user;
+                if (!user) return;
+                var stats = (user.userProfile && user.userProfile.checkinStats) || {};
+                var streak = stats.streak || 0;
+                var claimed = Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : [];
+
+                var itemsHTML = '';
+                CHECKIN_MILESTONES.forEach(function(m) {
+                    var isClaimed = claimed.indexOf(m.days) !== -1;
+                    var reached = streak >= m.days;
+                    var state = isClaimed ? 'claimed' : (reached ? 'claimable' : 'locked');
+                    var statusText, daysText;
+                    if (isClaimed) {
+                        statusText = '✓ 已领取';
+                        daysText = '已达成 ' + m.days + ' 天';
+                    } else if (reached) {
+                        statusText = '可领取';
+                        daysText = '已达成 ' + m.days + ' 天';
+                    } else {
+                        statusText = (streak > 0 ? '还差 ' + (m.days - streak) + ' 天' : '未达成');
+                        daysText = '需连续签到 ' + m.days + ' 天';
+                    }
+                    var coinRewardHtml = m.coin > 0 ? '<div class="milestone-coin"><i class="fas fa-coins"></i> +' + m.coin + ' PRE</div>' : '';
+                    var extraRewardsHtml = (m.extraRewards && m.extraRewards.length) ? m.extraRewards.map(function(r) {
+                        return '<div class="milestone-extra ' + r.cls + '"><i class="' + r.icon + '"></i> ' + r.text + '</div>';
+                    }).join('') : '';
+                    var claimBtnHtml = state === 'claimable' ? '<div class="milestone-claim-btn"><i class="fas fa-gift"></i> 点击领取</div>' : '';
+                    itemsHTML += '<li class="milestone-item ' + state + '"' + (state === 'claimable' ? ' data-days="' + m.days + '" title="点击领取该里程碑奖励"' : '') + '>' +
+                        '<span class="milestone-status">' + statusText + '</span>' +
+                        '<div class="milestone-item-top">' +
+                            '<div class="milestone-icon"><i class="fas fa-' + m.icon + '"></i></div>' +
+                            '<div class="milestone-info">' +
+                                '<div class="milestone-name">' + m.name + '</div>' +
+                                '<div class="milestone-days">' + daysText + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="milestone-reward">' +
+                            '<div class="milestone-exp">' + m.expText + '</div>' +
+                            coinRewardHtml +
+                            extraRewardsHtml +
+                        '</div>' +
+                        claimBtnHtml +
+                    '</li>';
+                });
+                listEl.innerHTML = itemsHTML;
+                streakEl.textContent = streak;
+                var claimableCount = getClaimableMilestoneDays(user).length;
+                hintEl.textContent = claimableCount > 0 ? '🎁 有 ' + claimableCount + ' 个奖励可领取' : '';
+                hintEl.style.display = claimableCount > 0 ? 'inline' : 'none';
+            }
+
+            // 点击可领取的里程碑
+            listEl.addEventListener('click', function(e) {
+                var li = e.target.closest ? e.target.closest('.milestone-item.claimable') : null;
+                if (!li || !listEl.contains(li)) return;
+                var days = parseInt(li.getAttribute('data-days'), 10);
+
+                var data = loadCurrentUser();
+                if (!data.user) return;
+                var res = claimCheckinMilestone(data.user, days);
+                if (!res.ok) {
+                    if (typeof showToast === 'function') {
+                        showToast({ type: 'error', title: '无法领取', message: res.reason || '当前不可领取' });
+                    } else {
+                        showAlert(res.reason || '当前不可领取');
+                    }
+                    render();
+                    return;
+                }
+                // 持久化
+                data.users[data.index] = data.user;
+                localStorage.setItem('registeredUsers', JSON.stringify(data.users));
+
+                // 构建奖励明细
+                var msg = '🎉 领取成功：' + res.def.name;
+                if (res.expGained > 0) msg += '<br>获得 <b>' + res.expGained + '</b> 经验值';
+                if (res.coinGained > 0) msg += '<br>获得 <b style="color:#e67e22;">' + res.coinGained + '</b> PRE Coin';
+                if (res.items.length > 0 && typeof WAREHOUSE_ITEMS !== 'undefined') {
+                    res.items.forEach(function(it) {
+                        var wi = WAREHOUSE_ITEMS[it.itemId];
+                        if (wi) msg += '<br><i class="' + wi.icon + '" style="color:' + wi.color + ';"></i> ' + wi.name + ' ×' + it.qty;
+                    });
+                }
+                if (res.leveledUp) msg += '<br>🎊 升级啦！当前等级 Lv.' + res.newLevel;
+                showAlert(msg);
+
+                // 同步主界面（等级卡片、签到页红点标签等）
+                loadCheckinData();
+                render();
+            });
+
             var closeBtn = overlay.querySelector('.milestone-close');
             closeBtn.addEventListener('click', function() {
                 if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
@@ -20797,6 +21061,8 @@
                     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
                 }
             });
+
+            render();
         }
         
         // 打开本月奖励一览弹窗
@@ -21011,11 +21277,95 @@
                 currentUser.level = level;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
             }
+
+            // 经验倍率条目
+            updateExpBoostDisplay();
         }
+
+        // 更新成长等级卡片中的「经验倍率」条目
+        // 总倍率 = 限时提速活动固定倍率 × 仓库经验值加成卡倍率（两者叠加，加成卡规则不变）
+        function updateExpBoostDisplay() {
+            var valueEl = document.getElementById('expBoostValue');
+            var labelEl = document.getElementById('expBoostLabel');
+            if (!valueEl || !labelEl) return;
+
+            var buffs = (typeof getWarehouseExpBuffs === 'function') ? getWarehouseExpBuffs() : [];
+            var cardMult = (typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1;
+            var boostState = (typeof getLevelBoostEventState === 'function') ? getLevelBoostEventState() : null;
+            var eventActive = !!(boostState && boostState.active);
+            var eventMult = eventActive ? boostState.multiplier : 1;
+            var cardsActive = buffs && buffs.length > 0 && cardMult > 1;
+
+            // 无任何经验加成
+            if (!eventActive && !cardsActive) {
+                valueEl.textContent = '无加成';
+                valueEl.style.color = '';
+                valueEl.removeAttribute('title');
+                labelEl.textContent = '经验倍率';
+                return;
+            }
+
+            var totalMult = (typeof getTotalExpMultiplier === 'function')
+                ? getTotalExpMultiplier()
+                : Math.round(eventMult * cardMult * 10000) / 10000;
+
+            valueEl.textContent = '×' + totalMult.toFixed(2);
+            // 加成卡生效时沿用橙色；仅限时活动加成时使用主题粉色
+            valueEl.style.color = cardsActive ? '#e67e22' : '#d45d79';
+
+            // 悬浮明细：活动倍率 × 加成卡倍率 = 合计总倍率
+            var tipParts = [];
+            if (eventActive) tipParts.push('限时活动 ×' + eventMult.toFixed(2));
+            if (cardsActive) tipParts.push('经验值加成卡 ×' + cardMult.toFixed(2));
+            valueEl.title = tipParts.join('，') + '，合计 ×' + totalMult.toFixed(2);
+
+            if (cardsActive) {
+                // 取最晚过期时间作为加成卡持续终点
+                var latest = 0;
+                buffs.forEach(function(b) {
+                    var t = b.expiresAt ? new Date(b.expiresAt).getTime() : 0;
+                    if (t > latest) latest = t;
+                });
+                var end = new Date(latest);
+                var hh = ('0' + end.getHours()).slice(-2);
+                var mm = ('0' + end.getMinutes()).slice(-2);
+
+                labelEl.innerHTML = eventActive
+                    ? '经验倍率 · 活动叠加至 <b style="color:#d45d79;">' + hh + ':' + mm + '</b>'
+                    : '经验倍率 · 持续至 <b style="color:#d45d79;">' + hh + ':' + mm + '</b>';
+            } else {
+                // 仅有限时提速活动：第1阶段显示阶段切换时间，第2阶段显示活动结束时间
+                var endLabel = (typeof formatEventBoostTime === 'function' && boostState.phaseEnd)
+                    ? formatEventBoostTime(boostState.phaseEnd)
+                    : '';
+                if (boostState.phase === 1) {
+                    labelEl.innerHTML = '经验倍率 · 活动第1阶段至 <b style="color:#d45d79;">' + endLabel + '</b>';
+                } else {
+                    labelEl.innerHTML = '经验倍率 · 限时活动至 <b style="color:#d45d79;">' + endLabel + '</b>';
+                }
+            }
+        }
+
+        // 每 30 秒刷新一次经验倍率显示（加成到期后自动恢复为「无加成」）
+        setInterval(function() {
+            if (document.getElementById('expBoostValue')) updateExpBoostDisplay();
+        }, 30000);
 
         window.updateLevelCard = updateLevelCard;
         
-        // 更新签到奖励预览
+        // 更新「下一里程碑」标题右侧的可领取奖励标签
+        function updateMilestoneClaimBadge(user) {
+            var badge = document.getElementById('milestoneClaimBadge');
+            if (!badge) return;
+            var claimableDays = getClaimableMilestoneDays(user);
+            if (claimableDays.length > 0) {
+                badge.style.display = 'inline-flex';
+                badge.title = '有 ' + claimableDays.length + ' 个里程碑奖励可领取（连续' + claimableDays.join('、') + '天）';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
         function updateRewardPreview(user) {
             var streak = 0;
             if (user.userProfile && user.userProfile.checkinStats) {
@@ -21071,6 +21421,9 @@
                     streakBonusEl.textContent = '1-6天：每天 30 EXP + 20 PRE；7天起：60 EXP + 50 PRE；15天起：100 EXP + 80 PRE（断签重置）';
                 }
             }
+
+            // 里程碑可领取奖励红点标签
+            updateMilestoneClaimBadge(user);
         }
         
         // 渲染签到日历
@@ -21187,8 +21540,9 @@
             
             // 初始化数据
             if (!user.userProfile) user.userProfile = {};
-            if (!user.userProfile.checkinStats) user.userProfile.checkinStats = { streak: 0, total: 0, lastCheckin: null, history: [] };
+            if (!user.userProfile.checkinStats) user.userProfile.checkinStats = { streak: 0, total: 0, lastCheckin: null, history: [], claimedMilestones: [] };
             if (!user.userProfile.checkinStats.history) user.userProfile.checkinStats.history = [];
+            if (!Array.isArray(user.userProfile.checkinStats.claimedMilestones)) user.userProfile.checkinStats.claimedMilestones = [];
             
             // 初始化经验值数据
             initUserExpData(user);
@@ -21203,6 +21557,8 @@
                 user.userProfile.checkinStats.streak++;
             } else {
                 user.userProfile.checkinStats.streak = 1;
+                // 断签后重新开始：本轮连续签到的里程碑领取记录重置，可再次领取
+                resetClaimedMilestones(user);
             }
             
             user.userProfile.checkinStats.total++;
@@ -21231,11 +21587,11 @@
                 totalExpGained += b.exp;
             });
 
-            // 仓库经验加成卡：结算时应用经验倍率
-            if (typeof getWarehouseExpMultiplier === 'function') {
-                var warehouseExpMult = getWarehouseExpMultiplier();
-                if (warehouseExpMult > 1) totalExpGained = Math.round(totalExpGained * warehouseExpMult);
-            }
+            // 经验倍率结算：限时提速活动固定倍率 × 仓库经验加成卡倍率
+            var dailyExpSettleMult = (typeof getTotalExpMultiplier === 'function')
+                ? getTotalExpMultiplier()
+                : ((typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1);
+            if (dailyExpSettleMult > 1) totalExpGained = Math.round(totalExpGained * dailyExpSettleMult);
 
             // 添加经验值
             var result = addExpToUser(user, totalExpGained);
@@ -21244,7 +21600,7 @@
             users[userIndex] = user;
             localStorage.setItem('registeredUsers', JSON.stringify(users));
 
-            // ============ PRE Coin：每日签到奖励 + 里程碑奖励 ============
+            // ============ PRE Coin：仅每日签到奖励（里程碑奖励改为手动领取） ============
             var totalPreCoinGained = 0;
             var preCoinParts = [];
             var dailyCoin = 0;
@@ -21254,17 +21610,6 @@
                     totalPreCoinGained += dailyCoin;
                     preCoinParts.push({ label: '每日签到奖励', coin: dailyCoin });
                 }
-            }
-            // 里程碑 PRE Coin：连续签到且刚好命中里程碑天数时触发
-            var preCoinMilestoneParts = [];
-            if (wasContinuous && typeof PRECOIN_CHECKIN_MILESTONE_BONUSES !== 'undefined') {
-                PRECOIN_CHECKIN_MILESTONE_BONUSES.forEach(function(m) {
-                    if (streak === m.days) {
-                        totalPreCoinGained += m.coin;
-                        preCoinMilestoneParts.push({ label: m.label, coin: m.coin });
-                        preCoinParts.push({ label: '🎁 ' + m.label, coin: m.coin });
-                    }
-                });
             }
             if (totalPreCoinGained > 0 && typeof addPreCoin === 'function') {
                 addPreCoin(totalPreCoinGained, '每日签到（连续 ' + streak + ' 天）');
@@ -21284,6 +21629,8 @@
                 users[userIndex] = user;
                 localStorage.setItem('registeredUsers', JSON.stringify(users));
             }
+
+            // ============ 签到里程碑奖励已改为手动领取（点击里程碑卡片） ============
 
             // 每日任务：标记签到完成
             if (typeof dailyTaskMarkProgress === 'function') {
@@ -21305,9 +21652,6 @@
                 if (dailyCoin > 0) {
                     message += '<br><i class="fas fa-coins" style="color:#f39c12;"></i> 每日 PRE Coin：<b style="color:#e67e22;">+' + dailyCoin + '</b>';
                 }
-                preCoinMilestoneParts.forEach(function(p) {
-                    message += '<br>🎊 ' + p.label + '：<b style="color:#e67e22;">+' + p.coin + ' PRE</b>';
-                });
                 message += '<br>💴 本次合计获得 <b style="color:#c0392b;">' + totalPreCoinGained + ' PRE Coin</b>';
             }
             if (timedItemsGiven.length > 0 && typeof WAREHOUSE_ITEMS !== 'undefined') {
@@ -21319,6 +21663,12 @@
                         message += '<br>  · ' + wi.name + ' ×' + it.qty + '（限时）';
                     }
                 });
+            }
+            // 里程碑奖励手动领取提示
+            var claimableDaysAfterCheckin = getClaimableMilestoneDays(user);
+            if (claimableDaysAfterCheckin.length > 0) {
+                message += '<hr style="border:none;border-top:1px dashed #ddd;margin:8px 0;">';
+                message += '<br>🎁 有 <b style="color:#d45d79;">' + claimableDaysAfterCheckin.length + '</b> 个签到里程碑奖励可领取，点击「下一里程碑」手动领取';
             }
             if (result.leveledUp) {
                 message += '<br>🎊 升级啦！当前等级 Lv.' + result.newLevel;
@@ -21390,11 +21740,118 @@
             return 30;
         }
         
+        // ========== 签到里程碑（统一配置，手动点击领取） ==========
+        // exp：领取时一次性发放的经验值；coin：领取时一次性发放的 PRE 硬币
+        // items：额外仓库道具（依据 milestoneRewardsClaimed 终身仅发放一次）
+        // 领取状态：checkinStats.claimedMilestones 记录本*连续签到周期*内已领取的里程碑天数，断签即重置
+        var CHECKIN_MILESTONES = [
+            { days: 7,   name: '连续签到7天',   icon: 'gift',   expText: '+500 EXP',    exp: 500,  coin: 100 },
+            { days: 15,  name: '连续签到15天',  icon: 'star',   expText: '每日 100 EXP', exp: 0,    coin: 100 },
+            { days: 30,  name: '连续签到30天',  icon: 'trophy', expText: '+1000 EXP',   exp: 1000, coin: 200 },
+            { days: 60,  name: '连续签到60天',  icon: 'trophy', expText: '+1000 EXP',   exp: 1000, coin: 200 },
+            { days: 90,  name: '连续签到90天',  icon: 'trophy', expText: '+1000 EXP',   exp: 1000, coin: 250 },
+            { days: 180, name: '连续签到180天', icon: 'trophy', expText: '+1000 EXP',   exp: 1000, coin: 250,
+                extraRewards: [
+                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×1', cls: 'card' },
+                    { icon: 'fas fa-ribbon', text: '勤奋者勋章 ×1', cls: 'medal' }
+                ],
+                items: [{ itemId: 'exchange_card', qty: 1 }, { itemId: 'diligent_medal', qty: 1 }]
+            },
+            { days: 365, name: '连续签到365天', icon: 'crown',  expText: '+1000 EXP',   exp: 1000, coin: 500,
+                extraRewards: [
+                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×1', cls: 'card' },
+                    { icon: 'fas fa-gem', text: '坚持者勋章 ×1', cls: 'medal' }
+                ],
+                items: [{ itemId: 'exchange_card', qty: 1 }, { itemId: 'persistent_medal', qty: 1 }]
+            }
+        ];
+
+        // 获取当前可领取（已达成但本轮连续签到尚未领取）的里程碑天数
+        function getClaimableMilestoneDays(user) {
+            var days = [];
+            if (!user || !user.userProfile || !user.userProfile.checkinStats) return days;
+            var stats = user.userProfile.checkinStats;
+            var claimed = Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : [];
+            var streak = stats.streak || 0;
+            CHECKIN_MILESTONES.forEach(function(m) {
+                if (streak >= m.days && claimed.indexOf(m.days) === -1) days.push(m.days);
+            });
+            return days;
+        }
+
+        // 重置本轮连续签到的里程碑领取记录（断签 / 开发者重置时调用）
+        function resetClaimedMilestones(user) {
+            if (user && user.userProfile && user.userProfile.checkinStats) {
+                user.userProfile.checkinStats.claimedMilestones = [];
+            }
+        }
+
+        // 手动领取指定里程碑奖励
+        // 返回 { ok:false, reason } 或 { ok:true, def, expGained, coinGained, items, leveledUp, newLevel }
+        function claimCheckinMilestone(user, days) {
+            if (!user || !user.userProfile || !user.userProfile.checkinStats) return { ok: false, reason: '数据异常' };
+            var stats = user.userProfile.checkinStats;
+            var def = null;
+            for (var i = 0; i < CHECKIN_MILESTONES.length; i++) {
+                if (CHECKIN_MILESTONES[i].days === days) { def = CHECKIN_MILESTONES[i]; break; }
+            }
+            if (!def) return { ok: false, reason: '奖励不存在' };
+            if ((stats.streak || 0) < days) return { ok: false, reason: '尚未达成' };
+            if (!Array.isArray(stats.claimedMilestones)) stats.claimedMilestones = [];
+            if (stats.claimedMilestones.indexOf(days) !== -1) return { ok: false, reason: '已领取过' };
+
+            initUserExpData(user);
+            var leveledUp = false, newLevel = user.gameData.level;
+
+            // 1) 经验值（享受限时活动倍率 × 仓库经验加成卡倍率）
+            var expGained = 0;
+            if (def.exp > 0) {
+                expGained = def.exp;
+                var milestoneExpMult = (typeof getTotalExpMultiplier === 'function')
+                    ? getTotalExpMultiplier()
+                    : ((typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1);
+                if (milestoneExpMult > 1) expGained = Math.round(expGained * milestoneExpMult);
+                var expResult = addExpToUser(user, expGained);
+                if (expResult && expResult.leveledUp) { leveledUp = true; newLevel = expResult.newLevel; }
+            }
+
+            // 2) PRE 硬币
+            var coinGained = 0;
+            if (def.coin > 0 && typeof addPreCoin === 'function') {
+                addPreCoin(def.coin, '签到里程碑 · 连续' + days + '天');
+                coinGained = def.coin;
+            }
+
+            // 3) 特殊道具（自选物品兑换卡 + 勋章，终身仅发放一次）
+            var itemsGained = [];
+            if (def.items && def.items.length > 0) {
+                if (!Array.isArray(stats.milestoneRewardsClaimed)) stats.milestoneRewardsClaimed = [];
+                if (stats.milestoneRewardsClaimed.indexOf(days) === -1 && typeof warehouseAddItem === 'function') {
+                    def.items.forEach(function(it) {
+                        warehouseAddItem(it.itemId, it.qty, '签到里程碑 · 连续签到' + days + '天');
+                        itemsGained.push(it);
+                    });
+                    stats.milestoneRewardsClaimed.push(days);
+                }
+            }
+
+            stats.claimedMilestones.push(days);
+            return {
+                ok: true, def: def, expGained: expGained, coinGained: coinGained,
+                items: itemsGained, leveledUp: leveledUp, newLevel: newLevel
+            };
+        }
+
+        // 签到时自动发放的经验奖励：仅保留未在里程碑弹窗中列出的30倍数循环奖励
+        // （7/30/60/90/180/365 等弹窗里程碑均已改为手动领取）
         function getCheckinBonuses(streak, wasContinuous) {
             var bonuses = [];
             if (!wasContinuous) return bonuses;
-            if (streak === 7) bonuses.push({ type: 'streak7', exp: 500, label: '连续签到7天奖励' });
-            if (streak > 0 && streak % 30 === 0) bonuses.push({ type: 'streak30', exp: 1000, label: '连续签到30天奖励' });
+            var manualDays = {};
+            CHECKIN_MILESTONES.forEach(function(m) { manualDays[m.days] = true; });
+            if (streak > 0 && streak % 30 === 0 && !manualDays[streak]) {
+                bonuses.push({ type: 'streak30', exp: 1000, label: '连续签到' + streak + '天循环奖励' });
+            }
             return bonuses;
         }
         
@@ -21731,7 +22188,9 @@
                 user.userProfile.checkinStats.streak = s;
                 user.userProfile.checkinStats.total = t;
                 user.userProfile.checkinStats.lastCheckin = new Date().toDateString();
-                
+                // 开发者直接调整连续天数：视为新一轮连续签到，里程碑需手动领取
+                resetClaimedMilestones(user);
+
                 user.gameData.level = newLevel;
                 user.gameData.totalExp = totalExp;
                 user.gameData.exp = expInLevel;
@@ -21744,9 +22203,14 @@
                 }
                 
                 loadCheckinData();
-                
+
                 closeModal();
-                showAlert('开发者修改已保存：签到' + t + '天(连续' + s + '天)，Lv.' + newLevel + '，总计 ' + totalExp + ' EXP');
+                var devSetClaimCount = getClaimableMilestoneDays(user).length;
+                var devSetMsg = '开发者修改已保存：签到' + t + '天(连续' + s + '天)，Lv.' + newLevel + '，总计 ' + totalExp + ' EXP';
+                if (devSetClaimCount > 0) {
+                    devSetMsg += '<br>🎁 当前有 ' + devSetClaimCount + ' 个签到里程碑奖励可手动领取';
+                }
+                showAlert(devSetMsg);
             });
             
             updatePreview();
@@ -21871,6 +22335,7 @@
                 // 从已有 streak 延续
                 var curStreak = (user.userProfile.checkinStats.streak || 0);
                 var prevClaimed = alreadyClaimedDays[startDay - 1]; // 前一天是否已领
+                var batchStreakBroke = false; // 批量领取过程中是否发生断签
 
                 for (var day = startDay; day <= endDay; day++) {
                     // 跳过已领过的日期
@@ -21886,6 +22351,7 @@
                         curStreak++;
                     } else {
                         curStreak = 1;
+                        batchStreakBroke = true;
                     }
                     prevClaimed = true;
 
@@ -21896,14 +22362,9 @@
                     bonuses.forEach(function(b) { dayExp += b.exp; });
                     totalExp += dayExp;
 
-                    // PRE Coin
+                    // PRE Coin（仅每日奖励，里程碑改为手动领取）
                     var dailyCoin = typeof getPreCoinDailyCheckinReward === 'function' ? getPreCoinDailyCheckinReward(curStreak) : 0;
                     totalCoin += dailyCoin;
-                    if (isContinuous && typeof PRECOIN_CHECKIN_MILESTONE_BONUSES !== 'undefined') {
-                        PRECOIN_CHECKIN_MILESTONE_BONUSES.forEach(function(m) {
-                            if (curStreak === m.days) totalCoin += m.coin;
-                        });
-                    }
 
                     // 限时道具（用模拟 Date 对象调用 getDailyCheckinReward）
                     var simulatedDate = new Date(year, month, day);
@@ -21938,12 +22399,14 @@
                 user.userProfile.checkinStats.streak = curStreak;
                 user.userProfile.checkinStats.total = (user.userProfile.checkinStats.total || 0) + dailyStreaks.length;
                 user.userProfile.checkinStats.lastCheckin = new Date(year, month, endDay).toDateString();
+                // 批量领取过程中发生断签：本轮里程碑领取记录重置（奖励需手动领取）
+                if (batchStreakBroke) resetClaimedMilestones(user);
 
-                // 经验加成
-                if (typeof getWarehouseExpMultiplier === 'function') {
-                    var mult = getWarehouseExpMultiplier();
-                    if (mult > 1) totalExp = Math.round(totalExp * mult);
-                }
+                // 经验加成（限时提速活动倍率 × 仓库加成卡倍率）
+                var devBatchExpMult = (typeof getTotalExpMultiplier === 'function')
+                    ? getTotalExpMultiplier()
+                    : ((typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1);
+                if (devBatchExpMult > 1) totalExp = Math.round(totalExp * devBatchExpMult);
                 addExpToUser(user, totalExp);
 
                 // PRE Coin
@@ -21961,7 +22424,9 @@
                 localStorage.setItem('registeredUsers', JSON.stringify(users));
 
                 loadCheckinData();
-                showAlert('🎉 开发者批量签到完成<br>累计 ' + dailyStreaks.length + ' 天<br>获得 ' + totalExp + ' EXP<br>获得 ' + totalCoin + ' PRE Coin<br>限时道具：' + (totalTimedItems.length > 0 ? totalTimedItems.map(function(it) { return (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId] ? WAREHOUSE_ITEMS[it.itemId].name : it.itemId) + ' ×' + it.qty; }).join('、') : '无'));
+                var devClaimCount = getClaimableMilestoneDays(user).length;
+                var devClaimText = devClaimCount > 0 ? '<br>🎁 有 ' + devClaimCount + ' 个签到里程碑奖励可手动领取' : '';
+                showAlert('🎉 开发者批量签到完成<br>累计 ' + dailyStreaks.length + ' 天<br>获得 ' + totalExp + ' EXP<br>获得 ' + totalCoin + ' PRE Coin<br>限时道具：' + (totalTimedItems.length > 0 ? totalTimedItems.map(function(it) { return (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId] ? WAREHOUSE_ITEMS[it.itemId].name : it.itemId) + ' ×' + it.qty; }).join('、') : '无') + devClaimText);
                 closeModal();
             }
 
@@ -21992,6 +22457,8 @@
                 });
                 // streak 重置（因为清除后断签了）
                 user.userProfile.checkinStats.streak = 0;
+                // 同步重置本轮里程碑领取记录
+                resetClaimedMilestones(user);
                 // total 减去本月天数
                 user.userProfile.checkinStats.total = Math.max(0, (user.userProfile.checkinStats.total || 0) - count);
                 // lastCheckin 改为清除前最后一个非本月日期
@@ -34285,6 +34752,7 @@ ID：${user ? user.userId : '---'}
                 <div class="mail-desktop-header">
                     <div class="mail-desktop-title">
                         <h2>邮件</h2>
+                        <span class="mail-count-badge" id="mailCountBadge">共计 0/200 封邮件</span>
                     </div>
                     <button class="mail-desktop-close" id="mailCloseBtn">
                         <i class="fas fa-times"></i>
@@ -34361,8 +34829,21 @@ ID：${user ? user.userId : '---'}
         <div class="custom-alert" id="mailHistoryModal" style="display: none;">
             <div class="alert-content">
                 <div class="mail-history-header">
-                    <h2>邮件领取记录</h2>
+                    <div class="mail-history-title-group">
+                        <h2>邮件领取记录</h2>
+                        <span class="mail-history-cap-badge" id="mailHistoryCapBadge">可保留200封邮件领取记录，超过上限的邮件记录将会被删除（当前已保留0封）</span>
+                    </div>
                     <div class="mail-history-actions">
+                        <div class="mail-history-filter-wrapper">
+                            <button class="mail-history-filter-btn" id="mailHistoryFilterBtn">
+                                <i class="fas fa-filter"></i>
+                                <span>筛选</span>
+                                <i class="fas fa-chevron-down mail-history-filter-chevron"></i>
+                            </button>
+                            <div class="mail-history-filter-dropdown" id="mailHistoryFilterDropdown">
+                                <div class="mail-history-filter-option active" data-month="all">全部</div>
+                            </div>
+                        </div>
                         <button class="mail-history-clear-btn" id="mailHistoryClearBtn">
                             <i class="fas fa-trash"></i>
                             <span>清空领取记录</span>
