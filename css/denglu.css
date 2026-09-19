@@ -15087,7 +15087,7 @@ body.dark-mode .header-right .toggle-buttons-btn[aria-disabled="true"] {
     font-weight: 600;
 }
 
-/* 通用弹窗样式 */
+/* 通用弹窗样式（系统级确认/提示框，层级需高于一切业务弹窗，如 .treasure-modal 的 100000） */
 .custom-confirm-modal {
     position: fixed;
     top: 0;
@@ -15098,7 +15098,7 @@ body.dark-mode .header-right .toggle-buttons-btn[aria-disabled="true"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10002;
+    z-index: 200000;
     animation: fadeIn 0.3s ease;
 }
 

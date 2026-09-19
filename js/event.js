@@ -1412,7 +1412,11 @@ function addCheckinExp(amount) {
     var totalExp = foundUser.gameData.totalExp + amount;
     var expInLevel = foundUser.gameData.exp + amount;
 
-    while (expInLevel >= getExpRequiredForLevelStatic(level)) {
+    // 等级上限跟随主系统（阶段突破模式下为 120，否则 60）
+    var safeMaxLevel = (typeof window.MAX_LEVEL === 'number') ? window.MAX_LEVEL : 60;
+    // 重要：满级时升级需求为 0，若不检查等级上限，while 会死循环
+    // （60级满级使用经验值补给卡页面卡死的根因），溢出经验保留在当前等级内
+    while (level < safeMaxLevel && expInLevel >= getExpRequiredForLevelStatic(level)) {
         expInLevel -= getExpRequiredForLevelStatic(level);
         level++;
     }
@@ -1433,6 +1437,10 @@ function addCheckinExp(amount) {
 }
 
 function getExpRequiredForLevelStatic(level) {
+    // 优先使用主系统公式（与阶段突破模式 60-120 级新公式保持同步）
+    if (typeof window.getExpRequiredForLevel === 'function') {
+        return window.getExpRequiredForLevel(level);
+    }
     var MAX_LEVEL = 60;
     if (level >= MAX_LEVEL) return 0;
     if (level >= 50) return 100 + (level + 5) * 80;   // 50级+：100 + (等级+5) × 80

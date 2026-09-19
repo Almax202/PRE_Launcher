@@ -233,7 +233,7 @@ function getActiveTimedItems() {
 }
 
 // 添加限时物品：warehouseAddTimedItem('exp_supply_1', 1, '签到奖励', 14)
-function warehouseAddTimedItem(itemId, qty, source, expiryDays) {
+function warehouseAddTimedItem(itemId, qty, source, expiryDays, silent) {
     if (!WAREHOUSE_ITEMS[itemId]) return false;
     qty = Math.max(1, parseInt(qty, 10) || 1);
     if (typeof expiryDays !== 'number' || expiryDays <= 0) expiryDays = 14;
@@ -253,7 +253,8 @@ function warehouseAddTimedItem(itemId, qty, source, expiryDays) {
     });
     saveWarehouseData(data);
     // 如果该道具原本就有 usable=true 且有特殊效果字段，保留为限时版
-    if (typeof showToast === 'function') {
+    // silent 为 true 时不弹横条（由调用方汇总展示，如签到结果弹窗）
+    if (!silent && typeof showToast === 'function') {
         var item = WAREHOUSE_ITEMS[itemId];
         var expireStr = new Date(expiresAt);
         var dd = ('0' + expireStr.getDate()).slice(-2);
@@ -290,12 +291,13 @@ function warehouseGetTimedItemCount(itemId) {
 }
 
 // 批量添加多个限时物品（一次签到发放多个道具时使用）
-function warehouseAddTimedItems(items, source, expiryDays) {
+// silent: 为 true 时不弹提示横条（由调用方汇总展示，如签到结果弹窗）
+function warehouseAddTimedItems(items, source, expiryDays, silent) {
     if (!Array.isArray(items)) return [];
     var uids = [];
     items.forEach(function(it) {
         // it:  { itemId: 'exp_supply_1', qty: 1 }
-        var uid = warehouseAddTimedItem(it.itemId, it.qty || 1, source, expiryDays);
+        var uid = warehouseAddTimedItem(it.itemId, it.qty || 1, source, expiryDays, silent);
         if (uid) uids.push(uid);
     });
     return uids;

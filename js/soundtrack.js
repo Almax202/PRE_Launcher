@@ -444,7 +444,7 @@
 
         // 播放器设置模式（侧边栏设置菜单 + 右侧设置面板）
         settingsMode: false,
-        settingsSection: null,   // null | 'background' | 'layout' | 'components'
+        settingsSection: null,   // null | 'background' | 'layout' | 'components' | 'minibar' | 'playstyle' | 'lyricsfile' | 'transfer' | 'componentinfo' | 'reset'
 
         // 自定义背景：{ [trackId]: dataURL }
         backgrounds: {},
@@ -1652,6 +1652,46 @@
             'body.dark-mode #stkResetConfirmCancel { background: rgba(255,255,255,0.08); color: #bbb; }',
             'body.dark-mode #stkResetConfirmCancel:hover { background: rgba(255,255,255,0.14); }',
 
+            /* ===== 导出及导入配置面板 ===== */
+            '.stk-transfer-block { border: 1px solid #e4e4ee; border-radius: 14px; padding: 16px; background: #fafafe; margin-bottom: 14px; }',
+            '.stk-transfer-block-title { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: #2c2c3a; margin-bottom: 12px; }',
+            '.stk-transfer-block-title i { color: #764ba2; width: 18px; text-align: center; }',
+            '.stk-transfer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }',
+            '.stk-transfer-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 10px; border-radius: 12px; border: 1px solid rgba(102,126,234,0.25); background: #fff; color: #5a4f8a; cursor: pointer; font-family: inherit; transition: all 0.2s ease; }',
+            '.stk-transfer-btn > i { font-size: 20px; margin-bottom: 3px; }',
+            '.stk-transfer-btn:hover { border-color: #667eea; background: rgba(102,126,234,0.06); transform: translateY(-1px); }',
+            '.stk-transfer-btn.primary { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; color: #fff; box-shadow: 0 5px 14px rgba(118,75,162,0.3); }',
+            '.stk-transfer-btn.primary:hover { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; filter: brightness(1.07); }',
+            '.stk-transfer-btn-label { font-size: 13px; font-weight: 700; }',
+            '.stk-transfer-btn-desc { font-size: 11px; opacity: 0.75; }',
+            '.stk-transfer-file-row { display: flex; align-items: center; gap: 10px; }',
+            '.stk-transfer-file-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px; border-radius: 10px; border: 1px solid rgba(102,126,234,0.3); background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08)); color: #555; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s ease; white-space: nowrap; }',
+            '.stk-transfer-file-btn:hover { border-color: #667eea; color: #667eea; }',
+            '.stk-transfer-file-name { flex: 1; min-width: 0; font-size: 12px; color: #999; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+            '.stk-transfer-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; color: #b0b0c0; font-size: 11px; }',
+            '.stk-transfer-divider::before, .stk-transfer-divider::after { content: ""; flex: 1; height: 1px; background: #e4e4ee; }',
+            '.stk-transfer-code { width: 100%; box-sizing: border-box; min-height: 92px; max-height: 190px; resize: vertical; border-radius: 12px; border: 1px solid #e4e4ee; background: #fff; padding: 10px 12px; font-size: 11.5px; line-height: 1.5; color: #555; font-family: ui-monospace, Consolas, "Courier New", monospace; word-break: break-all; margin: 0 0 10px; }',
+            '.stk-transfer-code:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }',
+            '.stk-transfer-code::placeholder { color: #b8b8cc; word-break: normal; font-family: inherit; }',
+            '.stk-transfer-code-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 0; border-radius: 10px; border: none; background: linear-gradient(135deg, #43cea2, #185a9d); color: #fff; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; box-shadow: 0 4px 12px rgba(24,90,157,0.28); transition: all 0.2s ease; }',
+            '.stk-transfer-code-btn:hover { filter: brightness(1.07); }',
+            '#stkTransferConfirmCancel { background: rgba(0,0,0,0.06); color: #666; }',
+            '#stkTransferConfirmCancel:hover { background: rgba(0,0,0,0.12); }',
+            '#stkTransferConfirmOk { background: linear-gradient(135deg, #43cea2, #185a9d); color: #fff; box-shadow: 0 4px 12px rgba(24,90,157,0.3); }',
+            '#stkTransferConfirmOk:hover { filter: brightness(1.06); }',
+            'body.dark-mode .stk-transfer-block { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }',
+            'body.dark-mode .stk-transfer-block-title { color: #f0f0f5; }',
+            'body.dark-mode .stk-transfer-btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.14); color: #b5a8e8; }',
+            'body.dark-mode .stk-transfer-btn:hover { background: rgba(255,255,255,0.1); border-color: #8ea1ff; }',
+            'body.dark-mode .stk-transfer-btn.primary { background: linear-gradient(135deg, #8ea1ff, #d45d79); border-color: transparent; }',
+            'body.dark-mode .stk-transfer-file-btn { background: rgba(118,75,162,0.12); border-color: rgba(118,75,162,0.3); color: #bbb; }',
+            'body.dark-mode .stk-transfer-file-btn:hover { color: #d45d79; border-color: #764ba2; }',
+            'body.dark-mode .stk-transfer-file-name { color: #777; }',
+            'body.dark-mode .stk-transfer-divider::before, body.dark-mode .stk-transfer-divider::after { background: rgba(255,255,255,0.12); }',
+            'body.dark-mode .stk-transfer-code { background: #1e1e2c; border-color: rgba(255,255,255,0.14); color: #ccc; }',
+            'body.dark-mode #stkTransferConfirmCancel { background: rgba(255,255,255,0.08); color: #bbb; }',
+            'body.dark-mode #stkTransferConfirmCancel:hover { background: rgba(255,255,255,0.14); }',
+
         ].join('\n');
         document.head.appendChild(style);
     }
@@ -1724,6 +1764,14 @@
                             '<div class="stk-settings-entry-text">' +
                                 '<div class="stk-settings-entry-label">自定义歌词文件</div>' +
                                 '<div class="stk-settings-entry-desc">为导入歌曲添加 LRC 歌词</div>' +
+                            '</div>' +
+                            '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
+                        '</div>' +
+                        '<div class="stk-settings-entry" data-section="transfer">' +
+                            '<div class="stk-settings-entry-icon" style="background: linear-gradient(135deg, #43cea2, #185a9d);"><i class="fas fa-arrow-right-arrow-left"></i></div>' +
+                            '<div class="stk-settings-entry-text">' +
+                                '<div class="stk-settings-entry-label">导出及导入配置</div>' +
+                                '<div class="stk-settings-entry-desc">备份或快速恢复播放器设置</div>' +
                             '</div>' +
                             '<i class="fas fa-angle-right stk-settings-entry-chevron"></i>' +
                         '</div>' +
@@ -1880,6 +1928,7 @@
                             '<div class="stk-comp-hint"><i class="fas fa-circle-info"></i>音浪 / 波纹 / 流光波浪会实时分析正在播放的音乐并随之律动，播放暂停时自动恢复平静。所选样式会自动保存，刷新后仍然生效。</div>' +
                         '</div>' +
                         '<div class="stk-settings-card" id="stkPanelLyricsFile"></div>' +
+                        '<div class="stk-settings-card" id="stkPanelTransfer"></div>' +
                         '<div class="stk-settings-card stk-cinfo-card" id="stkPanelComponentInfo"></div>' +
                         '<div class="stk-settings-card" id="stkPanelReset"></div>' +
                     '</div>' +
@@ -2279,6 +2328,7 @@
         ui.vizPreviewCanvas = document.getElementById('stkVizPreviewCanvas');
         ui.vizGrid = document.getElementById('stkVizGrid');
         ui.panelLyricsFile = document.getElementById('stkPanelLyricsFile');
+        ui.panelTransfer = document.getElementById('stkPanelTransfer');
         ui.panelComponentInfo = document.getElementById('stkPanelComponentInfo');
         ui.panelReset = document.getElementById('stkPanelReset');
 
@@ -2405,6 +2455,24 @@
         ui.resetConfirmText = document.getElementById('stkResetConfirmText');
         ui.resetConfirmCancelBtn = document.getElementById('stkResetConfirmCancel');
         ui.resetConfirmOkBtn = document.getElementById('stkResetConfirmOk');
+
+        // 导入配置二次确认弹窗（导入将完整覆盖现有播放器设置）
+        ui.transferConfirmMask = document.createElement('div');
+        ui.transferConfirmMask.className = 'stk-confirm-mask';
+        ui.transferConfirmMask.innerHTML =
+            '<div class="stk-confirm-box">' +
+                '<div class="stk-confirm-icon" style="background: linear-gradient(135deg, #43cea2, #185a9d);"><i class="fas fa-arrow-right-arrow-left"></i></div>' +
+                '<h4>导入播放器配置</h4>' +
+                '<p id="stkTransferConfirmText"></p>' +
+                '<div class="stk-confirm-actions">' +
+                    '<button id="stkTransferConfirmCancel" type="button">取消</button>' +
+                    '<button id="stkTransferConfirmOk" type="button">确定导入</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(ui.transferConfirmMask);
+        ui.transferConfirmText = document.getElementById('stkTransferConfirmText');
+        ui.transferConfirmCancelBtn = document.getElementById('stkTransferConfirmCancel');
+        ui.transferConfirmOkBtn = document.getElementById('stkTransferConfirmOk');
 
         // 底部小凸起图标：控制条被手动隐藏后显示，点击重新弹出控制条（fixed 贴浏览器底部，不受滚动影响）
         ui.miniBump = document.createElement('button');
@@ -3732,6 +3800,417 @@
         if (state.settingsSection === 'reset') renderResetPanel();
     }
 
+    // ==================== 导出 / 导入播放器配置 ====================
+    // 快照统一打包播放器的全部持久化数据：
+    //   settings     —— 组件布局 / 显隐 / 控制条 / 播放样式 / 调音器 / 音量等功能设置（localStorage: STORAGE_KEY）
+    //   backgrounds  —— 按曲目设置的自定义背景图片（localStorage: STORAGE_KEY_BACKGROUNDS）
+    //   playlists    —— 自定义播放列表、导入歌曲元数据与 LRC 歌词（localStorage: STORAGE_KEY_PLAYLISTS）
+    //   audios       —— 导入歌曲的音频二进制（IndexedDB，base64 打包）
+    var TRANSFER_APP_ID = 'pre-launcher-soundtrack';
+    var TRANSFER_VERSION = 1;
+    var pendingTransferSnapshot = null;
+
+    function blobToDataURL(blob) {
+        return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () { resolve(reader.result); };
+            reader.onerror = function () { reject(reader.error || new Error('读取二进制失败')); };
+            reader.readAsDataURL(blob);
+        });
+    }
+
+    function dataURLToBlob(dataURL) {
+        var m = /^data:([^;,]*)?(;base64)?,([\s\S]*)$/.exec(String(dataURL || ''));
+        if (!m) throw new Error('无效的 base64 数据');
+        var mime = m[1] || 'application/octet-stream';
+        if (m[2]) {
+            var bin = atob(m[3]);
+            var u8 = new Uint8Array(bin.length);
+            for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+            return new Blob([u8], { type: mime });
+        }
+        return new Blob([decodeURIComponent(m[3])], { type: mime });
+    }
+
+    // 收集当前播放器全部设置，序列化为 JSON 字符串（导出文件 / 导出代码共用）
+    function buildTransferSnapshot() {
+        // 先把当前会话的设置落盘，保证导出内容与界面状态一致
+        saveSettings();
+        savePlaylists();
+        var settings = {}, backgrounds = {}, playlists = { activeId: 'default', playlists: [] };
+        try { settings = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch (e) { }
+        try { backgrounds = JSON.parse(localStorage.getItem(STORAGE_KEY_BACKGROUNDS) || '{}') || {}; } catch (e) { }
+        try {
+            var plRaw = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYLISTS) || 'null');
+            if (plRaw && Array.isArray(plRaw.playlists)) {
+                playlists = { activeId: plRaw.activeId || 'default', playlists: plRaw.playlists };
+            }
+        } catch (e) { }
+
+        // 收集全部导入歌曲的音频二进制（去重）
+        var idMap = {};
+        state.playlists.forEach(function (pl) {
+            (pl.tracks || []).forEach(function (t) { if (t.custom) idMap[t.id] = true; });
+        });
+        var jobs = Object.keys(idMap).map(function (id) {
+            return idbGetAudio(id).then(function (rec) {
+                if (!rec || !rec.blob) return null;
+                return blobToDataURL(rec.blob).then(function (dataURL) {
+                    return { id: String(id), type: rec.blob.type || 'audio/mpeg', dataURL: dataURL };
+                });
+            }).catch(function () { return null; });
+        });
+        return Promise.all(jobs).then(function (audioList) {
+            return JSON.stringify({
+                app: TRANSFER_APP_ID,
+                version: TRANSFER_VERSION,
+                exportTime: new Date().toISOString(),
+                settings: settings,
+                backgrounds: backgrounds,
+                playlists: playlists,
+                audios: audioList.filter(Boolean)
+            });
+        });
+    }
+
+    function transferTimestamp() {
+        function p2(n) { return (n < 10 ? '0' : '') + n; }
+        var d = new Date();
+        return d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' +
+            p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds());
+    }
+
+    function downloadJsonFile(filename, text) {
+        var blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    }
+
+    function fallbackCopyText(text) {
+        try {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '-9999px';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            var ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+        } catch (e) { return false; }
+    }
+
+    function copyTextToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () {
+                return fallbackCopyText(text);
+            });
+        }
+        return Promise.resolve(fallbackCopyText(text));
+    }
+
+    function transferToastSuccess(msg) {
+        if (typeof window.showToastSuccess === 'function') window.showToastSuccess(msg, '音乐播放器');
+    }
+    function transferToastError(msg) {
+        if (typeof window.showToastError === 'function') window.showToastError(msg, '音乐播放器');
+        else toastWarning(msg);
+    }
+
+    // ===== 导出：json 文件（自动下载） =====
+    function handleTransferExportFile() {
+        buildTransferSnapshot().then(function (text) {
+            downloadJsonFile('pre-launcher-music-config-' + transferTimestamp() + '.json', text);
+            transferToastSuccess('配置已导出，请查看浏览器下载记录');
+        }).catch(function () {
+            transferToastError('配置导出失败，请重试');
+        });
+    }
+
+    // ===== 导出：配置代码（自动粘贴到剪贴板） =====
+    function handleTransferExportCode() {
+        buildTransferSnapshot().then(function (text) {
+            return copyTextToClipboard(text);
+        }).then(function (ok) {
+            if (ok) transferToastSuccess('配置已导出，已自动粘贴到剪贴板');
+            else transferToastError('复制到剪贴板失败，请改用「导出为 json 文件」');
+        }).catch(function () {
+            transferToastError('配置导出失败，请重试');
+        });
+    }
+
+    // ===== 导入：解析与校验 =====
+    function parseTransferSnapshot(raw) {
+        var data;
+        try { data = JSON.parse(raw); } catch (e) {
+            return { error: '配置内容不是有效的 JSON 格式，请检查后重试' };
+        }
+        if (!data || typeof data !== 'object' || data.app !== TRANSFER_APP_ID) {
+            return { error: '配置无效：这不是音乐播放器导出的配置文件或配置代码' };
+        }
+        if (data.version !== TRANSFER_VERSION) {
+            return { error: '配置版本（v' + data.version + '）不受支持，无法导入' };
+        }
+        return { data: data };
+    }
+
+    function summarizeTransferSnapshot(data) {
+        var plCount = 0, trackCount = 0;
+        var bgCount = (data.backgrounds && typeof data.backgrounds === 'object') ? Object.keys(data.backgrounds).length : 0;
+        var audioCount = Array.isArray(data.audios) ? data.audios.length : 0;
+        if (data.playlists && Array.isArray(data.playlists.playlists)) {
+            plCount = data.playlists.playlists.length;
+            data.playlists.playlists.forEach(function (p) {
+                if (p && Array.isArray(p.tracks)) trackCount += p.tracks.length;
+            });
+        }
+        var timeText = '未知时间';
+        if (data.exportTime) {
+            var d = new Date(data.exportTime);
+            if (!isNaN(d.getTime())) {
+                function p2(n) { return (n < 10 ? '0' : '') + n; }
+                timeText = d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' +
+                    p2(d.getHours()) + ':' + p2(d.getMinutes());
+            }
+        }
+        return { plCount: plCount, trackCount: trackCount, bgCount: bgCount, audioCount: audioCount, timeText: timeText };
+    }
+
+    // 校验通过后弹出二次确认（文件导入与代码导入共用）
+    function requestTransferImport(rawText) {
+        var parsed = parseTransferSnapshot(rawText);
+        if (parsed.error) { transferToastError(parsed.error); return; }
+        var s = summarizeTransferSnapshot(parsed.data);
+        pendingTransferSnapshot = parsed.data;
+        if (ui.transferConfirmText) {
+            ui.transferConfirmText.textContent =
+                '检测到于 ' + s.timeText + ' 导出的配置（' + s.plCount + ' 个自定义播放列表、' +
+                s.trackCount + ' 首导入歌曲、' + s.bgCount + ' 张背景图片）。导入后将完整覆盖当前播放器的全部设置，且不可恢复，是否继续？';
+        }
+        if (ui.transferConfirmMask) ui.transferConfirmMask.classList.add('show');
+    }
+
+    function hideTransferConfirm() {
+        pendingTransferSnapshot = null;
+        if (ui.transferConfirmMask) ui.transferConfirmMask.classList.remove('show');
+    }
+
+    function confirmTransferImport() {
+        var data = pendingTransferSnapshot;
+        hideTransferConfirm();
+        if (!data) return;
+        applyTransferSnapshot(data).then(function () {
+            transferToastSuccess('配置已导入，播放器设置已更新');
+            if (state.settingsSection === 'transfer') renderTransferPanel();
+        }).catch(function () {
+            transferToastError('配置导入失败，请检查配置内容后重试');
+        });
+    }
+
+    // 将快照写入 localStorage 与 IndexedDB，然后重建内存状态与界面
+    function applyTransferSnapshot(data) {
+        // 记录旧的导入歌曲 id 与 ObjectURL（重建播放列表前先释放）
+        var oldIds = {};
+        state.playlists.forEach(function (pl) {
+            (pl.tracks || []).forEach(function (t) {
+                if (t.custom) {
+                    oldIds[t.id] = true;
+                    if (t.src) { try { URL.revokeObjectURL(t.src); } catch (e) { } }
+                }
+            });
+        });
+
+        // 1) 功能设置
+        if (data.settings && typeof data.settings === 'object') {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data.settings)); } catch (e) { }
+        }
+        // 2) 自定义背景图片（数据可能较大，超限时给出提示）
+        var bgOk = true;
+        if (data.backgrounds && typeof data.backgrounds === 'object') {
+            try { localStorage.setItem(STORAGE_KEY_BACKGROUNDS, JSON.stringify(data.backgrounds)); }
+            catch (e) { bgOk = false; }
+        }
+        // 3) 自定义播放列表（结构与本地持久化一致，loadPlaylists 内部会做容错校验）
+        var hasPlaylists = !!(data.playlists && Array.isArray(data.playlists.playlists));
+        if (hasPlaylists) {
+            try {
+                localStorage.setItem(STORAGE_KEY_PLAYLISTS, JSON.stringify({
+                    activeId: data.playlists.activeId || 'default',
+                    playlists: data.playlists.playlists
+                }));
+            } catch (e) { hasPlaylists = false; }
+        }
+        // 4) 导入歌曲音频 → IndexedDB（仅在播放列表数据有效时执行，避免产生孤立音频）
+        var importedIds = {};
+        var audioJobs = [];
+        if (hasPlaylists) {
+            data.playlists.playlists.forEach(function (p) {
+                (p.tracks || []).forEach(function (t) {
+                    if (t && t.custom && t.id) importedIds[String(t.id)] = true;
+                });
+            });
+            if (Array.isArray(data.audios)) {
+                data.audios.forEach(function (a) {
+                    if (!a || !a.id || !a.dataURL) return;
+                    importedIds[String(a.id)] = true;
+                    audioJobs.push(Promise.resolve().then(function () {
+                        return idbPutAudio({ id: String(a.id), blob: dataURLToBlob(a.dataURL) });
+                    }).catch(function () { }));
+                });
+            }
+        }
+        return Promise.all(audioJobs).then(function () {
+            // 清理快照中已不存在的旧音频
+            if (hasPlaylists) {
+                return Promise.all(Object.keys(oldIds).filter(function (id) {
+                    return !importedIds[id];
+                }).map(function (id) { return idbDeleteAudio(id); }));
+            }
+        }).then(function () {
+            reloadPlayerAfterImport(hasPlaylists);
+            if (!bgOk) toastWarning('部分背景图片数据过大，未能完整导入');
+        });
+    }
+
+    // 导入后按新的持久化数据重建内存状态并刷新全部界面（与初始化恢复逻辑保持一致）
+    function reloadPlayerAfterImport(playlistsReplaced) {
+        if (audio) { try { audio.pause(); } catch (e) { } }
+        state.isPlaying = false;
+        state.playRequested = false;
+
+        if (playlistsReplaced) {
+            loadPlaylists();
+            renderTrackList();
+            updatePlaylistHeader();
+            updateImportBarVisibility();
+            renderDeleteSubmenu();
+            if (typeof lyricsFileCtx !== 'undefined' && lyricsFileCtx) lyricsFileCtx.selectedPlaylistId = null;
+        }
+        loadSettings();
+        loadBackgrounds();
+
+        // 恢复当前曲目（不自动播放）
+        var track = getTrack(state.currentIndex);
+        if (track) {
+            if (track.src && audio) audio.src = track.src;
+            setNowPlayingInfo(track);
+            loadLyricsForCurrentTrack();
+            applyCurrentTrackBackground();
+            updateActiveTrackItem();
+        } else {
+            state.currentIndex = -1;
+            if (audio) { try { audio.removeAttribute('src'); audio.load(); } catch (e) { } }
+            if (ui.songTitle) ui.songTitle.textContent = '未在播放';
+            if (ui.songArtist) ui.songArtist.textContent = '从左侧列表选择一首音乐开始聆听';
+            applyCurrentTrackBackground();
+        }
+
+        // 将各项功能设置同步到界面
+        updateShuffleUI();
+        updateRepeatUI();
+        updateLyricsUI();
+        updateVolumeUI();
+        applyLayout();
+        applyComponentsVisibility();
+        applySidebarCollapse();
+        applyPlayStyle();
+        applyMixerState();
+        applyMixerUIFromState();
+        updatePlayUI();
+        miniBarUserHidden = false;
+        updateMiniBarVisibility();
+
+        // 折页展开状态恢复（与初始化逻辑一致）
+        if (state.foldExpanded && ui.main && state.currentIndex >= 0) {
+            var curTrack = getTrack(state.currentIndex);
+            if (curTrack && getTrackBackground(curTrack.id)) {
+                ui.main.classList.add('fold-expanded');
+                state.foldPhase = 'expanded';
+                if (ui.fold) {
+                    var foldIcon = ui.fold.querySelector('.stk-fold-icon i');
+                    if (foldIcon) foldIcon.className = 'fas fa-chevron-down';
+                }
+            } else {
+                state.foldExpanded = false;
+                saveSettings();
+            }
+        }
+
+        // 导入歌曲的音源从 IndexedDB 异步恢复（Blob → ObjectURL）
+        if (playlistsReplaced) restoreCustomAudio();
+    }
+
+    // ===== 导出及导入配置面板 =====
+    function renderTransferPanel() {
+        if (!ui.panelTransfer) return;
+        ui.panelTransfer.innerHTML =
+            '<h4 class="stk-settings-card-title"><i class="fas fa-arrow-right-arrow-left"></i>导出及导入配置</h4>' +
+            '<p class="stk-settings-card-sub">将当前播放器的全部设置导出备份，或导入此前导出的配置以快速恢复。（含导入的本地歌曲与 LRC 歌词）。</p>' +
+            '<div class="stk-transfer-block">' +
+                '<div class="stk-transfer-block-title"><i class="fas fa-download"></i>导出配置</div>' +
+                '<div class="stk-transfer-actions">' +
+                    '<button type="button" class="stk-transfer-btn primary" id="stkTransferExportFile">' +
+                        '<i class="fas fa-file-arrow-down"></i>' +
+                        '<span class="stk-transfer-btn-label">导出为 json 文件</span>' +
+                        '<span class="stk-transfer-btn-desc">自动下载到浏览器下载目录</span>' +
+                    '</button>' +
+                    '<button type="button" class="stk-transfer-btn" id="stkTransferExportCode">' +
+                        '<i class="fas fa-clipboard"></i>' +
+                        '<span class="stk-transfer-btn-label">导出配置代码</span>' +
+                        '<span class="stk-transfer-btn-desc">自动复制到剪贴板</span>' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="stk-transfer-block">' +
+                '<div class="stk-transfer-block-title"><i class="fas fa-upload"></i>导入配置</div>' +
+                '<input type="file" id="stkTransferFileInput" accept=".json,application/json" hidden>' +
+                '<div class="stk-transfer-file-row">' +
+                    '<button type="button" class="stk-transfer-file-btn" id="stkTransferImportFile"><i class="fas fa-folder-open"></i>选择 json 配置文件</button>' +
+                    '<span class="stk-transfer-file-name" id="stkTransferFileName">未选择文件</span>' +
+                '</div>' +
+                '<div class="stk-transfer-divider"><span>或</span></div>' +
+                '<textarea class="stk-transfer-code" id="stkTransferCodeInput" spellcheck="false" placeholder="将此前导出的配置代码粘贴到这里，再点击下方按钮导入"></textarea>' +
+                '<button type="button" class="stk-transfer-code-btn" id="stkTransferImportCode"><i class="fas fa-paste"></i>导入粘贴的配置代码</button>' +
+                '<div class="stk-comp-hint"><i class="fas fa-triangle-exclamation"></i>导入会完整覆盖当前的播放列表、背景图片与所有播放器设置且不可恢复，建议先导出当前配置作为备份。</div>' +
+            '</div>';
+
+        var fileInput = document.getElementById('stkTransferFileInput');
+        var fileName = document.getElementById('stkTransferFileName');
+        document.getElementById('stkTransferExportFile').addEventListener('click', handleTransferExportFile);
+        document.getElementById('stkTransferExportCode').addEventListener('click', handleTransferExportCode);
+        document.getElementById('stkTransferImportFile').addEventListener('click', function () { fileInput.click(); });
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            fileName.textContent = file.name;
+            var reader = new FileReader();
+            reader.onload = function () {
+                requestTransferImport(String(reader.result || ''));
+                fileInput.value = '';
+            };
+            reader.onerror = function () {
+                transferToastError('读取配置文件失败');
+                fileInput.value = '';
+            };
+            reader.readAsText(file);
+        });
+        document.getElementById('stkTransferImportCode').addEventListener('click', function () {
+            var ta = document.getElementById('stkTransferCodeInput');
+            var code = ta.value ? ta.value.trim() : '';
+            if (!code) { transferToastError('请先粘贴需要导入的配置代码'); return; }
+            requestTransferImport(code);
+        });
+    }
+
     function startVizLoop() {
         if (viz.raf || !ui.vizCanvas) return;
         viz.lastT = 0;
@@ -4679,6 +5158,19 @@
             });
         }
 
+        // ===== 导入配置二次确认弹窗 =====
+        if (ui.transferConfirmOkBtn) {
+            ui.transferConfirmOkBtn.addEventListener('click', confirmTransferImport);
+        }
+        if (ui.transferConfirmCancelBtn) {
+            ui.transferConfirmCancelBtn.addEventListener('click', hideTransferConfirm);
+        }
+        if (ui.transferConfirmMask) {
+            ui.transferConfirmMask.addEventListener('click', function (e) {
+                if (e.target === ui.transferConfirmMask) hideTransferConfirm(); // 点击遮罩关闭
+            });
+        }
+
         // ===== LRC 歌词上传弹窗 =====
         var lrcDrop = document.getElementById('stkLrcDrop');
         var lrcInput = document.getElementById('stkLrcFileInput');
@@ -4974,6 +5466,7 @@
         ui.panelMiniBar.classList.toggle('show', state.settingsSection === 'minibar');
         if (ui.panelPlayStyle) ui.panelPlayStyle.classList.toggle('show', state.settingsSection === 'playstyle');
         if (ui.panelLyricsFile) ui.panelLyricsFile.classList.toggle('show', state.settingsSection === 'lyricsfile');
+        if (ui.panelTransfer) ui.panelTransfer.classList.toggle('show', state.settingsSection === 'transfer');
         if (ui.panelComponentInfo) ui.panelComponentInfo.classList.toggle('show', state.settingsSection === 'componentinfo');
         if (ui.panelReset) ui.panelReset.classList.toggle('show', state.settingsSection === 'reset');
         if (state.settingsSection === 'background') syncBackgroundPanel();
@@ -4982,6 +5475,7 @@
         else if (state.settingsSection === 'minibar') syncMiniBarPanel();
         else if (state.settingsSection === 'playstyle') syncPlayStylePanel();
         else if (state.settingsSection === 'lyricsfile') syncLyricsFilePanel();
+        else if (state.settingsSection === 'transfer') renderTransferPanel();
         else if (state.settingsSection === 'componentinfo') renderComponentInfoPanel();
         else if (state.settingsSection === 'reset') renderResetPanel();
     }

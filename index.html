@@ -11,16 +11,16 @@
     <title>LauncherLogin</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="./css/denglu.css?v=2.2" as="style">
-    <link rel="stylesheet" href="./css/denglu.css?v=2.2">
+    <link rel="preload" href="./css/denglu.css?v=2.3" as="style">
+    <link rel="stylesheet" href="./css/denglu.css?v=2.3">
     <link rel="stylesheet" href="./css/homenav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='./css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" onerror="this.onerror=null; window.JSZipFallback=true" defer></script>
     <script src="./js/settings.js" defer></script>
-    <script src="./js/versionHistory.js" defer></script>
-    <script src="./js/precoin.js" defer></script>
-    <script src="./js/warehouse.js?v=2.3" defer></script>
+    <script src="./js/versionHistory.js?v=3.0.2.6" defer></script>
+    <script src="./js/precoin.js?v=1.2" defer></script>
+    <script src="./js/warehouse.js?v=2.4" defer></script>
     <script src="./js/dailytasks.js" defer></script>
     <script src="./js/shop.js" defer></script>
     <script src="./js/premail.js?v=1.8" defer></script>
@@ -28,11 +28,11 @@
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
     <script src="./js/lang.js" defer></script>
-    <script src="./js/announcement.js" defer></script>
-    <script src="./js/event.js?v=1.1" defer></script>
+    <script src="./js/announcement.js?v=3.0.2.6" defer></script>
+    <script src="./js/event.js?v=1.2" defer></script>
     <script src="./js/identity_ego.js" defer></script>
     <script src="./js/account-settings.js" defer></script>
-    <script src="./js/soundtrack.js" defer></script>
+    <script src="./js/soundtrack.js?v=1.0" defer></script>
     <script src="./js/homeNav.js" defer></script>
     
     <script>
@@ -7009,6 +7009,41 @@
         </div>
     </div>
 
+    <!-- 木鱼攒功德弹窗 -->
+    <div id="woodenFishModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content wf-modal-content">
+            <button class="treasure-modal-close" id="woodenFishModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="wf-modal-body">
+                <!-- 顶部居中计数 -->
+                <div class="wf-counter">
+                    <span class="wf-counter-number" id="wfCount">0</span>
+                    <span class="wf-counter-label">功德</span>
+                </div>
+                <!-- 大木鱼 -->
+                <div class="wf-fish-area" id="wfFishArea">
+                    <div class="wf-fish" id="wfFish" role="button" tabindex="0" aria-label="敲木鱼，攒功德">
+                        <svg viewBox="0 0 64 64" aria-hidden="true">
+                            <ellipse cx="32" cy="57.5" rx="22" ry="3" fill="rgba(122,69,23,.18)"/>
+                            <path d="M9 32.5C9 22.5 19.5 15 32.5 15c10.5 0 19.2 5.3 22.2 12.8L60 22v21l-5.4-5.6C51.6 45.8 43 50 32.5 50 19.5 50 9 42.5 9 32.5z" fill="#ffffff" stroke="rgba(122,69,23,.25)" stroke-width="1"/>
+                            <path d="M20 32.8c2.2-2.2 4.4-2.2 6.6 0s4.4 2.2 6.6 0 4.4-2.2 6.6 0 4.4 2.2 6.6 0 3.3 1.6 5.5 0" fill="none" stroke="rgba(122,69,23,.55)" stroke-width="2.4" stroke-linecap="round"/>
+                            <circle cx="46" cy="27" r="1.9" fill="rgba(122,69,23,.55)"/>
+                        </svg>
+                    </div>
+                    <div class="wf-fish-hint">点击木鱼，积攒功德</div>
+                </div>
+                <!-- 底部居中：DDos佛祖 -->
+                <button class="wf-ddos-btn" id="wfDdosBtn">DDos佛祖</button>
+                <!-- 右下角：重置 -->
+                <button class="wf-reset-btn" id="wfResetBtn">
+                    <i class="fas fa-rotate-left"></i>
+                    <span>重置</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 今日运势弹窗 -->
     <div id="fortuneModal" class="treasure-modal" style="display: none;">
         <div class="treasure-modal-content fortune-modal-content">
@@ -11406,6 +11441,22 @@
                                         <i class="fas fa-key"></i>
                                     </div>
                                 </div>
+                                
+                                <!-- 木鱼攒功德卡片 -->
+                                <div class="treasure-card">
+                                    <div class="treasure-card-content">
+                                        <h2>木鱼</h2>
+                                        <p>电子木鱼，敲一下攒一点功德，还能请佛祖代敲</p>
+                                    </div>
+                                    <button class="treasure-btn" id="woodenFishBtn">开始攒功德</button>
+                                    <div class="treasure-icon treasure-icon-woodenfish">
+                                        <svg class="wf-card-svg" viewBox="0 0 64 64" aria-hidden="true">
+                                            <path d="M9 32.5C9 22.5 19.5 15 32.5 15c10.5 0 19.2 5.3 22.2 12.8L60 22v21l-5.4-5.6C51.6 45.8 43 50 32.5 50 19.5 50 9 42.5 9 32.5z" fill="#ffffff"/>
+                                            <path d="M20 32.8c2.2-2.2 4.4-2.2 6.6 0s4.4 2.2 6.6 0 4.4-2.2 6.6 0 4.4 2.2 6.6 0 3.3 1.6 5.5 0" fill="none" stroke="rgba(122,69,23,.55)" stroke-width="2.4" stroke-linecap="round"/>
+                                            <circle cx="46" cy="27" r="1.9" fill="rgba(122,69,23,.55)"/>
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- 签到区域（默认隐藏） -->
@@ -11420,10 +11471,18 @@
                                             <h3>成长等级</h3>
                                             <p>签到获取经验，提升等级</p>
                                         </div>
+                                        <button class="dev-adjust-btn" id="devStageCloseBtn" style="display: none;" title="开发者模式：关闭阶段突破模式">
+                                            <i class="fas fa-code"></i>
+                                            <span>关闭阶段 (Dev)</span>
+                                        </button>
                                         <button class="dev-adjust-btn" id="devLevelBtn" style="display: none;" title="开发者模式：调整等级/经验">
                                             <i class="fas fa-code"></i>
                                             <span>调整等级 (Dev)</span>
                                         </button>
+                                        <span class="stage-breakthrough-badge" id="stageBreakthroughBadge" style="display: none;">
+                                            <i class="fas fa-level-up-alt"></i>
+                                            阶段突破
+                                        </span>
                                         <div class="level-badge" id="levelDisplay">
                                             <span id="levelNum">Lv.1</span>
                                         </div>
@@ -11454,6 +11513,15 @@
                                                 <span class="stat-label" id="expBoostLabel">经验倍率</span>
                                             </div>
                                         </div>
+                                    </div>
+                                    <!-- 阶段突破条目（60级满级后显示） -->
+                                    <div class="stage-breakthrough-entry" id="stageBreakthroughEntry" style="display: none;">
+                                        <i class="fas fa-level-up-alt sbe-icon"></i>
+                                        <div class="sbe-main">
+                                            <span class="sbe-title">阶段突破</span>
+                                            <span class="sbe-desc">已达 60 级满级，点击开启 120 级突破模式</span>
+                                        </div>
+                                        <i class="fas fa-chevron-right sbe-arrow"></i>
                                     </div>
                                 </div>
                                 
@@ -11509,7 +11577,7 @@
                                     </div>
                                     <div class="streak-bonus-info" id="streakBonusInfo">
                                         <i class="fas fa-info-circle"></i>
-                                        <span>连续签到7天后每天获得60 EXP，15天后每天100 EXP（断签将重置为30 EXP）</span>
+                                        <span id="dailyExpHint">连续签到7天后每天获得60 EXP，15天后每天100 EXP（断签将重置为30 EXP）</span>
                                     </div>
                                     <button class="checkin-btn" id="checkinBtn">立即签到</button>
                                     <button class="checkin-btn dev-custom-checkin" id="devCustomCheckinBtn" style="display: none;" title="开发者模式：自定义签到天数">
@@ -12683,6 +12751,241 @@
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 }
                 
+                .treasure-icon-woodenfish {
+                    background: linear-gradient(135deg, #d4a05b 0%, #8b5a2b 100%);
+                }
+                
+                .wf-card-svg {
+                    width: 56px;
+                    height: 56px;
+                    display: block;
+                }
+                
+                /* ============ 木鱼攒功德弹窗 ============ */
+                .treasure-modal-content.wf-modal-content {
+                    max-width: 720px;
+                    background: linear-gradient(145deg, #fffaf0 0%, #fdf1dd 100%);
+                    overflow: hidden;
+                }
+                
+                .wf-modal-body {
+                    position: relative;
+                    padding: 38px 40px 88px;
+                }
+                
+                .wf-counter {
+                    text-align: center;
+                    margin-bottom: 10px;
+                    line-height: 1;
+                }
+                
+                .wf-counter-number {
+                    font-size: 58px;
+                    font-weight: 800;
+                    color: #8b5a2b;
+                    font-variant-numeric: tabular-nums;
+                    text-shadow: 0 2px 8px rgba(139, 90, 43, 0.18);
+                }
+                
+                .wf-counter-label {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #b07d44;
+                    margin-left: 10px;
+                }
+                
+                .wf-fish-area {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 18px 0 8px;
+                }
+                
+                .wf-fish {
+                    position: relative;
+                    width: 220px;
+                    height: 220px;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-tap-highlight-color: transparent;
+                    transition: transform 0.1s ease;
+                }
+                
+                .wf-fish::before {
+                    content: '';
+                    position: absolute;
+                    inset: -16px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle, rgba(212, 160, 91, 0.3) 0%, rgba(212, 160, 91, 0) 70%);
+                    z-index: 0;
+                }
+                
+                .wf-fish svg {
+                    position: relative;
+                    z-index: 1;
+                    width: 100%;
+                    height: 100%;
+                    filter: drop-shadow(0 10px 14px rgba(122, 69, 23, 0.25));
+                }
+                
+                .wf-fish:hover {
+                    transform: scale(1.04);
+                }
+                
+                .wf-fish:active {
+                    transform: scale(0.92);
+                }
+                
+                .wf-fish.wf-knock {
+                    animation: wfKnock 0.12s ease;
+                }
+                
+                @keyframes wfKnock {
+                    0% { transform: scale(1); }
+                    40% { transform: scale(0.88) rotate(-2.5deg); }
+                    100% { transform: scale(1); }
+                }
+                
+                .wf-fish-hint {
+                    margin-top: 6px;
+                    font-size: 14px;
+                    color: #b0895a;
+                    letter-spacing: 1px;
+                }
+                
+                .wf-float {
+                    position: absolute;
+                    top: 24%;
+                    z-index: 5;
+                    pointer-events: none;
+                    font-size: 20px;
+                    font-weight: 700;
+                    color: #d4841f;
+                    text-shadow: 0 2px 6px rgba(255, 255, 255, 0.8);
+                    animation: wfFloatUp 0.8s ease-out forwards;
+                }
+                
+                @keyframes wfFloatUp {
+                    0% { opacity: 1; transform: translateY(0) scale(1); }
+                    100% { opacity: 0; transform: translateY(-90px) scale(1.35); }
+                }
+                
+                .wf-ddos-btn {
+                    position: absolute;
+                    left: 50%;
+                    bottom: 26px;
+                    transform: translateX(-50%);
+                    padding: 12px 44px;
+                    border: none;
+                    border-radius: 999px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    color: #fff;
+                    background: linear-gradient(135deg, #ff6a3d 0%, #ff2d55 100%);
+                    box-shadow: 0 6px 18px rgba(255, 45, 85, 0.35);
+                    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+                }
+                
+                .wf-ddos-btn:hover {
+                    transform: translateX(-50%) translateY(-2px);
+                    filter: brightness(1.06);
+                }
+                
+                .wf-ddos-btn:active {
+                    transform: translateX(-50%) translateY(0);
+                }
+                
+                .wf-ddos-btn.wf-active {
+                    background: linear-gradient(135deg, #ffb347 0%, #ff5e3a 100%);
+                    animation: wfPulse 0.7s ease-in-out infinite;
+                }
+                
+                @keyframes wfPulse {
+                    0%, 100% { box-shadow: 0 6px 18px rgba(255, 94, 58, 0.4); }
+                    50% { box-shadow: 0 6px 28px rgba(255, 94, 58, 0.8); }
+                }
+                
+                .wf-reset-btn {
+                    position: absolute;
+                    right: 26px;
+                    bottom: 26px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 18px;
+                    border-radius: 999px;
+                    border: 1px solid rgba(139, 90, 43, 0.3);
+                    background: rgba(139, 90, 43, 0.1);
+                    color: #8b5a2b;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: background 0.2s ease;
+                }
+                
+                .wf-reset-btn:hover {
+                    background: rgba(139, 90, 43, 0.22);
+                }
+                
+                body.dark-mode .treasure-modal-content.wf-modal-content {
+                    background: linear-gradient(145deg, #251d13 0%, #1a1410 100%);
+                }
+                
+                body.dark-mode .wf-counter-number {
+                    color: #e8c48a;
+                    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                }
+                
+                body.dark-mode .wf-counter-label,
+                body.dark-mode .wf-fish-hint {
+                    color: #c9a877;
+                }
+                
+                body.dark-mode .wf-float {
+                    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+                }
+                
+                body.dark-mode .wf-reset-btn {
+                    color: #d9b483;
+                    background: rgba(217, 180, 131, 0.12);
+                    border-color: rgba(217, 180, 131, 0.35);
+                }
+                
+                body.dark-mode .wf-reset-btn:hover {
+                    background: rgba(217, 180, 131, 0.24);
+                }
+                
+                @media (max-width: 600px) {
+                    .wf-modal-body {
+                        padding: 30px 20px 78px;
+                    }
+                    
+                    .wf-counter-number {
+                        font-size: 44px;
+                    }
+                    
+                    .wf-fish {
+                        width: 160px;
+                        height: 160px;
+                    }
+                    
+                    .wf-ddos-btn {
+                        padding: 10px 30px;
+                        font-size: 14px;
+                        bottom: 20px;
+                    }
+                    
+                    .wf-reset-btn {
+                        padding: 7px 14px;
+                        font-size: 12px;
+                        right: 16px;
+                        bottom: 20px;
+                    }
+                }
+                
                 .treasure-card-content {
                     grid-area: content;
                     display: flex;
@@ -13226,15 +13529,30 @@
                     align-items: center;
                     justify-content: center;
                     z-index: 99999;
+                    animation: stageFadeIn 0.25s ease;
+                    padding: 20px;
+                    box-sizing: border-box;
+                }
+
+                .dev-modal-overlay.stage-closing {
+                    animation: stageFadeOut 0.2s ease forwards;
                 }
                 
                 .dev-modal {
                     background: white;
-                    border-radius: 16px;
-                    padding: 28px;
+                    border-radius: 20px;
+                    padding: 28px 30px 24px;
                     width: 90%;
                     max-width: 440px;
-                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+                    animation: stagePop 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    box-sizing: border-box;
+                }
+
+                .stage-closing .dev-modal {
+                    animation: stagePopOut 0.2s ease forwards;
                 }
                 
                 .dev-modal-header {
@@ -13374,32 +13692,751 @@
                     flex: 1;
                     padding: 12px 18px;
                     border: none;
-                    border-radius: 10px;
+                    border-radius: 12px;
                     font-size: 14px;
                     font-weight: 600;
                     cursor: pointer;
-                    transition: all 0.2s;
+                    transition: all 0.15s ease;
                 }
-                
+
                 .dev-btn-primary {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #ff9a8b 0%, #e86a55 100%);
                     color: white;
+                    box-shadow: 0 6px 16px rgba(232, 106, 85, 0.35);
                 }
-                
+
                 .dev-btn-primary:hover {
                     transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    filter: brightness(1.05);
+                    box-shadow: 0 8px 20px rgba(232, 106, 85, 0.45);
                 }
-                
+
                 .dev-btn-secondary {
-                    background: #f0f0f0;
+                    background: #f0f0f3;
                     color: #666;
                 }
-                
+
                 .dev-btn-secondary:hover {
-                    background: #e0e0e0;
+                    background: #e4e4ea;
                 }
                 
+                /* ============ 签到结果弹窗 ============ */
+                .checkin-result-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 100000;
+                    padding: 20px;
+                    box-sizing: border-box;
+                    animation: crFadeIn 0.25s ease;
+                }
+
+                .checkin-result-overlay.cr-closing {
+                    animation: crFadeOut 0.25s ease forwards;
+                }
+
+                @keyframes crFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                @keyframes crFadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+
+                .checkin-result-modal {
+                    position: relative;
+                    background: #fff;
+                    border-radius: 22px;
+                    width: 92%;
+                    max-width: 580px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    padding: 30px 32px 28px;
+                    box-sizing: border-box;
+                    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+                    animation: crSlideUp 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+                }
+
+                .cr-closing .checkin-result-modal {
+                    animation: crSlideDown 0.25s ease forwards;
+                }
+
+                @keyframes crSlideUp {
+                    from { opacity: 0; transform: translateY(40px) scale(0.96); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+
+                @keyframes crSlideDown {
+                    from { opacity: 1; transform: translateY(0) scale(1); }
+                    to { opacity: 0; transform: translateY(24px) scale(0.96); }
+                }
+
+                .cr-close {
+                    position: absolute;
+                    top: 16px;
+                    right: 16px;
+                    width: 34px;
+                    height: 34px;
+                    border: none;
+                    border-radius: 50%;
+                    background: rgba(0, 0, 0, 0.06);
+                    color: #888;
+                    font-size: 15px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s ease;
+                }
+
+                .cr-close:hover {
+                    background: rgba(0, 0, 0, 0.14);
+                    color: #444;
+                    transform: rotate(90deg);
+                }
+
+                .cr-hero {
+                    text-align: center;
+                    margin-bottom: 22px;
+                }
+
+                .cr-hero-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 66px;
+                    height: 66px;
+                    border-radius: 50%;
+                    font-size: 30px;
+                    color: #fff;
+                    background: linear-gradient(135deg, #43e97b 0%, #27c067 100%);
+                    box-shadow: 0 10px 24px rgba(39, 192, 103, 0.4);
+                    margin-bottom: 12px;
+                    animation: crBadgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+                }
+
+                @keyframes crBadgePop {
+                    0% { transform: scale(0); }
+                    100% { transform: scale(1); }
+                }
+
+                .cr-hero h2 {
+                    margin: 0 0 6px;
+                    font-size: 24px;
+                    color: #2b2b33;
+                    font-weight: 800;
+                }
+
+                .cr-hero p {
+                    margin: 0;
+                    font-size: 14px;
+                    color: #8a8a96;
+                }
+
+                .cr-hero p strong {
+                    color: #27c067;
+                    font-size: 17px;
+                    font-weight: 800;
+                    padding: 0 2px;
+                }
+
+                .cr-rewards {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    margin-bottom: 22px;
+                }
+
+                .cr-section {
+                    border-radius: 14px;
+                    padding: 14px 16px;
+                    background: #f7f8fa;
+                    border: 1px solid #eef0f3;
+                }
+
+                .cr-section-head {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .cr-section-icon {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 10px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    flex-shrink: 0;
+                }
+
+                .cr-icon-exp {
+                    background: linear-gradient(135deg, #a18cd1 0%, #7b5ea7 100%);
+                    color: #fff;
+                }
+
+                .cr-icon-coin {
+                    background: linear-gradient(135deg, #ffd34d 0%, #f39c12 100%);
+                    color: #fff;
+                }
+
+                .cr-icon-item {
+                    background: linear-gradient(135deg, #43e97b 0%, #1fab54 100%);
+                    color: #fff;
+                }
+
+                .cr-section-title {
+                    font-size: 15px;
+                    font-weight: 700;
+                    color: #3a3a44;
+                    flex: 1;
+                }
+
+                .cr-section-amount {
+                    font-size: 17px;
+                    font-weight: 800;
+                    color: #6c5ce7;
+                    font-variant-numeric: tabular-nums;
+                }
+
+                .cr-section-coin .cr-section-amount {
+                    color: #e08e0b;
+                }
+
+                .cr-section-tag {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #1fab54;
+                    background: rgba(31, 171, 84, 0.12);
+                    padding: 3px 10px;
+                    border-radius: 999px;
+                }
+
+                .cr-sub-row {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    margin-top: 10px;
+                    padding-top: 10px;
+                    border-top: 1px dashed #e6e8ec;
+                    font-size: 13px;
+                    color: #6b6b76;
+                }
+
+                .cr-sub-row span:last-child {
+                    font-weight: 700;
+                    color: #6c5ce7;
+                    white-space: nowrap;
+                }
+
+                .cr-item-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-top: 10px;
+                    padding-top: 10px;
+                    border-top: 1px dashed #e6e8ec;
+                }
+
+                .cr-item-icon {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 8px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    flex-shrink: 0;
+                }
+
+                .cr-item-name {
+                    flex: 1;
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    color: #3a3a44;
+                }
+
+                .cr-item-expire {
+                    font-size: 12px;
+                    color: #9a9aa4;
+                    white-space: nowrap;
+                }
+
+                .cr-levelup-banner {
+                    margin-top: 12px;
+                    padding: 9px 12px;
+                    border-radius: 10px;
+                    font-size: 13.5px;
+                    font-weight: 700;
+                    color: #b06a00;
+                    background: linear-gradient(135deg, rgba(255, 211, 77, 0.25) 0%, rgba(243, 156, 18, 0.18) 100%);
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                /* 满级提示：60级满级后可解锁阶段突破模式（淡红色渐变） */
+                .cr-stage-hint {
+                    margin-top: 8px;
+                    padding: 9px 12px;
+                    border-radius: 10px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #c0392b;
+                    background: linear-gradient(135deg, #fdebe4 0%, #f8cfc2 100%);
+                    border: 1px solid rgba(192, 57, 43, 0.22);
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .cr-stage-hint i {
+                    font-size: 13px;
+                    flex-shrink: 0;
+                }
+
+                .cr-milestone-hint {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    border-radius: 14px;
+                    padding: 13px 16px;
+                    font-size: 13px;
+                    line-height: 1.5;
+                    color: #b54868;
+                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.09) 0%, rgba(230, 126, 138, 0.07) 100%);
+                    border: 1px solid rgba(212, 93, 121, 0.25);
+                }
+
+                .cr-milestone-hint i {
+                    font-size: 18px;
+                    flex-shrink: 0;
+                }
+
+                .cr-milestone-hint b {
+                    font-size: 15px;
+                }
+
+                .cr-confirm-btn {
+                    width: 100%;
+                    padding: 14px;
+                    border: none;
+                    border-radius: 14px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 700;
+                    letter-spacing: 2px;
+                    color: #fff;
+                    background: linear-gradient(135deg, #43e97b 0%, #27c067 100%);
+                    box-shadow: 0 8px 22px rgba(39, 192, 103, 0.35);
+                    transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+                }
+
+                .cr-confirm-btn:hover {
+                    transform: translateY(-2px);
+                    filter: brightness(1.05);
+                    box-shadow: 0 10px 26px rgba(39, 192, 103, 0.45);
+                }
+
+                .cr-confirm-btn:active {
+                    transform: translateY(0);
+                }
+
+                body.dark-mode .checkin-result-modal {
+                    background: #1d1d27;
+                    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+                }
+
+                body.dark-mode .cr-close {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #bbb;
+                }
+
+                body.dark-mode .cr-close:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    color: #fff;
+                }
+
+                body.dark-mode .cr-hero h2 {
+                    color: #f2f2f5;
+                }
+
+                body.dark-mode .cr-hero p {
+                    color: #9a9aa6;
+                }
+
+                body.dark-mode .cr-section {
+                    background: #262632;
+                    border-color: #33333f;
+                }
+
+                body.dark-mode .cr-section-title,
+                body.dark-mode .cr-item-name {
+                    color: #e8e8ee;
+                }
+
+                body.dark-mode .cr-sub-row {
+                    color: #aaaab4;
+                    border-color: #3a3a46;
+                }
+
+                body.dark-mode .cr-item-row {
+                    border-color: #3a3a46;
+                }
+
+                body.dark-mode .cr-item-expire {
+                    color: #85858f;
+                }
+
+                @media (max-width: 600px) {
+                    .checkin-result-modal {
+                        padding: 26px 20px 22px;
+                        border-radius: 18px;
+                    }
+
+                    .cr-hero h2 {
+                        font-size: 21px;
+                    }
+                }
+
+                /* ============ 阶段突破（60级满级 → 120级） ============ */
+                .stage-breakthrough-badge {
+                    display: none;
+                    align-items: center;
+                    gap: 5px;
+                    padding: 8px 14px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #c0392b;
+                    background: linear-gradient(135deg, #fdebe4 0%, #f8cfc2 100%);
+                    border: 1px solid rgba(192, 57, 43, 0.25);
+                    flex-shrink: 0;
+                    white-space: nowrap;
+                }
+
+                .stage-breakthrough-badge i {
+                    font-size: 12px;
+                }
+
+                .stage-breakthrough-entry {
+                    display: none;
+                    align-items: center;
+                    gap: 12px;
+                    margin-top: 18px;
+                    padding: 13px 16px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    background: linear-gradient(135deg, #fdf0ec 0%, #f9d9d0 100%);
+                    border: 1px solid rgba(192, 57, 43, 0.18);
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+
+                .stage-breakthrough-entry:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(192, 57, 43, 0.15);
+                }
+
+                .stage-breakthrough-entry .sbe-icon {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 10px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(135deg, #ff9a8b 0%, #e86a55 100%);
+                    color: #fff;
+                    font-size: 15px;
+                    flex-shrink: 0;
+                }
+
+                .stage-breakthrough-entry .sbe-main {
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                .stage-breakthrough-entry .sbe-title {
+                    display: block;
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #b03a2e;
+                }
+
+                .stage-breakthrough-entry .sbe-desc {
+                    display: block;
+                    font-size: 12px;
+                    color: #c77b6b;
+                    margin-top: 2px;
+                }
+
+                .stage-breakthrough-entry .sbe-arrow {
+                    color: #cf8a7a;
+                    font-size: 13px;
+                    flex-shrink: 0;
+                }
+
+                .stage-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 120000;
+                    padding: 20px;
+                    box-sizing: border-box;
+                    animation: stageFadeIn 0.25s ease;
+                }
+
+                .stage-modal-overlay.stage-closing {
+                    animation: stageFadeOut 0.2s ease forwards;
+                }
+
+                @keyframes stageFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                @keyframes stageFadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+
+                .stage-modal {
+                    position: relative;
+                    background: #fff;
+                    border-radius: 20px;
+                    width: 92%;
+                    max-width: 520px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    padding: 28px 30px 24px;
+                    text-align: center;
+                    box-sizing: border-box;
+                    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+                    animation: stagePop 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+                }
+
+                .stage-closing .stage-modal {
+                    animation: stagePopOut 0.2s ease forwards;
+                }
+
+                @keyframes stagePop {
+                    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+
+                @keyframes stagePopOut {
+                    from { opacity: 1; transform: translateY(0) scale(1); }
+                    to { opacity: 0; transform: translateY(20px) scale(0.96); }
+                }
+
+                .stage-modal-icon {
+                    width: 64px;
+                    height: 64px;
+                    margin: 0 auto 12px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 28px;
+                    color: #fff;
+                    background: linear-gradient(135deg, #ff9a8b 0%, #e86a55 100%);
+                    box-shadow: 0 10px 22px rgba(232, 106, 85, 0.35);
+                }
+
+                .stage-modal h3 {
+                    margin: 0 0 12px;
+                    font-size: 20px;
+                    color: #2b2b33;
+                }
+
+                .stage-modal-body p {
+                    margin: 0 0 10px;
+                    font-size: 14px;
+                    line-height: 1.7;
+                    color: #555;
+                    text-align: left;
+                }
+
+                .stage-modal-body .stage-warning {
+                    color: #e74c3c;
+                    font-weight: 700;
+                    margin-bottom: 0;
+                }
+
+                .stage-modal-body .stage-danger {
+                    color: #e74c3c;
+                    font-weight: 800;
+                    font-size: 15px;
+                    text-align: center;
+                    margin-bottom: 0;
+                }
+
+                .stage-modal.danger .stage-modal-icon {
+                    background: linear-gradient(135deg, #ff6b6b 0%, #d63031 100%);
+                    box-shadow: 0 10px 22px rgba(214, 48, 49, 0.35);
+                }
+
+                .stage-modal.danger .stage-btn-confirm {
+                    background: linear-gradient(135deg, #ff6b6b 0%, #d63031 100%);
+                    box-shadow: 0 6px 16px rgba(214, 48, 49, 0.35);
+                }
+
+                .stage-modal-actions {
+                    display: flex;
+                    gap: 12px;
+                    margin-top: 18px;
+                }
+
+                .stage-btn {
+                    flex: 1;
+                    padding: 12px;
+                    border: none;
+                    border-radius: 12px;
+                    font-size: 15px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                }
+
+                .stage-btn-cancel {
+                    background: #f0f0f3;
+                    color: #666;
+                }
+
+                .stage-btn-cancel:hover {
+                    background: #e4e4ea;
+                }
+
+                .stage-btn-confirm {
+                    background: linear-gradient(135deg, #ff9a8b 0%, #e86a55 100%);
+                    color: #fff;
+                    box-shadow: 0 6px 16px rgba(232, 106, 85, 0.35);
+                }
+
+                .stage-btn-confirm:hover {
+                    filter: brightness(1.05);
+                    transform: translateY(-1px);
+                }
+
+                body.dark-mode .stage-modal {
+                    background: #1d1d27;
+                    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+                }
+
+                body.dark-mode .stage-modal h3 {
+                    color: #f2f2f5;
+                }
+
+                body.dark-mode .stage-modal-body p {
+                    color: #b8b8c2;
+                }
+
+                body.dark-mode .stage-breakthrough-badge {
+                    background: linear-gradient(135deg, rgba(231, 76, 60, 0.22) 0%, rgba(192, 57, 43, 0.3) 100%);
+                    color: #f5b7ae;
+                    border-color: rgba(231, 76, 60, 0.4);
+                }
+
+                body.dark-mode .stage-breakthrough-entry {
+                    background: linear-gradient(135deg, rgba(231, 76, 60, 0.12) 0%, rgba(192, 57, 43, 0.2) 100%);
+                    border-color: rgba(231, 76, 60, 0.3);
+                }
+
+                body.dark-mode .stage-breakthrough-entry .sbe-title {
+                    color: #f0a99e;
+                }
+
+                body.dark-mode .stage-breakthrough-entry .sbe-desc {
+                    color: #cf9184;
+                }
+
+                body.dark-mode .stage-btn-cancel {
+                    background: #2c2c38;
+                    color: #bbb;
+                }
+
+                body.dark-mode .stage-btn-cancel:hover {
+                    background: #383846;
+                }
+
+                @media (max-width: 600px) {
+                    .stage-modal {
+                        padding: 24px 20px 20px;
+                        border-radius: 16px;
+                    }
+
+                    .stage-modal-body p {
+                        font-size: 13px;
+                    }
+                }
+
+                /* 里程碑弹窗：阶段切换按钮（标准阶段 / 阶段突破） */
+                .milestone-mode-switch {
+                    display: flex;
+                    gap: 8px;
+                    margin-right: auto;
+                    flex-shrink: 0;
+                }
+
+                .milestone-mode-btn {
+                    border: 1px solid #e2e4ea;
+                    background: #f5f6f8;
+                    color: #666;
+                    padding: 6px 14px;
+                    border-radius: 999px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    transition: all 0.18s ease;
+                }
+
+                .milestone-mode-btn:hover:not(:disabled) {
+                    border-color: #c9cdf5;
+                    color: #667eea;
+                }
+
+                .milestone-mode-btn.active {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: #fff;
+                    border-color: transparent;
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+                }
+
+                .milestone-mode-btn:disabled,
+                .milestone-mode-btn.disabled {
+                    opacity: 0.45;
+                    cursor: not-allowed;
+                    color: #aaa;
+                }
+
+                body.dark-mode .milestone-mode-btn {
+                    background: #2c2c38;
+                    border-color: #3a3a46;
+                    color: #b8b8c2;
+                }
+
+                body.dark-mode .milestone-mode-btn:disabled,
+                body.dark-mode .milestone-mode-btn.disabled {
+                    opacity: 0.4;
+                    color: #77777f;
+                }
+
                 /* 里程碑弹窗样式 */
                 .milestone-modal-overlay {
                     position: fixed;
@@ -19796,6 +20833,40 @@
                 });
             }
             
+            // 木鱼攒功德
+            var woodenFishBtn = document.getElementById('woodenFishBtn');
+            if (woodenFishBtn) {
+                woodenFishBtn.addEventListener('click', openWoodenFishModal);
+            }
+            
+            var wfFishEl = document.getElementById('wfFish');
+            if (wfFishEl) {
+                wfFishEl.addEventListener('click', wfKnock);
+                // 键盘可访问性：回车/空格也能敲
+                wfFishEl.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        wfKnock();
+                    }
+                });
+            }
+            
+            var wfDdosBtnEl = document.getElementById('wfDdosBtn');
+            if (wfDdosBtnEl) {
+                wfDdosBtnEl.addEventListener('click', wfToggleDdos);
+            }
+            
+            var wfResetBtnEl = document.getElementById('wfResetBtn');
+            if (wfResetBtnEl) {
+                wfResetBtnEl.addEventListener('click', function() {
+                    showConfirm('重置计数', '是否要重置当前功德计数？', function() {
+                        wfCount = 0;
+                        wfUpdateCount();
+                        showAlert('功德计数已重置');
+                    });
+                });
+            }
+            
             // 初始化弹窗关闭事件
             initTreasureModalEvents();
             
@@ -19804,6 +20875,103 @@
             
             // 初始化卡片内容（如果已访问过）
             initCardContents();
+        }
+        
+        // ==================== 木鱼攒功德 ====================
+        var wfCount = 0;
+        var wfTimer = null;
+        var WF_DDOS_INTERVAL = 50; // 自动敲击间隔（毫秒），数值越小速度越快
+        
+        // 更新顶部计数
+        function wfUpdateCount() {
+            var countEl = document.getElementById('wfCount');
+            if (countEl) {
+                countEl.textContent = wfCount;
+            }
+        }
+        
+        // 浮动“功德 +1”文字
+        function wfShowFloat() {
+            var area = document.getElementById('wfFishArea');
+            if (!area) return;
+            var floatEl = document.createElement('span');
+            floatEl.className = 'wf-float';
+            floatEl.textContent = '功德 +1';
+            // 在木鱼上方随机横向位置出现
+            var fishWidth = 220;
+            var fishEl = document.getElementById('wfFish');
+            if (fishEl) {
+                fishWidth = fishEl.offsetWidth || 220;
+            }
+            floatEl.style.left = ((area.offsetWidth - fishWidth) / 2 + Math.random() * fishWidth - 30) + 'px';
+            area.appendChild(floatEl);
+            floatEl.addEventListener('animationend', function() {
+                if (floatEl.parentNode) {
+                    floatEl.parentNode.removeChild(floatEl);
+                }
+            });
+        }
+        
+        // 敲一下木鱼：计数 + 动画 + 浮动文字
+        function wfKnock() {
+            wfCount++;
+            wfUpdateCount();
+            var fishEl = document.getElementById('wfFish');
+            if (fishEl) {
+                // 强制重启动画（自动连点时间隔短于动画时长也能每次生效）
+                fishEl.classList.remove('wf-knock');
+                void fishEl.offsetWidth;
+                fishEl.classList.add('wf-knock');
+            }
+            wfShowFloat();
+        }
+        
+        // 停止 DDos 自动敲击
+        function wfStopDdos() {
+            if (wfTimer) {
+                clearInterval(wfTimer);
+                wfTimer = null;
+            }
+            var btn = document.getElementById('wfDdosBtn');
+            if (btn) {
+                btn.classList.remove('wf-active');
+                btn.textContent = 'DDos佛祖';
+            }
+        }
+        
+        // 开始 / 停止 DDos 自动敲击
+        function wfToggleDdos() {
+            if (wfTimer) {
+                wfStopDdos();
+                return;
+            }
+            var btn = document.getElementById('wfDdosBtn');
+            if (btn) {
+                btn.classList.add('wf-active');
+                btn.textContent = '停止 DDoS';
+            }
+            wfTimer = setInterval(wfKnock, WF_DDOS_INTERVAL);
+        }
+        
+        // 打开木鱼弹窗
+        function openWoodenFishModal() {
+            var modal = document.getElementById('woodenFishModal');
+            if (!modal) return;
+            wfUpdateCount();
+            modal.style.display = 'flex';
+        }
+        
+        // 关闭木鱼弹窗（同时停止自动敲击）
+        function closeWoodenFishModal() {
+            var modal = document.getElementById('woodenFishModal');
+            if (!modal) return;
+            if (modal.classList.contains('modal-closing')) return;
+            wfStopDdos();
+            modal.classList.add('modal-closing');
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+            }, 300);
         }
         
         // 获取今日的日期字符串（用于缓存key）
@@ -20626,6 +21794,11 @@
                 fortuneModalClose.addEventListener('click', closeFortuneModal);
             }
             
+            var woodenFishModalClose = document.getElementById('woodenFishModalClose');
+            if (woodenFishModalClose) {
+                woodenFishModalClose.addEventListener('click', closeWoodenFishModal);
+            }
+            
             // 点击遮罩层关闭
             var luckModal = document.getElementById('luckModal');
             if (luckModal) {
@@ -20645,6 +21818,15 @@
                 });
             }
             
+            var woodenFishModal = document.getElementById('woodenFishModal');
+            if (woodenFishModal) {
+                woodenFishModal.addEventListener('click', function(e) {
+                    if (e.target === woodenFishModal) {
+                        closeWoodenFishModal();
+                    }
+                });
+            }
+            
             // ESC键关闭
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
@@ -20653,6 +21835,9 @@
                     }
                     if (fortuneModal && fortuneModal.style.display === 'flex') {
                         closeFortuneModal();
+                    }
+                    if (woodenFishModal && woodenFishModal.style.display === 'flex') {
+                        closeWoodenFishModal();
                     }
                 }
             });
@@ -20915,6 +22100,10 @@
                     performCheckin();
                 });
             }
+            var stageEntryBtn = document.getElementById('stageBreakthroughEntry');
+            if (stageEntryBtn) {
+                stageEntryBtn.addEventListener('click', openStageBreakthroughModal);
+            }
             var monthlyRewardBtn = document.getElementById('monthlyRewardOverviewBtn');
             if (monthlyRewardBtn) {
                 monthlyRewardBtn.addEventListener('click', openMonthlyRewardOverview);
@@ -20935,6 +22124,10 @@
                 '<div class="milestone-modal">' +
                     '<div class="milestone-modal-header">' +
                         '<h3><i class="fas fa-flag" style="color: #667eea;"></i> 签到里程碑</h3>' +
+                        '<div class="milestone-mode-switch">' +
+                            '<button class="milestone-mode-btn active" data-mode="standard" type="button">标准阶段</button>' +
+                            '<button class="milestone-mode-btn" data-mode="stage" type="button"' + (isStageBreakthroughActive() ? '' : ' disabled title="开启阶段突破模式后解锁"') + '>阶段突破</button>' +
+                        '</div>' +
                         '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
                     '</div>' +
                     '<ul class="milestone-list"></ul>' +
@@ -20949,6 +22142,8 @@
             var listEl = overlay.querySelector('.milestone-list');
             var streakEl = overlay.querySelector('#milestoneFooterStreak');
             var hintEl = overlay.querySelector('#milestoneFooterHint');
+            // 当前查看的里程碑阶段（默认为当前生效阶段）
+            var milestoneMode = getCurrentMilestoneMode();
 
             // 读取当前登录用户的最新数据
             function loadCurrentUser() {
@@ -20965,10 +22160,12 @@
                 if (!user) return;
                 var stats = (user.userProfile && user.userProfile.checkinStats) || {};
                 var streak = stats.streak || 0;
-                var claimed = Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : [];
+                var claimed = (milestoneMode === 'stage')
+                    ? (Array.isArray(stats.stageClaimedMilestones) ? stats.stageClaimedMilestones : [])
+                    : (Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : []);
 
                 var itemsHTML = '';
-                CHECKIN_MILESTONES.forEach(function(m) {
+                getMilestoneConfig(milestoneMode).forEach(function(m) {
                     var isClaimed = claimed.indexOf(m.days) !== -1;
                     var reached = streak >= m.days;
                     var state = isClaimed ? 'claimed' : (reached ? 'claimable' : 'locked');
@@ -21007,9 +22204,30 @@
                 });
                 listEl.innerHTML = itemsHTML;
                 streakEl.textContent = streak;
-                var claimableCount = getClaimableMilestoneDays(user).length;
+                var claimableCount = getClaimableMilestoneDays(user, milestoneMode).length;
                 hintEl.textContent = claimableCount > 0 ? '🎁 有 ' + claimableCount + ' 个奖励可领取' : '';
                 hintEl.style.display = claimableCount > 0 ? 'inline' : 'none';
+
+                // 同步阶段切换按钮的选中态
+                var modeBtns = overlay.querySelectorAll('.milestone-mode-btn');
+                for (var bi = 0; bi < modeBtns.length; bi++) {
+                    modeBtns[bi].classList.toggle('active', modeBtns[bi].getAttribute('data-mode') === milestoneMode);
+                }
+            }
+
+            // 阶段切换按钮：标准阶段 / 阶段突破
+            var modeBtns = overlay.querySelectorAll('.milestone-mode-btn');
+            for (var mb = 0; mb < modeBtns.length; mb++) {
+                (function(btn) {
+                    btn.addEventListener('click', function() {
+                        var m = btn.getAttribute('data-mode');
+                        // 未开启阶段突破模式时不可切换到阶段突破视图
+                        if (m === 'stage' && !isStageBreakthroughActive()) return;
+                        if (m === milestoneMode) return;
+                        milestoneMode = m;
+                        render();
+                    });
+                })(modeBtns[mb]);
             }
 
             // 点击可领取的里程碑
@@ -21020,7 +22238,7 @@
 
                 var data = loadCurrentUser();
                 if (!data.user) return;
-                var res = claimCheckinMilestone(data.user, days);
+                var res = claimCheckinMilestone(data.user, days, milestoneMode);
                 if (!res.ok) {
                     if (typeof showToast === 'function') {
                         showToast({ type: 'error', title: '无法领取', message: res.reason || '当前不可领取' });
@@ -21240,8 +22458,12 @@
             showDevButtons();
         }
         
+        // 签到流程中命中满级时，阶段突破提示延迟到签到结果弹窗关闭后再弹出
+        var _checkinStagePromptPending = false;
+
         // 更新等级卡片
         function updateLevelCard(user) {
+            refreshStageBreakthroughFlag();
             var level = user.gameData.level;
             var exp = user.gameData.exp;
             var expToNext = user.gameData.expToNext;
@@ -21280,6 +22502,21 @@
 
             // 经验倍率条目
             updateExpBoostDisplay();
+
+            // 阶段突破：同步标签/条目/最高等级显示，满级后自动弹出确认弹窗（仅自动提示一次）
+            updateStageBreakthroughUI(user);
+            if (level >= 60 && !isStageBreakthroughActive()) {
+                // 签到流程中命中满级：保持未提示状态，由签到结果弹窗关闭后统一弹出
+                if (!_checkinStagePromptPending) {
+                    var sbRec = getCurrentUserRecord();
+                    if (sbRec.user && !(sbRec.user.userProfile && sbRec.user.userProfile.stageBreakthroughPrompted)) {
+                        if (!sbRec.user.userProfile) sbRec.user.userProfile = {};
+                        sbRec.user.userProfile.stageBreakthroughPrompted = true;
+                        persistUsers(sbRec.users);
+                        openStageBreakthroughModal();
+                    }
+                }
+            }
         }
 
         // 更新成长等级卡片中的「经验倍率」条目
@@ -21376,20 +22613,14 @@
             var dailyCoin = (typeof getPreCoinDailyCheckinReward === 'function') ? getPreCoinDailyCheckinReward(streak) : 0;
             var nextBonus = null;
 
-            if (streak < 7) {
-                nextBonus = { daysLeft: 7 - streak, exp: 500, coin: 100, label: '连续7天' };
-            } else if (streak < 15) {
-                nextBonus = { daysLeft: 15 - streak, exp: 0, coin: 100, label: '连续15天' };
-            } else if (streak < 30) {
-                nextBonus = { daysLeft: 30 - streak, exp: 1000, coin: 200, label: '连续30天' };
-            } else if (streak < 60) {
-                nextBonus = { daysLeft: 60 - streak, exp: 1000, coin: 200, label: '连续60天' };
-            } else if (streak < 90) {
-                nextBonus = { daysLeft: 90 - streak, exp: 1000, coin: 250, label: '连续90天' };
-            } else if (streak < 180) {
-                nextBonus = { daysLeft: 180 - streak, exp: 1000, coin: 250, label: '连续180天' };
-            } else if (streak < 365) {
-                nextBonus = { daysLeft: 365 - streak, exp: 1000, coin: 500, label: '连续365天' };
+            // 下一里程碑按当前生效阶段（标准/阶段突破）的配置计算
+            var previewMilestones = getMilestoneConfig(getCurrentMilestoneMode());
+            for (var pmi = 0; pmi < previewMilestones.length; pmi++) {
+                var pm = previewMilestones[pmi];
+                if (streak < pm.days) {
+                    nextBonus = { daysLeft: pm.days - streak, exp: pm.exp, coin: pm.coin, label: '连续' + pm.days + '天' };
+                    break;
+                }
             }
 
             var dailyExpEl = document.getElementById('dailyExpPreview');
@@ -21411,14 +22642,26 @@
             }
 
             if (streakBonusEl) {
+                // 阶段突破模式下每日基础经验值 300/500/750、基础硬币 80/120/150
+                var stageMode = isStageBreakthroughActive();
+                var baseExpText = stageMode ? 300 : 30;
+                var exp7Text = stageMode ? 500 : 60;
+                var exp15Text = stageMode ? 750 : 100;
+                var baseCoinText = stageMode ? 80 : 20;
+                var coin7Text = stageMode ? 120 : 50;
+                var coin15Text = stageMode ? 150 : 80;
+                var dailyHintEl = document.getElementById('dailyExpHint');
                 if (streak >= 30) {
-                    streakBonusEl.textContent = '已连续签到30天以上：每天 100 EXP + 80 PRE（断签将重置为 30 EXP + 20 PRE）';
+                    streakBonusEl.textContent = '已连续签到30天以上：每天 ' + exp15Text + ' EXP + ' + coin15Text + ' PRE（断签将重置为 ' + baseExpText + ' EXP + ' + baseCoinText + ' PRE）';
                 } else if (streak >= 15) {
-                    streakBonusEl.textContent = '已连续签到15天：每天 100 EXP + 80 PRE（断签将重置为 30 EXP + 20 PRE）';
+                    streakBonusEl.textContent = '已连续签到15天：每天 ' + exp15Text + ' EXP + ' + coin15Text + ' PRE（断签将重置为 ' + baseExpText + ' EXP + ' + baseCoinText + ' PRE）';
                 } else if (streak >= 7) {
-                    streakBonusEl.textContent = '已连续签到7天：每天 60 EXP + 50 PRE（断签将重置为 30 EXP + 20 PRE）';
+                    streakBonusEl.textContent = '已连续签到7天：每天 ' + exp7Text + ' EXP + ' + coin7Text + ' PRE（断签将重置为 ' + baseExpText + ' EXP + ' + baseCoinText + ' PRE）';
                 } else {
-                    streakBonusEl.textContent = '1-6天：每天 30 EXP + 20 PRE；7天起：60 EXP + 50 PRE；15天起：100 EXP + 80 PRE（断签重置）';
+                    streakBonusEl.textContent = '1-6天：每天 ' + baseExpText + ' EXP + ' + baseCoinText + ' PRE；7天起：' + exp7Text + ' EXP + ' + coin7Text + ' PRE；15天起：' + exp15Text + ' EXP + ' + coin15Text + ' PRE（断签重置）';
+                }
+                if (dailyHintEl) {
+                    dailyHintEl.textContent = '连续签到7天后每天获得' + exp7Text + ' EXP + ' + coin7Text + ' PRE，15天后每天' + exp15Text + ' EXP + ' + coin15Text + ' PRE（断签将重置为' + baseExpText + ' EXP + ' + baseCoinText + ' PRE）';
                 }
             }
 
@@ -21612,7 +22855,8 @@
                 }
             }
             if (totalPreCoinGained > 0 && typeof addPreCoin === 'function') {
-                addPreCoin(totalPreCoinGained, '每日签到（连续 ' + streak + ' 天）');
+                // silent：不再弹提示横条，统一在签到结果弹窗中展示
+                addPreCoin(totalPreCoinGained, '每日签到（连续 ' + streak + ' 天）', true);
             }
 
             // ============ 限时签到道具发放 ============
@@ -21620,8 +22864,8 @@
             var todayDateObj = new Date();
             var timedItemsToday = getDailyCheckinReward(todayDateObj, user);
             if (timedItemsToday.length > 0 && typeof warehouseAddTimedItems === 'function') {
-                // 批量发放限时道具（有效期14天）
-                warehouseAddTimedItems(timedItemsToday, '签到奖励 · ' + (todayDateObj.getMonth() + 1) + '/' + todayDateObj.getDate(), 14);
+                // 批量发放限时道具（有效期14天）；silent：不弹提示横条，统一在结果弹窗展示
+                warehouseAddTimedItems(timedItemsToday, '签到奖励 · ' + (todayDateObj.getMonth() + 1) + '/' + todayDateObj.getDate(), 14, true);
                 timedItemsGiven = timedItemsToday;
                 // 更新月度限额追踪
                 consumeMonthlyCheckinCaps(user, timedItemsToday);
@@ -21637,50 +22881,232 @@
                 dailyTaskMarkProgress('checkin');
             }
 
-            // 更新界面
+            // 更新界面（若本次签到升至满级，阶段突破提示延迟到结果弹窗关闭后弹出）
+            _checkinStagePromptPending = true;
             loadCheckinData();
             updateCheckinPageAfterCheckin(user);
 
-            // 构建提示消息
-            var message = '签到成功！连续签到 ' + streak + ' 天';
-            message += '<br>获得 ' + totalExpGained + ' 经验值';
-            bonuses.forEach(function(b) {
-                message += '<br>🎉 ' + b.label + ' +' + b.exp + ' EXP';
-            });
-            if (totalPreCoinGained > 0) {
-                message += '<hr style="border:none;border-top:1px dashed #ddd;margin:8px 0;">';
-                if (dailyCoin > 0) {
-                    message += '<br><i class="fas fa-coins" style="color:#f39c12;"></i> 每日 PRE Coin：<b style="color:#e67e22;">+' + dailyCoin + '</b>';
-                }
-                message += '<br>💴 本次合计获得 <b style="color:#c0392b;">' + totalPreCoinGained + ' PRE Coin</b>';
-            }
+            // 汇总限时道具展示信息（名称/图标/数量/到期日）
+            var timedItemViews = [];
             if (timedItemsGiven.length > 0 && typeof WAREHOUSE_ITEMS !== 'undefined') {
-                message += '<hr style="border:none;border-top:1px dashed #ddd;margin:8px 0;">';
-                message += '<br><i class="fas fa-box" style="color:#27ae60;"></i> 限时签到道具（14天有效）：';
+                var itemExpireDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+                var itemExpireText = ('0' + itemExpireDate.getMonth() + 1).slice(-2) + '/' + ('0' + itemExpireDate.getDate()).slice(-2);
                 timedItemsGiven.forEach(function(it) {
                     var wi = WAREHOUSE_ITEMS[it.itemId];
                     if (wi) {
-                        message += '<br>  · ' + wi.name + ' ×' + it.qty + '（限时）';
+                        timedItemViews.push({
+                            name: wi.name,
+                            qty: it.qty,
+                            icon: wi.icon || 'fas fa-box',
+                            color: wi.color || '#27ae60',
+                            expireText: itemExpireText
+                        });
                     }
                 });
             }
+
             // 里程碑奖励手动领取提示
             var claimableDaysAfterCheckin = getClaimableMilestoneDays(user);
-            if (claimableDaysAfterCheckin.length > 0) {
-                message += '<hr style="border:none;border-top:1px dashed #ddd;margin:8px 0;">';
-                message += '<br>🎁 有 <b style="color:#d45d79;">' + claimableDaysAfterCheckin.length + '</b> 个签到里程碑奖励可领取，点击「下一里程碑」手动领取';
+
+            // 弹出签到结果弹窗（替代原先的多条提示横条，避免消失过快看不清）
+            showCheckinResultModal({
+                streak: streak,
+                totalExp: totalExpGained,
+                expMult: dailyExpSettleMult,
+                bonuses: bonuses,
+                totalCoin: totalPreCoinGained,
+                dailyCoin: dailyCoin,
+                items: timedItemViews,
+                leveledUp: result.leveledUp,
+                newLevel: result.newLevel,
+                claimableMilestones: claimableDaysAfterCheckin.length
+            });
+        }
+
+        // 签到结果弹窗：汇总展示本次签到获得的经验、PRE 硬币、限时道具等全部奖励
+        function showCheckinResultModal(data) {
+            // 防止重复弹出
+            var existing = document.getElementById('checkinResultOverlay');
+            if (existing) {
+                existing.parentNode.removeChild(existing);
             }
-            if (result.leveledUp) {
-                message += '<br>🎊 升级啦！当前等级 Lv.' + result.newLevel;
+
+            var overlay = document.createElement('div');
+            overlay.id = 'checkinResultOverlay';
+            overlay.className = 'checkin-result-overlay';
+
+            // —— 经验值区块 ——
+            var bonusRowsHtml = '';
+            (data.bonuses || []).forEach(function(b) {
+                bonusRowsHtml += '<div class="cr-sub-row"><span><i class="fas fa-party-horn"></i> ' + b.label + '</span><span>+' + b.exp + ' EXP</span></div>';
+            });
+            var multRowHtml = '';
+            if (data.expMult && data.expMult > 1) {
+                multRowHtml = '<div class="cr-sub-row"><span><i class="fas fa-gauge-high"></i> 经验倍率加成</span><span>×' + data.expMult + '</span></div>';
             }
-            showAlert(message);
+            var levelUpHtml = data.leveledUp
+                ? '<div class="cr-levelup-banner"><i class="fas fa-bolt"></i> 升级啦！当前等级 Lv.' + data.newLevel + '</div>'
+                : '';
+            // 满级提示：升级至 60 级满级（且未开启阶段突破）时，在升级横幅下方展示淡红色提示
+            var stageHintHtml = (data.leveledUp && data.newLevel >= 60 && !isStageBreakthroughActive())
+                ? '<div class="cr-stage-hint"><i class="fas fa-level-up-alt"></i> 阶段突破模式现可解锁</div>'
+                : '';
+            var expSectionHtml =
+                '<div class="cr-section cr-section-exp">' +
+                    '<div class="cr-section-head">' +
+                        '<span class="cr-section-icon cr-icon-exp"><i class="fas fa-star"></i></span>' +
+                        '<span class="cr-section-title">经验值</span>' +
+                        '<span class="cr-section-amount">+' + data.totalExp + ' EXP</span>' +
+                    '</div>' +
+                    multRowHtml +
+                    bonusRowsHtml +
+                    levelUpHtml +
+                    stageHintHtml +
+                '</div>';
+
+            // —— PRE 硬币区块 ——
+            var coinSectionHtml = '';
+            if (data.totalCoin > 0) {
+                var coinSubHtml = '';
+                if (data.dailyCoin > 0) {
+                    coinSubHtml = '<div class="cr-sub-row"><span>每日签到（连续 ' + data.streak + ' 天）</span><span>+' + data.dailyCoin + '</span></div>';
+                }
+                coinSectionHtml =
+                    '<div class="cr-section cr-section-coin">' +
+                        '<div class="cr-section-head">' +
+                            '<span class="cr-section-icon cr-icon-coin"><i class="fas fa-coins"></i></span>' +
+                            '<span class="cr-section-title">PRE 硬币</span>' +
+                            '<span class="cr-section-amount">+' + data.totalCoin + '</span>' +
+                        '</div>' +
+                        coinSubHtml +
+                    '</div>';
+            }
+
+            // —— 限时道具区块 ——
+            var itemSectionHtml = '';
+            if (data.items && data.items.length > 0) {
+                var itemRowsHtml = '';
+                data.items.forEach(function(it) {
+                    itemRowsHtml +=
+                        '<div class="cr-item-row">' +
+                            '<span class="cr-item-icon" style="background:' + it.color + '22;color:' + it.color + ';"><i class="' + it.icon + '"></i></span>' +
+                            '<span class="cr-item-name">' + it.name + ' ×' + it.qty + '</span>' +
+                            '<span class="cr-item-expire">有效期至 ' + it.expireText + '</span>' +
+                        '</div>';
+                });
+                itemSectionHtml =
+                    '<div class="cr-section cr-section-items">' +
+                        '<div class="cr-section-head">' +
+                            '<span class="cr-section-icon cr-icon-item"><i class="fas fa-box-open"></i></span>' +
+                            '<span class="cr-section-title">限时签到道具</span>' +
+                            '<span class="cr-section-tag">14天有效</span>' +
+                        '</div>' +
+                        itemRowsHtml +
+                    '</div>';
+            }
+
+            // —— 里程碑可领取提示 ——
+            var milestoneHintHtml = '';
+            if (data.claimableMilestones > 0) {
+                milestoneHintHtml =
+                    '<div class="cr-milestone-hint">' +
+                        '<i class="fas fa-gift"></i>' +
+                        '<span>有 <b>' + data.claimableMilestones + '</b> 个签到里程碑奖励可领取，点击「下一里程碑」手动领取</span>' +
+                    '</div>';
+            }
+
+            overlay.innerHTML =
+                '<div class="checkin-result-modal">' +
+                    '<button class="cr-close" type="button" aria-label="关闭"><i class="fas fa-times"></i></button>' +
+                    '<div class="cr-hero">' +
+                        '<span class="cr-hero-badge"><i class="fas fa-check"></i></span>' +
+                        '<h2>签到成功</h2>' +
+                        '<p>连续签到 <strong>' + data.streak + '</strong> 天，继续保持哦！</p>' +
+                    '</div>' +
+                    '<div class="cr-rewards">' +
+                        expSectionHtml +
+                        coinSectionHtml +
+                        itemSectionHtml +
+                        milestoneHintHtml +
+                    '</div>' +
+                    '<button class="cr-confirm-btn" type="button">开心收下</button>' +
+                '</div>';
+
+            document.body.appendChild(overlay);
+
+            function closeOverlay() {
+                if (!overlay.parentNode) return;
+                overlay.classList.add('cr-closing');
+                document.removeEventListener('keydown', onKeydown);
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                    // 签到流程中延迟的阶段突破提示：结果弹窗关闭后弹出（仅自动提示一次）
+                    if (_checkinStagePromptPending) {
+                        _checkinStagePromptPending = false;
+                        var sbRec = getCurrentUserRecord();
+                        if (sbRec.user && !(sbRec.user.userProfile && sbRec.user.userProfile.stageBreakthroughPrompted)) {
+                            var lv = (sbRec.user.gameData && sbRec.user.gameData.level) || 0;
+                            if (lv >= 60 && !isStageBreakthroughActive()) {
+                                if (!sbRec.user.userProfile) sbRec.user.userProfile = {};
+                                sbRec.user.userProfile.stageBreakthroughPrompted = true;
+                                persistUsers(sbRec.users);
+                                openStageBreakthroughModal();
+                            }
+                        }
+                    }
+                }, 250);
+            }
+            function onKeydown(e) {
+                if (e.key === 'Escape') closeOverlay();
+            }
+
+            overlay.querySelector('.cr-close').addEventListener('click', closeOverlay);
+            overlay.querySelector('.cr-confirm-btn').addEventListener('click', closeOverlay);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeOverlay();
+            });
+            document.addEventListener('keydown', onKeydown);
         }
         
         // ========== 经验值/等级系统 ==========
         var MAX_LEVEL = 60;
-        
+        var STAGE_MAX_LEVEL = 120;   // 阶段突破模式下的等级上限
+
+        // 阶段突破状态缓存（避免公式循环内反复读取 localStorage）
+        var _stageBreakthroughFlag = false;
+
+        // 从当前登录用户读取阶段突破状态，并同步等级上限
+        function refreshStageBreakthroughFlag() {
+            _stageBreakthroughFlag = false;
+            try {
+                var cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (cu && cu.username) {
+                    var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    for (var i = 0; i < users.length; i++) {
+                        if (users[i].username === cu.username) {
+                            _stageBreakthroughFlag = !!(users[i].userProfile && users[i].userProfile.stageBreakthrough === true);
+                            break;
+                        }
+                    }
+                }
+            } catch (e) {}
+            MAX_LEVEL = _stageBreakthroughFlag ? STAGE_MAX_LEVEL : 60;
+        }
+
+        // 是否处于阶段突破模式
+        function isStageBreakthroughActive() {
+            return _stageBreakthroughFlag;
+        }
+
+        refreshStageBreakthroughFlag();
+
         function getExpRequiredForLevel(level) {
             if (level >= MAX_LEVEL) return 0;
+            if (isStageBreakthroughActive()) {
+                if (level >= 110) return 150 + (level + 10) * 100;  // 突破110-119级：150 + (等级+10) × 100
+                if (level >= 90) return 130 + (level + 8) * 80;     // 突破90-109级：130 + (等级+8) × 80
+                if (level >= 60) return 120 + (level + 6) * 80;     // 突破60-89级：120 + (等级+6) × 80
+            }
             if (level >= 50) return 100 + (level + 5) * 80;   // 50级+：100 + (等级+5) × 80
             if (level >= 20) return 80 + (level + 2) * 50;     // 20-49级：80 + (等级+2) × 50
             return 50 + (level + 1) * 30;                      // 1-19级：50 + (等级+1) × 30
@@ -21731,6 +23157,12 @@
         }
         
         function getCheckinExpReward(streak) {
+            // 阶段突破模式（60级后）：公式更新后升级所需经验值巨大，基础签到经验值同步大幅提升
+            if (isStageBreakthroughActive()) {
+                if (streak >= 15) return 750;   // 连签15天起：每日 750 EXP
+                if (streak >= 7) return 500;    // 连签7天起：每日 500 EXP
+                return 300;                     // 1-6天：每日 300 EXP
+            }
             if (streak >= 15) {
                 return 100;
             }
@@ -21738,6 +23170,150 @@
                 return 60;
             }
             return 30;
+        }
+
+        // ========== 阶段突破模式（60级满级后可开启，等级上限提升至120级） ==========
+
+        // 获取当前登录用户的 registeredUsers 记录
+        function getCurrentUserRecord() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var idx = -1;
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].username === currentUser.username) { idx = i; break; }
+            }
+            return { users: users, index: idx, user: idx >= 0 ? users[idx] : null };
+        }
+
+        // 持久化用户数组
+        function persistUsers(users) {
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+
+        // 开启阶段突破：等级上限提升至120级，新经验值公式立即启用
+        function enableStageBreakthrough() {
+            var rec = getCurrentUserRecord();
+            if (!rec.user) return;
+            if (!rec.user.userProfile) rec.user.userProfile = {};
+            rec.user.userProfile.stageBreakthrough = true;
+            rec.user.userProfile.stageBreakthroughPrompted = true;
+            persistUsers(rec.users);
+            refreshStageBreakthroughFlag();
+            // 按新公式与新上限重算等级/经验（溢出经验值保留）
+            initUserExpData(rec.user);
+            addExpToUser(rec.user, 0);
+            persistUsers(rec.users);
+            loadCheckinData();
+            showAlert('阶段突破模式已开启！等级上限提升至 ' + STAGE_MAX_LEVEL + ' 级');
+        }
+
+        // 关闭阶段突破（开发者入口）：上限恢复60级、公式还原，溢出经验不清空
+        function disableStageBreakthrough() {
+            var rec = getCurrentUserRecord();
+            if (!rec.user) return;
+            if (!rec.user.userProfile) rec.user.userProfile = {};
+            rec.user.userProfile.stageBreakthrough = false;
+            persistUsers(rec.users);
+            refreshStageBreakthroughFlag();
+            // 按原公式与60级上限重算（超出60级的溢出经验值保留在当前等级内）
+            initUserExpData(rec.user);
+            addExpToUser(rec.user, 0);
+            persistUsers(rec.users);
+            loadCheckinData();
+            showAlert('阶段突破模式已关闭，等级上限恢复为 60 级（溢出的经验值已保留）');
+        }
+
+        // 同步等级卡片上的阶段突破相关 UI（标签/条目/最高等级/开发者关闭按钮）
+        function updateStageBreakthroughUI(user) {
+            var active = isStageBreakthroughActive();
+            var badge = document.getElementById('stageBreakthroughBadge');
+            if (badge) badge.style.display = active ? 'inline-flex' : 'none';
+            var entry = document.getElementById('stageBreakthroughEntry');
+            if (entry) {
+                var level = (user && user.gameData && user.gameData.level) || 0;
+                entry.style.display = (!active && level >= 60) ? 'flex' : 'none';
+            }
+            var maxStat = document.getElementById('maxLevelStat');
+            if (maxStat) maxStat.textContent = MAX_LEVEL;
+            var devClose = document.getElementById('devStageCloseBtn');
+            if (devClose) devClose.style.display = (active && isDevModeEnabled()) ? 'inline-flex' : 'none';
+        }
+
+        // 通用阶段突破弹窗（淡红色主题）
+        function openStageModal(cfg) {
+            var existing = document.getElementById('stageModalOverlay');
+            if (existing && existing.parentNode) {
+                existing.parentNode.removeChild(existing);
+            }
+            var overlay = document.createElement('div');
+            overlay.id = 'stageModalOverlay';
+            overlay.className = 'stage-modal-overlay';
+            overlay.innerHTML =
+                '<div class="stage-modal' + (cfg.danger ? ' danger' : '') + '">' +
+                    '<div class="stage-modal-icon"><i class="' + (cfg.icon || 'fas fa-level-up-alt') + '"></i></div>' +
+                    '<h3>' + cfg.title + '</h3>' +
+                    '<div class="stage-modal-body">' + cfg.body + '</div>' +
+                    '<div class="stage-modal-actions">' +
+                        '<button class="stage-btn stage-btn-cancel" type="button">' + (cfg.cancelText || '取消') + '</button>' +
+                        '<button class="stage-btn stage-btn-confirm" type="button">' + (cfg.confirmText || '确定') + '</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+
+            function closeOverlay() {
+                if (!overlay.parentNode) return;
+                overlay.classList.add('stage-closing');
+                document.removeEventListener('keydown', onKeydown);
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                }, 200);
+            }
+            function onKeydown(e) {
+                if (e.key === 'Escape') closeOverlay();
+            }
+
+            overlay.querySelector('.stage-btn-cancel').addEventListener('click', closeOverlay);
+            overlay.querySelector('.stage-btn-confirm').addEventListener('click', function() {
+                closeOverlay();
+                if (typeof cfg.onConfirm === 'function') cfg.onConfirm();
+            });
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeOverlay();
+            });
+            document.addEventListener('keydown', onKeydown);
+        }
+
+        // 一级弹窗：阶段突破介绍与确认
+        function openStageBreakthroughModal() {
+            openStageModal({
+                title: '阶段突破',
+                body:
+                    '<p>您已达到 60 级满级状态，是否要开启阶段突破模式将等级提升至新的 120 级最高等级？</p>' +
+                    '<p>开启阶段突破模式后关于等级的新经验值公式将立即启用，同时每次升级需要的经验值需求量一并增多，您也可以关闭该窗口并与稍后进行选择</p>' +
+                    '<p class="stage-warning">注意：开启阶段突破模式后等级上限将进入 120 级，无法进行退回或关闭该模式</p>',
+                onConfirm: openStageBreakthroughFinalModal
+            });
+        }
+
+        // 二级弹窗：最后一次确认（整段红色文本）
+        function openStageBreakthroughFinalModal() {
+            openStageModal({
+                title: '二次确认',
+                danger: true,
+                icon: 'fas fa-exclamation-triangle',
+                body: '<p class="stage-danger">确定要进入该模式吗？这是您最后一次的选择机会</p>',
+                onConfirm: enableStageBreakthrough
+            });
+        }
+
+        // 开发者关闭确认弹窗
+        function openDevStageCloseModal() {
+            openStageModal({
+                title: '关闭阶段（dev）',
+                icon: 'fas fa-code',
+                body: '<p>是否要关闭阶段突破模式？在此之前溢出的经验值数量不会被清空</p>',
+                onConfirm: disableStageBreakthrough
+            });
         }
         
         // ========== 签到里程碑（统一配置，手动点击领取） ==========
@@ -21766,39 +23342,79 @@
             }
         ];
 
+        // 阶段突破里程碑（60级后独立配置）：领取记录与累计天数不继承标准阶段，重新独立计数
+        var STAGE_CHECKIN_MILESTONES = [
+            { days: 7,   name: '连续签到7天',   icon: 'gift',   expText: '+1000 EXP',  exp: 1000,  coin: 500 },
+            { days: 15,  name: '连续签到15天',  icon: 'star',   expText: '+1500 EXP',  exp: 1500,  coin: 500 },
+            { days: 30,  name: '连续签到30天',  icon: 'trophy', expText: '+3000 EXP',  exp: 3000,  coin: 1000 },
+            { days: 60,  name: '连续签到60天',  icon: 'trophy', expText: '+3000 EXP',  exp: 3000,  coin: 1000 },
+            { days: 90,  name: '连续签到90天',  icon: 'trophy', expText: '+3000 EXP',  exp: 3000,  coin: 1500 },
+            { days: 180, name: '连续签到180天', icon: 'trophy', expText: '+5000 EXP',  exp: 5000,  coin: 2000,
+                extraRewards: [
+                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×1', cls: 'card' }
+                ],
+                items: [{ itemId: 'exchange_card', qty: 1 }]
+            },
+            { days: 365, name: '连续签到365天', icon: 'crown',  expText: '+10000 EXP', exp: 10000, coin: 3000,
+                extraRewards: [
+                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×1', cls: 'card' }
+                ],
+                items: [{ itemId: 'exchange_card', qty: 1 }]
+            }
+        ];
+
+        // 按阶段获取里程碑配置（mode: 'standard' 标准阶段 | 'stage' 阶段突破）
+        function getMilestoneConfig(mode) {
+            return mode === 'stage' ? STAGE_CHECKIN_MILESTONES : CHECKIN_MILESTONES;
+        }
+
+        // 当前生效的里程碑阶段（未开启阶段突破时恒为标准阶段）
+        function getCurrentMilestoneMode() {
+            return isStageBreakthroughActive() ? 'stage' : 'standard';
+        }
+
         // 获取当前可领取（已达成但本轮连续签到尚未领取）的里程碑天数
-        function getClaimableMilestoneDays(user) {
+        function getClaimableMilestoneDays(user, mode) {
             var days = [];
             if (!user || !user.userProfile || !user.userProfile.checkinStats) return days;
             var stats = user.userProfile.checkinStats;
-            var claimed = Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : [];
+            var mMode = mode || getCurrentMilestoneMode();
+            var claimed = (mMode === 'stage')
+                ? (Array.isArray(stats.stageClaimedMilestones) ? stats.stageClaimedMilestones : [])
+                : (Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : []);
             var streak = stats.streak || 0;
-            CHECKIN_MILESTONES.forEach(function(m) {
+            getMilestoneConfig(mMode).forEach(function(m) {
                 if (streak >= m.days && claimed.indexOf(m.days) === -1) days.push(m.days);
             });
             return days;
         }
 
-        // 重置本轮连续签到的里程碑领取记录（断签 / 开发者重置时调用）
+        // 重置本轮连续签到的里程碑领取记录（断签 / 开发者重置时调用；标准与阶段突破记录一并重置）
         function resetClaimedMilestones(user) {
             if (user && user.userProfile && user.userProfile.checkinStats) {
                 user.userProfile.checkinStats.claimedMilestones = [];
+                user.userProfile.checkinStats.stageClaimedMilestones = [];
             }
         }
 
         // 手动领取指定里程碑奖励
+        // mode: 'standard' | 'stage'（缺省按当前生效阶段）
         // 返回 { ok:false, reason } 或 { ok:true, def, expGained, coinGained, items, leveledUp, newLevel }
-        function claimCheckinMilestone(user, days) {
+        function claimCheckinMilestone(user, days, mode) {
             if (!user || !user.userProfile || !user.userProfile.checkinStats) return { ok: false, reason: '数据异常' };
             var stats = user.userProfile.checkinStats;
+            var mMode = mode || getCurrentMilestoneMode();
+            var isStage = mMode === 'stage';
+            var milestoneList = getMilestoneConfig(mMode);
             var def = null;
-            for (var i = 0; i < CHECKIN_MILESTONES.length; i++) {
-                if (CHECKIN_MILESTONES[i].days === days) { def = CHECKIN_MILESTONES[i]; break; }
+            for (var i = 0; i < milestoneList.length; i++) {
+                if (milestoneList[i].days === days) { def = milestoneList[i]; break; }
             }
             if (!def) return { ok: false, reason: '奖励不存在' };
             if ((stats.streak || 0) < days) return { ok: false, reason: '尚未达成' };
-            if (!Array.isArray(stats.claimedMilestones)) stats.claimedMilestones = [];
-            if (stats.claimedMilestones.indexOf(days) !== -1) return { ok: false, reason: '已领取过' };
+            var claimedKey = isStage ? 'stageClaimedMilestones' : 'claimedMilestones';
+            if (!Array.isArray(stats[claimedKey])) stats[claimedKey] = [];
+            if (stats[claimedKey].indexOf(days) !== -1) return { ok: false, reason: '已领取过' };
 
             initUserExpData(user);
             var leveledUp = false, newLevel = user.gameData.level;
@@ -21818,24 +23434,25 @@
             // 2) PRE 硬币
             var coinGained = 0;
             if (def.coin > 0 && typeof addPreCoin === 'function') {
-                addPreCoin(def.coin, '签到里程碑 · 连续' + days + '天');
+                addPreCoin(def.coin, (isStage ? '阶段突破里程碑' : '签到里程碑') + ' · 连续' + days + '天');
                 coinGained = def.coin;
             }
 
-            // 3) 特殊道具（自选物品兑换卡 + 勋章，终身仅发放一次）
+            // 3) 特殊道具（自选物品兑换卡 + 勋章，终身仅发放一次；阶段突破使用独立的终身发放记录）
             var itemsGained = [];
             if (def.items && def.items.length > 0) {
-                if (!Array.isArray(stats.milestoneRewardsClaimed)) stats.milestoneRewardsClaimed = [];
-                if (stats.milestoneRewardsClaimed.indexOf(days) === -1 && typeof warehouseAddItem === 'function') {
+                var itemClaimedKey = isStage ? 'stageMilestoneRewardsClaimed' : 'milestoneRewardsClaimed';
+                if (!Array.isArray(stats[itemClaimedKey])) stats[itemClaimedKey] = [];
+                if (stats[itemClaimedKey].indexOf(days) === -1 && typeof warehouseAddItem === 'function') {
                     def.items.forEach(function(it) {
-                        warehouseAddItem(it.itemId, it.qty, '签到里程碑 · 连续签到' + days + '天');
+                        warehouseAddItem(it.itemId, it.qty, (isStage ? '阶段突破里程碑' : '签到里程碑') + ' · 连续签到' + days + '天');
                         itemsGained.push(it);
                     });
-                    stats.milestoneRewardsClaimed.push(days);
+                    stats[itemClaimedKey].push(days);
                 }
             }
 
-            stats.claimedMilestones.push(days);
+            stats[claimedKey].push(days);
             return {
                 ok: true, def: def, expGained: expGained, coinGained: coinGained,
                 items: itemsGained, leveledUp: leveledUp, newLevel: newLevel
@@ -21882,19 +23499,23 @@
             var levelBtn = document.getElementById('devLevelBtn');
             var checkinBtn = document.getElementById('devCheckinBtn');
             var customCheckinBtn = document.getElementById('devCustomCheckinBtn');
+            var stageCloseBtn = document.getElementById('devStageCloseBtn');
             var show = isDevModeEnabled();
             if (levelBtn) levelBtn.style.display = show ? 'inline-flex' : 'none';
             if (checkinBtn) checkinBtn.style.display = show ? 'inline-flex' : 'none';
             if (customCheckinBtn) customCheckinBtn.style.display = show ? 'inline-flex' : 'none';
+            // 阶段突破关闭入口：仅开发者模式且已开启阶段突破时显示
+            if (stageCloseBtn) stageCloseBtn.style.display = (show && isStageBreakthroughActive()) ? 'inline-flex' : 'none';
         }
-        
+
         function initDevModeButtons() {
             showDevButtons();
-            
+
             var levelBtn = document.getElementById('devLevelBtn');
             var checkinBtn = document.getElementById('devCheckinBtn');
             var customCheckinBtn = document.getElementById('devCustomCheckinBtn');
-            
+            var stageCloseBtn = document.getElementById('devStageCloseBtn');
+
             if (levelBtn) {
                 levelBtn.addEventListener('click', openDevLevelModal);
             }
@@ -21903,6 +23524,9 @@
             }
             if (customCheckinBtn) {
                 customCheckinBtn.addEventListener('click', openDevCustomCheckinModal);
+            }
+            if (stageCloseBtn) {
+                stageCloseBtn.addEventListener('click', openDevStageCloseModal);
             }
         }
         
@@ -22019,9 +23643,11 @@
             });
             
             function closeModal() {
-                if (overlay.parentNode) {
-                    overlay.parentNode.removeChild(overlay);
-                }
+                if (!overlay.parentNode) return;
+                overlay.classList.add('stage-closing');
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                }, 200);
             }
             
             btnClose.addEventListener('click', closeModal);
@@ -22118,6 +23744,12 @@
             var btnSave = overlay.querySelector('#devSaveBtn');
             
             function getDailyExpForStreak(s) {
+                // 阶段突破模式：300/500/750
+                if (isStageBreakthroughActive()) {
+                    if (s >= 15) return 750;
+                    if (s >= 7) return 500;
+                    return 300;
+                }
                 if (s >= 15) return 100;
                 if (s >= 7) return 60;
                 return 30;
@@ -22126,8 +23758,10 @@
             function getTotalExpFromCheckin(s, t) {
                 var dailyExp = getDailyExpForStreak(s);
                 var bonusExp = 0;
-                if (t >= 7) bonusExp += 500;
-                if (t >= 30) bonusExp += Math.floor(t / 30) * 1000;
+                var m7Exp = isStageBreakthroughActive() ? 1000 : 500;    // 7天里程碑经验
+                var m30Exp = isStageBreakthroughActive() ? 3000 : 1000;  // 30天里程碑/循环经验
+                if (t >= 7) bonusExp += m7Exp;
+                if (t >= 30) bonusExp += Math.floor(t / 30) * m30Exp;
                 return t * dailyExp + bonusExp;
             }
             
@@ -22165,9 +23799,11 @@
             });
             
             function closeModal() {
-                if (overlay.parentNode) {
-                    overlay.parentNode.removeChild(overlay);
-                }
+                if (!overlay.parentNode) return;
+                overlay.classList.add('stage-closing');
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                }, 200);
             }
             
             btnClose.addEventListener('click', closeModal);
@@ -22294,7 +23930,11 @@
             document.body.appendChild(overlay);
 
             function closeModal() {
-                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                if (!overlay.parentNode) return;
+                overlay.classList.add('stage-closing');
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                }, 200);
             }
 
             overlay.querySelector('.dev-modal-close').addEventListener('click', closeModal);
@@ -27859,7 +29499,7 @@
                                                                 <div class="progress-bar-large">
                                                                     <div class="progress-fill-large" style="width: ${expProgress}%;"></div>
                                                                 </div>
-                                                                <p class="progress-text">${exp} / ${expToNextLevel} EXP ${level >= 60 ? '(已满级)' : ''}</p>
+                                                                <p class="progress-text">${exp} / ${expToNextLevel} EXP ${level >= (isStageBreakthroughActive() ? STAGE_MAX_LEVEL : 60) ? '(已满级)' : ''}</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -27913,11 +29553,11 @@
                                                         <div class="growth-info-list">
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
-                                                                <span>最高等级为 60 级</span>
+                                                                <span>${isStageBreakthroughActive() ? '最高等级为 120 级（阶段突破模式已开启）' : '最高等级为 60 级'}</span>
                                                             </div>
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
-                                                                <span>每日签到可获得 30-100 经验值</span>
+                                                                <span>每日签到可获得 ${isStageBreakthroughActive() ? '300-750' : '30-100'} 经验值</span>
                                                             </div>
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
@@ -27929,7 +29569,9 @@
                                                             </div>
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
-                                                                <span>等级越高所需经验越多（分档公式：Lv.1-19 为 50+(等级+1)×30，Lv.20-49 为 80+(等级+2)×50，Lv.50+ 为 100+(等级+5)×80）</span>
+                                                                <span>${isStageBreakthroughActive()
+                                                                    ? '等级越高所需经验越多（分档公式：Lv.1-19 为 50+(等级+1)×30，Lv.20-49 为 80+(等级+2)×50，Lv.50-59 为 100+(等级+5)×80；阶段突破后：Lv.60-89 为 120+(等级+6)×80，Lv.90-109 为 130+(等级+8)×80，Lv.110-120 为 150+(等级+10)×100）'
+                                                                    : '等级越高所需经验越多（分档公式：Lv.1-19 为 50+(等级+1)×30，Lv.20-49 为 80+(等级+2)×50，Lv.50+ 为 100+(等级+5)×80）'}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -33070,7 +34712,7 @@ ID：${user ? user.userId : '---'}
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    z-index: 10002;
+                    z-index: 200000;
                     animation: fadeIn 0.3s ease;
                 }
                 

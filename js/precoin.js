@@ -52,8 +52,9 @@ function getPreCoinBalance() {
 
 // 增加 PRE Coin
 // source: 来源说明（如 '每日签到', '每日任务', '商店消费退款' 等）
+// silent: 为 true 时不弹提示横条（由调用方自行汇总展示，如签到结果弹窗）
 // 返回是否成功
-function addPreCoin(amount, source) {
+function addPreCoin(amount, source, silent) {
     amount = parseInt(amount, 10);
     if (!amount || amount <= 0) return false;
 
@@ -74,7 +75,7 @@ function addPreCoin(amount, source) {
 
     savePreCoinData(data);
 
-    if (typeof showToast === 'function') {
+    if (!silent && typeof showToast === 'function') {
         showToast({
             type: 'success',
             title: 'PRE Coin',
@@ -142,13 +143,26 @@ var PRECOIN_DAILY_CHECKIN_REWARDS = {
     tier3: { minDays: 15, maxDays: 99999, coin: 80 }
 };
 
-// 根据连续签到天数获取每日 PRE Coin 奖励
+// 阶段突破模式（60级后）下的每日签到硬币奖励：升级所需经验值巨大，硬币奖励同步提升
+var PRECOIN_DAILY_CHECKIN_REWARDS_STAGE = {
+    // 1-6天：每天 80
+    tier1: { minDays: 1, maxDays: 6, coin: 80 },
+    // 7-14天：每天 120
+    tier2: { minDays: 7, maxDays: 14, coin: 120 },
+    // 15天及以上：每天 150
+    tier3: { minDays: 15, maxDays: 99999, coin: 150 }
+};
+
+// 根据连续签到天数获取每日 PRE Coin 奖励（阶段突破模式下使用提升后的档位）
 function getPreCoinDailyCheckinReward(streak) {
     streak = parseInt(streak, 10) || 0;
-    if (streak <= 0) return PRECOIN_DAILY_CHECKIN_REWARDS.tier1.coin;
-    if (streak >= PRECOIN_DAILY_CHECKIN_REWARDS.tier3.minDays) return PRECOIN_DAILY_CHECKIN_REWARDS.tier3.coin;
-    if (streak >= PRECOIN_DAILY_CHECKIN_REWARDS.tier2.minDays) return PRECOIN_DAILY_CHECKIN_REWARDS.tier2.coin;
-    return PRECOIN_DAILY_CHECKIN_REWARDS.tier1.coin;
+    var cfg = (typeof isStageBreakthroughActive === 'function' && isStageBreakthroughActive())
+        ? PRECOIN_DAILY_CHECKIN_REWARDS_STAGE
+        : PRECOIN_DAILY_CHECKIN_REWARDS;
+    if (streak <= 0) return cfg.tier1.coin;
+    if (streak >= cfg.tier3.minDays) return cfg.tier3.coin;
+    if (streak >= cfg.tier2.minDays) return cfg.tier2.coin;
+    return cfg.tier1.coin;
 }
 
 // ==================== PRE Coin 签到里程碑配置 ====================
