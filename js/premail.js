@@ -150,6 +150,8 @@ var mailSystem = {
         history.unshift({
             id: mail.id,
             title: mail.title,
+            sender: mail.sender,
+            content: mail.content || '',
             rewards: mail.attachments || [],
             claimTime: Date.now()
         });
@@ -1366,6 +1368,19 @@ function selectMail(mailId) {
                 }
                 
                 itemDiv.appendChild(infoDiv);
+
+                // 仓库道具附件：点击弹出物品详情弹窗（仅预览，不在邮件内使用）
+                if (whItem) {
+                    itemDiv.classList.add('mail-attachment-clickable');
+                    itemDiv.addEventListener('click', function() {
+                        if (typeof showWarehouseItemDetail === 'function') {
+                            showWarehouseItemDetail(att.itemId, {
+                                previewOnly: true,
+                                qty: att.count
+                            });
+                        }
+                    });
+                }
                 attachmentList.appendChild(itemDiv);
             } else {
                 var itemDiv = document.createElement('div');
@@ -1759,6 +1774,29 @@ function outsideHistoryFilterClick(e) {
     }
 }
 
+// 获取领取记录对应邮件的全部正文文本：
+// 1. 优先读取领取时写入历史记录的 content；
+// 2. 旧版本历史记录没有该字段时，尝试从当前邮箱中的邮件按 id 查找；
+// 3. 仍找不到时，从内置邮件模板 mailVersions 中按 id 查找；
+// 都无法获取时返回空字符串。
+function getHistoryItemContent(item) {
+    if (item.content) return item.content;
+
+    var currentMail = mailSystem.getMails().find(function(m) { return m.id === item.id; });
+    if (currentMail && currentMail.content) return currentMail.content;
+
+    var templateContent = '';
+    mailSystem.mailVersions.some(function(versionData) {
+        var found = versionData.mails.find(function(m) { return m.id === item.id; });
+        if (found) {
+            templateContent = found.content || '';
+            return true;
+        }
+        return false;
+    });
+    return templateContent;
+}
+
 function renderMailHistoryList() {
     var list = document.getElementById('mailHistoryList');
     if (!list) return;
@@ -1812,32 +1850,71 @@ function renderMailHistoryList() {
         titleEl.textContent = item.title;
         titleRow.appendChild(titleEl);
         
+        // 标题右侧操作区：展开/收起按钮 + 删除按钮
+        var actionsDiv = document.createElement('div');
+        actionsDiv.className = 'mail-history-item-actions';
+        
+        var toggleBtn = document.createElement('button');
+        toggleBtn.className = 'mail-history-item-toggle';
+        toggleBtn.title = '展开';
+        toggleBtn.setAttribute('aria-label', '展开领取详情');
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+        actionsDiv.appendChild(toggleBtn);
+        
         var deleteBtn = document.createElement('button');
         deleteBtn.className = 'mail-history-item-delete';
         deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
         deleteBtn.addEventListener('click', function() {
             deleteMailHistoryItem(item.id);
         });
-        titleRow.appendChild(deleteBtn);
+        actionsDiv.appendChild(deleteBtn);
+        
+        titleRow.appendChild(actionsDiv);
         
         infoDiv.appendChild(titleRow);
         
-        var metaDiv = document.createElement('div');
-            metaDiv.className = 'mail-history-item-meta';
-            
-            var accountEl = document.createElement('div');
-            accountEl.className = 'mail-history-item-account';
-            accountEl.textContent = '领取账户：' + (item.account || username);
-            metaDiv.appendChild(accountEl);
-            
-            var timeEl = document.createElement('div');
-            timeEl.className = 'mail-history-item-time';
-            timeEl.textContent = '领取时间：' + timeStr;
-            metaDiv.appendChild(timeEl);
-            
-            infoDiv.appendChild(metaDiv);
-        
         itemDiv.appendChild(infoDiv);
+        
+        // 可展开/收起的详情区域：默认收起，点击展开按钮后显示
+        var bodyDiv = document.createElement('div');
+        bodyDiv.className = 'mail-history-item-body';
+        
+        var metaDiv = document.createElement('div');
+        metaDiv.className = 'mail-history-item-meta';
+        
+        var accountEl = document.createElement('div');
+        accountEl.className = 'mail-history-item-account';
+        accountEl.textContent = '领取账户：' + (item.account || username);
+        metaDiv.appendChild(accountEl);
+        
+        var timeEl = document.createElement('div');
+        timeEl.className = 'mail-history-item-time';
+        timeEl.textContent = '领取时间：' + timeStr;
+        metaDiv.appendChild(timeEl);
+        
+        bodyDiv.appendChild(metaDiv);
+        
+        // 邮件正文：展示该对应邮件内的所有文本内容
+        var contentDiv = document.createElement('div');
+        contentDiv.className = 'mail-history-item-content';
+        
+        var contentTitle = document.createElement('div');
+        contentTitle.className = 'mail-history-item-content-title';
+        contentTitle.textContent = '邮件正文：';
+        contentDiv.appendChild(contentTitle);
+        
+        var contentBody = document.createElement('div');
+        contentBody.className = 'mail-history-item-content-body';
+        var mailContent = getHistoryItemContent(item);
+        if (mailContent) {
+            contentBody.textContent = mailContent;
+        } else {
+            contentBody.textContent = '（该邮件正文内容不可用）';
+            contentBody.classList.add('is-empty');
+        }
+        contentDiv.appendChild(contentBody);
+        
+        bodyDiv.appendChild(contentDiv);
         
         if (item.rewards && item.rewards.length > 0) {
             var rewardsDiv = document.createElement('div');
@@ -1865,19 +1942,49 @@ function renderMailHistoryList() {
                     });
                 } else {
                     rewardEl.textContent = reward.name + (reward.count !== undefined ? ' x' + reward.count : '');
+
+                    // 仓库道具：点击弹出物品详情弹窗（仅预览）
+                    var whItemDef = (reward.type === 'warehouse' && reward.itemId && typeof WAREHOUSE_ITEMS !== 'undefined')
+                        ? WAREHOUSE_ITEMS[reward.itemId]
+                        : null;
+                    if (whItemDef) {
+                        (function(itemId, itemCount) {
+                            rewardEl.classList.add('mail-history-reward-clickable');
+                            rewardEl.style.cursor = 'pointer';
+                            rewardEl.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                if (typeof showWarehouseItemDetail === 'function') {
+                                    showWarehouseItemDetail(itemId, {
+                                        previewOnly: true,
+                                        qty: itemCount
+                                    });
+                                }
+                            });
+                        })(reward.itemId, reward.count);
+                    }
                 }
                 
                 rewardsList.appendChild(rewardEl);
             });
             
             rewardsDiv.appendChild(rewardsList);
-            itemDiv.appendChild(rewardsDiv);
+            bodyDiv.appendChild(rewardsDiv);
         } else {
             var rewardsDiv = document.createElement('div');
             rewardsDiv.className = 'mail-history-item-rewards';
             rewardsDiv.textContent = '领取内容：无';
-            itemDiv.appendChild(rewardsDiv);
+            bodyDiv.appendChild(rewardsDiv);
         }
+        
+        // 展开/收起切换：仅切换卡片样式类，详情区域显隐由 CSS 控制
+        toggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var expanded = itemDiv.classList.toggle('expanded');
+            toggleBtn.title = expanded ? '收起' : '展开';
+            toggleBtn.setAttribute('aria-label', expanded ? '收起领取详情' : '展开领取详情');
+        });
+        
+        itemDiv.appendChild(bodyDiv);
         
         list.appendChild(itemDiv);
     });

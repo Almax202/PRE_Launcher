@@ -29,6 +29,15 @@ var LIMITED_LEVEL_BOOST = {
     phase2Multiplier: 1.50
 };
 
+// ==================== 赛季通行证活动配置（时间的唯一权威来源，UTC+8） ====================
+// 与 js/pass.js PASS_CONFIG 赛季时间保持一致：2026-10-01 08:00 ~ 2026-12-31 17:00 (UTC+8)
+var SEASON_PASS_EVENT = {
+    eventId: 'center_season_s1',
+    announcementId: 'event_season_s1',
+    startTime: '2026-10-01 08:00:00',   // 赛季开启 08:00 (UTC+8)
+    endTime: '2026-12-31 17:00:00'      // 赛季结束 17:00 (UTC+8)
+};
+
 // ==================== 活动公告数据 ====================
 var eventAnnouncementData = {
     categories: [
@@ -37,7 +46,7 @@ var eventAnnouncementData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 公告侧边栏排序配置：按数组顺序显示
-    sortOrder: ['event_level_boost', 'event_autumn_sale', 'event_001', 'event_daily_checkin'],
+    sortOrder: ['event_season_s1', 'event_level_boost', 'event_autumn_sale', 'event_001', 'event_daily_checkin'],
     announcements: [
         {
             id: 'event_level_boost',
@@ -48,7 +57,7 @@ var eventAnnouncementData = {
             startTime: LIMITED_LEVEL_BOOST.startTime,
             endTime: LIMITED_LEVEL_BOOST.endTime,
             description: '活动期间全账户成长等级经验获取倍率限时提升：前7天 ×1.25，第8-14天提升至 ×1.50，可与经验值加成卡叠加，共14天。',
-            content: '<h2>限时等级倍率提速活动</h2><p>金秋提速，等级成长快人一步！活动期间，<span style="color:#d45d79;font-weight:600;">所有账户的成长等级经验获取倍率将限时提升</span>，无需报名，登录即自动生效。</p><h3>活动时间</h3><p>起始时间：2026年9月17日 17:00:00（UTC+8）<br>结束时间：2026年10月1日 23:59:59（UTC+8）<br>活动共计 14 天，结束后倍率自动恢复为正常的 ×1.00</p><h3>倍率安排</h3><ul><li><strong>第一阶段（第1-7天）：</strong>2026年9月17日 10:00 至 9月24日 10:00，经验倍率提升至 <span style="color:#d45d79;font-weight:600;">×1.25</span></li><li><strong>第二阶段（第8-14天）：</strong>2026年9月24日 10:00 至 10月1日 23:59:59，经验倍率提升至 <span style="color:#d45d79;font-weight:600;">×1.50</span></li><li><strong>活动结束后：</strong>经验倍率恢复正常 ×1.00</li></ul><h3>叠加规则</h3><ul><li>本活动的<span style="color:#d45d79;font-weight:600;">固定加成倍率可与仓库「经验值加成卡」的提升倍率叠加</span>，总倍率 = 活动倍率 × 加成卡倍率</li><li>使用经验值加成卡后，仍遵循加成卡原有叠加规则：不同类型（Ⅰ/Ⅱ/Ⅲ）可同时生效，同类型不可叠加，最多同时 3 张，每张持续 30 分钟</li><li>举例：第二阶段（×1.50）同时激活 Ⅰ+Ⅱ+Ⅲ 三种加成卡时，总倍率为 ×1.50 × ×1.50 = <span style="color:#d45d79;font-weight:600;">×2.25</span></li></ul><h3>适用范围</h3><p>每日签到、签到里程碑奖励、活动中心签到奖励、邮件经验附件、经验值补给卡等所有成长等级经验获取途径，均享受活动倍率加成。</p><h3>参与方式</h3><p>无需报名或领取，活动期间全账户自动生效。成长等级卡片中的「经验倍率」条目会实时显示当前总倍率与生效时间。</p><h3>温馨提示</h3><p>活动倍率按服务器时间（UTC+8）自动切换阶段，无需刷新页面；活动结束后加成卡若仍在有效期内，将继续按加成卡自身倍率生效，直至时长耗尽。</p>',
+            content: '<h2>限时等级倍率提速活动</h2><p>金秋提速，等级成长快人一步！活动期间，<span style="color:#d45d79;font-weight:600;">所有账户的成长等级经验获取倍率将限时提升</span>，无需报名，登录即自动生效。</p><h3>活动时间</h3><p>起始时间：2026年9月17日 17:00:00（UTC+8）<br>结束时间：2026年10月1日 23:59:59（UTC+8）<br>活动共计 14 天，结束后倍率自动恢复为正常的 ×1.00</p><h3>倍率安排</h3><ul><li><strong>第一阶段（第1-7天）：</strong>2026年9月17日 10:00 至 9月24日 10:00，经验倍率提升至 <span style="color:#d45d79;font-weight:600;">×1.25</span></li><li><strong>第二阶段（第8-14天）：</strong>2026年9月24日 10:00 至 10月1日 23:59:59，经验倍率提升至 <span style="color:#d45d79;font-weight:600;">×1.50</span></li><li><strong>活动结束后：</strong>经验倍率恢复正常 ×1.00</li></ul><h3>叠加规则</h3><ul><li>本活动的<span style="color:#d45d79;font-weight:600;">固定加成倍率可与仓库「经验值加成卡」的提升倍率叠加</span>，总倍率 = 活动倍率 × 加成卡倍率</li><li>使用经验值加成卡后，仍遵循加成卡原有叠加规则：不同类型（Ⅰ/Ⅱ/Ⅲ/Ⅳ）可同时生效，同类型不可叠加，最多同时 4 张，每张持续 30 分钟</li><li>举例：第二阶段（×1.50）同时激活 Ⅰ+Ⅱ+Ⅲ 三种加成卡时，总倍率为 ×1.50 × ×1.50 = <span style="color:#d45d79;font-weight:600;">×2.25</span></li></ul><h3>适用范围</h3><p>每日签到、签到里程碑奖励、活动中心签到奖励、邮件经验附件、经验值补给卡等所有成长等级经验获取途径，均享受活动倍率加成。</p><h3>参与方式</h3><p>无需报名或领取，活动期间全账户自动生效。成长等级卡片中的「经验倍率」条目会实时显示当前总倍率与生效时间。</p><h3>温馨提示</h3><p>活动倍率按服务器时间（UTC+8）自动切换阶段，无需刷新页面；活动结束后加成卡若仍在有效期内，将继续按加成卡自身倍率生效，直至时长耗尽。</p>',
             banner: ''
         },
         {
@@ -83,20 +92,48 @@ var eventAnnouncementData = {
             content: '<h2>秋季签到与等级提速特别活动</h2><p>秋季来临，全新启程！本次活动为<span style="color:#d45d79;font-weight:600;">第三季度常驻活动</span>，成功注册账号即可直接参与！</p><h3>活动时间</h3><p>起始日：2026年8月27日（UTC+8）<br>结束时间：下一季度前（2026年9月30日）<br>领取完成后活动将纳入已结束类别</p><h3>签到奖励（共14天）</h3><ul><li><strong>第1天：</strong>新名片样式「星河漫游」（特殊获取）</li><li><strong>第2-7天：</strong>每天500经验值（共3000exp）</li><li><strong>第8天：</strong>新3D太空遨游背景（特殊获取）</li><li><strong>第9-13天：</strong>每天1000经验值（共5000exp）</li><li><strong>第14天：</strong>2000经验值（总计10000exp）</li></ul><h3>参与方式</h3><p>进入活动中心 → 找到本活动 → 点击签到奖励卡或一键领取按钮领取对应奖励</p><h3>奖励说明</h3><p>经验值将立即对账户等级生效，名片样式和3D背景将解锁到对应系统中。</p>',
             banner: ''
         },
+        {
+            id: 'event_season_s1',
+            category: 'upcoming',
+            title: '第一赛季「初始化」即将上线',
+            date: '2026-10-01',
+            endDate: '2026-12-31',
+            startTime: SEASON_PASS_EVENT.startTime,
+            endTime: SEASON_PASS_EVENT.endTime,
+            description: '全新赛季通行证系统即将登场！第一赛季「初始化」将于 2026年10月1日 08:00（UTC+8）正式开启，120 级奖励长线等你解锁。',
+            content: '<h2>第一赛季「初始化」即将上线</h2><p>全新<span style="color:#d45d79;font-weight:600;">赛季通行证系统</span>即将登场！第一赛季以<span style="color:#d45d79;font-weight:600;">「初始化」(Season 1 - Initialize)</span>为主题——一切伟大航程的起点，都从这里开始。</p><h3>上线时间</h3><p>开启时间：2026年10月1日 08:00（UTC+8）<br>结束时间：2026年12月31日 17:00（UTC+8）</p><h3>赛季亮点</h3><ul><li><strong>120 级奖励长线：</strong>免费/付费双档位奖励，含单次抽券、十连抽券、经验值补给卡、PRE Coin 补给包、经验值加成卡与每级 PRE 硬币奖励（全赛季合计 5000 枚）</li><li><strong>三层任务系统：</strong>日常 / 周常 / 赛季任务，签到、商店兑换、仓库管理等日常行为自动累积通行证经验</li><li><strong>EX 溢出奖励：</strong>满级后继续获取经验，按溢出节奏领取额外 PRE Coin</li><li><strong>通行证组合包：</strong>内含本体全部付费内容，购买后立即获得 10 级、经验值补给卡Ⅳ×2、PRE Coin 补给包Ⅳ×1 与限定「第一赛季纪念徽章」（可展示在用户名片个人荣勋）</li></ul><h3>购买方式</h3><p>通行证本体：6480 PRE Coin<br>通行证组合包：原价 12900 PRE Coin，未购买本体时直接购买可享优惠价 10368 PRE Coin</p><h3>温馨提示</h3><p>赛季开启前无法购买等级、解锁付费通行证或累积任务进度；赛季开启后相关功能将自动解禁。即刻开始囤积 PRE Coin，抢先领跑新赛季！</p>',
+            banner: ''
+        },
     ]
 };
 
 // ==================== 活动中心数据（基础模板，内容可随时更新） ====================
 var eventCenterData = {
     categories: [
+        { id: 'season', name: '赛季活动', icon: 'fa-trophy' },
         { id: 'featured', name: '精选活动', icon: 'fa-fire' },
         { id: 'daily', name: '每日活动', icon: 'fa-calendar-day' },
         { id: 'special', name: '特殊活动', icon: 'fa-gem' },
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 活动侧边栏排序配置：按数组顺序显示
-    sortOrder: ['center_004', 'center_003', 'center_002', 'center_001'],
+    sortOrder: ['center_season_s1', 'center_004', 'center_003', 'center_002', 'center_001'],
     events: [
+        {
+            id: 'center_season_s1',
+            category: 'season',
+            title: '第一赛季「初始化」',
+            subtitle: '赛季通行证正式开启 · 120级奖励等你解锁',
+            status: 'upcoming',
+            description: '全新赛季通行证第一赛季「初始化」即将开启！<p>120 级免费/付费双档位奖励长线，日常/周常/赛季三层任务系统，满级后更有 EX 溢出奖励持续发放。</p><p>赛季期间购买通行证组合包可立即获得 10 级、经验值补给卡Ⅳ×2、PRE Coin 补给包Ⅳ×1 与限定「第一赛季纪念徽章」。</p><p>赛季时间：2026年10月1日 08:00 - 2026年12月31日 17:00（UTC+8）</p><p>赛季开始后点击「立即参与」即可打开赛季通行证界面</p>',
+            icon: 'fa-trophy',
+            announcementId: 'event_season_s1',
+            showParticipate: true,
+            participateAction: 'pass',
+            startTime: SEASON_PASS_EVENT.startTime,
+            endTime: SEASON_PASS_EVENT.endTime
+        },
+
         {
             id: 'center_004',
             category: 'special',
@@ -260,7 +297,7 @@ function getEventExpMultiplier() {
 }
 
 // 当前经验获取总倍率 = 活动固定倍率 × 仓库经验值加成卡倍率
-// 加成卡仍严格遵循其自身叠加规则（不同类型可叠加、同类型不可叠加、最多同时3张）
+// 加成卡仍严格遵循其自身叠加规则（不同类型可叠加、同类型不可叠加、最多同时4张）
 function getTotalExpMultiplier() {
     var eventMult = getEventExpMultiplier();
     var cardMult = (typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1;
@@ -862,6 +899,12 @@ function showEventCenterDetail(id) {
                         closeEventCenterModal();
                         setTimeout(function() {
                             if (typeof showShopModal === 'function') showShopModal();
+                        }, 350);
+                    } else if (targetEvt && targetEvt.participateAction === 'pass') {
+                        // 直接打开赛季通行证弹窗
+                        closeEventCenterModal();
+                        setTimeout(function() {
+                            if (window.pass && typeof window.pass.openUI === 'function') window.pass.openUI();
                         }, 350);
                     } else if (targetEvt && targetEvt.id === 'center_001') {
                         closeEventCenterModal();

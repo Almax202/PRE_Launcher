@@ -3,14 +3,15 @@
 // 数据按账户隔离存储（localStorage key = warehouse_<username>），不同账户仓库互不相通
 // 入口：游戏中心顶部导航栏「仓库」条目（登录页不显示）
 // 道具接入：
-//   - 经验加成卡：支持多类型叠加（I+II+III 三种不同类型可同时生效，同类型不可叠加，最多同时3张），每张30分钟
+//   - 经验加成卡：支持多类型叠加（I+II+III+Ⅳ 四种不同类型可同时生效任意4张，同类型不可叠加），每张30分钟；同时激活4张时叠加可达 +100%
 //   - 幸运币：使用后激活幸运状态，下一次提取自动消耗并提升稀有项概率
 //   - 单抽/十连卡券：提取时自动优先使用（免费抵扣狂气消耗）
 //   - 补签卡：在每日签到页点击未解锁的奖励卡即可使用，立即解锁并领取该天奖励
 //   - 经验值补给卡：使用后立即获得对应点数经验值，直接对账户等级生效
+//   - PRE Coin 补给包：使用后立即获得对应数量 PRE Coin，直接对账户余额生效（addPreCoin）
 // 开发者模式：系统设置开启开发者模式后，仓库工具栏最右侧显示「获取道具（dev）」按钮
 
-var WAREHOUSE_DATA_VERSION = 4; // v4: expBuff(单对象) → expBuffs(数组, 支持多类型叠加)
+var WAREHOUSE_DATA_VERSION = 5; // v5: 经验加成卡叠加上限 3 → 4（支持 I+II+III+Ⅳ 同时激活可达 +100%）
 
 // ===== 开发者移除模式状态（由「移除道具（dev）」按钮切换） =====
 var WAREHOUSE_REMOVE_MODE = false;
@@ -26,76 +27,125 @@ var WAREHOUSE_SHOW_SOURCE = true;
 // 邮件系统对接：附件 type='warehouse' 时通过 warehouseAddItem 自动发放，新增道具无需修改邮件系统
 var WAREHOUSE_ITEMS = {
     // ---- 消耗品 ----
+    // flavorText: 物品配文（风味文本），展示在物品详情弹窗中，全文以斜体显示
     exp_boost_small: {
-        name: '经验值加成卡 Ⅰ', icon: 'fas fa-arrow-up', color: '#3498db',
+        name: '经验值加成卡 Ⅰ', icon: 'fas fa-gauge', color: '#3498db',
         category: 'consumable', rarity: 'common', showSource: true,
-        desc: '使用后30分钟内，经验获取提升5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时3张）。',
+        desc: '使用后30分钟内，经验获取提升5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。',
+        flavorText: '一张微微泛着蓝色光芒的卡片，握在手中时，仿佛连时间的流速都变得更有价值。\n——是谁研发出的这张卡片呢？也许这是一个新的开始。',
         source: '活动奖励 / 商店兑换', usable: true, _boostType: 'small', _boostPercent: 5
     },
     exp_boost_mid: {
-        name: '经验值加成卡 Ⅱ', icon: 'fas fa-arrow-circle-up', color: '#9b59b6',
+        name: '经验值加成卡 Ⅱ', icon: 'fas fa-chart-line', color: '#9b59b6',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '使用后30分钟内，经验获取提升15%（可与不同类型加成卡叠加，同类型不可叠加，最多同时3张）。',
+        desc: '使用后30分钟内，经验获取提升15%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。',
+        flavorText: '一张微微泛着紫色光芒的卡片，激活它的人会感到思维前所未有地敏捷。\n——或许这张卡片内含的可能性远比你想象的更多。',
         source: '活动奖励 / 商店兑换', usable: true, _boostType: 'mid', _boostPercent: 15
     },
     exp_boost_large: {
         name: '经验值加成卡 Ⅲ', icon: 'fas fa-rocket', color: '#f39c12',
         category: 'consumable', rarity: 'epic', showSource: true,
-        desc: '使用后30分钟内，经验获取提升30%（可与不同类型加成卡叠加，同类型不可叠加，最多同时3张）。',
+        desc: '使用后30分钟内，经验获取提升30%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。',
+        flavorText: '一张微微泛着黄色光芒的卡片，仿佛下一秒就要升空 \n——所谓效率的极限，本来就是用来被突破的。',
         source: '特殊活动奖励', usable: true, _boostType: 'large', _boostPercent: 30
     },
+    exp_boost_premium: {
+        name: '经验值加成卡 Ⅳ', icon: 'fas fa-fire', color: '#c0392b',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用后30分钟内，经验获取提升50%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。当 I+II+III+Ⅳ 中任意四张同时激活时，叠加可达 +100%。',
+        flavorText: '一张微微泛着红色光芒的卡片，炽红烈焰沿卡缘燃起，连空气都被蒸腾出涟漪 \n——这是经验加成的极致形态，令人难以直视。',
+        source: '高级活动奖励 / 商店兑换', usable: true, _boostType: 'premium', _boostPercent: 50
+    },
     gacha_single: {
-        name: '单次抽卡卷', icon: 'fas fa-ticket-alt', color: '#2ecc71',
+        name: '单次抽卡卷', icon: 'fas fa-ticket-simple', color: '#2ecc71',
         category: 'consumable', rarity: 'rare', showSource: true,
         desc: '在抽卡模拟器提取1次时自动优先使用，本次提取免扣狂气。',
+        flavorText: '一张薄薄的券，却承载着一次与命运握手言和的机会。\n——命运从来不会提前预告答案，而你要做的只是伸出手。',
         source: '签到 / 邮件附件', usable: false
     },
     gacha_ten: {
-        name: '十连抽卡卷', icon: 'fas fa-ticket', color: '#8e44ad',
+        name: '十连抽卡卷', icon: 'fas fa-layer-group', color: '#8e44ad',
         category: 'consumable', rarity: 'epic', showSource: true,
         desc: '在抽卡模拟器十连提取时自动优先使用，本次提取免扣狂气。',
+        flavorText: '十声呼唤凝成一纸契约，这一次，幸运或许会十次叩响你的门。\n——当十扇门同时开启，总有一扇门后藏着你期待已久的风景。',
         source: '特殊活动奖励', usable: false
     },
     makeup_card: {
         name: '补签卡', icon: 'fas fa-calendar-plus', color: '#e67e22',
         category: 'consumable', rarity: 'rare', showSource: true,
         desc: '在部分签到活动中可使用该补签卡即可解锁未被解锁的奖励卡，并领取该天奖励。',
+        flavorText: '错过的时光终究无法倒流，但这张卡可以为你轻轻补上那一天的印记。\n——认真对待每一天的人，也值得被每一天温柔以待。',
         source: '活动奖励 / 邮件附件', usable: false
     },
     luck_coin: {
-        name: '幸运币', icon: 'fas fa-coins', color: '#f1c40f',
+        name: '幸运币', icon: 'fas fa-dice-five', color: '#f1c40f',
         category: 'consumable', rarity: 'rare', showSource: true,
         desc: '使用后激活幸运状态：下一次提取时稀有项概率翻倍（自动消耗1枚）。',
+        flavorText: '把它轻轻抛起的那一刻，仿佛连概率女神都忍不住多看了你一眼。\n——所谓幸运，不过是机会恰好遇见了相信它的人。',
         source: '百宝箱 / 活动奖励', usable: true
     },
     exp_supply_1: {
         name: '经验值补给卡 Ⅰ', icon: 'fas fa-star', color: '#3498db',
         category: 'consumable', rarity: 'common', showSource: true,
         desc: '使用后获得300点经验值，将立即对账户等级生效。',
+        flavorText: '一颗安静的蓝色小星星，是漫长旅途中恰到好处的一次补给。\n——再小的星光，也曾照亮过某个赶路者的夜晚。',
         source: '活动奖励 / 邮件附件', usable: true, _expGain: 300
     },
     exp_supply_2: {
-        name: '经验值补给卡 Ⅱ', icon: 'fas fa-star', color: '#9b59b6',
+        name: '经验值补给卡 Ⅱ', icon: 'fas fa-atom', color: '#9b59b6',
         category: 'consumable', rarity: 'rare', showSource: true,
         desc: '使用后获得600点经验值，将立即对账户等级生效。',
+        flavorText: '紫色星光在掌心微微跳动，成长的脚步似乎又轻快了几分。\n——每一次恰到好处的补给，都是为了让脚步走得更远。',
         source: '活动奖励 / 邮件附件', usable: true, _expGain: 600
     },
     exp_supply_3: {
-        name: '经验值补给卡 Ⅲ', icon: 'fas fa-star', color: '#f39c12',
+        name: '经验值补给卡 Ⅲ', icon: 'fas fa-asterisk', color: '#f39c12',
         category: 'consumable', rarity: 'epic', showSource: true,
         desc: '使用后获得1000点经验值，将立即对账户等级生效。',
+        flavorText: '金色的星芒几乎要从卡面溢出——厚积，方能薄发。\n——所有看似突如其来的跃升，其实都早有伏笔。',
         source: '活动奖励 / 邮件附件', usable: true, _expGain: 1000
     },
     exp_supply_4: {
-        name: '经验值补给卡 Ⅳ', icon: 'fas fa-star', color: '#e74c3c',
+        name: '经验值补给卡 Ⅳ', icon: 'fas fa-sun', color: '#e74c3c',
         category: 'consumable', rarity: 'legendary', showSource: true,
         desc: '使用后获得2000点经验值，将立即对账户等级生效。',
+        flavorText: '传说中最炽热的一枚红色星辰，只为真正准备好迎接蜕变的人闪耀。\n——当光芒积蓄到极致，蜕变便会在不经意间发生。',
         source: '高级活动奖励 / 商店兑换', usable: true, _expGain: 2000
     },
-    exchange_card: {
-        name: '自选物品兑换卡', icon: 'fas fa-ticket', color: '#16a085',
+    precoin_supply_1: {
+        name: 'PRE Coin 补给包 Ⅰ', icon: 'fas fa-coins', color: '#3498db',
+        category: 'consumable', rarity: 'common', showSource: true,
+        desc: '使用后获得 100 PRE Coin，将立即对账户余额生效。',
+        flavorText: '薄薄的一张纸币，却是商店里所有心动物品的入场券。\n——财富的积累，往往始于一枚硬币的重量。',
+        source: '活动奖励 / 邮件附件', usable: true, _precoinGain: 100
+    },
+    precoin_supply_2: {
+        name: 'PRE Coin 补给包 Ⅱ', icon: 'fas fa-piggy-bank', color: '#9b59b6',
+        category: 'consumable', rarity: 'rare', showSource: true,
+        desc: '使用后获得 300 PRE Coin，将立即对账户余额生效。',
+        flavorText: '一叠紫色波纹的钞票在指间沙沙作响——商店橱窗里的好东西，正在向你招手。\n——会为喜欢的事物驻足的人，也一定懂得努力的意义。',
+        source: '活动奖励 / 邮件附件', usable: true, _precoinGain: 300
+    },
+    precoin_supply_3: {
+        name: 'PRE Coin 补给包 Ⅲ', icon: 'fas fa-wallet', color: '#f39c12',
+        category: 'consumable', rarity: 'epic', showSource: true,
+        desc: '使用后获得 600 PRE Coin，将立即对账户余额生效。',
+        flavorText: '鼓鼓囊囊的金色钱袋，沉甸甸的分量足以让任何一次购物都变得从容。\n——所谓从容，不过是在心动来临之前早已做好准备。',
+        source: '高级活动奖励 / 邮件附件', usable: true, _precoinGain: 600
+    },
+    precoin_supply_4: {
+        name: 'PRE Coin 补给包 Ⅳ', icon: 'fas fa-box-open', color: '#e74c3c',
         category: 'consumable', rarity: 'legendary', showSource: true,
-        desc: '使用该兑换卡后可以任选一个当前版本在商店内正在售卖的物品进行兑换获取。（该兑换卡可以兑换包括之后新加入的物品；该兑换卡不包含也不能兑换商店内所有的组合包）',
+        desc: '使用后获得 1500 PRE Coin，将立即对账户余额生效。',
+        flavorText: '传说的宝箱在阳光下发出炫目的金光——一次开启，便是商店的一次自由巡礼。\n——自由选择的底气，从来都是自己一点点攒下的。',
+        source: '高级活动奖励 / 特殊补偿', usable: true, _precoinGain: 1500
+    },
+
+    exchange_card: {
+        name: '自选物品兑换卡', icon: 'fas fa-gift', color: '#16a085',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用该兑换卡后可以任选一个当前版本在商店内正在售卖的物品进行兑换获取。（包括未来新加入的物品（不含特殊物品）；该兑换卡不包含也不能兑换商店内所有的组合包）',
+        flavorText: '「你想要什么？」——这一次，选择权完全握在你自己手中。\n——世间最珍贵的从来不是礼物本身，而是握在手中的选择权。',
         source: '特殊补偿 / 活动奖励', usable: true, _exchangeCard: true
     },
 
@@ -104,31 +154,43 @@ var WAREHOUSE_ITEMS = {
         name: '先驱者勋章', icon: 'fas fa-medal', color: '#f39c12',
         category: 'badge', rarity: 'legendary', showSource: true,
         desc: '授予早期加入启动器的用户纪念勋章。',
+        flavorText: '致所有在黎明前就启程的人：后来的万家灯火里，有你们点亮的最初一束。\n——总有人要先迈出第一步，后来者才会看见路的方向。',
         source: '成就系统（敬请期待）', usable: false
     },
     anniv_badge: {
         name: '周年纪念徽章', icon: 'fas fa-award', color: '#f1c40f',
         category: 'badge', rarity: 'legendary', showSource: true,
         desc: 'PRE Launcher 周年庆典限定纪念徽章。',
+        flavorText: '一整年的时光凝作一枚徽章，感谢你陪启动器走过的每一个春夏秋冬。\n——时光从不回答，却悄悄把陪伴酿成了最珍贵的纪念。',
         source: '周年庆活动', usable: false
     },
     half_anniv_badge: {
         name: '半周年纪念徽章', icon: 'fas fa-certificate', color: '#e67e22',
         category: 'badge', rarity: 'legendary', showSource: true,
         desc: 'PRE Launcher 半周年限定纪念徽章。',
+        flavorText: '半载同行，不长不短，恰好足够把彼此的名字写进同一段故事里。\n——故事还长，这半载只是序章，未来仍值得期待。',
         source: '半周年活动', usable: false
     },
     diligent_medal: {
         name: '勤奋者勋章', icon: 'fas fa-ribbon', color: '#27ae60',
         category: 'badge', rarity: 'legendary', showSource: true,
         desc: '授予连续签到满180天用户的荣誉勋章，镌刻着持之以恒的勤奋。',
+        flavorText: '一百八十个日夜未曾间断——勤奋从来不是一时兴起，而是一种习惯。\n——所有看似轻松的毫不费力，背后都是不为人知的坚持。',
         source: '签到里程碑 · 连续签到180天', usable: false
     },
     persistent_medal: {
         name: '坚持者勋章', icon: 'fas fa-gem', color: '#9b59b6',
         category: 'badge', rarity: 'legendary', showSource: true,
         desc: '授予连续签到满365天用户的至高荣誉勋章，见证一整年的不懈坚持。',
+        flavorText: '三百六十五天的坚持，让这枚勋章拥有了比宝石更璀璨的重量。\n——能把一件事重复三百六十五天的人，本身就已是传奇。',
         source: '签到里程碑 · 连续签到365天', usable: false
+    },
+    season1_badge: {
+        name: '第一赛季纪念徽章', icon: 'fas fa-rocket', color: '#ff6b9d',
+        category: 'badge', rarity: 'legendary', showSource: true,
+        desc: '购买第一赛季「初始化」通行证组合包即刻获得的限定纪念徽章，可展示在您的用户名片个人荣勋中。',
+        flavorText: '「初始化」——一切伟大航程的起点，都被铭刻在这枚徽章之中。\n——第一赛季的序章由你开启，而传说才刚刚开始。',
+        source: '购买第一赛季「初始化」通行证组合包', usable: false
     }
 };
 
@@ -137,7 +199,7 @@ var WAREHOUSE_CATEGORIES = [
     { id: 'all', name: '全部', icon: 'fas fa-th-large' },
     { id: 'consumable', name: '消耗品', icon: 'fas fa-bolt' },
     { id: 'material', name: '材料', icon: 'fas fa-cubes' },
-    { id: 'badge', name: '徽章', icon: 'fas fa-medal' }
+    { id: 'badge', name: '徽章', icon: 'fas fa-id-badge' }
 ];
 
 // 稀有度配置（用于排序/类型tag配色）
@@ -305,7 +367,8 @@ function warehouseAddTimedItems(items, source, expiryDays, silent) {
 
 // ==================== 仓库操作 API（供其他模块调用） ====================
 // 添加道具：warehouseAddItem('gacha_single', 1, '签到第3天奖励')
-function warehouseAddItem(itemId, qty, source) {
+// silent = true 时不弹 toast（由调用方自行汇总展示，如通行证批量领取结算弹窗）
+function warehouseAddItem(itemId, qty, source, silent) {
     if (!WAREHOUSE_ITEMS[itemId]) return false;
     qty = Math.max(1, parseInt(qty, 10) || 1);
     var data = getWarehouseData();
@@ -317,7 +380,7 @@ function warehouseAddItem(itemId, qty, source) {
     }
     if (source) entry.source = source;
     saveWarehouseData(data);
-    if (typeof showToast === 'function') {
+    if (!silent && typeof showToast === 'function') {
         var item = WAREHOUSE_ITEMS[itemId];
         showToast({ type: 'success', title: '仓库', message: '获得道具：' + item.name + ' ×' + qty });
     }
@@ -422,11 +485,11 @@ function getWarehouseExpBuffs() {
     return _cleanExpBuffs(data);
 }
 
-// 激活经验加成（支持多类型叠加，同类型刷新时长，最多 3 张同时生效）
-// boostType: 'small' | 'mid' | 'large'，percent: 5/15/30
+// 激活经验加成（支持多类型叠加，同类型刷新时长，最多 4 张同时生效）
+// boostType: 'small' | 'mid' | 'large' | 'premium'，percent: 5/15/30/50
 // 返回值：{ ok: bool, reason: string|null }
 //   ok=true  → 成功激活（新增或刷新时长）
-//   ok=false → 失败（同类型已在生效 or 已达上限 3 张）
+//   ok=false → 失败（同类型已生效 or 已达上限 4 张）
 function activateWarehouseExpBuff(boostType, percent) {
     var data = getWarehouseData();
     var buffs = _cleanExpBuffs(data);
@@ -445,8 +508,8 @@ function activateWarehouseExpBuff(boostType, percent) {
         saveWarehouseData(data);
         return { ok: true, refreshed: true };
     }
-    if (buffs.length >= 3) {
-        return { ok: false, reason: '已同时激活 3 张不同类型加成卡，无法继续叠加' };
+    if (buffs.length >= 4) {
+        return { ok: false, reason: '已同时激活 4 张不同类型加成卡，无法继续叠加' };
     }
     buffs.push({ type: boostType, percent: percent, multiplier: 1 + percent / 100, expiresAt: expiresAt });
     data.expBuffs = buffs;
@@ -784,14 +847,28 @@ function renderWarehouseItems() {
         var buffs = getWarehouseExpBuffs();
         if (buffs.length > 0) {
             var totalMult = getWarehouseExpMultiplier();
-            var typeLabels = { small: '卡I', mid: '卡II', large: '卡III' };
+            var typeLabels = { small: '卡I', mid: '卡II', large: '卡III', premium: '卡Ⅳ' };
             var buffTags = buffs.map(function(b) { return (typeLabels[b.type] || b.type) + '+' + b.percent + '%'; }).join(' ');
             buffInfo = '<span class="wh-stat wh-buff"><i class="fas fa-bolt"></i> 经验加成 ×' + totalMult.toFixed(2) + ' 生效中 <b style="font-weight:normal;font-size:11px;opacity:.85;">[' + buffTags + ']</b></span>';
         }
-        stats.innerHTML = '<span class="wh-stat"><i class="fas fa-layer-group"></i> 道具种类 <b>' + totalNormalKinds + '</b></span>' +
+        stats.innerHTML = '<span class="wh-stat wh-precoin-stat" id="whPrecoinStat" title="点击查看 PRE Coin 说明"><i class="fas fa-coins" style="color:#ffd93d;"></i> PRE Coin <b id="whPrecoinStatVal">0</b></span>' +
+            '<span class="wh-stat"><i class="fas fa-layer-group"></i> 道具种类 <b>' + totalNormalKinds + '</b></span>' +
             '<span class="wh-stat"><i class="fas fa-cube"></i> 道具总数 <b>' + totalNormalQty + '</b></span>' +
             (totalTimed > 0 ? '<span class="wh-stat"><i class="fas fa-clock" style="color:#f39c12;"></i> 限时 <b style="color:#f39c12;">' + totalTimed + '</b></span>' : '') +
             buffInfo;
+        // 更新 PRE Coin 余额并绑定点击事件
+        var precoinVal = stats.querySelector('#whPrecoinStatVal');
+        if (precoinVal && typeof getPreCoinBalance === 'function') {
+            precoinVal.textContent = getPreCoinBalance();
+        }
+        var precoinStat = stats.querySelector('#whPrecoinStat');
+        if (precoinStat) {
+            precoinStat.addEventListener('click', function() {
+                if (typeof window.showPrecoinDescription === 'function') {
+                    window.showPrecoinDescription(0, 'warehouse');
+                }
+            });
+        }
     }
 
     if (cards.length === 0) {
@@ -808,6 +885,17 @@ function renderWarehouseItems() {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             useWarehouseItem(btn.getAttribute('data-id'), btn.getAttribute('data-timed-uid') || null);
+        });
+    });
+
+    // 绑定卡片点击：打开物品详情弹窗（移除模式下不响应；按钮的点击已 stopPropagation）
+    content.querySelectorAll('.wh-item-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            if (WAREHOUSE_REMOVE_MODE) return;
+            var id = card.getAttribute('data-item-id');
+            if (!id) return;
+            var tuid = card.getAttribute('data-timed-uid');
+            showWarehouseItemDetail(id, { timedUid: tuid || null });
         });
     });
 
@@ -882,7 +970,7 @@ function buildWarehouseCardHTML(itemId, entry, removeMode, timedMeta) {
         }
     }
 
-    return '<div class="wh-item-card' + (isTimed ? ' wh-timed-card' : '') + (removeMode ? ' wh-remove-mode' : '') + '">' +
+    return '<div class="wh-item-card' + (isTimed ? ' wh-timed-card' : '') + (removeMode ? ' wh-remove-mode' : '') + '" data-item-id="' + itemId + '"' + (isTimed ? ' data-timed-uid="' + timedMeta.uid + '"' : '') + '>' +
         '<span class="wh-qty-badge">×' + entry.qty + '</span>' +
         '<span class="wh-type-tag" style="color:' + rarity.color + '; border-color:' + rarity.color + ';">' + categoryLabel + '</span>' +
         timedTagHtml +
@@ -903,9 +991,10 @@ function getWarehouseCategoryLabel(category) {
 }
 
 // 使用道具（支持限时物品：传入 timedUid 指定扣减 timedItems 中的条目）
+// 返回值：true = 使用成功（或已打开后续流程弹窗）；false = 使用失败（物品不可用/数量不足/加成激活被拒）
 function useWarehouseItem(itemId, timedUid) {
     var item = WAREHOUSE_ITEMS[itemId];
-    if (!item || !item.usable) return;
+    if (!item || !item.usable) return false;
 
     var data = getWarehouseData();
     cleanExpiredTimedItems(data);
@@ -916,21 +1005,29 @@ function useWarehouseItem(itemId, timedUid) {
         for (var i = 0; i < (data.timedItems || []).length; i++) {
             if (data.timedItems[i].uid === timedUid) { timedEntry = data.timedItems[i]; break; }
         }
-        if (!timedEntry || timedEntry.qty <= 0) return;
+        if (!timedEntry || timedEntry.qty <= 0) return false;
     } else {
         normalEntry = data.items[itemId];
-        if (!normalEntry || normalEntry.qty <= 0) return;
+        if (!normalEntry || normalEntry.qty <= 0) return false;
     }
 
     // 自选物品兑换卡：打开选择弹窗，确认兑换后才消耗（不在此处消耗）
     if (item._exchangeCard) {
         openExchangeCardModal();
-        return;
+        return true;
+    }
+
+    // 批量使用弹窗：持有数量 > 1 且非加成卡（同类型不可叠加，批量无意义）、非幸运币（一次性布尔标记，批量浪费）、非兑换卡时弹出
+    var ownedQty = timedEntry ? timedEntry.qty : normalEntry.qty;
+    if (ownedQty > 1 && !item._exchangeCard && !item._boostType && itemId !== 'luck_coin') {
+        showWarehouseBatchUseModal(itemId, timedUid, ownedQty);
+        return true;
     }
 
     var isBoost = item._boostType && typeof item._boostPercent === 'number';
     var isLucky = itemId === 'luck_coin';
     var expGain = item._expGain || null;
+    var precoinGain = item._precoinGain || null;
 
     // 扣减数量（辅助函数）
     function deductOne() {
@@ -1016,15 +1113,377 @@ function useWarehouseItem(itemId, timedUid) {
             console.warn('[Warehouse] addCheckinExp not available, exp supply skipped:', expGain);
         }
     }
+    // PRE Coin 补给：与经验值补给独立分支处理（支持综合补给包同时发放经验+硬币）
+    if (precoinGain !== null) {
+        if (typeof addPreCoin === 'function') {
+            // silent=true：避免 addPreCoin 自带 toast 与下方统一提示重复
+            addPreCoin(precoinGain, '仓库道具：' + item.name, true);
+        } else {
+            console.warn('[Warehouse] addPreCoin not available, precoin supply skipped:', precoinGain);
+        }
+    }
 
     if (typeof showToast === 'function') {
         if (isLucky) {
             showToast({ type: 'success', title: '幸运状态', message: '幸运币已激活：下一次提取时稀有项概率翻倍（自动消耗）' });
+        } else if (expGain !== null && precoinGain !== null) {
+            showToast({ type: 'success', title: '综合补给', message: '「' + item.name + '」已使用，获得 ' + expGain + ' 点经验值和 ' + precoinGain + ' PRE Coin，均已生效' });
         } else if (expGain !== null) {
             showToast({ type: 'success', title: '经验值补给', message: '「' + item.name + '」已使用，获得 ' + expGain + ' 点经验值，已对账户等级生效' });
+        } else if (precoinGain !== null) {
+            showToast({ type: 'success', title: 'PRE Coin 补给', message: '「' + item.name + '」已使用，获得 ' + precoinGain + ' PRE Coin，已对账户余额生效' });
         }
     }
     renderWarehouseItems();
+    return true;
+}
+
+// ==================== 批量使用弹窗 ====================
+// 当仓库中某物品持有数量 > 1 且可批量使用时，先弹出数量选择弹窗
+function showWarehouseBatchUseModal(itemId, timedUid, maxQty) {
+    var item = WAREHOUSE_ITEMS[itemId];
+    if (!item) return;
+
+    var modal = document.getElementById('warehouseBatchUseModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'custom-alert';
+        modal.id = 'warehouseBatchUseModal';
+        modal.style.display = 'none';
+        modal.innerHTML =
+            '<div class="wh-batch-box">' +
+                '<button class="wh-batch-close" id="whBatchCloseBtn" type="button"><i class="fas fa-times"></i></button>' +
+                '<div class="wh-batch-iconpanel">' +
+                    '<div class="wh-batch-icon" style="background:' + hexToRgba(item.color || '#3498db', 0.15) + ';">' +
+                        '<i class="' + (item.icon || 'fas fa-gift') + '" style="color:' + (item.color || '#3498db') + ';"></i>' +
+                    '</div>' +
+                    '<div class="wh-batch-hold">持有 ×<span id="whBatchMax">1</span></div>' +
+                '</div>' +
+                '<div class="wh-batch-info">' +
+                    '<h3 class="wh-batch-name"></h3>' +
+                    '<p class="wh-batch-desc"></p>' +
+                '</div>' +
+                '<div class="wh-batch-control">' +
+                    '<button class="wh-batch-btn" id="whBatchMinus" type="button"><i class="fas fa-minus"></i></button>' +
+                    '<input type="number" id="whBatchInput" min="1" value="1">' +
+                    '<button class="wh-batch-btn" id="whBatchPlus" type="button"><i class="fas fa-plus"></i></button>' +
+                    '<button class="wh-batch-btn wh-batch-btn-max" id="whBatchMaxBtn" type="button">MAX</button>' +
+                '</div>' +
+                '<div class="wh-batch-preview" id="whBatchPreview"></div>' +
+                '<div class="wh-batch-footer">' +
+                    '<button class="wh-batch-cancel" id="whBatchCancel" type="button">取消</button>' +
+                    '<button class="wh-batch-confirm" id="whBatchConfirm" type="button"><i class="fas fa-check"></i> 确认使用</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(modal);
+
+        modal.querySelector('#whBatchCloseBtn').addEventListener('click', function() { closeModal(); });
+        modal.querySelector('#whBatchCancel').addEventListener('click', function() { closeModal(); });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                e.stopPropagation();
+                closeModal();
+            }
+        }, true);
+    }
+
+    function closeModal() {
+        modal.classList.remove('show');
+        setTimeout(function() { modal.style.display = 'none'; }, 250);
+    }
+
+    // 填充物品信息（弹窗标题/描述使用 class 选择器，与上方 innerHTML 模板一致）
+    modal.querySelector('.wh-batch-name').textContent = item.name;
+    modal.querySelector('.wh-batch-desc').textContent = item.desc;
+    modal.querySelector('#whBatchMax').textContent = maxQty;
+
+    var input = modal.querySelector('#whBatchInput');
+    input.max = maxQty;
+    input.value = 1;
+
+    function _clampInput() {
+        var n = parseInt(input.value, 10);
+        if (isNaN(n) || n < 1) n = 1;
+        if (n > maxQty) n = maxQty;
+        input.value = n;
+        updatePreview(n);
+        return n;
+    }
+
+    function updatePreview(n) {
+        var preview = modal.querySelector('#whBatchPreview');
+        var parts = [];
+        if (item._expGain) parts.push((item._expGain * n) + ' 点经验值');
+        if (item._precoinGain) parts.push((item._precoinGain * n) + ' PRE Coin');
+        if (itemId === 'luck_coin') parts.push('幸运状态（仅首次激活生效）');
+        if (parts.length > 0) {
+            preview.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> 预计效果：使用 ' + n + ' 次后获得 ' + parts.join('，');
+        } else {
+            preview.innerHTML = '<i class="fas fa-check-circle"></i> 将使用 ' + n + ' 次「' + item.name + '」';
+        }
+    }
+
+    // ± 按钮和输入框事件
+    var minusBtn = modal.querySelector('#whBatchMinus');
+    var plusBtn = modal.querySelector('#whBatchPlus');
+    var maxBtn = modal.querySelector('#whBatchMaxBtn');
+    var confirmBtn = modal.querySelector('#whBatchConfirm');
+
+    minusBtn.onclick = function() { input.value = Math.max(1, (parseInt(input.value, 10) || 1) - 1); _clampInput(); };
+    plusBtn.onclick = function() { input.value = Math.min(maxQty, (parseInt(input.value, 10) || 1) + 1); _clampInput(); };
+    maxBtn.onclick = function() { input.value = maxQty; _clampInput(); };
+    input.addEventListener('input', _clampInput);
+
+    updatePreview(1);
+
+    // 确认按钮
+    // 使用 cloneNode 清除旧监听（避免同一弹窗多次打开时重复绑定）
+    var newConfirm = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+    confirmBtn = newConfirm;
+    modal.querySelector('#whBatchConfirm').onclick = function() {
+        var useCount = _clampInput();
+        closeModal();
+        _doBatchUse(itemId, timedUid, useCount, item);
+    };
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+// 批量使用的核心逻辑：循环消耗物品并激活效果，最终统一通知
+function _doBatchUse(itemId, timedUid, useCount, item) {
+    var totalExpGain = 0, totalPrecoinGain = 0;
+    var luckyUsed = false;
+    var actualUsed = 0;
+
+    for (var i = 0; i < useCount; i++) {
+        // 每次循环重新扣减（优先按 timedUid 扣限时物品，否则扣普通物品）
+        var data = getWarehouseData();
+        cleanExpiredTimedItems(data);
+        var consumed = false;
+
+        if (timedUid) {
+            // 限时物品：按 uid 定位扣减
+            for (var j = 0; j < (data.timedItems || []).length; j++) {
+                if (data.timedItems[j].uid === timedUid) {
+                    data.timedItems[j].qty -= 1;
+                    if (data.timedItems[j].qty <= 0) data.timedItems.splice(j, 1);
+                    saveWarehouseData(data);
+                    consumed = true;
+                    break;
+                }
+            }
+        } else {
+            // 普通物品：直接扣减
+            var entry = data.items[itemId];
+            if (entry && entry.qty > 0) {
+                entry.qty -= 1;
+                if (entry.qty <= 0) delete data.items[itemId];
+                saveWarehouseData(data);
+                consumed = true;
+            }
+        }
+
+        if (!consumed) break;
+        actualUsed++;
+
+        // 激活效果（与 useWarehouseItem 中单个物品逻辑一致）
+        if (itemId === 'luck_coin' && !luckyUsed) {
+            activateWarehouseLucky();
+            luckyUsed = true;
+        }
+        if (item._expGain) {
+            if (typeof addCheckinExp === 'function') addCheckinExp(item._expGain);
+            totalExpGain += item._expGain;
+        }
+        if (item._precoinGain) {
+            if (typeof addPreCoin === 'function') addPreCoin(item._precoinGain, '仓库道具（批量）：' + item.name, true);
+            totalPrecoinGain += item._precoinGain;
+        }
+    }
+
+    // 汇总通知
+    if (actualUsed > 0 && typeof showToast === 'function') {
+        var toastType = 'success';
+        var toastTitle = '批量使用完成';
+        var toastMsg = '「' + item.name + '」共使用 ' + actualUsed + ' 次';
+        var extras = [];
+        if (totalExpGain > 0) extras.push(totalExpGain + ' 点经验值');
+        if (totalPrecoinGain > 0) extras.push(totalPrecoinGain + ' PRE Coin');
+        if (luckyUsed) extras.push('幸运状态已激活');
+        if (extras.length > 0) toastMsg += '，获得 ' + extras.join('，') + '，均已生效';
+        showToast({ type: toastType, title: toastTitle, message: toastMsg });
+    }
+
+    renderWarehouseItems();
+}
+
+// ==================== 物品详情弹窗（仓库 / 邮件附件 / 邮件领取记录共用） ====================
+// 布局：左侧约 1/3 为物品图标区，右侧自上而下为名称、详细介绍、风味文本（斜体）；
+// 右下角「使用该物品」按钮仅对可使用且当前拥有的物品显示。
+// options:
+//   timedUid    : 限时物品条目 uid（仓库限时卡片传入）
+//   qty         : 预览模式下展示的数量（如邮件附件数量）
+//   previewOnly : true = 仅预览（邮件附件/领取记录），不显示使用按钮
+function ensureWarehouseItemDetailModal() {
+    var modal = document.getElementById('warehouseItemDetailModal');
+    if (modal) return modal;
+
+    // 确保仓库样式已注入（邮件页直接打开详情弹窗时仓库弹窗可能尚未创建）
+    if (!document.getElementById('warehouse-style')) {
+        var style = document.createElement('style');
+        style.id = 'warehouse-style';
+        style.innerHTML = getWarehouseStyleCSS();
+        document.head.appendChild(style);
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'custom-alert';
+    modal.id = 'warehouseItemDetailModal';
+    modal.style.display = 'none';
+    modal.innerHTML =
+        '<div class="wh-detail-box" role="dialog" aria-modal="true" aria-labelledby="whDetailName">' +
+            '<button class="wh-detail-close" id="whDetailCloseBtn" type="button" aria-label="关闭"><i class="fas fa-times"></i></button>' +
+            '<div class="wh-detail-main">' +
+                '<div class="wh-detail-icon-panel" id="whDetailIconPanel"></div>' +
+                '<div class="wh-detail-info">' +
+                    '<h3 class="wh-detail-name" id="whDetailName"></h3>' +
+                    '<p class="wh-detail-desc" id="whDetailDesc"></p>' +
+                    '<div class="wh-detail-flavor" id="whDetailFlavor"></div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="wh-detail-footer" id="whDetailFooter"></div>' +
+        '</div>';
+    document.body.appendChild(modal);
+
+    modal.querySelector('#whDetailCloseBtn').addEventListener('click', closeWarehouseItemDetailModal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeWarehouseItemDetailModal();
+    });
+    // 捕获阶段处理 ESC：阻止下层弹窗（如仓库/邮件全屏弹窗）的 ESC 监听同时触发
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            e.stopPropagation();
+            closeWarehouseItemDetailModal();
+        }
+    }, true);
+    return modal;
+}
+
+function closeWarehouseItemDetailModal() {
+    var modal = document.getElementById('warehouseItemDetailModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(function() { modal.style.display = 'none'; }, 280);
+}
+
+function showWarehouseItemDetail(itemId, options) {
+    options = options || {};
+    var item = WAREHOUSE_ITEMS[itemId];
+    if (!item) return;
+
+    var modal = ensureWarehouseItemDetailModal();
+    var categoryLabel = getWarehouseCategoryLabel(item.category);
+
+    // 解析持有数量、来源与限时信息
+    var timedUid = options.timedUid || null;
+    var timedMeta = null;
+    var ownedQty = 0;
+    var sourceText = item.source || '';
+    var previewOnly = !!options.previewOnly;
+
+    if (!previewOnly) {
+        var data = getWarehouseData();
+        cleanExpiredTimedItems(data);
+        if (timedUid) {
+            for (var i = 0; i < (data.timedItems || []).length; i++) {
+                if (data.timedItems[i].uid === timedUid) { timedMeta = data.timedItems[i]; break; }
+            }
+            if (timedMeta) {
+                ownedQty = timedMeta.qty;
+                sourceText = timedMeta.source || item.source || '';
+            }
+        } else {
+            var entry = data.items[itemId];
+            if (entry) {
+                ownedQty = entry.qty;
+                sourceText = entry.source || item.source || '';
+            }
+        }
+    } else if (options.qty !== undefined && options.qty !== null) {
+        ownedQty = options.qty;
+    }
+
+    var displayName = item.name + (timedMeta ? '（限时）' : '');
+    var displayDesc = item.desc + (timedMeta ? '（该物品具有时效性，有效期为14天）' : '');
+
+    // ---- 左侧图标区 ----
+    var iconPanel = modal.querySelector('#whDetailIconPanel');
+    iconPanel.style.setProperty('--whc-soft', hexToRgba(item.color || '#3498db', 0.22));
+
+    var tagColor = item.color || '#d45d79';
+    var tagsHtml = '<span class="wh-detail-tag" style="color:' + tagColor + ';border-color:' + tagColor + ';">' + categoryLabel + '</span>';
+
+    var timedTagHtml = '';
+    if (timedMeta && timedMeta.expiresAt) {
+        var nowMs = Date.now();
+        var expireMs = new Date(timedMeta.expiresAt).getTime();
+        var daysLeft = Math.ceil((expireMs - nowMs) / (24 * 60 * 60 * 1000));
+        if (daysLeft < 0) daysLeft = 0;
+        var expireDate = new Date(expireMs);
+        var mm = ('0' + (expireDate.getMonth() + 1)).slice(-2);
+        var dd = ('0' + expireDate.getDate()).slice(-2);
+        timedTagHtml = '<span class="wh-detail-tag wh-detail-timed-tag" title="有效期至 ' + mm + '/' + dd + '">限时 · 剩' + daysLeft + '天</span>';
+    }
+
+    iconPanel.innerHTML =
+        '<div class="wh-detail-icon" style="background:' + hexToRgba(item.color || '#3498db', 0.15) + ';">' +
+            '<i class="' + (item.icon || 'fas fa-gift') + '" style="color:' + (item.color || '#3498db') + ';"></i>' +
+        '</div>' +
+        (ownedQty ? '<div class="wh-detail-qty">持有 ×' + ownedQty + '</div>' : '') +
+        '<div class="wh-detail-tag-row">' + tagsHtml + timedTagHtml + '</div>';
+
+    // ---- 右侧文本区 ----
+    modal.querySelector('#whDetailName').textContent = displayName;
+    modal.querySelector('#whDetailDesc').textContent = displayDesc;
+
+    var flavorEl = modal.querySelector('#whDetailFlavor');
+    if (item.flavorText) {
+        flavorEl.style.display = '';
+        flavorEl.innerHTML = '<i class="fas fa-quote-left wh-detail-flavor-mark"></i>' +
+            '<span class="wh-detail-flavor-text"></span>';
+        flavorEl.querySelector('.wh-detail-flavor-text').textContent = item.flavorText;
+    } else {
+        flavorEl.style.display = 'none';
+        flavorEl.innerHTML = '';
+    }
+
+    // ---- 底部：来源 + 使用按钮 ----
+    var footer = modal.querySelector('#whDetailFooter');
+    var canUse = !previewOnly && item.usable && ownedQty > 0;
+    footer.innerHTML =
+        '<div class="wh-detail-source">' +
+            (sourceText ? '<i class="fas fa-link"></i><span></span>' : '') +
+        '</div>' +
+        (canUse ? '<button class="wh-detail-use-btn" type="button"><i class="fas fa-hand-sparkles"></i> 使用该物品</button>' : '');
+    var sourceSpan = footer.querySelector('.wh-detail-source span');
+    if (sourceSpan) sourceSpan.textContent = sourceText;
+
+    var useBtn = footer.querySelector('.wh-detail-use-btn');
+    if (useBtn) {
+        useBtn.onclick = function() {
+            var ok = useWarehouseItem(itemId, timedUid);
+            // 使用成功（含打开兑换卡选择弹窗）后关闭详情；失败（如加成叠加被拒）则保留弹窗
+            if (ok !== false) closeWarehouseItemDetailModal();
+        };
+    }
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
 }
 
 // ==================== 自选物品兑换卡弹窗 ====================
@@ -1066,7 +1525,7 @@ function ensureExchangeCardModal() {
         <div class="wh-fullscreen wh-ex-fullscreen">
             <div class="wh-header">
                 <div class="wh-title">
-                    <i class="fas fa-ticket" style="color:#16a085;"></i>
+                    <i class="fas fa-gift" style="color:#16a085;"></i>
                     <h2>自选物品兑换卡</h2>
                 </div>
                 <span class="wh-ex-tip">选择一个商店在售物品后点击「确定兑换」（不可兑换组合包）</span>
@@ -1173,7 +1632,7 @@ function ensureExchangeConfirmModal() {
     modal.style.display = 'none';
     modal.innerHTML = `
         <div class="wh-confirm-box">
-            <div class="wh-confirm-icon" style="background:rgba(22,160,133,0.12); color:#16a085;"><i class="fas fa-ticket"></i></div>
+            <div class="wh-confirm-icon" style="background:rgba(22,160,133,0.12); color:#16a085;"><i class="fas fa-gift"></i></div>
             <h3>确定要兑换该物品吗？</h3>
             <div class="wh-ex-confirm-item" id="whExConfirmItem"></div>
             <div class="wh-confirm-actions">
@@ -1346,6 +1805,97 @@ function renderWarehouseDevItems() {
         });
     });
 }
+
+// ==================== PRE Coin 介绍弹窗 ====================
+// 通行证里点击 PRE 硬币槽、仓库里点击 PRE Coin 说明入口时弹出
+// context: 'pass' = 来自通行证（可能带 amount）, 'warehouse' = 来自仓库
+function showPrecoinDescription(amount, context) {
+    // 确保仓库样式已注入（通行证等入口直接打开 PRE Coin 介绍时，仓库弹窗可能尚未创建，.wh-precoin-* 样式尚未生效）
+    if (!document.getElementById('warehouse-style')) {
+        var style = document.createElement('style');
+        style.id = 'warehouse-style';
+        style.innerHTML = getWarehouseStyleCSS();
+        document.head.appendChild(style);
+    }
+
+    var modal = document.getElementById('warehousePrecoinModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'custom-alert';
+        modal.id = 'warehousePrecoinModal';
+        modal.style.display = 'none';
+        modal.innerHTML =
+            '<div class="wh-precoin-box">' +
+                '<button class="wh-precoin-close" id="whPrecoinCloseBtn" type="button"><i class="fas fa-times"></i></button>' +
+                '<div class="wh-precoin-iconpanel">' +
+                    '<div class="wh-precoin-icon">' +
+                        '<i class="fas fa-coins"></i>' +
+                    '</div>' +
+                    '<div class="wh-precoin-balance" id="whPrecoinBalance"></div>' +
+                '</div>' +
+                '<div class="wh-precoin-info">' +
+                    '<h3 class="wh-precoin-name">PRE Coin</h3>' +
+                    '<div class="wh-precoin-rarity-tag"><span>基础货币</span></div>' +
+                    '<p class="wh-precoin-desc">PRE Launcher 的基础货币，用于在商店购买各类道具、购买赛季通行证及其通行证等级升级。</p>' +
+                '</div>' +
+                '<div class="wh-precoin-section">' +
+                    '<h4><i class="fas fa-circle-question"></i> 如何获取 PRE Coin</h4>' +
+                    '<ul>' +
+                        '<li><i class="fas fa-hand-holding-dollar"></i> 赛季通行证付费档位：每级固定 +40，6 的倍数等级额外 +10</li>' +
+                        '<li><i class="fas fa-box-open"></i> 使用「PRE Coin 补给包」系列仓库道具</li>' +
+                        '<li><i class="fas fa-calendar-check"></i> 每日签到、特殊活动奖励、邮件附件</li>' +
+                        '<li><i class="fas fa-layer-group"></i> 通行证 EX 溢出奖励：免费每 10 经验 +50，付费额外 +100</li>' +
+                    '</ul>' +
+                '</div>' +
+                '<div class="wh-precoin-section">' +
+                    '<h4><i class="fas fa-bag-shopping"></i> PRE Coin 可以用来做什么</h4>' +
+                    '<ul>' +
+                        '<li><i class="fas fa-store"></i> 在商店购买各类道具（经验加成卡、补给卡、抽卡券等）</li>' +
+                        '<li><i class="fas fa-crown"></i> 购买 PRE 赛季通行证及其通行证等级</li>' +
+                    '</ul>' +
+                '</div>' +
+                '<div class="wh-precoin-flavor">' +
+                    '<i class="fas fa-quote-left"></i>' +
+                    '<span>商店里的每一次心动，都源于日积月累的一枚枚硬币。<br>——所谓自由选择的底气，从来都是自己一点点攒下的。</span>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(modal);
+
+        modal.querySelector('#whPrecoinCloseBtn').addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                e.stopPropagation();
+                closeModal();
+            }
+        }, true);
+    }
+
+    function closeModal() {
+        modal.classList.remove('show');
+        setTimeout(function() { modal.style.display = 'none'; }, 250);
+    }
+
+    // 显示当前余额
+    var balance = (typeof getPreCoinBalance === 'function') ? getPreCoinBalance() : 0;
+    var balanceEl = modal.querySelector('#whPrecoinBalance');
+    if (balanceEl) {
+        if (context === 'pass' && amount > 0) {
+            balanceEl.innerHTML = '当前余额：<b>' + balance + '</b> <span style="opacity:.7;">· 本等级奖励 +' + amount + '</span>';
+        } else {
+            balanceEl.innerHTML = '当前余额：<b>' + balance + '</b>';
+        }
+    }
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+
+    // 如果从通行证打开，提升层级在通行证弹窗之上
+    modal.style.zIndex = '1000000';
+}
+window.showPrecoinDescription = showPrecoinDescription;
 
 // 工具：hex 转 rgba
 function hexToRgba(hex, alpha) {
@@ -1552,6 +2102,40 @@ function getWarehouseStyleCSS() {
             grid-template-columns: repeat(6, 1fr);
             gap: 16px;
             align-content: start;
+        }
+
+        /* 自定义滚动条（仓库 / 获取道具 / 自选兑换卡 内容区共用） */
+        #warehouseModal .wh-content,
+        #warehouseDevModal .wh-content,
+        #exchangeCardModal .wh-content {
+            scrollbar-width: thin;
+            scrollbar-color: #667eea rgba(0, 0, 0, 0.06);
+        }
+        #warehouseModal .wh-content::-webkit-scrollbar,
+        #warehouseDevModal .wh-content::-webkit-scrollbar,
+        #exchangeCardModal .wh-content::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        #warehouseModal .wh-content::-webkit-scrollbar-track,
+        #warehouseDevModal .wh-content::-webkit-scrollbar-track,
+        #exchangeCardModal .wh-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 8px;
+        }
+        #warehouseModal .wh-content::-webkit-scrollbar-thumb,
+        #warehouseDevModal .wh-content::-webkit-scrollbar-thumb,
+        #exchangeCardModal .wh-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        #warehouseModal .wh-content::-webkit-scrollbar-thumb:hover,
+        #warehouseDevModal .wh-content::-webkit-scrollbar-thumb:hover,
+        #exchangeCardModal .wh-content::-webkit-scrollbar-thumb:hover {
+            background: #667eea;
+            background-clip: padding-box;
         }
 
         /* 道具卡片 - 与游戏中心卡片统一风格 */
@@ -1874,6 +2458,24 @@ function getWarehouseStyleCSS() {
             background: #1a1a2e;
         }
 
+        /* 暗色模式：自定义滚动条 */
+        body.dark-mode #warehouseModal .wh-content,
+        body.dark-mode #warehouseDevModal .wh-content,
+        body.dark-mode #exchangeCardModal .wh-content {
+            scrollbar-color: #8fa0ff rgba(255, 255, 255, 0.08);
+        }
+        body.dark-mode #warehouseModal .wh-content::-webkit-scrollbar-track,
+        body.dark-mode #warehouseDevModal .wh-content::-webkit-scrollbar-track,
+        body.dark-mode #exchangeCardModal .wh-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        body.dark-mode #warehouseModal .wh-content::-webkit-scrollbar-thumb,
+        body.dark-mode #warehouseDevModal .wh-content::-webkit-scrollbar-thumb,
+        body.dark-mode #exchangeCardModal .wh-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8fa0ff 0%, #a29bfe 100%);
+            background-clip: padding-box;
+        }
+
         body.dark-mode .wh-header,
         body.dark-mode .wh-toolbar,
         body.dark-mode .wh-footer,
@@ -2027,6 +2629,17 @@ function getWarehouseStyleCSS() {
             -webkit-backdrop-filter: blur(8px);
         }
 
+        /* ===== 自选物品兑换卡弹窗 ===== */
+        /* 固定弹窗尺寸：header/footer 锁定，仅 content 区滚动 */
+        .wh-ex-fullscreen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #f5f6fa;
+            overflow: hidden;
+        }
+
         .wh-ex-fullscreen .wh-title i { margin-right: 8px; }
 
         .wh-ex-tip {
@@ -2034,6 +2647,7 @@ function getWarehouseStyleCSS() {
             margin-right: 16px;
             font-size: 12px;
             color: #999;
+            flex-shrink: 0;
         }
 
         .wh-ex-content {
@@ -2043,6 +2657,8 @@ function getWarehouseStyleCSS() {
             align-content: start;
             padding: 24px 40px;
             overflow-y: auto;
+            flex: 1;
+            min-height: 0;
         }
 
         .wh-ex-card {
@@ -2227,6 +2843,715 @@ function getWarehouseStyleCSS() {
             .wh-ex-footer {
                 padding: 12px 16px;
             }
+        }
+
+        /* ==================== 物品详情弹窗（仓库 / 邮件附件 / 领取记录共用） ==================== */
+        #warehouseItemDetailModal {
+            z-index: 100001;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .wh-detail-box {
+            position: relative;
+            width: 780px;
+            max-width: 92vw;
+            max-height: 86vh;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.92);
+            transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
+        }
+
+        .custom-alert.show .wh-detail-box {
+            transform: scale(1);
+        }
+
+        .wh-detail-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.06);
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            z-index: 2;
+        }
+
+        .wh-detail-close:hover {
+            background: #d45d79;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .wh-detail-main {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        /* 左侧图标区（约 1/3） */
+        .wh-detail-icon-panel {
+            width: 34%;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 36px 24px;
+            background: radial-gradient(circle at 50% 38%, var(--whc-soft, rgba(212, 93, 121, 0.15)) 0%, #fafafa 72%);
+        }
+
+        .wh-detail-icon {
+            width: 108px;
+            height: 108px;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+        }
+
+        .wh-detail-qty {
+            padding: 4px 16px;
+            border-radius: 14px;
+            background: rgba(212, 93, 121, 0.12);
+            color: #d45d79;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .wh-detail-tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .wh-detail-tag {
+            padding: 3px 12px;
+            border-radius: 12px;
+            border: 1.5px solid;
+            background: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .wh-detail-tag.wh-detail-timed-tag {
+            color: #ffffff !important;
+            border-color: #f39c12 !important;
+            background: #f39c12;
+        }
+
+        /* 右侧文本区：名称 / 详细介绍 / 风味文本 */
+        .wh-detail-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 34px 34px 24px;
+            overflow-y: auto;
+        }
+
+        .wh-detail-name {
+            margin: 0;
+            padding-right: 40px;
+            font-size: 22px;
+            font-weight: bold;
+            line-height: 1.35;
+            color: #333;
+        }
+
+        .wh-detail-desc {
+            margin: 16px 0 0;
+            font-size: 14px;
+            line-height: 1.85;
+            color: #666;
+        }
+
+        /* 风味文本区：该区域内所有文本均以斜体显示 */
+        .wh-detail-flavor {
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border-left: 3px solid #d45d79;
+            background: rgba(212, 93, 121, 0.07);
+            font-style: italic;
+            font-size: 13.5px;
+            line-height: 1.8;
+            color: #9c5a70;
+        }
+
+        .wh-detail-flavor-mark {
+            font-style: italic;
+            font-size: 12px;
+            margin-right: 6px;
+            opacity: 0.7;
+        }
+
+        .wh-detail-flavor-text {
+            font-style: italic;
+            white-space: pre-wrap;
+        }
+
+        /* 底部：来源 + 右下角使用按钮 */
+        .wh-detail-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 30px;
+            background: #fafafa;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .wh-detail-source {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .wh-detail-source span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .wh-detail-use-btn {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(212, 93, 121, 0.35);
+        }
+
+        .wh-detail-use-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(212, 93, 121, 0.45);
+        }
+
+        /* 仓库卡片可点击提示（移除模式除外） */
+        #whContent .wh-item-card {
+            cursor: pointer;
+        }
+
+        #whContent .wh-item-card.wh-remove-mode {
+            cursor: default;
+        }
+
+        /* 邮件内仓库物品的可点击悬停反馈 */
+        .mail-attachment-item.mail-attachment-clickable {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .mail-attachment-item.mail-attachment-clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(212, 93, 121, 0.18);
+        }
+
+        .mail-history-item-reward.mail-history-reward-clickable:hover {
+            background: rgba(212, 93, 121, 0.22);
+            transform: translateY(-1px);
+        }
+
+        /* 物品详情弹窗暗色模式 */
+        body.dark-mode #warehouseItemDetailModal {
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        body.dark-mode .wh-detail-box {
+            background: #24243a;
+        }
+
+        body.dark-mode .wh-detail-icon-panel {
+            background: radial-gradient(circle at 50% 38%, var(--whc-soft, rgba(212, 93, 121, 0.2)) 0%, #24243a 72%);
+        }
+
+        body.dark-mode .wh-detail-icon {
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .wh-detail-tag {
+            background: #24243a;
+        }
+
+        body.dark-mode .wh-detail-qty {
+            background: rgba(212, 93, 121, 0.2);
+            color: #e67e8a;
+        }
+
+        body.dark-mode .wh-detail-name {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .wh-detail-desc {
+            color: #aaaaaa;
+        }
+
+        body.dark-mode .wh-detail-flavor {
+            background: rgba(212, 93, 121, 0.12);
+            color: #e2a8ba;
+        }
+
+        body.dark-mode .wh-detail-footer {
+            background: #1f1f33;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.dark-mode .wh-detail-source {
+            color: #777777;
+        }
+
+        body.dark-mode .wh-detail-close {
+            background: rgba(255, 255, 255, 0.08);
+            color: #cccccc;
+        }
+
+        body.dark-mode .wh-detail-close:hover {
+            background: #d45d79;
+            color: white;
+        }
+
+        /* 物品详情弹窗透明模式 */
+        body.transparent-mode #warehouseItemDetailModal {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        body.transparent-mode .wh-detail-box {
+            background: rgba(42, 42, 64, 0.62);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+        }
+
+        body.transparent-mode .wh-detail-icon-panel {
+            background: radial-gradient(circle at 50% 38%, var(--whc-soft, rgba(212, 93, 121, 0.22)) 0%, rgba(255, 255, 255, 0.04) 72%);
+        }
+
+        body.transparent-mode .wh-detail-tag {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        body.transparent-mode .wh-detail-name {
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        body.transparent-mode .wh-detail-desc {
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        body.transparent-mode .wh-detail-flavor {
+            background: rgba(212, 93, 121, 0.16);
+            color: rgba(255, 214, 226, 0.9);
+        }
+
+        body.transparent-mode .wh-detail-footer {
+            background: rgba(0, 0, 0, 0.18);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        body.transparent-mode .wh-detail-source {
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        /* 物品详情弹窗窄屏适配 */
+        @media (max-width: 768px) {
+            .wh-detail-box {
+                max-height: 92vh;
+            }
+
+            .wh-detail-main {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .wh-detail-icon-panel {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+                padding: 22px 18px 14px;
+            }
+
+            .wh-detail-icon {
+                width: 58px;
+                height: 58px;
+                border-radius: 16px;
+                font-size: 26px;
+            }
+
+            .wh-detail-info {
+                padding: 8px 22px 20px;
+                overflow: visible;
+            }
+
+            .wh-detail-name {
+                font-size: 18px;
+            }
+
+            .wh-detail-footer {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px 20px;
+            }
+
+            .wh-detail-source {
+                justify-content: center;
+            }
+
+            .wh-detail-use-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* ===== 批量使用弹窗 ===== */
+        .wh-batch-box {
+            position: relative;
+            background: linear-gradient(135deg, #ffffff 0%, #fff8fa 100%);
+            border-radius: 20px;
+            padding: 32px 28px 24px;
+            width: 420px;
+            max-width: 92vw;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 107, 157, 0.15);
+            animation: whPopIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .wh-batch-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.06);
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s;
+        }
+        .wh-batch-close:hover { background: rgba(0,0,0,0.12); color: #333; }
+        .wh-batch-iconpanel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .wh-batch-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+        .wh-batch-hold {
+            font-size: 13px;
+            color: #888;
+        }
+        .wh-batch-hold span {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+        .wh-batch-info { text-align: center; margin-bottom: 20px; }
+        .wh-batch-info h3 {
+            margin: 0 0 8px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .wh-batch-info p {
+            margin: 0;
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+            max-height: 40px;
+            overflow: hidden;
+        }
+        .wh-batch-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #f7f7fa;
+            border-radius: 14px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+        }
+        .wh-batch-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: none;
+            background: #fff;
+            color: #ff6b9d;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(255, 107, 157, 0.12);
+            transition: all 0.15s;
+        }
+        .wh-batch-btn:hover:not(:disabled) { background: #fff5f7; transform: scale(1.06); }
+        .wh-batch-btn:active:not(:disabled) { transform: scale(0.94); }
+        .wh-batch-btn-max {
+            width: auto;
+            padding: 0 12px;
+            font-size: 12px;
+            color: #c084fc;
+            box-shadow: 0 2px 8px rgba(192, 132, 252, 0.15);
+        }
+        .wh-batch-control input[type="number"] {
+            width: 70px;
+            height: 38px;
+            text-align: center;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            background: #fff;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+            -moz-appearance: textfield;
+        }
+        .wh-batch-control input[type="number"]::-webkit-outer-spin-button,
+        .wh-batch-control input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        .wh-batch-preview {
+            text-align: center;
+            font-size: 12.5px;
+            color: #888;
+            background: #fafaf5;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            line-height: 1.55;
+        }
+        .wh-batch-preview i { color: #f39c12; margin-right: 4px; }
+        .wh-batch-footer {
+            display: flex;
+            gap: 12px;
+        }
+        .wh-batch-footer button {
+            flex: 1;
+            height: 42px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .wh-batch-cancel {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        .wh-batch-cancel:hover { background: #e5e7eb; }
+        .wh-batch-confirm {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c084fc 100%);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(255, 107, 157, 0.35);
+        }
+        .wh-batch-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255, 107, 157, 0.45); }
+
+        /* ===== PRE Coin 介绍弹窗 ===== */
+        .wh-precoin-box {
+            position: relative;
+            background: linear-gradient(135deg, #fffef5 0%, #fff8ea 100%);
+            border-radius: 20px;
+            padding: 28px 26px 24px;
+            width: 460px;
+            max-width: 92vw;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 217, 61, 0.25);
+            animation: whPopIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .wh-precoin-box::-webkit-scrollbar { width: 6px; }
+        .wh-precoin-box::-webkit-scrollbar-thumb { background: rgba(255, 217, 61, 0.4); border-radius: 3px; }
+        .wh-precoin-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.06);
+            color: #666;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s;
+            z-index: 1;
+        }
+        .wh-precoin-close:hover { background: rgba(0,0,0,0.12); color: #333; }
+        .wh-precoin-iconpanel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .wh-precoin-icon {
+            width: 78px;
+            height: 78px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255, 217, 61, 0.25) 0%, rgba(255, 165, 0, 0.18) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            color: #ffb300;
+            box-shadow: 0 6px 20px rgba(255, 179, 0, 0.25);
+        }
+        .wh-precoin-balance {
+            font-size: 13px;
+            color: #888;
+        }
+        .wh-precoin-balance b {
+            color: #ffb300;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .wh-precoin-info { text-align: center; margin-bottom: 16px; }
+        .wh-precoin-name {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #2d3748;
+            letter-spacing: 1px;
+        }
+        .wh-precoin-rarity-tag {
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .wh-precoin-rarity-tag span {
+            font-size: 11px;
+            font-weight: 600;
+            color: #ffb300;
+            border: 1.5px solid rgba(255, 179, 0, 0.4);
+            border-radius: 6px;
+            padding: 2px 10px;
+            letter-spacing: 1px;
+        }
+        .wh-precoin-desc {
+            margin: 0;
+            font-size: 13.5px;
+            color: #4b5563;
+            line-height: 1.65;
+            text-align: left;
+            padding: 0 4px;
+        }
+        .wh-precoin-section {
+            margin-top: 14px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .wh-precoin-section h4 {
+            margin: 0 0 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wh-precoin-section h4 i { color: #ffb300; }
+        .wh-precoin-section ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .wh-precoin-section li {
+            font-size: 12.5px;
+            color: #6b7280;
+            line-height: 1.8;
+            padding-left: 4px;
+        }
+        .wh-precoin-section li i {
+            color: #ffb300;
+            margin-right: 6px;
+            font-size: 11px;
+            width: 14px;
+            text-align: center;
+        }
+        .wh-precoin-flavor {
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(255, 217, 61, 0.12) 0%, rgba(255, 165, 0, 0.08) 100%);
+            border-radius: 12px;
+            font-size: 12px;
+            color: #92683f;
+            font-style: italic;
+            line-height: 1.7;
+            position: relative;
+        }
+        .wh-precoin-flavor i {
+            color: rgba(255, 179, 0, 0.6);
+            font-size: 10px;
+            margin-right: 4px;
+        }
+
+        /* PRE Coin stat 可点击样式 */
+        .wh-precoin-stat {
+            cursor: pointer;
+            transition: transform 0.15s, background 0.18s;
+        }
+        .wh-precoin-stat:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 217, 61, 0.12);
+        }
+        .wh-precoin-stat:active { transform: scale(0.97); }
+
+        @keyframes whPopIn {
+            0% { opacity: 0; transform: translateY(12px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @media (max-width: 520px) {
+            .wh-batch-box { width: 94vw; padding: 26px 20px 20px; }
+            .wh-precoin-box { width: 94vw; padding: 22px 18px 18px; }
         }
     `;
 }

@@ -4,7 +4,7 @@
 // 入口：顶部导航栏「商店」→ 全屏弹窗
 // 样式：完全自包含（wh-* 基础 + shop-* 扩展），不依赖仓库先打开
 
-var SHOP_DATA_VERSION = 2;
+var SHOP_DATA_VERSION = 4; // v4: 补齐 precoin_supply_1-4 商店上架条目（自选物品兑换卡可兑换）
 
 // ==================== 商店定价配置（★ 修改价格/折扣仅需改此处 ★）====================
 // 规则：
@@ -17,14 +17,14 @@ var SHOP_DATA_VERSION = 2;
 //   - note: 商品说明（卡片底部展示）
 //   - 说明：徽章（category === 'badge'）不得在商店出售，此处只允许消耗品和材料
 var SHOP_ITEM_PRICES = {
-    // ===== 消耗品：经验值加成卡（可与不同类型叠加，同类型不叠加，最多同时3张） =====
+    // ===== 消耗品：经验值加成卡（可与不同类型叠加，同类型不叠加，最多同时4张；同时激活4张时叠加可达 +100%） =====
     exp_boost_small: {
         price: 400,
         discount: 0,
         stock: -1,
         stockType: 'none',
         enabled: true,
-        note: '经验获取 +5%，可与不同类型叠加（I+II+III 组合可至 +50%）'
+        note: '经验获取 +5%，可与不同类型叠加（I+II+III+Ⅳ 组合可至 +100%）'
     },
     exp_boost_mid: {
         price: 600,
@@ -32,7 +32,7 @@ var SHOP_ITEM_PRICES = {
         stock: 1,
         stockType: 'daily',
         enabled: true,
-        note: '经验获取 +15%，每日限购 1 份，可叠加（I+II+III 组合可至 +50%）'
+        note: '经验获取 +15%，每日限购 1 份，可叠加（I+II+III+Ⅳ 组合可至 +100%）'
     },
     exp_boost_large: {
         price: 1000,
@@ -40,7 +40,15 @@ var SHOP_ITEM_PRICES = {
         stock: 1,
         stockType: 'weekly',
         enabled: true,
-        note: '经验获取 +30%，每周限购 1 份，可叠加（I+II+III 组合可至 +50%）'
+        note: '经验获取 +30%，每周限购 1 份，可叠加（I+II+III+Ⅳ 组合可至 +100%）'
+    },
+    exp_boost_premium: {
+        price: 1800,
+        discount: 0,
+        stock: 2,
+        stockType: 'total',
+        enabled: true,
+        note: '经验获取 +50%，永久限购 2 份，可叠加（I+II+III+Ⅳ 同时激活可至 +100%）'
     },
 
     // ===== 消耗品：抽卡卷 =====
@@ -720,6 +728,18 @@ function _shopRecordPurchase(itemId, price, qty) {
     data.totalPurchased += qty;
     saveShopData(data);
 }
+
+// 记录商店外的 PRE Coin 消费到「累计消费」统计（如购买通行证本体/组合包/等级）。
+// 仅累加消费额，不增加商品购买件数（totalPurchased），因为这些不是商店商品。
+function shopAddExternalSpend(amount) {
+    amount = parseInt(amount, 10);
+    if (!amount || amount <= 0) return false;
+    var data = getShopData();
+    data.totalSpentCoin = (data.totalSpentCoin || 0) + amount;
+    saveShopData(data);
+    return true;
+}
+if (typeof window !== 'undefined') window.shopAddExternalSpend = shopAddExternalSpend;
 
 function getShopStockRemaining(itemId) {
     var cfg = SHOP_ITEM_PRICES[itemId];

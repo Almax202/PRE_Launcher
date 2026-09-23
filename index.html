@@ -20,10 +20,11 @@
     <script src="./js/settings.js" defer></script>
     <script src="./js/versionHistory.js?v=3.0.2.6" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
-    <script src="./js/warehouse.js?v=2.4" defer></script>
+    <script src="./js/warehouse.js?v=3.7" defer></script>
+    <script src="./js/pass.js?v=2.4" defer></script>
     <script src="./js/dailytasks.js" defer></script>
-    <script src="./js/shop.js" defer></script>
-    <script src="./js/premail.js?v=1.8" defer></script>
+    <script src="./js/shop.js?v=2.3" defer></script>
+    <script src="./js/premail.js?v=2.0" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
@@ -5831,6 +5832,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" onerror="this.onerror=null; console.warn('ScrollTrigger 加载失败')"></script>
     <!-- Lenis (平滑滚动) -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onerror="this.onerror=null; console.warn('Lenis 加载失败')"></script>
+    <!-- Three.js (3D 渲染) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="this.onerror=null; console.warn('Three.js 加载失败')"></script>
+    <!-- cannon-es (物理引擎) -->
+    <script src="https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js" onerror="this.onerror=null; console.warn('cannon-es 加载失败')"></script>
     <script>
         // 初始化 Lenis 平滑滚动（仅在 window 真正可滚动时启用，否则保留原生滚动）
         (function () {
@@ -11553,10 +11558,10 @@
                                         </div>
                                     </div>
                                     <div class="checkin-rewards-info">
-                                        <div class="reward-item">
+                                        <div class="reward-item clickable" id="dailyRewardDetailBtn" title="查看今日签到可领取的全部奖励">
                                             <i class="fas fa-coins"></i>
                                             <div class="reward-info">
-                                                <span class="reward-label">每日奖励</span>
+                                                <span class="reward-label">每日奖励 <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></span>
                                                 <span class="reward-value" id="dailyExpPreview">30 EXP</span>
                                             </div>
                                         </div>
@@ -13912,6 +13917,15 @@
                     color: #e08e0b;
                 }
 
+                .cr-icon-pass {
+                    background: linear-gradient(135deg, #ff6b9d 0%, #6a5acd 100%);
+                    color: #fff;
+                }
+
+                .cr-section-pass .cr-section-amount {
+                    color: #a05cd6;
+                }
+
                 .cr-section-tag {
                     font-size: 12px;
                     font-weight: 600;
@@ -15202,6 +15216,147 @@
                 .wh-item-card.wh-timed-card {
                     border: 1px dashed rgba(243, 156, 18, 0.5) !important;
                     background: linear-gradient(135deg, rgba(243,156,18,0.05) 0%, transparent 60%) !important;
+                }
+
+                /* 每日奖励详情弹窗 */
+                .milestone-modal.dr-override {
+                    max-width: 640px;
+                    max-height: 85vh;
+                    width: 92%;
+                    overflow-y: auto;
+                }
+                .dr-status-tip {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 16px;
+                    padding: 10px 14px;
+                    background: #f0f4ff;
+                    border: 1px solid #dde6ff;
+                    border-radius: 10px;
+                    font-size: 13px;
+                    color: #5b6bc4;
+                    line-height: 1.5;
+                }
+                .dr-status-tip i { font-size: 15px; flex-shrink: 0; }
+                .dr-status-done {
+                    background: #ecfdf3;
+                    border-color: #b7f0cc;
+                    color: #1a9e52;
+                }
+                .dr-cards {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .dr-card {
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    padding: 14px 16px;
+                    background: #fafbff;
+                    border: 1px solid #eef1f8;
+                    border-radius: 14px;
+                    transition: border-color 0.2s, box-shadow 0.2s;
+                }
+                .dr-card:hover {
+                    border-color: #c9d5ff;
+                    box-shadow: 0 4px 14px rgba(102,126,234,0.1);
+                }
+                .dr-card-icon {
+                    width: 44px;
+                    height: 44px;
+                    flex-shrink: 0;
+                    border-radius: 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #fff;
+                    font-size: 18px;
+                }
+                .dr-card-main { flex: 1; min-width: 0; }
+                .dr-card-title {
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #2d2d3a;
+                    margin-bottom: 3px;
+                }
+                .dr-card-sub {
+                    font-size: 12px;
+                    color: #8a8fa3;
+                    line-height: 1.5;
+                }
+                .dr-card-season-time {
+                    display: inline-block;
+                    margin-top: 4px;
+                    font-size: 11px;
+                    color: #6a5acd;
+                    opacity: 0.85;
+                    line-height: 1.4;
+                }
+                .dr-card-season-time i { margin-right: 4px; }
+                .dr-card-off .dr-card-season-time { color: #8a8fa3; }
+                .dr-card-value {
+                    font-size: 16px;
+                    font-weight: 800;
+                    color: #667eea;
+                    font-variant-numeric: tabular-nums;
+                    white-space: nowrap;
+                    flex-shrink: 0;
+                }
+                .dr-card-pass .dr-card-value { color: #d6479e; }
+                .dr-card-pass { border-color: rgba(214,71,158,0.25); background: linear-gradient(90deg, rgba(255,107,157,0.05), rgba(106,90,205,0.04)); }
+                .dr-card-off { opacity: 0.75; }
+                .dr-card-off .dr-card-value { color: #9aa0b0; font-size: 13px; }
+                .dr-card-tags {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                    margin-top: 8px;
+                }
+                .dr-item-tag {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    padding: 3px 10px;
+                    border-radius: 999px;
+                }
+                .dr-foot-tip {
+                    margin-top: 16px;
+                    padding: 12px 14px;
+                    background: #fff8ec;
+                    border: 1px solid #ffe9bf;
+                    border-radius: 10px;
+                    font-size: 12px;
+                    color: #a07424;
+                    line-height: 1.7;
+                }
+                .dr-foot-tip i { margin-right: 6px; }
+                body.dark-mode .dr-status-tip {
+                    background: rgba(102,126,234,0.12);
+                    border-color: rgba(102,126,234,0.3);
+                    color: #aab6f5;
+                }
+                body.dark-mode .dr-status-done {
+                    background: rgba(34,197,94,0.12);
+                    border-color: rgba(34,197,94,0.3);
+                    color: #6ee7a0;
+                }
+                body.dark-mode .dr-card {
+                    background: rgba(255,255,255,0.05);
+                    border-color: rgba(255,255,255,0.1);
+                }
+                body.dark-mode .dr-card:hover { border-color: rgba(102,126,234,0.5); }
+                body.dark-mode .dr-card-title { color: rgba(255,255,255,0.92); }
+                body.dark-mode .dr-card-sub { color: rgba(255,255,255,0.5); }
+                body.dark-mode .dr-card-season-time { color: #a78bfa; }
+                body.dark-mode .dr-card-off .dr-card-season-time { color: rgba(255,255,255,0.45); }
+                body.dark-mode .dr-foot-tip {
+                    background: rgba(248,181,0,0.1);
+                    border-color: rgba(248,181,0,0.25);
+                    color: #e8c26a;
                 }
 
                 /* 本月奖励一览弹窗 */
@@ -22090,6 +22245,19 @@
             });
         }
 
+        // ==================== 通行证每日固定经验值奖励 ====================
+        // 赛季通行证进行期间，每日签到固定获得 3 点通行证经验值；
+        // 该奖励为赛季固定值，不受连签天数、断签、阶段突破或经验倍率活动影响。
+        var PASS_DAILY_CHECKIN_EXP = 3;
+        function getPassDailyCheckinExp() {
+            try {
+                if (window.pass && typeof window.pass.isSeasonActive === 'function' && window.pass.isSeasonActive()) {
+                    return PASS_DAILY_CHECKIN_EXP;
+                }
+            } catch (e) {}
+            return 0;
+        }
+
         // ==================== /每日签到限时道具奖励系统 ====================
 
         // 初始化签到功能
@@ -22107,6 +22275,10 @@
             var monthlyRewardBtn = document.getElementById('monthlyRewardOverviewBtn');
             if (monthlyRewardBtn) {
                 monthlyRewardBtn.addEventListener('click', openMonthlyRewardOverview);
+            }
+            var dailyRewardBtn = document.getElementById('dailyRewardDetailBtn');
+            if (dailyRewardBtn) {
+                dailyRewardBtn.addEventListener('click', openDailyRewardDetail);
             }
             var milestoneBtn = document.getElementById('milestoneInfoBtn');
             if (milestoneBtn) {
@@ -22283,6 +22455,162 @@
             render();
         }
         
+        // 打开「每日奖励」详情弹窗：展示今日签到可领取的全部内容
+        // （成长经验值、PRE 硬币、每日签到限时道具、赛季通行证经验值）
+        function openDailyRewardDetail() {
+            var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            var user = users.find(function(u) { return u.username === currentUser.username; });
+
+            var streak = (user && user.userProfile && user.userProfile.checkinStats && user.userProfile.checkinStats.streak) || 0;
+            var today = new Date();
+
+            // 成长经验值（随连签/阶段突破变化）
+            var dailyExp = getCheckinExpReward(streak);
+            // PRE 硬币（随连签变化）
+            var dailyCoin = (typeof getPreCoinDailyCheckinReward === 'function') ? getPreCoinDailyCheckinReward(streak) : 0;
+            // 今日限时道具
+            var todayItems = getDailyCheckinReward(today, user);
+            // 通行证固定经验值
+            var passExp = getPassDailyCheckinExp();
+            var seasonState = (window.pass && typeof window.pass.getSeasonState === 'function') ? window.pass.getSeasonState() : 'inactive';
+            // 赛季限时可领取时间（取自 PASS_CONFIG，格式化为 UTC+8）
+            var seasonTimeText = '';
+            try {
+                var passCfg = (window.pass && window.pass.config) ? window.pass.config : null;
+                if (passCfg) {
+                    var fmtT = function(iso) {
+                        var d = new Date(new Date(iso).getTime() + 8 * 3600 * 1000);
+                        var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                        return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate())
+                             + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+                    };
+                    seasonTimeText = '赛季限时可领取时间 ' + fmtT(passCfg.startTime) + ' (UTC+8) 至 ' + fmtT(passCfg.endTime) + ' (UTC+8)';
+                }
+            } catch (e) { seasonTimeText = ''; }
+
+            // 已签到标记
+            var todayStr = today.toDateString();
+            var checkedToday = !!(user && user.userProfile && user.userProfile.checkinStats && user.userProfile.checkinStats.lastCheckin === todayStr);
+
+            var cardHtml = function(iconBg, icon, title, value, sub, extraCls, tagsHtml) {
+                return '<div class="dr-card' + (extraCls ? ' ' + extraCls : '') + '">' +
+                    '<div class="dr-card-icon" style="background:' + iconBg + ';"><i class="' + icon + '"></i></div>' +
+                    '<div class="dr-card-main">' +
+                        '<div class="dr-card-title">' + title + '</div>' +
+                        (sub ? '<div class="dr-card-sub">' + sub + '</div>' : '') +
+                        (tagsHtml || '') +
+                    '</div>' +
+                    '<div class="dr-card-value">' + value + '</div>' +
+                '</div>';
+            };
+
+            var rowsHtml = '';
+
+            // 成长经验值
+            rowsHtml += cardHtml(
+                'linear-gradient(135deg, #a18cd1 0%, #7b5ea7 100%)',
+                'fas fa-star',
+                '成长经验值',
+                '+' + dailyExp + ' EXP',
+                isStageBreakthroughActive() ? '阶段突破模式 · 随连续签到天数提升' : '连续签到 7/15 天后提升（断签重置为 30 EXP）'
+            );
+
+            // PRE 硬币
+            rowsHtml += cardHtml(
+                'linear-gradient(135deg, #ffd34d 0%, #f39c12 100%)',
+                'fas fa-coins',
+                'PRE 硬币',
+                dailyCoin > 0 ? '+' + dailyCoin : '0',
+                '随连续签到天数提升（20/50/80 PRE）'
+            );
+
+            // 每日签到道具
+            if (todayItems.length > 0 && typeof WAREHOUSE_ITEMS !== 'undefined') {
+                var namesHtml = '';
+                todayItems.forEach(function(it) {
+                    var wi = WAREHOUSE_ITEMS[it.itemId];
+                    if (wi) {
+                        namesHtml += '<span class="dr-item-tag" style="background:' + wi.color + '22;color:' + wi.color + ';">' +
+                            '<i class="' + wi.icon + '"></i> ' + wi.name + ' ×' + it.qty +
+                        '</span>';
+                    }
+                });
+                rowsHtml += cardHtml(
+                    'linear-gradient(135deg, #43e97b 0%, #1fab54 100%)',
+                    'fas fa-box-open',
+                    '每日签到道具',
+                    '今日 ' + todayItems.length + ' 件',
+                    '限时道具，有效期 14 天',
+                    'dr-card-items',
+                    '<div class="dr-card-tags">' + namesHtml + '</div>'
+                );
+            } else {
+                rowsHtml += cardHtml(
+                    'linear-gradient(135deg, #43e97b 0%, #1fab54 100%)',
+                    'fas fa-box-open',
+                    '每日签到道具',
+                    '今日无',
+                    '工作日/周末发放不同道具，明日可继续领取'
+                );
+            }
+
+            // 通行证经验值（赛季固定）
+            var seasonTimeLine = seasonTimeText
+                ? '<br><span class="dr-card-season-time"><i class="fas fa-clock"></i> ' + seasonTimeText + '</span>'
+                : '';
+            if (passExp > 0) {
+                rowsHtml += cardHtml(
+                    'linear-gradient(135deg, #ff6b9d 0%, #6a5acd 100%)',
+                    'fas fa-crown',
+                    '通行证经验值',
+                    '+' + passExp,
+                    '赛季期间每日固定 +3，不受连签、断签与活动影响' + seasonTimeLine,
+                    'dr-card-pass'
+                );
+            } else {
+                var offSub = seasonState === 'ended'
+                    ? '当前赛季已结束，等待下一赛季开启后恢复每日 +3'
+                    : '当前赛季尚未开始，开启后每日签到固定 +3';
+                rowsHtml += cardHtml(
+                    'rgba(150,150,160,0.25)',
+                    'fas fa-crown',
+                    '通行证经验值',
+                    '赛季未开启',
+                    offSub + seasonTimeLine,
+                    'dr-card-pass dr-card-off'
+                );
+            }
+
+            var overlay = document.createElement('div');
+            overlay.className = 'milestone-modal-overlay';
+            overlay.innerHTML =
+                '<div class="milestone-modal dr-override">' +
+                    '<div class="milestone-modal-header">' +
+                        '<h3><i class="fas fa-coins" style="color: #667eea;"></i> 每日签到 · 今日可领取内容</h3>' +
+                        '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
+                    '</div>' +
+                    (checkedToday
+                        ? '<div class="dr-status-tip dr-status-done"><i class="fas fa-circle-check"></i> 今日已签到，以下为今日已领取的奖励内容</div>'
+                        : '<div class="dr-status-tip"><i class="fas fa-gift"></i> 今日尚未签到，点击「立即签到」即可获得以下全部奖励</div>') +
+                    '<div class="dr-cards">' + rowsHtml + '</div>' +
+                    '<div class="dr-foot-tip">' +
+                        '<i class="fas fa-circle-info"></i> ' +
+                        '成长经验值与 PRE 硬币会随连续签到天数及限时活动变化；' +
+                        '<b>通行证经验值为赛季固定奖励，每日始终 +3</b>，不会因连签状态或特殊活动改变。' +
+                    '</div>' +
+                '</div>';
+
+            document.body.appendChild(overlay);
+
+            var closeBtn = overlay.querySelector('.milestone-close');
+            function closeOverlay() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+            closeBtn.addEventListener('click', closeOverlay);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeOverlay();
+            });
+        }
+
         // 打开本月奖励一览弹窗
         function openMonthlyRewardOverview() {
             var today = new Date();
@@ -22629,7 +22957,8 @@
 
             if (dailyExpEl) {
                 var coinPart = dailyCoin > 0 ? ' + ' + dailyCoin + ' PRE' : '';
-                dailyExpEl.textContent = dailyExp + ' EXP' + coinPart;
+                var passExpPart = getPassDailyCheckinExp() > 0 ? ' + ' + getPassDailyCheckinExp() + ' 通行证经验' : '';
+                dailyExpEl.textContent = dailyExp + ' EXP' + coinPart + passExpPart;
             }
             if (nextBonusEl && nextBonus) {
                 if (nextBonus.label) {
@@ -22876,6 +23205,12 @@
 
             // ============ 签到里程碑奖励已改为手动领取（点击里程碑卡片） ============
 
+            // ============ 通行证经验值：赛季期间每日固定 +3（不受连签/断签/阶段突破/经验倍率影响） ============
+            var passExpGained = getPassDailyCheckinExp();
+            if (passExpGained > 0 && window.pass && typeof window.pass.addExp === 'function') {
+                window.pass.addExp(passExpGained, '每日签到奖励（赛季每日固定）');
+            }
+
             // 每日任务：标记签到完成
             if (typeof dailyTaskMarkProgress === 'function') {
                 dailyTaskMarkProgress('checkin');
@@ -22917,6 +23252,7 @@
                 totalCoin: totalPreCoinGained,
                 dailyCoin: dailyCoin,
                 items: timedItemViews,
+                passExp: passExpGained,
                 leveledUp: result.leveledUp,
                 newLevel: result.newLevel,
                 claimableMilestones: claimableDaysAfterCheckin.length
@@ -23005,6 +23341,20 @@
                     '</div>';
             }
 
+            // —— 通行证经验值区块（赛季期间每日固定奖励） ——
+            var passSectionHtml = '';
+            if (data.passExp > 0) {
+                passSectionHtml =
+                    '<div class="cr-section cr-section-pass">' +
+                        '<div class="cr-section-head">' +
+                            '<span class="cr-section-icon cr-icon-pass"><i class="fas fa-crown"></i></span>' +
+                            '<span class="cr-section-title">通行证经验值</span>' +
+                            '<span class="cr-section-amount">+' + data.passExp + '</span>' +
+                        '</div>' +
+                        '<div class="cr-sub-row"><span><i class="fas fa-thumbtack"></i> 赛季每日固定奖励</span><span>不受连签与活动影响</span></div>' +
+                    '</div>';
+            }
+
             // —— 里程碑可领取提示 ——
             var milestoneHintHtml = '';
             if (data.claimableMilestones > 0) {
@@ -23027,6 +23377,7 @@
                         expSectionHtml +
                         coinSectionHtml +
                         itemSectionHtml +
+                        passSectionHtml +
                         milestoneHintHtml +
                     '</div>' +
                     '<button class="cr-confirm-btn" type="button">开心收下</button>' +

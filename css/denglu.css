@@ -9389,7 +9389,7 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 }
 
 .mail-history-item-info {
-    margin-bottom: 14px;
+    margin-bottom: 0;
 }
 
 .mail-history-item-title-row {
@@ -9400,12 +9400,95 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
 }
 
 .mail-history-item-title {
+    flex: 1;
+    min-width: 0;
     font-size: 16px;
     font-weight: 600;
     color: #333;
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.mail-history-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+.mail-history-item-toggle {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(212, 93, 121, 0.1);
+    color: #d45d79;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.mail-history-item-toggle:hover {
+    background: rgba(212, 93, 121, 0.2);
+    transform: scale(1.05);
+}
+
+.mail-history-item-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.mail-history-item.expanded .mail-history-item-toggle i {
+    transform: rotate(180deg);
+}
+
+/* 可展开详情区域：默认收起，点击展开按钮后显示 */
+.mail-history-item-body {
+    display: none;
+}
+
+.mail-history-item.expanded .mail-history-item-body {
+    display: block;
+}
+
+.mail-history-item-body .mail-history-item-meta {
+    margin-bottom: 12px;
+}
+
+.mail-history-item-content {
+    padding-top: 12px;
+    margin-bottom: 12px;
+    border-top: 1px dashed rgba(212, 93, 121, 0.2);
+    text-align: left;
+}
+
+.mail-history-item-content-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.mail-history-item-content-body {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #555;
+    background: rgba(212, 93, 121, 0.05);
+    border-radius: 8px;
+    padding: 10px 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    text-align: left;
+}
+
+.mail-history-item-content-body.is-empty {
+    color: #999;
+    font-style: italic;
 }
 
 .mail-history-item-title::before {
@@ -9805,6 +9888,23 @@ body.dark-mode .mail-history-item-title {
 }
 
 body.dark-mode .mail-history-item-time {
+    color: #666;
+}
+
+body.dark-mode .mail-history-item-account {
+    color: #999;
+}
+
+body.dark-mode .mail-history-item-content-title {
+    color: #e0e0e0;
+}
+
+body.dark-mode .mail-history-item-content-body {
+    color: #bbb;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .mail-history-item-content-body.is-empty {
     color: #666;
 }
 
