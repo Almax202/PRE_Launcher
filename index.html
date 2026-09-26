@@ -8740,100 +8740,49 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="terms-layout">
-                <div class="terms-sidebar">
-                    <div class="terms-nav-header">
-                        <div class="terms-nav-title">LIST</div>
-                        <button class="toggle-sidebar-btn" id="toggleSidebarBtn">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                    </div>
-                    <div class="terms-nav-scroll">
-                    <div class="terms-nav-item active" id="featureUpdateNav">
-                        <div class="nav-item-content">
-                            <i class="fas fa-cog"></i>
-                            <span>查看功能更新<ul>Feature Updates</ul></span>
-                        </div>
-                        <div class="sub-buttons" id="featureSubButtons" style="display: none;">
-                            <button class="sub-button" data-type="launcher" style="display: none;">
-                                <span class="button-text">启动器更新</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="homepage" style="display: none;">
-                                <span class="button-text">主页面更新</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="terms-nav-item" id="earlyUpdateNav">
-                        <div class="nav-item-content">
-                            <i class="fas fa-clock-rotate-left"></i>
-                            <span>过时版本记录<ul>Outdated Versions</ul></span>
-                        </div>
-                        <div class="sub-buttons" id="outdatedSubButtons" style="display: none;">
-                            <button class="sub-button" data-type="launcher">
-                                <span class="button-text">启动器记录</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="homepage">
-                                <span class="button-text">主页面记录</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="terms-nav-item" id="miniGameUpdateNav">
-                        <div class="nav-item-content">
-                            <i class="fas fa-gamepad"></i>
-                            <span>小游戏更新记录<ul>Mini Game Updates</ul></span>
-                        </div>
-                        <div class="sub-buttons" id="miniGameSubButtons" style="display: none;">
-                            <button class="sub-button" data-type="snake">
-                                <span class="button-text">贪吃蛇</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="colormatch">
-                                <span class="button-text">颜色匹配</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="memory">
-                                <span class="button-text">记忆卡牌</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="wzq">
-                                <span class="button-text">五子棋</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="fxq">
-                                <span class="button-text">飞行器</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="fkgame">
-                                <span class="button-text">点击方块</span>
-                                <span class="viewing-tag" style="display: none;">查看中</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="terms-nav-item" id="demoModeNav" style="display: none;">
-                        <div class="nav-item-content">
-                            <i class="fas fa-play-circle"></i>
-                            <span>演示模式<ul>Demo Mode</ul></span>
-                        </div>
-                    </div>
-                    </div>
-                    <div class="sidebar-footer">
-                        <button class="mark-all-read-btn" id="markAllVersionReadBtn">
-                            <i class="fas fa-check-double"></i>
-                            <span>一键已读</span>
-                        </button>
+            <div class="vh-toolbar" id="versionHistoryToolbar">
+                <button class="vh-tab active" id="featureUpdateNav">
+                    <i class="fas fa-cog"></i><span>查看功能更新</span>
+                </button>
+                <div class="vh-dropdown" id="earlyDropdown">
+                    <button class="vh-tab" id="earlyUpdateNav">
+                        <i class="fas fa-clock-rotate-left"></i><span>过时版本记录</span>
+                        <i class="fas fa-chevron-down vh-caret"></i>
+                    </button>
+                    <div class="vh-dropdown-menu">
+                        <button class="vh-dropdown-item" data-parent="outdatedSubButtons" data-type="launcher">启动器记录</button>
+                        <button class="vh-dropdown-item" data-parent="outdatedSubButtons" data-type="homepage">主页面记录</button>
                     </div>
                 </div>
-                <div class="terms-main">
-                    <div class="terms-content">
-                        <div class="version-history-content" id="launcherUpdateContent"></div>
-                        <div class="version-history-content" id="homepageUpdateContent" style="display: none;"></div>
-                        <div class="version-history-content" id="earlyUpdateContent" style="display: none;"></div>
+                <div class="vh-dropdown" id="miniGameDropdown">
+                    <button class="vh-tab" id="miniGameUpdateNav">
+                        <i class="fas fa-gamepad"></i><span>小游戏更新记录</span>
+                        <i class="fas fa-chevron-down vh-caret"></i>
+                    </button>
+                    <div class="vh-dropdown-menu">
+                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="snake">贪吃蛇</button>
+                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="colormatch">颜色匹配</button>
+                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="memory">记忆卡牌</button>
+                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="wzq">五子棋</button>
+                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="fxq">飞行器</button>
+                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="fkgame">点击方块</button>
                     </div>
+                </div>
+                <button class="vh-tab" id="demoModeNav" style="display: none;">
+                    <i class="fas fa-play-circle"></i><span>演示模式</span>
+                </button>
+                <span class="vh-toolbar-right">
+                    <button class="mark-all-read-btn" id="markAllVersionReadBtn">
+                        <i class="fas fa-check-double"></i>
+                        <span>一键已读</span>
+                    </button>
+                </span>
+            </div>
+            <div class="terms-main vh-main">
+                <div class="terms-content">
+                    <div class="version-history-content" id="launcherUpdateContent"></div>
+                    <div class="version-history-content" id="homepageUpdateContent" style="display: none;"></div>
+                    <div class="version-history-content" id="earlyUpdateContent" style="display: none;"></div>
                 </div>
             </div>
             <div class="back-to-top-container">
@@ -26352,7 +26301,7 @@
                 versionHistoryModal.classList.add('show');
                 
                 // 显示默认提示文本（包含等待图标）
-                var contentArea = document.querySelector('.terms-content');
+                var contentArea = document.querySelector('#versionHistoryModal .terms-content');
                 if (contentArea) {
                     contentArea.innerHTML = `
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
@@ -26364,21 +26313,19 @@
                     `;
                 }
                 
-                // 重置导航项状态
-                var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
-                navItems.forEach(function(navItem) {
-                    navItem.classList.remove('active');
+                // 重置 bar 按钮状态
+                document.querySelectorAll('#versionHistoryModal .vh-tab').forEach(function(tab) {
+                    tab.classList.remove('active');
                 });
-                // 激活选择功能更新按钮
+                // 激活查看功能更新按钮
                 var featureUpdateNav = document.getElementById('featureUpdateNav');
                 if (featureUpdateNav) {
                     featureUpdateNav.classList.add('active');
                 }
-                
-                // 隐藏所有子按钮
-                var subButtons = document.querySelectorAll('.sub-buttons');
-                subButtons.forEach(function(button) {
-                    button.style.display = 'none';
+
+                // 收起所有多级下拉菜单
+                document.querySelectorAll('#versionHistoryModal .vh-dropdown').forEach(function(dropdown) {
+                    dropdown.classList.remove('open');
                 });
                 
                 // 检测开发者模式是否启用
@@ -26388,26 +26335,24 @@
                 
                 // 显示或隐藏演示模式按钮
                 var demoModeNav = document.getElementById('demoModeNav');
-                var termsSidebar = document.querySelector('.terms-sidebar');
-                var isSidebarCollapsed = termsSidebar && termsSidebar.classList.contains('collapsed');
                 if (demoModeNav) {
-                    demoModeNav.style.display = isDevMode && !isSidebarCollapsed ? 'block' : 'none';
+                    demoModeNav.style.display = isDevMode ? 'inline-flex' : 'none';
                 }
                 
                 // 为演示模式按钮添加点击事件
                 if (isDevMode && demoModeNav) {
                     demoModeNav.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        
-                        // 重置导航项状态
-                        navItems.forEach(function(navItem) {
-                            navItem.classList.remove('active');
+
+                        // 重置 bar 按钮状态
+                        document.querySelectorAll('#versionHistoryModal .vh-tab').forEach(function(tab) {
+                            tab.classList.remove('active');
                         });
                         demoModeNav.classList.add('active');
-                        
-                        // 隐藏所有子按钮
-                        subButtons.forEach(function(button) {
-                            button.style.display = 'none';
+
+                        // 收起所有多级下拉菜单
+                        document.querySelectorAll('#versionHistoryModal .vh-dropdown').forEach(function(dropdown) {
+                            dropdown.classList.remove('open');
                         });
                         
                         // 显示演示模式内容
@@ -26423,7 +26368,7 @@
                             ]
                         };
                         
-                        var contentArea = document.querySelector('.terms-content');
+                        var contentArea = document.querySelector('#versionHistoryModal .terms-content');
                         if (contentArea) {
                             contentArea.innerHTML = '';
                             
@@ -26475,27 +26420,6 @@
                             
                             versionElement.innerHTML = versionHTML;
                             contentArea.appendChild(versionElement);
-                        }
-                    });
-                }
-                
-                // 为收起/展开按钮添加点击事件
-                var toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-                var termsSidebar = document.querySelector('.terms-sidebar');
-                var termsLayout = document.querySelector('.terms-layout');
-                if (toggleSidebarBtn && termsSidebar && termsLayout) {
-                    toggleSidebarBtn.addEventListener('click', function() {
-                        termsSidebar.classList.toggle('collapsed');
-                        termsLayout.classList.toggle('collapsed');
-                        
-                        // 更新演示模式按钮的显示状态
-                        var demoModeNav = document.getElementById('demoModeNav');
-                        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                        var devModeData = JSON.parse(localStorage.getItem('devModeData') || '{}');
-                        var isDevMode = devModeData[currentUser.username] && devModeData[currentUser.username].enabled;
-                        var isSidebarCollapsed = termsSidebar.classList.contains('collapsed');
-                        if (demoModeNav) {
-                            demoModeNav.style.display = isDevMode && !isSidebarCollapsed ? 'block' : 'none';
                         }
                     });
                 }

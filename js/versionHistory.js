@@ -217,6 +217,30 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.3.1 (c3)",
+            date: "2026-09-27",
+            tag: "normal",
+            tagText: "常规更新",
+            images: [],
+            features: [
+                "新增功能",
+                "- 版本更新记录窗口改用商店风格顶部 bar：删除原 LIST 侧边栏，替换为与商店一致的横向胶囊按钮 bar；含多个子内容的按钮点击后弹出多级下拉菜单，菜单内列出对应子条目，点击条目直接加载内容，点击菜单外部或按 Esc 关闭菜单",
+                "- 开发者公告窗口改用商店风格顶部 bar：删除原公告分类侧边栏（含「公告分类」标题与收起/展开按钮），替换为与版本更新记录窗口一致的横向胶囊按钮 bar——「重要公告」「普通公告」为单条内容，点击直接加载列表；「开发日志」点击后弹出多级下拉菜单，内含「启动器更新」「主页面更新」两个子条目，子条目点击后加载对应日志，点击菜单外部或按 Esc 关闭",
+                "- 「一键已读」入口迁移：由原侧边栏底部迁移至公告窗口顶部 bar 的最右侧，标记逻辑与已读状态存储保持不变",
+                "- 公告筛选功能移入 bar 并改为多级下拉菜单：筛选按钮移动到 bar 内「一键已读」按钮左侧，点击后弹出多级菜单——一级条目为「仅显示以下月份的所有公告」「仅显示以下版本内的所有公告」，点击一级条目后从右侧滑出二级子菜单，按当前公告集合动态生成全部可选月份与 RC 版本列表；月份/版本筛选的实际运行逻辑与此前完全一致",
+                "- 筛选状态可视化：筛选生效后 bar 内筛选按钮变为粉色高亮，筛选菜单顶部自动出现「清除筛选」条目（未筛选时自动隐藏），点击后清除逻辑与原来完全一致；切换公告分类或当前列表为空时，筛选菜单的可选条目与筛选状态自动同步复位",
+                "优化改进",
+                "- 开发者公告窗口样式与动效统一：弹窗整体样式与系统其他弹窗对齐，弹出/关闭过渡动效保持一致，视觉风格更统一",
+                "- 开发者功能弹窗样式统一：「调整等级/经验」「调整签到天数」「自定义签到天数」三个开发者弹窗全面改为与阶段突破弹窗一致的效果——20px 大圆角容器、弹性弹出入场动画、关闭时淡出过渡，按钮统一为灰底取消 + 红橙渐变保存修改（替换原紫色渐变）",
+                "- 版本更新记录与开发者公告窗口的顶部 bar 全面适配暗色模式与透明毛玻璃主题：胶囊按钮、下拉菜单、二级子菜单在各主题下均有对应配色，保证文字清晰可辨",
+                "- 多语言适配：版本更新记录窗口新增的顶部 bar 及多级下拉菜单完成多语言词条适配，切换语言后按钮与菜单文本同步更新",
+                "- 代码清理：删除公告导航改造后不再被调用的旧导航加载函数，移除原侧边栏相关的冗余事件绑定，清理失效的样式选择器",
+                "修复问题",
+                "- 修复开发者公告窗口与系统其他弹窗弹出/关闭动效不一致、按钮配色风格不统一的问题",
+                "- 修复版本更新记录与开发者公告窗口中原侧边栏相关样式在暗色模式、透明主题下适配不完整的问题",
+            ]
+        },
+        {
             version: "RC 3.0.3.0 (c3)",
             date: "2026-09-23",
             tag: "major",
@@ -3734,148 +3758,92 @@ function loadVersionHistory() {
         }
     });
     
-    // 为选择功能更新按钮添加点击事件
+    // ========== 版本更新记录：顶部 bar 导航（商店风格） ==========
+    var vhToolbar = document.getElementById('versionHistoryToolbar');
+    var vhModalEl = document.getElementById('versionHistoryModal');
+
+    // 关闭所有多级下拉菜单（except 除外）
+    function closeVhDropdowns(except) {
+        vhModalEl.querySelectorAll('.vh-dropdown').forEach(function(dd) {
+            if (dd !== except) dd.classList.remove('open');
+        });
+    }
+
+    // 重置 bar 中所有按钮的激活状态
+    function resetVhTabs() {
+        vhModalEl.querySelectorAll('.vh-tab').forEach(function(tab) {
+            tab.classList.remove('active');
+        });
+    }
+
+    // 内容区显示"请选择"提示
+    function showVhHint(text) {
+        var contentArea = document.querySelector('#versionHistoryModal .terms-content');
+        if (!contentArea) return;
+        contentArea.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">${text}</p>
+            </div>
+        `;
+    }
+
+    // 查看功能更新：单条内容，点击直接加载启动器更新
     var featureUpdateNav = document.getElementById('featureUpdateNav');
     if (featureUpdateNav) {
         featureUpdateNav.addEventListener('click', function(e) {
             e.stopPropagation();
-            
-            var allViewingTags = document.querySelectorAll('.viewing-tag');
-            allViewingTags.forEach(function(tag) {
-                tag.style.display = 'none';
-            });
-            
-            var outdatedSubButtons = document.getElementById('outdatedSubButtons');
-            if (outdatedSubButtons) {
-                outdatedSubButtons.style.display = 'none';
-            }
-            var miniGameSubButtons = document.getElementById('miniGameSubButtons');
-            if (miniGameSubButtons) {
-                miniGameSubButtons.style.display = 'none';
-            }
-            
-            var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
-            navItems.forEach(function(navItem) {
-                navItem.classList.remove('active');
-            });
+            closeVhDropdowns();
+            resetVhTabs();
             this.classList.add('active');
-            
-            // 直接触发启动器更新子按钮的点击逻辑
-            var launcherBtn = document.querySelector('#featureSubButtons .sub-button[data-type="launcher"]');
-            if (launcherBtn) {
-                launcherBtn.click();
-            }
+            openVersionContent('featureSubButtons', 'launcher');
         });
     }
-    
-    // 为过时版本记录按钮添加点击事件
-    var earlyUpdateNav = document.getElementById('earlyUpdateNav');
-    if (earlyUpdateNav) {
-        earlyUpdateNav.addEventListener('click', function(e) {
-            // 阻止事件冒泡，避免触发导航初始化中的点击事件
+
+    // 过时版本记录 / 小游戏更新记录：点击按钮弹出多级菜单
+    function bindVhDropdown(navId, dropdownId, hintText) {
+        var navBtn = document.getElementById(navId);
+        var dropdown = document.getElementById(dropdownId);
+        if (!navBtn || !dropdown) return;
+        navBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            
-            // 显示子按钮
-            var subButtons = document.getElementById('outdatedSubButtons');
-            if (subButtons) {
-                var isHidden = subButtons.style.display === 'none';
-                subButtons.style.display = isHidden ? 'block' : 'none';
-                
-                // 如果是收起子按钮，隐藏所有"查看中"tag
-                if (!isHidden) {
-                    var allViewingTags = document.querySelectorAll('.viewing-tag');
-                    allViewingTags.forEach(function(tag) {
-                        tag.style.display = 'none';
-                    });
-                }
-            }
-            
-            // 隐藏选择功能更新和小游戏的子按钮
-            var featureSubButtons = document.getElementById('featureSubButtons');
-            if (featureSubButtons) {
-                featureSubButtons.style.display = 'none';
-            }
-            var miniGameSubButtons = document.getElementById('miniGameSubButtons');
-            if (miniGameSubButtons) {
-                miniGameSubButtons.style.display = 'none';
-            }
-            
-            // 显示提示文本
-            var contentArea = document.querySelector('.terms-content');
-            if (contentArea) {
-                contentArea.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
-                            <i class="fas fa-inbox"></i>
-                        </div>
-                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的过时版本记录</p>
-                    </div>
-                `;
-            }
-            
-            // 确保其他导航项不处于active状态
-            var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
-            navItems.forEach(function(navItem) {
-                navItem.classList.remove('active');
-            });
-            this.classList.add('active');
+            var willOpen = !dropdown.classList.contains('open');
+            closeVhDropdowns(dropdown);
+            dropdown.classList.toggle('open', willOpen);
+            resetVhTabs();
+            navBtn.classList.add('active');
+            if (willOpen) showVhHint(hintText);
         });
     }
-    
-    // 为小游戏更新记录按钮添加点击事件
-    var miniGameUpdateNav = document.getElementById('miniGameUpdateNav');
-    if (miniGameUpdateNav) {
-        miniGameUpdateNav.addEventListener('click', function(e) {
-            // 阻止事件冒泡，避免触发导航初始化中的点击事件
+    bindVhDropdown('earlyUpdateNav', 'earlyDropdown', '请选择要查看的过时版本记录');
+    bindVhDropdown('miniGameUpdateNav', 'miniGameDropdown', '请选择要查看的小游戏更新记录');
+
+    // 多级菜单子条目点击：加载对应内容
+    if (vhToolbar) {
+        vhToolbar.addEventListener('click', function(e) {
+            var item = e.target.closest('.vh-dropdown-item');
+            if (!item) return;
             e.stopPropagation();
-            
-            // 显示子按钮
-            var subButtons = document.getElementById('miniGameSubButtons');
-            if (subButtons) {
-                var isHidden = subButtons.style.display === 'none';
-                subButtons.style.display = isHidden ? 'block' : 'none';
-                
-                // 如果是收起子按钮，隐藏所有"查看中"tag
-                if (!isHidden) {
-                    var allViewingTags = document.querySelectorAll('.viewing-tag');
-                    allViewingTags.forEach(function(tag) {
-                        tag.style.display = 'none';
-                    });
-                }
-            }
-            
-            // 隐藏其他子按钮
-            var featureSubButtons = document.getElementById('featureSubButtons');
-            if (featureSubButtons) {
-                featureSubButtons.style.display = 'none';
-            }
-            
-            var outdatedSubButtons = document.getElementById('outdatedSubButtons');
-            if (outdatedSubButtons) {
-                outdatedSubButtons.style.display = 'none';
-            }
-            
-            // 显示提示文本
-            var contentArea = document.querySelector('.terms-content');
-            if (contentArea) {
-                contentArea.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                        <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
-                            <i class="fas fa-inbox"></i>
-                        </div>
-                        <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的小游戏更新记录</p>
-                    </div>
-                `;
-            }
-            
-            // 确保其他导航项不处于active状态
-            var navItems = document.querySelectorAll('#versionHistoryModal .terms-nav-item');
-            navItems.forEach(function(navItem) {
-                navItem.classList.remove('active');
-            });
-            this.classList.add('active');
+            var parentId = item.getAttribute('data-parent');
+            var type = item.getAttribute('data-type');
+            closeVhDropdowns();
+            resetVhTabs();
+            var parentNavId = parentId === 'outdatedSubButtons' ? 'earlyUpdateNav' : 'miniGameUpdateNav';
+            var parentNav = document.getElementById(parentNavId);
+            if (parentNav) parentNav.classList.add('active');
+            openVersionContent(parentId, type);
         });
     }
+
+    // 点击菜单外部或按 Esc：关闭多级菜单
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.vh-dropdown')) closeVhDropdowns();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeVhDropdowns();
+    });
     
     // 按主版本号和次版本号分组版本数据
     function groupVersionsByMajorVersion(versions) {
@@ -3956,36 +3924,17 @@ function loadVersionHistory() {
         return sortedGroups;
     }
     
-    // 为子按钮添加点击事件
-    var subButtons = document.querySelectorAll('.sub-button');
-    subButtons.forEach(function(button) {
-        button.addEventListener('click', function(e) {
-            // 阻止事件冒泡
-            e.stopPropagation();
-            
-            // 隐藏所有"查看中"tag
-            var allViewingTags = document.querySelectorAll('.viewing-tag');
-            allViewingTags.forEach(function(tag) {
-                tag.style.display = 'none';
-            });
-            
-            // 显示当前按钮的"查看中"tag
-            var viewingTag = this.querySelector('.viewing-tag');
-            if (viewingTag) {
-                viewingTag.style.display = 'inline-block';
-            }
-            
-            var type = this.getAttribute('data-type');
-            var contentArea = document.querySelector('.terms-content');
-            if (contentArea) {
-                // 清空内容
-                contentArea.innerHTML = '';
-                
-                // 检查按钮所属的父容器，确定加载哪种数据
-                var parentId = this.closest('.sub-buttons').id;
-                var data;
-                
-                if (parentId === 'featureSubButtons') {
+    // 根据父分组与类型加载版本内容（bar 直接按钮 / 多级菜单子条目共用）
+    function openVersionContent(parentId, type) {
+        var contentArea = document.querySelector('#versionHistoryModal .terms-content');
+        if (!contentArea) return;
+
+        // 清空内容
+        contentArea.innerHTML = '';
+
+        var data;
+
+        if (parentId === 'featureSubButtons') {
                     // 功能更新按钮
                     data = type === 'launcher' ? versionHistoryData.launcherUpdateContent : versionHistoryData.homepageUpdateContent;
                 } else if (parentId === 'outdatedSubButtons') {
@@ -4613,11 +4562,9 @@ function loadVersionHistory() {
                     }
                 }
                 
-                // 初始显示版本选择界面
-                showVersionSelection();
-            }
-        });
-    });
+        // 初始显示版本选择界面
+        showVersionSelection();
+    }
 }
 
 // 切换版本详情展开/收起

@@ -582,6 +582,38 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20260927",
+            title: "RC 3.0.3.1 开发日志",
+            date: "2026-09-27",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 3.0.3.1 (c3) 常规版本更新！本次更新以「版本更新记录与开发者公告窗口导航全面重构」为核心——两个窗口双双删除原有的纵向 LIST / 公告分类侧边栏，统一改用与商店一致的横向胶囊按钮顶部 bar：原先侧边栏内的各分类入口全部收归为 bar 内的胶囊按钮，含有多个子内容的按钮点击后弹出多级下拉菜单，二级子菜单从右侧滑出，点击条目即直接加载对应内容，点击菜单外部或按 Esc 即可关闭；公告窗口的「一键已读」入口同步迁移至 bar 最右侧，筛选功能移入 bar 并改为多级下拉菜单，新增筛选生效粉色高亮与「清除筛选」状态可视化；同时两个窗口的顶部 bar 全面适配暗色模式与透明毛玻璃主题、完成多语言词条适配，开发者公告窗口与开发者功能弹窗的样式动效也一并统一，并清理了导航改造后遗留的旧函数、冗余事件绑定与失效样式！",
+                "[color:#d45d79]【新增功能】[/color]",
+                "• 版本更新记录窗口改用商店风格顶部 bar：删除原窗口左侧的 LIST 侧边栏，替换为与商店窗口完全一致的横向胶囊按钮 bar，原先侧边栏内的各版本分类入口全部收归为 bar 内的胶囊按钮；含有多个子内容的分类按钮点击后不再直接跳转，而是弹出多级下拉菜单，菜单内纵向列出该分类下的全部子条目，点击任意条目即直接加载对应内容，点击菜单外部任意区域或按下 Esc 键即可关闭菜单",
+                "• 开发者公告窗口改用商店风格顶部 bar：删除原公告分类侧边栏（连同侧边栏顶部的「公告分类」标题与收起/展开按钮一并移除），替换为与版本更新记录窗口一致的横向胶囊按钮 bar——「重要公告」「普通公告」为单条内容，点击直接加载对应公告列表；「开发日志」按钮点击后弹出多级下拉菜单，菜单内含「启动器更新」「主页面更新」两个子条目，点击子条目后加载对应分类的开发日志，点击菜单外部或按 Esc 关闭，窗口默认展示重要公告",
+                "• 「一键已读」入口迁移至顶部 bar：原位于公告分类侧边栏底部的「一键已读」按钮迁移至公告窗口顶部 bar 的最右侧，与商店、版本更新记录窗口的 bar 布局保持一致；一键标记全部公告为已读的标记逻辑与已读状态存储方式完全保持不变",
+                "• 公告筛选功能移入 bar 并改为多级下拉菜单：筛选按钮移动到 bar 内「一键已读」按钮的左侧，点击后弹出多级筛选菜单——一级菜单包含「仅显示以下月份的所有公告」「仅显示以下版本内的所有公告」两个条目，点击一级条目后二级子菜单从右侧滑出，按当前公告集合动态生成全部可选月份与 RC 版本列表；月份筛选与版本筛选的实际运行逻辑与此前完全一致",
+                "• 筛选状态可视化：筛选生效后，bar 内筛选按钮变为粉色高亮，明确提示当前处于筛选状态；筛选菜单顶部自动出现「清除筛选」条目（未筛选时自动隐藏），点击后的清除逻辑与原来完全一致；切换公告分类或当前列表为空时，筛选菜单内的可选条目与当前筛选状态会自动同步复位，避免残留失效筛选条件",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 开发者公告窗口样式与动效统一：弹窗整体样式与系统其他弹窗对齐，弹出与关闭的过渡动效保持一致，圆角、配色、间距等视觉语言更统一",
+                "• 开发者功能弹窗样式统一：「调整等级/经验」「调整签到天数」「自定义签到天数」三个开发者弹窗全面改为与阶段突破弹窗一致的效果——20px 大圆角容器、弹性弹出入场动画、关闭时淡出过渡，按钮统一为灰底取消 + 红橙渐变保存修改（替换原紫色渐变）",
+                "• 顶部 bar 全面适配暗色模式与透明毛玻璃主题：版本更新记录与开发者公告窗口新增的胶囊按钮、下拉菜单、二级子菜单在亮色、暗色模式与透明毛玻璃主题下均有对应配色，保证各主题下文字清晰可辨、悬停与高亮状态易于识别",
+                "• 多语言适配：版本更新记录窗口新增的顶部 bar 及多级下拉菜单完成多语言词条适配，切换语言后胶囊按钮与各级菜单文本同步更新",
+                "• 代码清理：删除公告导航改造后不再被调用的旧导航加载函数，移除原侧边栏相关的冗余事件绑定，清理失效的样式选择器，降低后续维护成本",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复开发者公告窗口与系统其他弹窗弹出/关闭动效不一致、按钮配色风格不统一的问题",
+                "• 修复版本更新记录与开发者公告窗口中原侧边栏相关样式在暗色模式、透明毛玻璃主题下适配不完整的问题",
+                "[color:#d45d79]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！本次更新聚焦于版本更新记录与开发者公告两个窗口的导航体验重构——从纵向侧边栏到横向胶囊按钮 bar、从直接跳转到多级下拉菜单，致力于让信息分类的切换更直观、操作路径更短，也让两个窗口与商店等系统窗口的视觉语言保持统一；筛选功能移入 bar 后的状态可视化、暗色模式与透明毛玻璃主题适配以及多语言词条适配，也进一步补齐了各种使用场景下的体验。",
+                "如果您在使用过程中发现任何问题，或有任何想法和建议，欢迎通过 Github 仓库提交 Issue 与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20260923",
             title: "RC 3.0.3.0 开发日志",
             date: "2026-09-23",
@@ -2823,115 +2855,189 @@ const announcementData = {
     ]
 };
 
-// 初始化公告侧边栏导航
+// 当前内容区正在展示的公告集合（供筛选二级菜单使用）
+var currentAnnouncementContext = null;
+
+// 初始化公告顶部 bar 导航
 function initializeAnnouncementNavigation() {
-    var navItems = document.querySelectorAll('#announcementModal .terms-nav-item');
-    
-    navItems.forEach(function(item) {
-        item.addEventListener('click', function(e) {
-            // 阻止事件冒泡
-            e.stopPropagation();
-            
-            // 移除所有active状态
-            navItems.forEach(function(nav) {
-                nav.classList.remove('active');
-            });
-            
-            // 添加当前active状态
-            this.classList.add('active');
-            
-            // 隐藏所有子按钮
-            var allSubButtons = document.querySelectorAll('#announcementModal .sub-buttons');
-            allSubButtons.forEach(function(sub) {
-                sub.style.display = 'none';
-            });
-            
-            // 隐藏所有"查看中"tag
-            var allViewingTags = document.querySelectorAll('#announcementModal .viewing-tag');
-            allViewingTags.forEach(function(tag) {
-                tag.style.display = 'none';
-            });
-            
-            // 显示当前项的子按钮（如果有且子按钮中有可见按钮）
-            var subButtons = this.querySelector('.sub-buttons');
-            if (subButtons) {
-                var hasVisibleButtons = Array.from(subButtons.querySelectorAll('.sub-button')).some(function(btn) {
-                    return btn.style.display !== 'none';
-                });
-                if (hasVisibleButtons) {
-                    subButtons.style.display = 'block';
-                    var arrow = this.querySelector('.nav-arrow');
-                    if (arrow) {
-                        arrow.style.transform = 'rotate(90deg)';
-                    }
-                }
-            }
-            
-            // 重置其他导航项的箭头
-            navItems.forEach(function(nav) {
-                if (nav !== item) {
-                    var otherArrow = nav.querySelector('.nav-arrow');
-                    if (otherArrow) {
-                        otherArrow.style.transform = 'rotate(0deg)';
-                    }
-                }
-            });
-            
-            // 根据点击的导航项加载对应内容
-            var navId = this.id;
-            loadAnnouncementContent(navId);
+    var modalEl = document.getElementById('announcementModal');
+    var toolbar = document.getElementById('announcementToolbar');
+
+    // 关闭某个下拉内部的二级子菜单并复位箭头
+    function closeFilterSubmenus(dd) {
+        if (!dd) return;
+        dd.querySelectorAll('.vh-filter-submenu').forEach(function(sm) {
+            sm.classList.remove('open');
         });
-    });
-    
-    // 为子按钮添加点击事件
-    var subButtons = document.querySelectorAll('#announcementModal .sub-button');
-    subButtons.forEach(function(button) {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            
-            // 隐藏所有"查看中"tag
-            var allViewingTags = document.querySelectorAll('#announcementModal .viewing-tag');
-            allViewingTags.forEach(function(tag) {
-                tag.style.display = 'none';
-            });
-            
-            // 显示当前按钮的"查看中"tag
-            var viewingTag = this.querySelector('.viewing-tag');
-            if (viewingTag) {
-                viewingTag.style.display = 'inline-block';
+        dd.querySelectorAll('.vh-filter-parent').forEach(function(p) {
+            var arrow = p.querySelector('.vh-sub-arrow');
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        });
+    }
+
+    // 关闭所有多级下拉菜单（except 除外）
+    function closeAnnouncementDropdowns(except) {
+        modalEl.querySelectorAll('.vh-dropdown').forEach(function(dd) {
+            if (dd !== except) {
+                dd.classList.remove('open');
+                closeFilterSubmenus(dd);
             }
-            
-            var type = this.getAttribute('data-type');
+        });
+    }
+
+    // 重置 bar 中所有按钮的激活状态
+    function resetAnnouncementTabs() {
+        modalEl.querySelectorAll('.vh-tab').forEach(function(tab) {
+            tab.classList.remove('active');
+        });
+    }
+
+    // 内容区显示"请选择"提示
+    function showAnnouncementNavHint(text) {
+        var contentArea = document.querySelector('#announcementModal .terms-content');
+        if (!contentArea) return;
+        contentArea.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">${text}</p>
+            </div>
+        `;
+    }
+
+    // 重要公告：单条内容，直接加载
+    var importantNav = document.getElementById('importantNav');
+    if (importantNav) {
+        importantNav.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeAnnouncementDropdowns();
+            resetAnnouncementTabs();
+            this.classList.add('active');
+            loadAnnouncementList(announcementData.importantAnnouncements);
+        });
+    }
+
+    // 普通公告：单条内容，直接加载
+    var normalNav = document.getElementById('normalNav');
+    if (normalNav) {
+        normalNav.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeAnnouncementDropdowns();
+            resetAnnouncementTabs();
+            this.classList.add('active');
+            loadAnnouncementList(announcementData.normalAnnouncements);
+        });
+    }
+
+    // 开发日志：点击按钮弹出多级菜单
+    var devLogNav = document.getElementById('devLogNav');
+    var devLogDropdown = document.getElementById('devLogDropdown');
+    if (devLogNav && devLogDropdown) {
+        devLogNav.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var willOpen = !devLogDropdown.classList.contains('open');
+            closeAnnouncementDropdowns(devLogDropdown);
+            devLogDropdown.classList.toggle('open', willOpen);
+            resetAnnouncementTabs();
+            devLogNav.classList.add('active');
+            if (willOpen) showAnnouncementNavHint('请选择要查看的开发日志');
+        });
+    }
+
+    // 开发日志多级菜单子条目点击：加载对应内容
+    if (devLogDropdown) {
+        devLogDropdown.addEventListener('click', function(e) {
+            var item = e.target.closest('.vh-dropdown-item[data-type]');
+            if (!item || !devLogDropdown.contains(item)) return;
+            e.stopPropagation();
+            var type = item.getAttribute('data-type');
+            closeAnnouncementDropdowns();
+            resetAnnouncementTabs();
+            if (devLogNav) devLogNav.classList.add('active');
             loadAnnouncementByType(type);
         });
-    });
-}
-
-// 根据导航ID加载公告内容
-function loadAnnouncementContent(navId) {
-    var contentArea = document.querySelector('#announcementModal .terms-content');
-    if (!contentArea) return;
-    
-    switch(navId) {
-        case 'importantNav':
-            loadAnnouncementList(announcementData.importantAnnouncements);
-            break;
-        case 'normalNav':
-            loadAnnouncementList(announcementData.normalAnnouncements);
-            break;
-        case 'devLogNav':
-            loadAnnouncementByType('dev_launcher');
-            break;
-        default:
-            contentArea.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                    <div style="font-size: 48px; margin-bottom: 20px; color: #d45d79;">
-                        <i class="fas fa-newspaper"></i>
-                    </div>
-                    <p style="font-style: normal; text-align: center; padding: 0; margin: 0;">请选择要查看的公告分类</p>
-                </div>
-            `;
     }
+
+    // ===== 筛选：点击按钮弹出多级菜单 =====
+    var filterNav = document.getElementById('announcementFilterNav');
+    var filterDropdown = document.getElementById('announcementFilterDropdown');
+    var monthSubmenu = document.getElementById('monthFilterSubmenu');
+    var versionSubmenu = document.getElementById('versionFilterSubmenu');
+
+    if (filterNav && filterDropdown) {
+        // 筛选按钮：仅展开/收起菜单，不改变当前分类
+        filterNav.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var willOpen = !filterDropdown.classList.contains('open');
+            closeAnnouncementDropdowns(filterDropdown);
+            filterDropdown.classList.toggle('open', willOpen);
+            if (!willOpen) closeFilterSubmenus(filterDropdown);
+        });
+
+        // 一级菜单项（按月份 / 按版本）与二级菜单条目的委托处理
+        filterDropdown.addEventListener('click', function(e) {
+            var parentItem = e.target.closest('.vh-filter-parent');
+            if (parentItem) {
+                e.stopPropagation();
+                var targetSubmenu = parentItem.getAttribute('data-submenu') === 'month' ? monthSubmenu : versionSubmenu;
+                var otherSubmenu = targetSubmenu === monthSubmenu ? versionSubmenu : monthSubmenu;
+                var willOpenSub = !targetSubmenu.classList.contains('open');
+                otherSubmenu.classList.remove('open');
+                targetSubmenu.classList.toggle('open', willOpenSub);
+                // 箭头方向
+                filterDropdown.querySelectorAll('.vh-filter-parent').forEach(function(p) {
+                    var arrow = p.querySelector('.vh-sub-arrow');
+                    if (arrow) arrow.style.transform = 'rotate(0deg)';
+                });
+                var arrow = parentItem.querySelector('.vh-sub-arrow');
+                if (arrow && willOpenSub) arrow.style.transform = 'rotate(90deg)';
+                return;
+            }
+
+            var subItem = e.target.closest('.vh-filter-submenu-item');
+            if (subItem) {
+                e.stopPropagation();
+                if (!currentAnnouncementContext) return;
+                var monthVal = subItem.getAttribute('data-month');
+                var versionVal = subItem.getAttribute('data-version');
+                closeAnnouncementDropdowns();
+                if (monthVal) {
+                    filterAnnouncementsByMonth(monthVal, currentAnnouncementContext);
+                } else if (versionVal) {
+                    filterAnnouncementsByVersion(versionVal, currentAnnouncementContext);
+                }
+                return;
+            }
+
+            // 清除筛选：沿用原有逻辑（回到开发日志列表）
+            if (e.target.closest('#announcementFilterClearBtn')) {
+                e.stopPropagation();
+                closeAnnouncementDropdowns();
+                loadAnnouncementList(announcementData.devLogs);
+            }
+        });
+    }
+
+    // 点击菜单外部或按 Esc：关闭多级菜单
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#announcementModal .vh-dropdown')) {
+            var am = document.getElementById('announcementModal');
+            if (am) am.querySelectorAll('.vh-dropdown').forEach(function(dd) {
+                dd.classList.remove('open');
+                closeFilterSubmenus(dd);
+            });
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            var am = document.getElementById('announcementModal');
+            if (am) am.querySelectorAll('.vh-dropdown').forEach(function(dd) {
+                dd.classList.remove('open');
+                closeFilterSubmenus(dd);
+            });
+        }
+    });
 }
 
 // 根据类型加载公告
@@ -2971,6 +3077,8 @@ function loadAnnouncementList(announcements) {
     contentArea.innerHTML = '';
     
     if (announcements.length === 0) {
+        currentAnnouncementContext = announcements;
+        refreshAnnouncementFilterOptions(announcements);
         contentArea.innerHTML = `
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
                 <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
@@ -3020,15 +3128,11 @@ function showAnnouncementSelection(announcements) {
     
     contentArea.innerHTML = '';
     
-    // 添加提示文本和筛选按钮区域
+    // 添加提示文本
     var hintContainer = document.createElement('div');
     hintContainer.style.cssText = `
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         padding: 20px 20px 10px;
         margin-bottom: 10px;
-        position: relative;
     `;
     
     var isDarkMode = document.body.classList.contains('dark-mode');
@@ -3043,147 +3147,11 @@ function showAnnouncementSelection(announcements) {
     `;
     hintText.textContent = '请选择要查看的公告';
     hintContainer.appendChild(hintText);
-    
-    // 添加筛选按钮容器（用于定位下拉菜单）
-    var filterBtnContainer = document.createElement('div');
-    filterBtnContainer.style.cssText = `
-        position: relative;
-        display: inline-block;
-    `;
-    
-    // 添加筛选按钮
-    var filterButton = document.createElement('button');
-    filterButton.className = 'announcement-filter-btn';
-    var filterBtnBg = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
-    var filterBtnBorder = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
-    var filterBtnColor = isDarkMode ? '#e67e8a' : '#d45d79';
-    filterButton.style.cssText = `
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border: 1px solid ${filterBtnBorder};
-        border-radius: 20px;
-        background: ${filterBtnBg};
-        color: ${filterBtnColor};
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    `;
-    filterButton.innerHTML = `<i class="fas fa-filter"></i> <span>筛选</span>`;
-    filterBtnContainer.appendChild(filterButton);
-    hintContainer.appendChild(filterBtnContainer);
     contentArea.appendChild(hintContainer);
     
-    var menuBg = isDarkMode ? 'rgba(50, 50, 70, 0.98)' : 'white';
-    var menuBorder = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(212, 93, 121, 0.2)';
-    var menuShadow = isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)';
-    var menuText = isDarkMode ? '#e0e0e0' : '#333';
-    var menuHover = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(212, 93, 121, 0.05)';
-    
-    // 添加筛选菜单（在按钮下方展开）
-    var filterMenu = document.createElement('div');
-    filterMenu.className = 'announcement-filter-menu';
-    filterMenu.style.cssText = `
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        width: 260px;
-        background: ${menuBg};
-        border-radius: 12px;
-        box-shadow: 0 8px 32px ${menuShadow};
-        border: 1px solid ${menuBorder};
-        z-index: 1000;
-        overflow: hidden;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-8px);
-        transition: all 0.25s ease;
-    `;
-    
-    // 月份筛选子项
-    var monthMenuItem = document.createElement('div');
-    monthMenuItem.className = 'filter-menu-item';
-    monthMenuItem.style.cssText = `
-        padding: 12px 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: background 0.2s ease;
-        color: ${menuText};
-        user-select: none;
-    `;
-    monthMenuItem.innerHTML = `
-        <span style="font-size: 14px;">仅显示以下月份的所有公告</span>
-        <i class="fas fa-chevron-right filter-menu-arrow" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'}; transition: transform 0.2s ease;"></i>
-    `;
-    
-    // 版本筛选子项
-    var versionMenuItem = document.createElement('div');
-    versionMenuItem.className = 'filter-menu-item';
-    versionMenuItem.style.cssText = `
-        padding: 12px 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: background 0.2s ease;
-        color: ${menuText};
-        border-top: 1px solid ${menuBorder};
-        user-select: none;
-    `;
-    versionMenuItem.innerHTML = `
-        <span style="font-size: 14px;">仅显示以下版本内的所有公告</span>
-        <i class="fas fa-chevron-right filter-menu-arrow" style="font-size: 12px; color: ${isDarkMode ? '#888' : '#999'}; transition: transform 0.2s ease;"></i>
-    `;
-    
-    filterMenu.appendChild(monthMenuItem);
-    filterMenu.appendChild(versionMenuItem);
-    
-    // 月份选择子菜单（与主菜单同级定位，从右向左滑入）
-    var monthSubMenu = document.createElement('div');
-    monthSubMenu.className = 'filter-submenu';
-    monthSubMenu.style.cssText = `
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        width: 260px;
-        background: ${menuBg};
-        border-radius: 12px;
-        box-shadow: 0 8px 32px ${menuShadow};
-        border: 1px solid ${menuBorder};
-        z-index: 1002;
-        overflow-y: auto;
-        max-height: 300px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateX(30px);
-        transition: all 0.25s ease;
-    `;
-    
-    // 版本选择子菜单（与主菜单同级定位，从右向左滑入）
-    var versionSubMenu = document.createElement('div');
-    versionSubMenu.className = 'filter-submenu';
-    versionSubMenu.style.cssText = `
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        width: 260px;
-        background: ${menuBg};
-        border-radius: 12px;
-        box-shadow: 0 8px 32px ${menuShadow};
-        border: 1px solid ${menuBorder};
-        z-index: 1002;
-        overflow-y: auto;
-        max-height: 300px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateX(30px);
-        transition: all 0.25s ease;
-    `;
-    
-    filterBtnContainer.appendChild(filterMenu);
+    // 记录当前展示的公告集合，并刷新 bar 内筛选菜单的可选条目
+    currentAnnouncementContext = announcements;
+    refreshAnnouncementFilterOptions(announcements);
     
     // 按日期倒序排序公告
     var sortedAnnouncements = [...announcements].sort(function(a, b) {
@@ -3324,180 +3292,43 @@ function showAnnouncementSelection(announcements) {
         buttonsContainer.appendChild(button);
         });
     });
-    
-    // 将子菜单添加到按钮容器（与主菜单同级，便于绝对定位展开）
-    filterBtnContainer.appendChild(monthSubMenu);
-    filterBtnContainer.appendChild(versionSubMenu);
-    
-    // 动态生成月份列表
-    var months = getUniqueMonths(announcements);
-    months.forEach(function(month) {
-        var monthItem = document.createElement('div');
-        monthItem.className = 'filter-submenu-item';
-        monthItem.style.cssText = `
-            padding: 10px 16px;
-            cursor: pointer;
-            font-size: 14px;
-            color: ${menuText};
-            transition: background 0.2s ease;
-        `;
-        monthItem.textContent = month;
-        monthItem.addEventListener('click', function(e) {
-            e.stopPropagation();
-            filterAnnouncementsByMonth(month, announcements);
-            closeFilterMenu();
-        });
-        monthItem.addEventListener('mouseenter', function() {
-            this.style.background = menuHover;
-        });
-        monthItem.addEventListener('mouseleave', function() {
-            this.style.background = 'transparent';
-        });
-        monthSubMenu.appendChild(monthItem);
+}
+
+// 刷新 bar 内筛选菜单：根据当前公告集合重建月份/版本二级子菜单，并复位筛选状态
+function refreshAnnouncementFilterOptions(announcements) {
+    var filterNav = document.getElementById('announcementFilterNav');
+    var clearBtn = document.getElementById('announcementFilterClearBtn');
+    var monthSubmenu = document.getElementById('monthFilterSubmenu');
+    var versionSubmenu = document.getElementById('versionFilterSubmenu');
+    if (!monthSubmenu || !versionSubmenu) return;
+
+    // 复位：未筛选状态下隐藏清除条目与二级菜单
+    if (filterNav) filterNav.classList.remove('filtering');
+    if (clearBtn) clearBtn.style.display = 'none';
+    monthSubmenu.classList.remove('open');
+    versionSubmenu.classList.remove('open');
+    document.querySelectorAll('#announcementFilterDropdown .vh-filter-parent .vh-sub-arrow').forEach(function(a) {
+        a.style.transform = 'rotate(0deg)';
     });
-    
-    // 动态生成版本列表
-    var versions = getUniqueVersions(announcements);
-    versions.forEach(function(version) {
-        var versionItem = document.createElement('div');
-        versionItem.className = 'filter-submenu-item';
-        versionItem.style.cssText = `
-            padding: 10px 16px;
-            cursor: pointer;
-            font-size: 14px;
-            color: ${menuText};
-            transition: background 0.2s ease;
-        `;
-        versionItem.textContent = 'RC ' + version;
-        versionItem.addEventListener('click', function(e) {
-            e.stopPropagation();
-            filterAnnouncementsByVersion(version, announcements);
-            closeFilterMenu();
-        });
-        versionItem.addEventListener('mouseenter', function() {
-            this.style.background = menuHover;
-        });
-        versionItem.addEventListener('mouseleave', function() {
-            this.style.background = 'transparent';
-        });
-        versionSubMenu.appendChild(versionItem);
+
+    monthSubmenu.innerHTML = '';
+    getUniqueMonths(announcements).forEach(function(month) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'vh-dropdown-item vh-filter-submenu-item';
+        item.setAttribute('data-month', month);
+        item.textContent = month;
+        monthSubmenu.appendChild(item);
     });
-    
-    // 关闭筛选菜单（带动画）
-    function closeFilterMenu() {
-        filterMenu.style.opacity = '0';
-        filterMenu.style.visibility = 'hidden';
-        filterMenu.style.transform = 'translateY(-8px)';
-        monthSubMenu.style.opacity = '0';
-        monthSubMenu.style.visibility = 'hidden';
-        monthSubMenu.style.transform = 'translateX(30px)';
-        versionSubMenu.style.opacity = '0';
-        versionSubMenu.style.visibility = 'hidden';
-        versionSubMenu.style.transform = 'translateX(30px)';
-        // 重置箭头
-        var arrows = filterMenu.querySelectorAll('.filter-menu-arrow');
-        arrows.forEach(function(a) {
-            a.style.transform = 'rotate(0deg)';
-        });
-    }
-    
-    // 打开筛选菜单（带动画）
-    function openFilterMenu() {
-        filterMenu.style.opacity = '1';
-        filterMenu.style.visibility = 'visible';
-        filterMenu.style.transform = 'translateY(0)';
-    }
-    
-    // 打开月份子菜单（从右滑入）
-    function openMonthSubMenu() {
-        monthSubMenu.style.opacity = '1';
-        monthSubMenu.style.visibility = 'visible';
-        monthSubMenu.style.transform = 'translateX(0)';
-        versionSubMenu.style.opacity = '0';
-        versionSubMenu.style.visibility = 'hidden';
-        versionSubMenu.style.transform = 'translateX(30px)';
-        // 更新箭头方向
-        var arrows = filterMenu.querySelectorAll('.filter-menu-arrow');
-        arrows.forEach(function(a) {
-            a.style.transform = 'rotate(0deg)';
-        });
-        var monthArrow = monthMenuItem.querySelector('.filter-menu-arrow');
-        if (monthArrow) monthArrow.style.transform = 'rotate(90deg)';
-    }
-    
-    // 打开版本子菜单（从右滑入）
-    function openVersionSubMenu() {
-        versionSubMenu.style.opacity = '1';
-        versionSubMenu.style.visibility = 'visible';
-        versionSubMenu.style.transform = 'translateX(0)';
-        monthSubMenu.style.opacity = '0';
-        monthSubMenu.style.visibility = 'hidden';
-        monthSubMenu.style.transform = 'translateX(30px)';
-        // 更新箭头方向
-        var arrows = filterMenu.querySelectorAll('.filter-menu-arrow');
-        arrows.forEach(function(a) {
-            a.style.transform = 'rotate(0deg)';
-        });
-        var versionArrow = versionMenuItem.querySelector('.filter-menu-arrow');
-        if (versionArrow) versionArrow.style.transform = 'rotate(90deg)';
-    }
-    
-    // 筛选按钮点击事件
-    filterButton.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (filterMenu.style.visibility === 'visible') {
-            closeFilterMenu();
-        } else {
-            openFilterMenu();
-        }
-    });
-    
-    // 月份菜单项点击事件
-    monthMenuItem.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (monthSubMenu.style.visibility === 'visible') {
-            // 关闭子菜单
-            monthSubMenu.style.opacity = '0';
-            monthSubMenu.style.visibility = 'hidden';
-            monthSubMenu.style.transform = 'translateX(30px)';
-            var monthArrow = monthMenuItem.querySelector('.filter-menu-arrow');
-            if (monthArrow) monthArrow.style.transform = 'rotate(0deg)';
-        } else {
-            openMonthSubMenu();
-        }
-    });
-    
-    // 版本菜单项点击事件
-    versionMenuItem.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (versionSubMenu.style.visibility === 'visible') {
-            // 关闭子菜单
-            versionSubMenu.style.opacity = '0';
-            versionSubMenu.style.visibility = 'hidden';
-            versionSubMenu.style.transform = 'translateX(30px)';
-            var versionArrow = versionMenuItem.querySelector('.filter-menu-arrow');
-            if (versionArrow) versionArrow.style.transform = 'rotate(0deg)';
-        } else {
-            openVersionSubMenu();
-        }
-    });
-    
-    // 点击其他地方关闭菜单
-    document.addEventListener('click', function(e) {
-        if (!filterBtnContainer.contains(e.target)) {
-            closeFilterMenu();
-        }
-    });
-    
-    // 菜单项悬浮效果
-    var menuItems = filterMenu.querySelectorAll('.filter-menu-item');
-    menuItems.forEach(function(item) {
-        item.addEventListener('mouseenter', function() {
-            this.style.background = menuHover;
-        });
-        item.addEventListener('mouseleave', function() {
-            this.style.background = 'transparent';
-        });
+
+    versionSubmenu.innerHTML = '';
+    getUniqueVersions(announcements).forEach(function(version) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'vh-dropdown-item vh-filter-submenu-item';
+        item.setAttribute('data-version', version);
+        item.textContent = 'RC ' + version;
+        versionSubmenu.appendChild(item);
     });
 }
 
@@ -3573,15 +3404,10 @@ function showFilteredAnnouncements(filtered, filterName, filterType) {
     
     var isDarkMode = document.body.classList.contains('dark-mode');
     var hintColor = isDarkMode ? '#e0e0e0' : '#333';
-    var btnBg = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
-    var btnBorder = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
     
-    // 添加提示文本和筛选按钮区域
+    // 添加提示文本区域
     var hintContainer = document.createElement('div');
     hintContainer.style.cssText = `
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         padding: 20px 20px 10px;
         margin-bottom: 10px;
     `;
@@ -3596,29 +3422,13 @@ function showFilteredAnnouncements(filtered, filterName, filterType) {
     `;
     hintText.textContent = '已筛选：' + filterName + '（共' + filtered.length + '条）';
     hintContainer.appendChild(hintText);
-    
-    // 添加清除筛选按钮
-    var clearButton = document.createElement('button');
-    clearButton.className = 'announcement-clear-filter-btn';
-    clearButton.style.cssText = `
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border: 1px solid ${btnBorder};
-        border-radius: 20px;
-        background: ${btnBg};
-        color: #d45d79;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    `;
-    clearButton.innerHTML = `<i class="fas fa-times"></i> <span>清除筛选</span>`;
-    clearButton.addEventListener('click', function() {
-        loadAnnouncementList(announcementData.devLogs);
-    });
-    hintContainer.appendChild(clearButton);
     contentArea.appendChild(hintContainer);
+    
+    // 筛选状态同步到 bar：筛选按钮高亮，菜单内显示"清除筛选"条目
+    var filterNav = document.getElementById('announcementFilterNav');
+    var clearBtn = document.getElementById('announcementFilterClearBtn');
+    if (filterNav) filterNav.classList.add('filtering');
+    if (clearBtn) clearBtn.style.display = 'block';
     
     if (filtered.length === 0) {
         var emptyMessage = document.createElement('div');
@@ -4076,7 +3886,7 @@ function generateAnnouncementModal() {
     modal.style.display = 'none';
     
     modal.innerHTML = `
-        <div class="alert-content terms-modal-content announcement-modal-content">
+        <div class="alert-content terms-modal-content">
             <div class="header-container">
                 <div class="alert-icon">
                     <i class="fas fa-newspaper"></i>
@@ -4086,63 +3896,59 @@ function generateAnnouncementModal() {
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="terms-layout">
-                <div class="terms-sidebar" id="announcementSidebar">
-                    <div class="terms-nav-header">
-                        <div class="terms-nav-title">公告分类</div>
-                        <button class="toggle-sidebar-btn" id="toggleAnnouncementSidebarBtn">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                    </div>
-                    <div class="terms-nav-scroll">
-                    <div class="terms-nav-item active" id="importantNav">
-                        <div class="nav-item-content">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span>重要公告<ul>Important</ul></span>
-                        </div>
-                    </div>
-                    <div class="terms-nav-item" id="normalNav">
-                        <div class="nav-item-content">
-                            <i class="fas fa-info-circle"></i>
-                            <span>普通公告<ul>Announcements</ul></span>
-                        </div>
-                    </div>
-                    <div class="terms-nav-item" id="devLogNav">
-                        <div class="nav-item-content">
-                            <i class="fas fa-code"></i>
-                            <span>开发日志<ul>Dev Logs</ul></span>
-                            <i class="fas fa-chevron-right nav-arrow"></i>
-                        </div>
-                        <div class="sub-buttons" id="devLogSubButtons" style="display: none;">
-                            <button class="sub-button" data-type="dev_launcher" style="display: none;">
-                                <i class="fas fa-rocket"></i>
-                                <span>启动器更新</span>
-                                <span class="viewing-tag" style="display:none;">查看中</span>
-                            </button>
-                            <button class="sub-button" data-type="dev_game_hall" style="display: none;">
-                                <i class="fas fa-gamepad"></i>
-                                <span>主页面更新</span>
-                                <span class="viewing-tag" style="display:none;">查看中</span>
-                            </button>
-                        </div>
-                    </div>
-                    </div>
-                    <div class="sidebar-footer">
-                        <button class="mark-all-read-btn" id="markAllAnnouncementReadBtn">
-                            <i class="fas fa-check-double"></i>
-                            <span>一键已读</span>
-                        </button>
+            <div class="vh-toolbar" id="announcementToolbar">
+                <button class="vh-tab active" id="importantNav">
+                    <i class="fas fa-exclamation-circle"></i><span>重要公告</span>
+                </button>
+                <button class="vh-tab" id="normalNav">
+                    <i class="fas fa-info-circle"></i><span>普通公告</span>
+                </button>
+                <div class="vh-dropdown" id="devLogDropdown">
+                    <button class="vh-tab" id="devLogNav">
+                        <i class="fas fa-code"></i><span>开发日志</span>
+                        <i class="fas fa-chevron-down vh-caret"></i>
+                    </button>
+                    <div class="vh-dropdown-menu">
+                        <button class="vh-dropdown-item" data-type="dev_launcher">启动器更新</button>
+                        <button class="vh-dropdown-item" data-type="dev_game_hall">主页面更新</button>
                     </div>
                 </div>
-                <div class="terms-main">
-                    <div class="terms-content" id="announcementContent">
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                            <div style="font-size: 48px; margin-bottom: 20px; color: #d45d79;">
-                                <i class="fas fa-newspaper"></i>
+                <span class="vh-toolbar-right">
+                    <div class="vh-dropdown" id="announcementFilterDropdown">
+                        <button class="vh-tab" id="announcementFilterNav" type="button">
+                            <i class="fas fa-filter"></i><span>筛选</span>
+                            <i class="fas fa-chevron-down vh-caret"></i>
+                        </button>
+                        <div class="vh-dropdown-menu vh-filter-menu">
+                            <button class="vh-dropdown-item vh-filter-clear" id="announcementFilterClearBtn" type="button" style="display: none;">
+                                <i class="fas fa-times-circle"></i>&nbsp;<span>清除筛选</span>
+                            </button>
+                            <div class="vh-dropdown-item vh-filter-parent" data-submenu="month">
+                                <span>仅显示以下月份的所有公告</span>
+                                <i class="fas fa-chevron-right vh-sub-arrow"></i>
                             </div>
-                            <p style="font-style: normal; text-align: center; padding: 0; margin: 0;">欢迎查看开发者公告</p>
-                            <p style="font-style: normal; text-align: center; padding: 0; margin: 10px 0 0; color: #999; font-size: 14px;">选择左侧分类查看详细内容</p>
+                            <div class="vh-dropdown-item vh-filter-parent" data-submenu="version">
+                                <span>仅显示以下版本内的所有公告</span>
+                                <i class="fas fa-chevron-right vh-sub-arrow"></i>
+                            </div>
                         </div>
+                        <div class="vh-filter-submenu" id="monthFilterSubmenu"></div>
+                        <div class="vh-filter-submenu" id="versionFilterSubmenu"></div>
+                    </div>
+                    <button class="mark-all-read-btn" id="markAllAnnouncementReadBtn">
+                        <i class="fas fa-check-double"></i>
+                        <span>一键已读</span>
+                    </button>
+                </span>
+            </div>
+            <div class="terms-main vh-main">
+                <div class="terms-content" id="announcementContent">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; color: #d45d79;">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <p style="font-style: normal; text-align: center; padding: 0; margin: 0;">欢迎查看开发者公告</p>
+                        <p style="font-style: normal; text-align: center; padding: 0; margin: 10px 0 0; color: #999; font-size: 14px;">选择上方分类查看详细内容</p>
                     </div>
                 </div>
             </div>
@@ -4167,21 +3973,6 @@ function generateAnnouncementModal() {
         var contentArea = document.querySelector('#announcementModal .terms-main');
         if (contentArea) {
             contentArea.scrollTop = 0;
-        }
-    });
-    
-    // 添加侧边栏切换按钮事件
-    document.getElementById('toggleAnnouncementSidebarBtn').addEventListener('click', function() {
-        var sidebar = document.getElementById('announcementSidebar');
-        var layout = document.querySelector('#announcementModal .terms-layout');
-        if (sidebar && layout) {
-            sidebar.classList.toggle('collapsed');
-            layout.classList.toggle('collapsed');
-            
-            var icon = this.querySelector('i');
-            if (icon) {
-                icon.style.transform = sidebar.classList.contains('collapsed') ? 'rotate(180deg)' : 'rotate(0deg)';
-            }
         }
     });
     

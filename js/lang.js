@@ -1130,43 +1130,29 @@ const LangManager = (function() {
             if (officialOption) officialOption.textContent = texts.defaultServer;
         }
         
-        // 更新版本更新历史侧边栏
-        var termsNavTitle = document.querySelector('.terms-nav-title');
-        if (termsNavTitle) termsNavTitle.textContent = texts.listNav;
-        
-        var featureUpdatesNav = document.querySelector('#featureUpdateNav .nav-item-content span');
-        if (featureUpdatesNav) featureUpdatesNav.innerHTML = texts.featureUpdates + '<ul>Feature Updates</ul>';
-        
-        var outdatedVersionsNav = document.querySelector('#earlyUpdateNav .nav-item-content span');
-        if (outdatedVersionsNav) outdatedVersionsNav.innerHTML = texts.outdatedVersions + '<ul>Outdated Versions</ul>';
-        
-        var miniGameUpdatesNav = document.querySelector('#miniGameUpdateNav .nav-item-content span');
-        if (miniGameUpdatesNav) miniGameUpdatesNav.innerHTML = texts.miniGameUpdates + '<ul>Mini Game Updates</ul>';
-        
-        // 更新查看中标签
-        var viewingTags = document.querySelectorAll('.viewing-tag');
-        viewingTags.forEach(function(tag) {
-            tag.textContent = texts.viewing;
-        });
-        
-        // 更新功能更新子按钮
-        var featureSubButtons = document.querySelectorAll('#featureSubButtons .sub-button .button-text');
-        if (featureSubButtons[0]) featureSubButtons[0].textContent = texts.launcherUpdate;
-        if (featureSubButtons[1]) featureSubButtons[1].textContent = texts.homepageUpdate;
-        
-        // 更新过时版本子按钮
-        var outdatedSubButtons = document.querySelectorAll('#outdatedSubButtons .sub-button .button-text');
-        if (outdatedSubButtons[0]) outdatedSubButtons[0].textContent = texts.launcherRecord;
-        if (outdatedSubButtons[1]) outdatedSubButtons[1].textContent = texts.homepageRecord;
-        
-        // 更新小游戏更新子按钮
-        var miniGameSubButtons = document.querySelectorAll('#miniGameSubButtons .sub-button .button-text');
-        if (miniGameSubButtons[0]) miniGameSubButtons[0].textContent = texts.snake;
-        if (miniGameSubButtons[1]) miniGameSubButtons[1].textContent = texts.colormatch;
-        if (miniGameSubButtons[2]) miniGameSubButtons[2].textContent = texts.memory;
-        if (miniGameSubButtons[3]) miniGameSubButtons[3].textContent = texts.wzq;
-        if (miniGameSubButtons[4]) miniGameSubButtons[4].textContent = texts.fxq;
-        if (miniGameSubButtons[5]) miniGameSubButtons[5].textContent = texts.fkgame;
+        // 更新版本更新历史顶部 bar
+        var featureUpdatesNav = document.querySelector('#featureUpdateNav span');
+        if (featureUpdatesNav) featureUpdatesNav.textContent = texts.featureUpdates;
+
+        var outdatedVersionsNav = document.querySelector('#earlyUpdateNav span');
+        if (outdatedVersionsNav) outdatedVersionsNav.textContent = texts.outdatedVersions;
+
+        var miniGameUpdatesNav = document.querySelector('#miniGameUpdateNav span');
+        if (miniGameUpdatesNav) miniGameUpdatesNav.textContent = texts.miniGameUpdates;
+
+        // 更新过时版本多级菜单子条目
+        var outdatedItems = document.querySelectorAll('#earlyDropdown .vh-dropdown-item');
+        if (outdatedItems[0]) outdatedItems[0].textContent = texts.launcherRecord;
+        if (outdatedItems[1]) outdatedItems[1].textContent = texts.homepageRecord;
+
+        // 更新小游戏多级菜单子条目
+        var miniGameItems = document.querySelectorAll('#miniGameDropdown .vh-dropdown-item');
+        if (miniGameItems[0]) miniGameItems[0].textContent = texts.snake;
+        if (miniGameItems[1]) miniGameItems[1].textContent = texts.colormatch;
+        if (miniGameItems[2]) miniGameItems[2].textContent = texts.memory;
+        if (miniGameItems[3]) miniGameItems[3].textContent = texts.wzq;
+        if (miniGameItems[4]) miniGameItems[4].textContent = texts.fxq;
+        if (miniGameItems[5]) miniGameItems[5].textContent = texts.fkgame;
         
         // 更新用户信息提示标签
         var tooltipLabels = document.querySelectorAll('.tooltip-label');
