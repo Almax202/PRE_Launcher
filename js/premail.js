@@ -836,6 +836,35 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 20,
+            date: "2026-09-30",
+            mails: [
+                {
+                    id: 'compensation_mail_20260930',
+                    title: '2026-09-30 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。\n\n为表达我们对各位用户的诚意，今日（2026-09-30）版本更新补偿邮件已随本次更新一并送达。本次邮件附件为：经验值补给卡 Ⅰ ×1 和 经验值加成卡 Ⅰ ×1，所有物品领取后将发放至您的仓库。经验值补给卡 Ⅰ 使用后获得 300 点经验值，将立即对您的账户等级生效；经验值加成卡 Ⅰ 使用后 30 分钟内经验获取提升 5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时 4 张）。\n\n本邮件发放对象为 2026-09-30 20:00:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-10-07 23:59:59 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n再次感谢您的理解与支持，祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        },
+                        {
+                            name: '经验值加成卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_boost_small',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-09-30 20:00:00",
+                    endTime: "2026-10-07 23:59:59",
+                    requireRegisteredBefore: "2026-09-30 20:00:00"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {
