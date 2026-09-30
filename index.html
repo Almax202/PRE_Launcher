@@ -5003,6 +5003,9 @@
                 var isWeatherFeatureEnabled = localStorage.getItem('weatherFeatureEnabled') === 'true';
                 var isCalendarEnabled = localStorage.getItem('calendarEnabled') === 'true';
                 var isRedeemCodeEnabled = localStorage.getItem('redeemCodeEnabled') === 'true';
+                var isNetworkSpeedTestOn = (typeof isNetworkSpeedTestEnabled === 'function')
+                    ? isNetworkSpeedTestEnabled()
+                    : (localStorage.getItem('networkSpeedTestEnabled') === 'true' && localStorage.getItem('experimentalFeaturesDisabled') !== 'true');
                 
                 var guideBtn = document.getElementById('modalShowGuideBtn');
                 var uiScaleBtn = document.getElementById('modalUiScaleBtn');
@@ -5012,6 +5015,7 @@
                 var weatherBtn = document.getElementById('modalWeatherBtn');
                 var calendarBtn = document.getElementById('modalCalendarBtn');
                 var redeemCodeBtn = document.getElementById('modalRedeemCodeBtn');
+                var networkSpeedTestBtn = document.getElementById('modalNetworkSpeedTestBtn');
                 var moreFeaturesButtons = document.querySelector('.more-features-buttons');
                 var moreFeaturesEmpty = document.getElementById('moreFeaturesEmpty');
                 var mobileGuideBtn = document.getElementById('mobileModalShowGuideBtn');
@@ -5022,6 +5026,7 @@
                 var mobileWeatherBtn = document.getElementById('mobileModalWeatherBtn');
                 var mobileCalendarBtn = document.getElementById('mobileModalCalendarBtn');
                 var mobileRedeemCodeBtn = document.getElementById('mobileModalRedeemCodeBtn');
+                var mobileNetworkSpeedTestBtn = document.getElementById('mobileModalNetworkSpeedTestBtn');
                 var mobileMoreFeaturesEmpty = document.getElementById('mobileMoreFeaturesEmpty');
                 
                 if (guideBtn) {
@@ -5052,8 +5057,12 @@
                 if (redeemCodeBtn) {
                     redeemCodeBtn.style.display = isRedeemCodeEnabled ? 'flex' : 'none';
                 }
+
+                if (networkSpeedTestBtn) {
+                    networkSpeedTestBtn.style.display = isNetworkSpeedTestOn ? 'flex' : 'none';
+                }
                 
-                var hasAnyFeature = guideEnabled || uiScaleEnabled || hideUiEnabled || aboutLauncherEnabled || isStickyNotesEnabled || isWeatherFeatureEnabled || isCalendarEnabled || isRedeemCodeEnabled;
+                var hasAnyFeature = guideEnabled || uiScaleEnabled || hideUiEnabled || aboutLauncherEnabled || isStickyNotesEnabled || isWeatherFeatureEnabled || isCalendarEnabled || isRedeemCodeEnabled || isNetworkSpeedTestOn;
                 if (moreFeaturesButtons) {
                     moreFeaturesButtons.style.display = hasAnyFeature ? 'grid' : 'none';
                 }
@@ -5084,6 +5093,9 @@
                 }
                 if (mobileRedeemCodeBtn) {
                     mobileRedeemCodeBtn.style.display = isRedeemCodeEnabled ? 'flex' : 'none';
+                }
+                if (mobileNetworkSpeedTestBtn) {
+                    mobileNetworkSpeedTestBtn.style.display = isNetworkSpeedTestOn ? 'flex' : 'none';
                 }
                 if (mobileMoreFeaturesEmpty) {
                     mobileMoreFeaturesEmpty.style.display = hasAnyFeature ? 'none' : 'flex';
@@ -5659,6 +5671,18 @@
                                         <span class="feature-card-desc">使用兑换码兑换更多物品</span>
                                     </div>
                                 </button>
+                                <button class="more-feature-card" id="mobileModalNetworkSpeedTestBtn" style="display: none;">
+                                    <div class="feature-card-icon speedtest-icon">
+                                        <i class="fas fa-gauge-high"></i>
+                                    </div>
+                                    <div class="feature-card-info">
+                                        <span class="feature-card-title">网络测速</span>
+                                        <span class="feature-card-desc">测试网络延迟、下载与上传速度</span>
+                                    </div>
+                                    <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('networkSpeedTest');">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                </button>
                             </div>
                             <div class="more-features-empty" id="mobileMoreFeaturesEmpty" style="display: none;">
                                 <div class="empty-icon-container">
@@ -5740,6 +5764,19 @@
                         setTimeout(function() {
                             if (typeof showRedeemCodeModal === 'function') {
                                 showRedeemCodeModal();
+                            }
+                        }, 300);
+                    });
+                }
+
+                var mobileModalNetworkSpeedTestBtn = document.getElementById('mobileModalNetworkSpeedTestBtn');
+                if (mobileModalNetworkSpeedTestBtn) {
+                    mobileModalNetworkSpeedTestBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        closeMobileFunctionsModal();
+                        setTimeout(function() {
+                            if (typeof openNetworkSpeedTestModal === 'function') {
+                                openNetworkSpeedTestModal();
                             }
                         }, 300);
                     });
@@ -7621,6 +7658,18 @@
                         <div class="feature-card-info">
                             <span class="feature-card-title">兑换码</span>
                             <span class="feature-card-desc">使用兑换码兑换更多物品</span>
+                        </div>
+                    </button>
+                    <button class="more-feature-card" id="modalNetworkSpeedTestBtn" style="display: none;">
+                        <div class="feature-card-icon speedtest-icon">
+                            <i class="fas fa-gauge-high"></i>
+                        </div>
+                        <div class="feature-card-info">
+                            <span class="feature-card-title">网络测速</span>
+                            <span class="feature-card-desc">测试网络延迟、下载与上传速度</span>
+                        </div>
+                        <div class="feature-card-info-btn" onclick="event.stopPropagation(); showComponentInfoModal('networkSpeedTest');">
+                            <i class="fas fa-info-circle"></i>
                         </div>
                     </button>
                 </div>
@@ -25093,7 +25142,8 @@
             { id: 'weather', name: '天气', icon: 'fa-cloud-sun', desc: '天气信息', action: 'openWeather' },
             { id: 'calendar', name: '日历', icon: 'fa-calendar-alt', desc: '日历信息', action: 'openCalendar' },
             { id: 'redeem', name: '兑换码', icon: 'fa-gift', desc: '兑换奖励', action: 'showRedeemCodeModal' },
-            { id: 'ui-scale', name: '调整UI比例', icon: 'fa-search', desc: '界面缩放', action: 'openUiScale' }
+            { id: 'ui-scale', name: '调整UI比例', icon: 'fa-search', desc: '界面缩放', action: 'openUiScale' },
+            { id: 'network-speed-test', name: '网络测速', icon: 'fa-gauge-high', desc: '测速工具', action: 'openNetworkSpeedTestModal' }
         ];
         
         // 桌面端自定义快捷组件按钮事件
@@ -25319,6 +25369,10 @@
             } else if (action === 'openUiScale') {
                 var btn = document.getElementById('uiScaleBtn');
                 if (btn) btn.click();
+            } else if (action === 'openNetworkSpeedTestModal') {
+                if (typeof openNetworkSpeedTestModal === 'function') {
+                    openNetworkSpeedTestModal();
+                }
             }
         }
         
@@ -25425,6 +25479,23 @@
                 }, 300);
                 if (typeof showRedeemCodeModal === 'function') {
                     showRedeemCodeModal();
+                }
+            });
+        }
+
+        var modalNetworkSpeedTestBtn = document.getElementById('modalNetworkSpeedTestBtn');
+        if (modalNetworkSpeedTestBtn) {
+            modalNetworkSpeedTestBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var modal = document.getElementById('moreFeaturesModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(function() {
+                        modal.style.display = 'none';
+                    }, 300);
+                }
+                if (typeof openNetworkSpeedTestModal === 'function') {
+                    openNetworkSpeedTestModal();
                 }
             });
         }
@@ -28185,8 +28256,6 @@
             modal.id = 'aboutLauncherModal';
             modal.className = 'custom-alert';
             
-            var isMobile = isMobileDevice();
-            
             var info;
             try {
                 info = launcherInfo;
@@ -28194,244 +28263,807 @@
                 info = {
                     name: "PRE Launcher",
                     version: "2.6.2.5",
+                    internalVersion: "-",
+                    buildDate: "-",
+                    patchDate: "-",
                     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
                     developer: "PREAlmax",
-                    purpose: "游戏启动器",
+                    description: "",
+                    license: "MIT License",
+                    techStack: "HTML5 / CSS3 / JavaScript",
+                    supportedPlatforms: "Windows / macOS / Linux / Android / iOS",
                     githubRepoUrl: "https://github.com/Almax202/PRE_Launcher",
                     githubDeveloperUrl: "https://github.com/Almax202"
                 };
             }
-            
-            if (isMobile) {
-                modal.innerHTML = `
-                    <div class="alert-content about-mobile-fullscreen">
-                        <div class="about-mobile-header">
-                            <div class="about-logo-mobile">
-                                <i class="fas fa-gamepad"></i>
-                            </div>
-                            <div class="about-mobile-title">
-                                <h2>关于启动器</h2>
-                                <p id="aboutVersionNumber" class="version">版本：${info.version}</p>
-                            </div>
-                            <button class="about-mobile-close" onclick="closeAboutLauncherModal()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="about-mobile-content">
-                            <div class="about-mobile-info">
-                                <p><strong>启动器名称：</strong>${info.name}</p>
-                                <p><strong>版本号：</strong>${info.version}</p>
-                                <p><strong>版权所有：</strong>${info.copyright}</p>
-                                <p><strong>开发者：</strong>${info.developer}</p>
-                                <p><strong>Github源码跳转：</strong><a href="javascript:void(0)" onclick="openGithubRepo()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></p>
-                                <p><strong>开发者Github主页：</strong><a href="javascript:void(0)" onclick="openGithubDeveloper()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></p>
-                                <p><strong>用途：</strong>${info.purpose}</p>
-                            </div>
-                            <div class="about-mobile-copyright">
-                                <div class="info-card-header">
-                                    <h3 class="info-card-title" id="mobileAboutTabTitle">版权声明</h3>
-                                    <div class="tab-toggle-buttons">
-                                        <button class="tab-toggle-btn active" id="mobileTabBtnCopyright" onclick="toggleAboutTab('copyright')">版权声明</button>
-                                        <button class="tab-toggle-btn" id="mobileTabBtnDisclaimer" onclick="toggleAboutTab('disclaimer')">免责声明</button>
-                                    </div>
-                                </div>
-                                <div class="copyright-content" id="mobileCopyrightContent">
-                                    <div class="copyright-text">
-                                        <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
-                                        <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
-                                        <p>各独立资源版权、著作权归原作者及版权方所有。</p>
-                                        <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
-                                    </div>
-                                    <div class="copyright-buttons">
-                                        <div style="margin-bottom: 15px;">
-                                            <span style="font-weight: bold; color: #666;">1. MIT 开源许可</span>
-                                            <div style="margin-top: 8px; margin-left: 20px;">
-                                                <button class="copyright-btn" onclick="showMitLicenseModal()">MIT License</button>
-                                            </div>
-                                        </div>
-                                        <div style="margin-bottom: 15px;">
-                                            <span style="font-weight: bold; color: #666;">2. 验证码图片服务</span>
-                                            <div style="margin-top: 8px; margin-left: 20px;">
-                                                <button class="copyright-btn" onclick="showDummyImageModal()">dummyimage</button>
-                                            </div>
-                                        </div>
-                                        <div style="margin-bottom: 15px;">
-                                            <span style="font-weight: bold; color: #666;">3. 页面字体资源</span>
-                                            <div style="margin-top: 8px; margin-left: 20px;">
-                                                <button class="copyright-btn" onclick="showFontCopyrightModal()">HarmonyOS Sans</button>
-                                            </div>
-                                        </div>
-                                        <div style="margin-bottom: 15px;">
-                                            <span style="font-weight: bold; color: #666;">4. 前端开发框架</span>
-                                            <div style="margin-top: 8px; margin-left: 20px;">
-                                                <button class="copyright-btn" onclick="showFrontendFrameworkModal('tailwind')">Tailwind CSS</button>
-                                                <button class="copyright-btn" onclick="showFrontendFrameworkModal('gsap')">GSAP</button>
-                                                <button class="copyright-btn" onclick="showFrontendFrameworkModal('lenis')">Lenis</button>
-                                            </div>
-                                        </div>
-                                        <div style="margin-bottom: 15px;">
-                                            <span style="font-weight: bold; color: #666;">5. 3D 游戏引擎</span>
-                                            <div style="margin-top: 8px; margin-left: 20px;">
-                                                <button class="copyright-btn" onclick="showFrontendFrameworkModal('three')">Three.js</button>
-                                                <button class="copyright-btn" onclick="showFrontendFrameworkModal('cannon')">cannon-es</button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <span style="font-weight: bold; color: #666;">6. 天气API</span>
-                                            <div style="margin-top: 8px; margin-left: 20px;">
-                                                <button class="copyright-btn" onclick="showOpenMeteoModal()">Open-Meteo API</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="disclaimer-content" id="mobileDisclaimerContent" style="display: none;">
-                                    <div class="disclaimer-text">
-                                        <p><strong>1. 服务性质声明</strong></p>
-                                        <p>PRE Launcher 是一款免费的游戏启动器工具，旨在为用户提供便捷的游戏管理和启动体验。本软件不提供任何游戏内容，也不与任何游戏开发商或发行商有官方合作关系。</p>
-                                        <br>
-                                        <p><strong>2. 数据安全声明</strong></p>
-                                        <p>本启动器仅在本地存储用户的设置偏好、主题配置、日历数据、便签内容等信息，所有数据均保存在用户设备上，不会上传至任何服务器。用户需自行负责数据备份，开发者不对数据丢失承担责任。</p>
-                                        <br>
-                                        <p><strong>3. 第三方服务声明</strong></p>
-                                        <p>启动器集成的天气数据、日历功能等第三方服务由相应服务商提供，服务可用性和准确性受限于第三方。开发者不对第三方服务的故障或数据错误承担责任。</p>
-                                        <br>
-                                        <p><strong>4. 使用风险声明</strong></p>
-                                        <p>用户使用本启动器需自行承担风险。开发者已尽合理努力确保软件的稳定性，但不保证软件在任何情况下都不会出现错误或中断。因使用本软件导致的任何直接或间接损失，开发者不承担赔偿责任。</p>
-                                        <br>
-                                        <p><strong>5. 修改与更新声明</strong></p>
-                                        <p>开发者保留随时修改、更新或终止本软件服务的权利，无需提前通知用户。软件更新可能会改变部分功能或界面，用户可选择是否安装更新。</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="about-mobile-footer">
-                            <button class="alert-confirm" onclick="closeAboutLauncherModal()">关闭</button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                modal.innerHTML = `
-                    <div class="alert-content about-fullscreen">
-                        <div class="about-desktop-header">
-                            <div class="about-desktop-title">
-                                <h2>关于启动器</h2>
-                                <p id="aboutVersionNumber" class="version">版本 ${info.version}</p>
-                            </div>
-                            <button class="about-desktop-close" onclick="closeAboutLauncherModal()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="about-desktop-content">
-                            <div class="about-desktop-main">
-                                <div class="about-desktop-info-card">
-                                    <h3 class="info-card-title">启动器信息</h3>
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <span class="info-label">启动器名称</span>
-                                            <span class="info-value">${info.name}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">版本号</span>
-                                            <span class="info-value">${info.version}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">版权所有</span>
-                                            <span class="info-value">${info.copyright}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">开发者</span>
-                                            <span class="info-value">${info.developer}</span>
-                                        </div>
-                                        <div class="info-item" style="grid-column: span 2;">
-                                            <span class="info-label">Github源码跳转</span>
-                                            <span class="info-value"><a href="javascript:void(0)" onclick="openGithubRepo()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></span>
-                                        </div>
-                                        <div class="info-item" style="grid-column: span 2;">
-                                            <span class="info-label">开发者Github主页</span>
-                                            <span class="info-value"><a href="javascript:void(0)" onclick="openGithubDeveloper()" style="color: #d45d79; cursor: pointer; text-decoration: underline;">点击跳转</a></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="about-desktop-copyright-card">
-                                    <div class="info-card-header">
-                                        <h3 class="info-card-title" id="aboutTabTitle">版权声明</h3>
-                                        <div class="tab-toggle-buttons">
-                                            <button class="tab-toggle-btn active" id="tabBtnCopyright" onclick="toggleAboutTab('copyright')">版权声明</button>
-                                            <button class="tab-toggle-btn" id="tabBtnDisclaimer" onclick="toggleAboutTab('disclaimer')">免责声明</button>
-                                        </div>
-                                    </div>
-                                    <div class="copyright-content" id="copyrightContent">
-                                        <div class="copyright-text">
-                                            <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
-                                            <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
-                                            <p>各独立资源版权、著作权归原作者及版权方所有。</p>
-                                            <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
-                                        </div>
-                                        <div class="copyright-buttons-grid">
-                                            <button class="copyright-btn" onclick="showMitLicenseModal()">
-                                                <i class="fas fa-file-alt"></i>
-                                                <span>MIT License</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showDummyImageModal()">
-                                                <i class="fas fa-image"></i>
-                                                <span>dummyimage</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showFontCopyrightModal()">
-                                                <i class="fas fa-font"></i>
-                                                <span>HOS Sans</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showFrontendFrameworkModal('tailwind')">
-                                                <i class="fas fa-palette"></i>
-                                                <span>Tailwind CSS</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showFrontendFrameworkModal('gsap')">
-                                                <i class="fas fa-bolt"></i>
-                                                <span>GSAP</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showFrontendFrameworkModal('lenis')">
-                                                <i class="fas fa-arrows-alt-v"></i>
-                                                <span>Lenis</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showFrontendFrameworkModal('three')">
-                                                <i class="fas fa-cube"></i>
-                                                <span>Three.js</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showFrontendFrameworkModal('cannon')">
-                                                <i class="fas fa-bullseye"></i>
-                                                <span>cannon-es</span>
-                                            </button>
-                                            <button class="copyright-btn" onclick="showOpenMeteoModal()">
-                                                <i class="fas fa-cloud-sun"></i>
-                                                <span>Open-Meteo</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="disclaimer-content" id="disclaimerContent" style="display: none;">
-                                        <div class="disclaimer-text">
-                                            <p><strong>1. 服务性质声明</strong></p>
-                                            <p>PRE Launcher 是一款免费的启动器工具，旨在为用户提供便捷的工具管理和启动体验。本软件不提供任何他人额外开发的工具内容，也不与任何工具开发商或发行商有官方合作关系。</p>
-                                            <br>
-                                            <p><strong>2. 数据安全声明</strong></p>
-                                            <p>本启动器仅在本地存储用户的设置偏好、主题配置、日历数据、便签内容等信息，所有数据均保存在用户设备上，不会上传至任何服务器。用户需自行负责数据备份，开发者不对数据丢失承担责任。</p>
-                                            <br>
-                                            <p><strong>3. 第三方服务声明</strong></p>
-                                            <p>启动器集成的天气数据、日历功能等第三方服务由相应服务商提供，服务可用性和准确性受限于第三方。开发者不对第三方服务的故障或数据错误承担责任。</p>
-                                            <br>
-                                            <p><strong>4. 使用风险声明</strong></p>
-                                            <p>用户使用本启动器需自行承担风险。开发者已尽合理努力确保软件的稳定性，但不保证软件在任何情况下都不会出现错误或中断。因使用本软件导致的任何直接或间接损失，开发者不承担赔偿责任。</p>
-                                            <br>
-                                            <p><strong>5. 修改与更新声明</strong></p>
-                                            <p>开发者保留随时修改、更新或终止本软件服务的权利，无需提前通知用户。软件更新可能会改变部分功能或界面。</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+
+            // 组件版本列表（按固定顺序展示，数据来源于 versionManager.js）
+            var componentKeys = ['stickyNotes', 'pageClock', 'weather', 'imageViewer', 'calendar', 'uiSwitching', 'soundtrack', 'commandPrompt', 'networkSpeedTest'];
+            var componentRowsHtml = componentKeys.map(function(key) {
+                var c = (typeof getComponentVersionInfo === 'function') ? getComponentVersionInfo(key) : null;
+                if (!c) return '';
+                var statusClass = c.status === '公开测试版' ? 'beta' : (c.status === '公开正式版' ? 'release' : '');
+                return ''
+                    + '<div class="about-row about-row-link" onclick="showComponentInfoModal(\'' + key + '\')">'
+                    +   '<div class="about-row-icon"><i class="' + (c.icon || 'fas fa-puzzle-piece') + '"></i></div>'
+                    +   '<span class="about-row-label">' + c.name + '</span>'
+                    +   '<span class="about-row-value about-row-value-group">'
+                    +     (c.status ? '<span class="status-tag ' + statusClass + '">' + c.status + '</span>' : '')
+                    +     '<span>' + c.version + '</span>'
+                    +   '</span>'
+                    +   '<i class="fas fa-chevron-right about-row-chevron"></i>'
+                    + '</div>';
+            }).join('');
+
+            var env = getAboutRuntimeInfo();
+            var accountId = (typeof getAccountId === 'function') ? getAccountId() : '未登录';
+            var deviceId = (typeof getDeviceId === 'function') ? getDeviceId() : '-';
+
+            // 各大类的详情内容模板（点击块状按钮后注入详情视图）
+            var aboutCategoryTemplates = {
+                launcher: ''
+                    + '<div class="about-section">'
+                    +     '<div class="about-row"><span class="about-row-label">名称</span><span class="about-row-value">' + info.name + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">当前版本</span><span class="about-row-value">' + info.version + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">内部版本号</span><span class="about-row-value about-mono about-dev-trigger" id="aboutDevInternalVersion" title="连续点击 6 次进入开发者模式">' + (info.internalVersion || '-') + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">版本构建日期</span><span class="about-row-value">' + (info.buildDate || '-') + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">维护补丁日期</span><span class="about-row-value">' + (info.patchDate || '-') + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">开发者</span><span class="about-row-value">' + info.developer + '</span></div>'
+                    +     '<div class="about-row about-row-link" onclick="showAboutResource(\'mit\')"><span class="about-row-label">软件许可</span><span class="about-row-value">' + (info.license || 'MIT License') + '</span><i class="fas fa-chevron-right about-row-chevron"></i></div>'
+                    +     '<div class="about-row"><span class="about-row-label">技术栈</span><span class="about-row-value">' + (info.techStack || '-') + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">适用平台</span><span class="about-row-value">' + (info.supportedPlatforms || '-') + '</span></div>'
+                    + '</div>',
+                runtime: ''
+                    + '<div class="about-section">'
+                    +     '<div class="about-row"><span class="about-row-label">运行环境</span><span class="about-row-value">' + env.browser + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">操作系统</span><span class="about-row-value">' + env.os + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">屏幕分辨率</span><span class="about-row-value">' + env.resolution + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">像素密度</span><span class="about-row-value">' + env.pixelRatio + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">浏览器语言</span><span class="about-row-value">' + env.language + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">网络状态</span><span class="about-row-value about-online-value"><span class="about-online-dot ' + (env.online ? 'is-online' : 'is-offline') + '"></span>' + (env.online ? '在线' : '离线') + '</span></div>'
+                    +     '<div class="about-row"><span class="about-row-label">本地存储占用</span><span class="about-row-value" id="aboutStorageUsage">计算中…</span></div>'
+                    + '</div>',
+                identity: ''
+                    + '<div class="about-section">'
+                    +     '<div class="about-row about-row-link" onclick="copyAboutIdentifier(\'account\')"><span class="about-row-label">账号标识符</span><span class="about-row-value about-mono about-id-value">' + accountId + '</span><i class="fas fa-copy about-row-action-icon" title="点击复制"></i></div>'
+                    +     '<div class="about-row about-row-link" onclick="copyAboutIdentifier(\'device\')"><span class="about-row-label">设备标识符</span><span class="about-row-value about-mono about-id-value">' + deviceId + '</span><i class="fas fa-copy about-row-action-icon" title="点击复制"></i></div>'
+                    + '</div>',
+                components: componentRowsHtml
+                    ? '<div class="about-section">' + componentRowsHtml + '</div>'
+                    : '<div class="about-empty">暂无组件信息</div>',
+                more: ''
+                    + '<div class="about-section">'
+                    +     '<div class="about-row about-row-link" onclick="openAboutVersionHistory()"><div class="about-row-icon"><i class="fas fa-history"></i></div><span class="about-row-label">版本更新记录</span><i class="fas fa-chevron-right about-row-chevron"></i></div>'
+                    +     '<div class="about-row about-row-link" onclick="openGithubRepo()"><div class="about-row-icon"><i class="fab fa-github"></i></div><span class="about-row-label">GitHub 源码仓库</span><i class="fas fa-chevron-right about-row-chevron"></i></div>'
+                    +     '<div class="about-row about-row-link" onclick="openGithubDeveloper()"><div class="about-row-icon"><i class="fas fa-user-astronaut"></i></div><span class="about-row-label">开发者 GitHub 主页</span><i class="fas fa-chevron-right about-row-chevron"></i></div>'
+                    +     '<div class="about-row about-row-link" onclick="showAboutLegalView(\'copyright\')"><div class="about-row-icon"><i class="fas fa-copyright"></i></div><span class="about-row-label">版权声明</span><i class="fas fa-chevron-right about-row-chevron"></i></div>'
+                    +     '<div class="about-row about-row-link" onclick="showAboutLegalView(\'disclaimer\')"><div class="about-row-icon"><i class="fas fa-shield-alt"></i></div><span class="about-row-label">免责声明</span><i class="fas fa-chevron-right about-row-chevron"></i></div>'
+                    + '</div>',
+                // 开发者调试集中管理（仅开发者模式下加入入口）
+                devtools: buildAboutDevToolsTemplate()
+            };
+
+            var componentCount = (componentRowsHtml.match(/about-row-link/g) || []).length;
+            var aboutCategories = [
+                { id: 'launcher', name: '启动器信息', icon: 'fas fa-rocket', meta: '版本 · 开发者' },
+                { id: 'runtime', name: '运行信息', icon: 'fas fa-microchip', meta: '环境 · 存储' },
+                { id: 'identity', name: '标识信息', icon: 'fas fa-id-badge', meta: '账号 · 设备' },
+                { id: 'components', name: '组件版本', icon: 'fas fa-puzzle-piece', meta: componentCount + ' 个组件' },
+                { id: 'more', name: '更多信息', icon: 'fas fa-ellipsis-h', meta: '许可 · 链接' }
+            ];
+            // 开发者调试入口：仅在开发者模式开启时显示为第 6 个块状按钮
+            if (typeof isDevModeEnabled === 'function' && isDevModeEnabled()) {
+                aboutCategories.push({ id: 'devtools', name: '开发者调试', icon: 'fas fa-bug', meta: '集中管理' });
             }
-            
+            modal._aboutCategoryTemplates = aboutCategoryTemplates;
+            modal._aboutCategoryMeta = {};
+            aboutCategories.forEach(function(c) { modal._aboutCategoryMeta[c.id] = c; });
+
+            var categoryButtonsHtml = aboutCategories.map(function(c) {
+                return ''
+                    + '<button type="button" class="about-cat-btn about-ripple-target" onclick="showAboutCategory(\'' + c.id + '\')">'
+                    +   '<span class="about-cat-icon"><i class="' + c.icon + '"></i></span>'
+                    +   '<span class="about-cat-name">' + c.name + '</span>'
+                    +   '<span class="about-cat-meta">' + c.meta + '</span>'
+                    + '</button>';
+            }).join('');
+
+            modal.innerHTML = `
+                <div class="alert-content about-fullscreen">
+                    <div class="about-desktop-header">
+                        <div class="about-desktop-title">
+                            <h2>关于启动器</h2>
+                        </div>
+                        <button class="about-desktop-close" onclick="closeAboutLauncherModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="about-desktop-content about-phone-content">
+                        <div class="about-phone-wrap" id="aboutMainView">
+                            <div class="about-hero">
+                                <div class="about-hero-icon"><i class="fas fa-gamepad"></i></div>
+                                <h1 class="about-hero-name">${info.name}</h1>
+                                <p id="aboutVersionNumber" class="about-hero-version">${info.version}</p>
+                                ${info.description ? '<p class="about-hero-desc">' + info.description + '</p>' : ''}
+                            </div>
+
+                            <div class="about-cat-grid">
+                                ${categoryButtonsHtml}
+                            </div>
+
+                            <div class="about-phone-footer">${info.copyright}</div>
+                        </div>
+
+                        <div class="about-phone-wrap about-category-view" id="aboutCategoryView" style="display: none;">
+                            <div class="about-legal-header">
+                                <button type="button" class="about-legal-back about-ripple-target" onclick="backFromCategory()">
+                                    <i class="fas fa-chevron-left"></i><span>返回</span>
+                                </button>
+                                <h3><i class="fas fa-rocket" id="aboutCategoryIcon"></i><span id="aboutCategoryTitle">启动器信息</span></h3>
+                            </div>
+                            <div id="aboutCategoryBody"></div>
+                        </div>
+
+                        <div class="about-phone-wrap about-legal-view" id="aboutLegalView" style="display: none;">
+                            <div class="about-legal-header">
+                                <button type="button" class="about-legal-back about-ripple-target" onclick="backFromLegal()">
+                                    <i class="fas fa-chevron-left"></i><span>返回</span>
+                                </button>
+                                <h3 id="aboutLegalTitle">版权声明</h3>
+                            </div>
+                            <div id="aboutLegalCopyright">
+                                <div class="copyright-text">
+                                    <p>本项目在开发与制作过程中，合理引用及使用多款开源免费资源，包含但不限于：开源字体、前端框架、工具类库、开源图标、公共组件等。</p>
+                                    <p>所有开源资源均严格遵守其对应的开源许可协议（MIT、Apache、SIL OFL 等），仅用于项目正常运行与展示。</p>
+                                    <p>各独立资源版权、著作权归原作者及版权方所有。</p>
+                                    <p>如需了解各资源的详细开源许可协议，请点击下方按钮查看（排名不分先后）：</p>
+                                </div>
+                                <div class="copyright-buttons-grid">
+                                    <button class="copyright-btn" onclick="showAboutResource('mit')">
+                                        <i class="fas fa-file-alt"></i>
+                                        <span>MIT License</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('dummyimage')">
+                                        <i class="fas fa-image"></i>
+                                        <span>dummyimage</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('hossans')">
+                                        <i class="fas fa-font"></i>
+                                        <span>HOS Sans</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('tailwind')">
+                                        <i class="fas fa-palette"></i>
+                                        <span>Tailwind CSS</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('gsap')">
+                                        <i class="fas fa-bolt"></i>
+                                        <span>GSAP</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('lenis')">
+                                        <i class="fas fa-arrows-alt-v"></i>
+                                        <span>Lenis</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('three')">
+                                        <i class="fas fa-cube"></i>
+                                        <span>Three.js</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('cannon')">
+                                        <i class="fas fa-bullseye"></i>
+                                        <span>cannon-es</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('openmeteo')">
+                                        <i class="fas fa-cloud-sun"></i>
+                                        <span>Open-Meteo</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="aboutLegalDisclaimer" style="display: none;">
+                                <div class="disclaimer-text about-legal-text">
+                                    <p><strong>1. 服务性质声明</strong></p>
+                                    <p>PRE Launcher 是一款免费的启动器工具，旨在为用户提供便捷的工具管理和启动体验。本软件不提供任何他人额外开发的工具内容，也不与任何工具开发商或发行商有官方合作关系。</p>
+                                    <br>
+                                    <p><strong>2. 数据安全声明</strong></p>
+                                    <p>本启动器仅在本地存储用户的设置偏好、主题配置、日历数据、便签内容等信息，所有数据均保存在用户设备上，不会上传至任何服务器。用户需自行负责数据备份，开发者不对数据丢失承担责任。</p>
+                                    <br>
+                                    <p><strong>3. 第三方服务声明</strong></p>
+                                    <p>启动器集成的天气数据、日历功能等第三方服务由相应服务商提供，服务可用性和准确性受限于第三方。开发者不对第三方服务的故障或数据错误承担责任。</p>
+                                    <br>
+                                    <p><strong>4. 使用风险声明</strong></p>
+                                    <p>用户使用本启动器需自行承担风险。开发者已尽合理努力确保软件的稳定性，但不保证软件在任何情况下都不会出现错误或中断。因使用本软件导致的任何直接或间接损失，开发者不承担赔偿责任。</p>
+                                    <br>
+                                    <p><strong>5. 修改与更新声明</strong></p>
+                                    <p>开发者保留随时修改、更新或终止本软件服务的权利，无需提前通知用户。软件更新可能会改变部分功能或界面。</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="about-phone-wrap about-resource-view" id="aboutResourceView" style="display: none;">
+                            <div class="about-legal-header">
+                                <button type="button" class="about-legal-back about-ripple-target" onclick="backFromResource()">
+                                    <i class="fas fa-chevron-left"></i><span>返回</span>
+                                </button>
+                                <h3 id="aboutResourceTitle">资源详情</h3>
+                            </div>
+                            <div class="about-resource-body" id="aboutResourceBody"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             document.body.appendChild(modal);
+
+            // 按钮涟漪动效（事件委托，覆盖动态内容）
+            modal.addEventListener('click', function(e) {
+                var btn = e.target.closest ? e.target.closest('.about-ripple-target') : null;
+                if (!btn || !modal.contains(btn)) return;
+                spawnAboutRipple(btn, e);
+            });
+        }
+
+        // 获取关于页运行环境信息
+        function getAboutRuntimeInfo() {
+            var ua = navigator.userAgent || '';
+            var browser = '未知浏览器';
+            var edgeMatch = ua.match(/Edg(?:e|A|iOS)?\/([\d.]+)/);
+            var operaMatch = ua.match(/OPR\/([\d.]+)/);
+            var firefoxMatch = ua.match(/Firefox\/([\d.]+)/);
+            var chromeMatch = ua.match(/Chrome\/([\d.]+)/);
+            var safariMatch = ua.match(/Version\/([\d.]+).*Safari\//);
+            if (edgeMatch) {
+                browser = 'Microsoft Edge ' + edgeMatch[1];
+            } else if (operaMatch) {
+                browser = 'Opera ' + operaMatch[1];
+            } else if (firefoxMatch) {
+                browser = 'Firefox ' + firefoxMatch[1];
+            } else if (chromeMatch) {
+                browser = 'Chrome ' + chromeMatch[1];
+            } else if (safariMatch) {
+                browser = 'Safari ' + safariMatch[1];
+            }
+
+            var os = '未知系统';
+            var androidMatch = ua.match(/Android ([\d.]+)/);
+            var iosMatch = ua.match(/(?:iPhone|iPad) OS (\d+[._]\d+)/);
+            var macMatch = ua.match(/Mac OS X (\d+[._]\d+)/);
+            if (/Windows NT 10\.0/.test(ua)) {
+                os = 'Windows 10 / 11';
+            } else if (/Windows NT 6\.3/.test(ua)) {
+                os = 'Windows 8.1';
+            } else if (/Windows NT 6\.2/.test(ua)) {
+                os = 'Windows 8';
+            } else if (/Windows NT 6\.1/.test(ua)) {
+                os = 'Windows 7';
+            } else if (androidMatch) {
+                os = 'Android ' + androidMatch[1];
+            } else if (iosMatch) {
+                os = (/iPad/.test(ua) ? 'iPadOS ' : 'iOS ') + iosMatch[1].replace('_', '.');
+            } else if (macMatch) {
+                os = 'macOS ' + macMatch[1].replace('_', '.');
+            } else if (/Linux/.test(ua)) {
+                os = 'Linux';
+            }
+
+            return {
+                browser: browser,
+                os: os,
+                resolution: window.screen.width + ' × ' + window.screen.height,
+                pixelRatio: (window.devicePixelRatio || 1) + 'x',
+                language: navigator.language || '-',
+                online: navigator.onLine !== false
+            };
+        }
+
+        // 更新本地存储占用显示
+        function updateAboutStorageUsage() {
+            var el = document.getElementById('aboutStorageUsage');
+            if (!el) return;
+            if (navigator.storage && navigator.storage.estimate) {
+                navigator.storage.estimate().then(function(est) {
+                    if (!est || !est.quota) {
+                        el.textContent = '不可用';
+                        return;
+                    }
+                    el.textContent = formatAboutBytes(est.usage) + ' / ' + formatAboutBytes(est.quota);
+                }).catch(function() {
+                    el.textContent = '不可用';
+                });
+            } else {
+                el.textContent = '不可用';
+            }
+        }
+
+        function formatAboutBytes(bytes) {
+            if (bytes == null || isNaN(bytes)) return '-';
+            if (bytes < 1024) return bytes + ' B';
+            var units = ['KB', 'MB', 'GB', 'TB'];
+            var value = bytes / 1024;
+            var i = 0;
+            while (value >= 1024 && i < units.length - 1) {
+                value /= 1024;
+                i++;
+            }
+            return value.toFixed(value >= 100 ? 0 : 1) + ' ' + units[i];
+        }
+
+        // 复制账号/设备标识符
+        function copyAboutIdentifier(type) {
+            var text = '';
+            try {
+                text = type === 'device' ? getDeviceId() : getAccountId();
+            } catch(e) {
+                text = '';
+            }
+            if (!text) return;
+            var afterCopy = function() {
+                if (typeof showCopySuccess === 'function') {
+                    showCopySuccess('已复制到剪贴板');
+                }
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(afterCopy).catch(function() {
+                    aboutFallbackCopy(text);
+                    afterCopy();
+                });
+            } else {
+                aboutFallbackCopy(text);
+                afterCopy();
+            }
+        }
+
+        function aboutFallbackCopy(text) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try { document.execCommand('copy'); } catch(e) {}
+            document.body.removeChild(textarea);
+        }
+
+        // 关于页视图切换：forward 进入（右滑入/左滑出），back 返回（左滑入/右滑出）
+        var ABOUT_VIEW_ANIM_CLASSES = ['about-view-enter-right', 'about-view-exit-left', 'about-view-enter-left', 'about-view-exit-right'];
+
+        function transitionAboutView(hideEl, showEl, direction) {
+            if (!hideEl || !showEl) return;
+            var enterCls = direction === 'back' ? 'about-view-enter-left' : 'about-view-enter-right';
+            var exitCls = direction === 'back' ? 'about-view-exit-right' : 'about-view-exit-left';
+
+            ABOUT_VIEW_ANIM_CLASSES.forEach(function(cls) {
+                hideEl.classList.remove(cls);
+                showEl.classList.remove(cls);
+            });
+            // 先让退出视图脱离文档流（绝对定位重叠），避免与进入视图同时占流导致布局突变/跳动
+            hideEl.classList.add('about-view-exiting');
+            showEl.style.display = 'block';
+            void showEl.offsetWidth; // 强制重排，保证进入动画重新触发
+            showEl.classList.add(enterCls);
+            hideEl.classList.add(exitCls);
+
+            var finished = false;
+            var cleanup = function(e) {
+                if (finished) return;
+                if (e && e.target !== hideEl) return; // 忽略子元素冒泡的 animationend
+                finished = true;
+                hideEl.style.display = 'none';
+                hideEl.classList.remove(exitCls);
+                hideEl.classList.remove('about-view-exiting');
+                showEl.classList.remove(enterCls);
+                hideEl.removeEventListener('animationend', cleanup);
+            };
+            hideEl.addEventListener('animationend', cleanup);
+            setTimeout(cleanup, 440); // 兜底，防止事件未触发导致视图不隐藏
+
+            var content = showEl.closest('.about-phone-content');
+            if (content) content.scrollTop = 0;
+        }
+
+        var __aboutNavLock = false;
+
+        function lockAboutNav() {
+            __aboutNavLock = true;
+            setTimeout(function() { __aboutNavLock = false; }, 360);
+        }
+
+        // 点击大类块状按钮，进入该类别详情
+        function showAboutCategory(id) {
+            if (__aboutNavLock) return;
+            var modal = document.getElementById('aboutLauncherModal');
+            if (!modal) return;
+            var tpl = modal._aboutCategoryTemplates && modal._aboutCategoryTemplates[id];
+            var meta = modal._aboutCategoryMeta && modal._aboutCategoryMeta[id];
+            if (!tpl || !meta) return;
+
+            lockAboutNav();
+            // 立即转场：按钮按压/涟漪由 CSS :active 与 click 委托即时触发，无需阻塞转场
+            renderAboutCategory(id);
+            transitionAboutView(
+                document.getElementById('aboutMainView'),
+                document.getElementById('aboutCategoryView'),
+                'forward'
+            );
+        }
+
+        function renderAboutCategory(id) {
+            var modal = document.getElementById('aboutLauncherModal');
+            var tpl = modal._aboutCategoryTemplates[id];
+            var meta = modal._aboutCategoryMeta[id];
+            document.getElementById('aboutCategoryBody').innerHTML = tpl;
+            document.getElementById('aboutCategoryTitle').textContent = meta.name;
+            document.getElementById('aboutCategoryIcon').className = meta.icon;
+            if (id === 'runtime') updateAboutStorageUsage();
+            if (id === 'launcher') bindAboutDevTrigger();
+            if (id === 'devtools') bindAboutDevTools();
+        }
+
+        // ==================== 内部版本号连点 6 次进入开发者模式 ====================
+        var ABOUT_DEV_CLICKS = 6;          // 需要连点的次数
+        var ABOUT_DEV_RESET_DELAY = 2000;  // 两次点击间隔超过 2 秒则重新计数
+        var _aboutDevClickCount = 0;
+        var _aboutDevClickTimer = null;
+
+        function bindAboutDevTrigger() {
+            var el = document.getElementById('aboutDevInternalVersion');
+            if (el) el.addEventListener('click', handleAboutDevTriggerClick);
+        }
+
+        function handleAboutDevTriggerClick() {
+            _aboutDevClickCount++;
+            if (_aboutDevClickTimer) clearTimeout(_aboutDevClickTimer);
+            _aboutDevClickTimer = setTimeout(function() { _aboutDevClickCount = 0; }, ABOUT_DEV_RESET_DELAY);
+
+            var remaining = ABOUT_DEV_CLICKS - _aboutDevClickCount;
+            // 剩余 3/2/1 次时，屏幕底部从下到上弹出提示横条
+            if (remaining === 3 || remaining === 2 || remaining === 1) {
+                showAboutDevStepToast('还剩 ' + remaining + ' 次点击进入开发者模式');
+            }
+            if (_aboutDevClickCount >= ABOUT_DEV_CLICKS) {
+                _aboutDevClickCount = 0;
+                if (_aboutDevClickTimer) { clearTimeout(_aboutDevClickTimer); _aboutDevClickTimer = null; }
+                // 复用系统设置页同款「是否确认开启/关闭开发者模式」弹窗（含密码验证），状态自动同步
+                if (typeof window.triggerDevModeEntry === 'function') window.triggerDevModeEntry();
+            }
+        }
+
+        // 底部提示横条（从下到上弹出）
+        var _aboutDevToastEl = null;
+        var _aboutDevToastTimer = null;
+        function showAboutDevStepToast(msg) {
+            if (!_aboutDevToastEl) {
+                _aboutDevToastEl = document.createElement('div');
+                _aboutDevToastEl.className = 'about-dev-step-toast';
+                document.body.appendChild(_aboutDevToastEl);
+            }
+            _aboutDevToastEl.textContent = msg;
+            _aboutDevToastEl.classList.remove('show');
+            void _aboutDevToastEl.offsetWidth; // 强制重排，保证连点时动画重新触发
+            _aboutDevToastEl.classList.add('show');
+            if (_aboutDevToastTimer) clearTimeout(_aboutDevToastTimer);
+            _aboutDevToastTimer = setTimeout(function() {
+                _aboutDevToastEl.classList.remove('show');
+            }, 1800);
+        }
+
+        // ==================== 开发者调试集中管理 ====================
+        // 汇总启动器全部开发者调试功能；点击每一行直接调用该功能「现有」弹窗/逻辑，
+        // 不重复创建弹窗（一个调试功能始终只有一套弹窗样式）。
+        function buildAboutDevToolsTemplate() {
+            var row = function(action, icon, label) {
+                return '<div class="about-row about-row-link" data-dev-action="' + action + '">'
+                    + '<div class="about-row-icon"><i class="' + icon + '"></i></div>'
+                    + '<span class="about-row-label">' + label + '</span>'
+                    + '<i class="fas fa-chevron-right about-row-chevron"></i>'
+                    + '</div>';
+            };
+            var groupTitle = function(text) { return '<div class="about-dev-group-title">' + text + '</div>'; };
+
+            var html = '';
+            // 账号与成长
+            html += '<div class="about-section">'
+                 + groupTitle('账号与成长')
+                 + row('level', 'fas fa-sliders', '调整等级 / 经验')
+                 + row('checkin', 'fas fa-calendar-check', '调整签到天数')
+                 + row('customCheckin', 'fas fa-pen-to-square', '自定义签到天数');
+            // 关闭阶段突破入口：仅阶段突破进行中才出现
+            if (typeof isStageBreakthroughActive === 'function' && isStageBreakthroughActive()) {
+                html += row('stageClose', 'fas fa-door-closed', '关闭阶段突破模式');
+            }
+            html += '</div>';
+
+            // 小游戏成就
+            html += '<div class="about-section">'
+                 + groupTitle('小游戏成就')
+                 + row('achievements', 'fas fa-trophy', '一键启用 / 关闭所有小游戏成就')
+                 + '</div>';
+
+            // 赛季通行证
+            html += '<div class="about-section">'
+                 + groupTitle('赛季通行证')
+                 + row('passUnlockLevels', 'fas fa-lock-open', '一键解锁所有通行证等级')
+                 + row('passLockLevels', 'fas fa-lock', '一键关闭所有等级解锁状态')
+                 + row('passSetLevel', 'fas fa-hashtag', '修改通行证等级')
+                 + row('passCompleteTasks', 'fas fa-list-check', '一键完成日常 / 周常 / 赛季任务')
+                 + row('passResetTasks', 'fas fa-rotate-left', '一键重置日常 / 周常 / 赛季任务')
+                 + row('passResetPurchase', 'fas fa-credit-card', '重置通行证购买状态')
+                 + row('passUnlockSeason', 'fas fa-unlock', '全部解禁（无视赛季时间限制）')
+                 + '</div>';
+
+            // 命令提示符
+            html += '<div class="about-section">'
+                 + groupTitle('命令提示符')
+                 + row('runScriptTest', 'fas fa-terminal', '执行脚本测试（跳转自动化检查窗口）')
+                 + row('launchShell', 'fas fa-keyboard', '启动命令提示符（手动命令行，不自动执行任何操作）')
+                 + '</div>';
+
+            // 包裹一层：仅让调试页各卡片之间产生间距，不影响其他分类
+            return '<div class="about-devtools-wrap">' + html + '</div>';
+        }
+
+        // 事件委托：调试行 innerHTML 每次重渲染，委托只需在 #aboutCategoryBody 上绑定一次
+        function bindAboutDevTools() {
+            var body = document.getElementById('aboutCategoryBody');
+            if (!body || body._aboutDevToolsBound) return;
+            body._aboutDevToolsBound = true;
+            body.addEventListener('click', function(e) {
+                var item = e.target.closest('[data-dev-action]');
+                if (!item || !body.contains(item)) return;
+                dispatchAboutDevAction(item.getAttribute('data-dev-action'));
+            });
+        }
+
+        // 调用各功能现有入口
+        function dispatchAboutDevAction(action) {
+            var p = window.pass;
+            switch (action) {
+                case 'level': if (typeof openDevLevelModal === 'function') openDevLevelModal(); break;
+                case 'checkin': if (typeof openDevCheckinModal === 'function') openDevCheckinModal(); break;
+                case 'customCheckin': if (typeof openDevCustomCheckinModal === 'function') openDevCustomCheckinModal(); break;
+                case 'stageClose': if (typeof openDevStageCloseModal === 'function') openDevStageCloseModal(); break;
+                case 'achievements': if (typeof window.devToggleAllAchievements === 'function') window.devToggleAllAchievements(); break;
+                case 'passUnlockLevels': if (p) p.devUnlockAllLevels(); break;
+                case 'passLockLevels': if (p) p.devLockAllLevels(); break;
+                case 'passSetLevel': if (p && p.devOpenSetLevelModal) p.devOpenSetLevelModal(); break;
+                case 'passCompleteTasks': if (p) p.devCompleteAllTasks(); break;
+                case 'passResetTasks': if (p) p.devResetAllTasks(); break;
+                case 'passResetPurchase': if (p && p.devOpenResetPurchaseModal) p.devOpenResetPurchaseModal(); break;
+                case 'passUnlockSeason': if (p) p.devToggleUnlockAll(); break;
+                case 'runScriptTest':
+                    // 复用全站统一确认弹窗（图二同款 #customConfirm），确认后当前页面跳转至自动化检查窗口
+                    if (typeof showConfirm === 'function') {
+                        showConfirm('确认', '是否要执行脚本测试？测试过程中将无法回到该页面', function() {
+                            window.location.href = 'html/autotext.html';
+                        });
+                    } else {
+                        window.location.href = 'html/autotext.html';
+                    }
+                    break;
+                case 'launchShell':
+                    // 手动命令行模式（shell）：仅启动命令提示符，不自动执行任何操作
+                    if (typeof showConfirm === 'function') {
+                        showConfirm('确认', '是否要启动命令提示符？', function() {
+                            window.location.href = 'html/autotext.html?mode=shell';
+                        });
+                    } else {
+                        window.location.href = 'html/autotext.html?mode=shell';
+                    }
+                    break;
+            }
+        }
+
+        // 类别详情返回主宫格
+        function backFromCategory() {
+            if (__aboutNavLock) return;
+            lockAboutNav();
+            transitionAboutView(
+                document.getElementById('aboutCategoryView'),
+                document.getElementById('aboutMainView'),
+                'back'
+            );
+        }
+
+        // 关于页法律信息子页（由「更多信息」详情进入）
+        function showAboutLegalView(type) {
+            if (__aboutNavLock) return;
+            lockAboutNav();
+            var copyrightBox = document.getElementById('aboutLegalCopyright');
+            var disclaimerBox = document.getElementById('aboutLegalDisclaimer');
+            var title = document.getElementById('aboutLegalTitle');
+            if (type === 'disclaimer') {
+                copyrightBox.style.display = 'none';
+                disclaimerBox.style.display = 'block';
+                title.textContent = '免责声明';
+            } else {
+                copyrightBox.style.display = 'block';
+                disclaimerBox.style.display = 'none';
+                title.textContent = '版权声明';
+            }
+            transitionAboutView(
+                document.getElementById('aboutCategoryView'),
+                document.getElementById('aboutLegalView'),
+                'forward'
+            );
+        }
+
+        // 法律子页返回「更多信息」详情
+        function backFromLegal() {
+            if (__aboutNavLock) return;
+            lockAboutNav();
+            renderAboutCategory('more');
+            transitionAboutView(
+                document.getElementById('aboutLegalView'),
+                document.getElementById('aboutCategoryView'),
+                'back'
+            );
+        }
+
+        // 开源资源详情数据（替代原弹窗内容）
+        var ABOUT_RESOURCES = {
+            mit: {
+                title: 'MIT 开源许可',
+                html: '<div class="about-resource-section">'
+                    + '<h4 class="about-resource-subtitle">中文版</h4>'
+                    + '<p>版权所有 © 2026 PREAlmax, All rights reserved.</p>'
+                    + '<p>特此免费授予任何获得本软件及相关文档文件（以下简称 "软件"）副本的人，不受限制地处理本软件，包括但不限于使用、复制、修改、合并、发布、分发、再许可和 / 或出售本软件副本的权利，并允许向其提供本软件的人这样做，但须符合以下条件：</p>'
+                    + '<p>上述版权声明和本许可声明应包含在本软件的所有副本或重要部分中。</p>'
+                    + '<p>本软件按 "现状" 提供，不提供任何明示或暗示的保证，包括但不限于对适销性、特定用途适用性和非侵权性的保证。在任何情况下，作者或版权持有人均不对任何索赔、损害或其他责任承担任何责任，无论是在合同、侵权或其他法律行为中，因使用或与本软件有关或由此产生的、使用本软件而产生的任何索赔、损害或其他责任。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" class="about-resource-link">https://github.com/Almax202/PRE_Launcher</a></p>'
+                    + '</div>'
+                    + '<div class="about-resource-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--about-divider, #e5e5ea);">'
+                    + '<h4 class="about-resource-subtitle">English Version</h4>'
+                    + '<p>Copyright (c) 2026 PREAlmax, All rights reserved.</p>'
+                    + '<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>'
+                    + '<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>'
+                    + '<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>'
+                    + '<p><strong>GitHub Website：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" class="about-resource-link">https://github.com/Almax202/PRE_Launcher</a></p>'
+                    + '</div>'
+                    + '<div class="about-resource-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--about-divider, #e5e5ea);">'
+                    + '<h4 class="about-resource-subtitle">日本語版</h4>'
+                    + '<p>著作権 © 2026 PREAlmax, All rights reserved.</p>'
+                    + '<p>本ソフトウェアおよび関連する文書ファイル（以下「ソフトウェア」）のコピーを取得した者に対し、無償で、ソフトウェアを制限なく扱う権利（使用、複製、変更、結合、公開、頒布、再許諾および/またはソフトウェアのコピーを販売する権利を含むがこれに限定されない）を付与し、ソフトウェアが提供された者にも同様の行為を許可するものとします。ただし、以下の条件に従うものとします。</p>'
+                    + '<p>上記の著作権表示および本許可表示は、ソフトウェアのすべてのコピーまたは重要な部分に含めるものとします。</p>'
+                    + '<p>本ソフトウェアは「現状のまま」提供され、商品性、特定目的への適合性および非侵害の保証を含むがこれに限定されない、明示または黙示のいかなる保証も行いません。著作者または著作権者は、契約行為、不法行為またはその他の法的行為のいずれであっても、本ソフトウェアの使用またはその他の取り扱いに起因する、あるいは関連して生じるいかなる請求、損害またはその他の責任についても、一切責任を負いません。</p>'
+                    + '<p><strong>GitHub アドレス：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" class="about-resource-link">https://github.com/Almax202/PRE_Launcher</a></p>'
+                    + '</div>'
+                    + '<div class="about-resource-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--about-divider, #e5e5ea);">'
+                    + '<h4 class="about-resource-subtitle">한국어판</h4>'
+                    + '<p>저작권 © 2026 PREAlmax, All rights reserved.</p>'
+                    + '<p>본 소프트웨어 및 관련 문서 파일(이하 "소프트웨어")의 사본을 취득하는 모든 사람에게, 소프트웨어를 제한 없이 사용, 복제, 수정, 병합, 게시, 배포, 재라이선스 및/또는 판매할 수 있는 권리를 포함하되 이에 국한되지 않는 권리를 무료로 부여하며, 소프트웨어가 제공된 사람에게도 동일하게 허용합니다. 단, 다음 조건을 준수해야 합니다.</p>'
+                    + '<p>위 저작권 표시 및 본 허가 표시는 소프트웨어의 모든 사본 또는 중요한 부분에 포함되어야 합니다.</p>'
+                    + '<p>본 소프트웨어는 "있는 그대로" 제공되며, 상품성, 특정 목적에의 적합성 및 비침해에 대한 보증을 포함하되 이에 국한되지 않는 명시적 또는 묵시적 보증 없이 제공됩니다. 저작자 또는 저작권자는 계약, 불법행위 또는 기타 법적 행위에 관계없이 본 소프트웨어의 사용 또는 기타 거래로 인해 발생하거나 이와 관련하여 발생하는 어떠한 청구, 손해 또는 기타 책임에 대해서도 책임을 지지 않습니다.</p>'
+                    + '<p><strong>GitHub 주소：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" class="about-resource-link">https://github.com/Almax202/PRE_Launcher</a></p>'
+                    + '</div>'
+            },
+            dummyimage: {
+                title: 'dummyimage 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p><strong>dummyimage.com 项目著作权与知识产权专属归属：Russell Heimlich。</strong></p>'
+                    + '<p>本项目合法使用 dummyimage.com 开源服务，其完整版权归原作者 Russell Heimlich 所有，已严格遵守官方 MIT 使用协议，仅作正常验证码图片生成与内容应用，未进行源码修改、售卖及二次分发等违规操作。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/kingkool68/dummyimage" target="_blank" class="about-resource-link">https://github.com/kingkool68/dummyimage</a></p>'
+                    + '</div>'
+            },
+            hossans: {
+                title: 'HarmonyOS Sans 字体版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p><strong>HarmonyOS Sans 字体著作权与知识产权专属归属：华为技术有限公司。</strong></p>'
+                    + '<p>本项目合法使用 HarmonyOS Sans 开源免费字体，字体完整版权归华为技术有限公司所有，已严格遵守官方字体使用协议，仅作正常展示与内容应用，未进行字体修改、售卖及二次分发等违规操作。</p>'
+                    + '<p><strong>HarmonyOS 开发者文档：</strong><a href="https://developer.huawei.com/consumer/cn/" target="_blank" class="about-resource-link">https://developer.huawei.com/consumer/cn/</a></p>'
+                    + '</div>'
+            },
+            tailwind: {
+                title: 'Tailwind CSS 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目使用 Tailwind CSS 作为原子化 CSS 框架，用于快速构建现代化 UI 界面与样式工具类。</p>'
+                    + '<p>Tailwind CSS 基于 MIT 许可证开源，其著作权、知识产权归属 Tailwind Labs 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用，未对源码进行恶意篡改或二次分发。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/tailwindlabs/tailwindcss" target="_blank" class="about-resource-link">https://github.com/tailwindlabs/tailwindcss</a></p>'
+                    + '</div>'
+            },
+            gsap: {
+                title: 'GSAP 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目使用 GSAP（GreenSock Animation Platform）作为高性能 JavaScript 动画引擎，用于实现界面过渡与交互动画。</p>'
+                    + '<p>GSAP 核心库基于 MIT 许可证开源（部分插件为 Club GSAP 付费授权），本项目仅使用其 MIT 核心功能。著作权归 GreenSock 及贡献者所有，未对源码进行恶意篡改或二次分发。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/greensock/GSAP" target="_blank" class="about-resource-link">https://github.com/greensock/GSAP</a></p>'
+                    + '</div>'
+            },
+            lenis: {
+                title: 'Lenis 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目使用 Lenis 作为平滑滚动库，用于提升页面滚动体验与流畅度。</p>'
+                    + '<p>Lenis 基于 MIT 许可证开源，其著作权、知识产权归属 Studio Freight 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/studio-freight/lenis" target="_blank" class="about-resource-link">https://github.com/studio-freight/lenis</a></p>'
+                    + '</div>'
+            },
+            three: {
+                title: 'Three.js 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目使用 Three.js 作为 Web 3D 渲染引擎，用于实现 3D 场景图、几何体、材质、光照、阴影、相机等 3D 可视化渲染能力，是光影冲刺等 3D 游戏的渲染基础。</p>'
+                    + '<p>Three.js 基于 MIT 许可证开源，其著作权、知识产权归属 Three.js 作者及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用，未对源码进行恶意篡改或二次分发。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/mrdoob/three.js" target="_blank" class="about-resource-link">https://github.com/mrdoob/three.js</a></p>'
+                    + '</div>'
+            },
+            cannon: {
+                title: 'cannon-es 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目使用 cannon-es（Cannon ES）作为 3D 物理引擎，用于实现刚体物理模拟、碰撞检测、接触材质、重力等物理效果，是光影冲刺等 3D 游戏的物理模拟基础。</p>'
+                    + '<p>cannon-es 基于 MIT 许可证开源（Cannon 物理引擎的 ES Module 版本），其著作权、知识产权归属 theturtle3d 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/pmndrs/cannon-es" target="_blank" class="about-resource-link">https://github.com/pmndrs/cannon-es</a></p>'
+                    + '</div>'
+            },
+            openmeteo: {
+                title: 'Open-Meteo API 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目的天气查询功能使用 Open-Meteo API 获取实时天气数据。</p>'
+                    + '<p>Open-Meteo 提供免费的天气 API 服务，其数据来源于全球气象机构，本项目严格遵守其使用条款，仅用于非商业用途的天气信息展示。</p>'
+                    + '<p><strong>官方网站：</strong><a href="https://open-meteo.com" target="_blank" class="about-resource-link">https://open-meteo.com</a></p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/open-meteo/open-meteo" target="_blank" class="about-resource-link">https://github.com/open-meteo/open-meteo</a></p>'
+                    + '</div>'
+            }
+        };
+
+        // 记录资源详情的来源视图，用于返回时回到正确位置
+        var __aboutResourceReturnTo = 'aboutLegalView';
+
+        // 进入资源详情视图（第三级）
+        function showAboutResource(id) {
+            if (__aboutNavLock) return;
+            var res = ABOUT_RESOURCES[id];
+            if (!res) return;
+            lockAboutNav();
+
+            // 先填充内容，再转场，避免空视图滑入
+            document.getElementById('aboutResourceTitle').textContent = res.title;
+            document.getElementById('aboutResourceBody').innerHTML = res.html;
+
+            // 判断来源：从启动器信息详情的"软件许可"进入则返回类别页，否则返回版权声明页
+            var fromEl = document.getElementById('aboutCategoryView');
+            var legalEl = document.getElementById('aboutLegalView');
+            var resEl = document.getElementById('aboutResourceView');
+            if (legalEl && legalEl.style.display !== 'none') {
+                __aboutResourceReturnTo = 'aboutLegalView';
+                transitionAboutView(legalEl, resEl, 'forward');
+            } else {
+                __aboutResourceReturnTo = 'aboutCategoryView';
+                transitionAboutView(fromEl, resEl, 'forward');
+            }
+        }
+
+        // 资源详情返回来源视图
+        function backFromResource() {
+            if (__aboutNavLock) return;
+            lockAboutNav();
+            var resEl = document.getElementById('aboutResourceView');
+            var targetEl = document.getElementById(__aboutResourceReturnTo);
+            if (!targetEl) targetEl = document.getElementById('aboutLegalView');
+            transitionAboutView(resEl, targetEl, 'back');
+        }
+
+        // 按钮涟漪动效
+        function spawnAboutRipple(btn, e) {
+            var rect = btn.getBoundingClientRect();
+            var size = Math.max(rect.width, rect.height) * 1.1;
+            var clientX = (e && e.clientX) ? e.clientX : rect.left + rect.width / 2;
+            var clientY = (e && e.clientY) ? e.clientY : rect.top + rect.height / 2;
+            var ripple = document.createElement('span');
+            ripple.className = 'about-ripple';
+            ripple.style.width = size + 'px';
+            ripple.style.height = size + 'px';
+            ripple.style.left = (clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (clientY - rect.top - size / 2) + 'px';
+            btn.appendChild(ripple);
+            setTimeout(function() {
+                if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+            }, 600);
+        }
+
+        // 从关于页跳转版本更新记录
+        function openAboutVersionHistory() {
+            closeAboutLauncherModal();
+            setTimeout(function() {
+                var versionEntry = document.getElementById('sidebarVersion');
+                if (versionEntry) {
+                    versionEntry.click();
+                }
+            }, 320);
         }
         
         function generateRedeemCodeModal() {
@@ -28970,340 +29602,6 @@
                 }
             }, true);
         });
-        
-        // 显示dummyimage版权信息模态框
-        function showDummyImageModal() {
-            var modal = document.createElement('div');
-            modal.id = 'dummyImageModal';
-            modal.className = 'custom-alert';
-            
-            modal.innerHTML = `
-                <div class="alert-content" style="max-width: 600px;">
-                    <div class="alert-header">
-                        <h2>dummyimage 版权声明</h2>
-                    </div>
-                    <div class="about-content" style="text-align: left;">
-                        <p style="margin: 15px 0;"><strong>dummyimage.com 项目著作权与知识产权专属归属：Russell Heimlich。</strong></p>
-                        <p style="margin: 15px 0;">本项目合法使用 dummyimage.com 开源服务，其完整版权归原作者 Russell Heimlich 所有，已严格遵守官方 MIT 使用协议，仅作正常验证码图片生成与内容应用，未进行源码修改、售卖及二次分发等违规操作。</p>
-                        <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="https://github.com/kingkool68/dummyimage" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/kingkool68/dummyimage</a></p>
-                    </div>
-                    
-                    <div class="modal-buttons">
-                        <button class="alert-confirm" onclick="closeDummyImageModal()">关闭</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            modal.style.display = 'flex';
-            setTimeout(function() {
-                modal.classList.add('show');
-            }, 10);
-        }
-        
-        // 关闭dummyimage版权信息模态框
-        function closeDummyImageModal() {
-            var dummyImageModal = document.getElementById('dummyImageModal');
-            if (dummyImageModal) {
-                dummyImageModal.classList.remove('show');
-                setTimeout(function() {
-                    dummyImageModal.remove();
-                }, 300);
-            }
-        }
-        
-        // 显示字体版权信息模态框
-        function showFontCopyrightModal() {
-            // 创建模态框元素
-            var modal = document.createElement('div');
-            modal.id = 'fontCopyrightModal';
-            modal.className = 'custom-alert';
-            
-            // 模态框内容
-            modal.innerHTML = `
-                <div class="alert-content" style="max-width: 600px;">
-                    <div class="alert-header">
-                        <h2>HarmonyOS Sans 字体版权声明</h2>
-                    </div>
-                    <div class="about-content" style="text-align: left;">
-                        <p style="margin: 15px 0;"><strong>HarmonyOS Sans 字体著作权与知识产权专属归属：华为技术有限公司。</strong></p>
-                        <p style="margin: 15px 0;">本项目合法使用 HarmonyOS Sans 开源免费字体，字体完整版权归华为技术有限公司所有，已严格遵守官方字体使用协议，仅作正常展示与内容应用，未进行字体修改、售卖及二次分发等违规操作。</p>
-                        <p style="margin: 15px 0;"><strong>HarmonyOS 开发者文档：</strong><a href="https://developer.huawei.com/consumer/cn/" target="_blank" style="color: #d45d79; text-decoration: underline;">https://developer.huawei.com/consumer/cn/</a></p>
-                    </div>
-                    <div class="modal-buttons">
-                        <button class="alert-confirm" onclick="closeFontCopyrightModal()">关闭</button>
-                    </div>
-                </div>
-            `;
-            
-            // 添加到页面
-            document.body.appendChild(modal);
-            
-            // 显示模态框
-            modal.style.display = 'flex';
-            setTimeout(function() {
-                modal.classList.add('show');
-            }, 10);
-        }
-        
-        // 关闭字体版权信息模态框
-        function closeFontCopyrightModal() {
-            var fontCopyrightModal = document.getElementById('fontCopyrightModal');
-            if (fontCopyrightModal) {
-                fontCopyrightModal.classList.remove('show');
-                setTimeout(function() {
-                    fontCopyrightModal.remove();
-                }, 300);
-            }
-        }
-        
-        // 切换关于启动器弹窗的标签页
-        function toggleAboutTab(tab) {
-            // 桌面端元素
-            var desktopCopyrightContent = document.getElementById('copyrightContent');
-            var desktopDisclaimerContent = document.getElementById('disclaimerContent');
-            var desktopTabBtnCopyright = document.getElementById('tabBtnCopyright');
-            var desktopTabBtnDisclaimer = document.getElementById('tabBtnDisclaimer');
-            var desktopAboutTabTitle = document.getElementById('aboutTabTitle');
-            
-            // 移动端元素
-            var mobileCopyrightContent = document.getElementById('mobileCopyrightContent');
-            var mobileDisclaimerContent = document.getElementById('mobileDisclaimerContent');
-            var mobileTabBtnCopyright = document.getElementById('mobileTabBtnCopyright');
-            var mobileTabBtnDisclaimer = document.getElementById('mobileTabBtnDisclaimer');
-            var mobileAboutTabTitle = document.getElementById('mobileAboutTabTitle');
-            
-            if (tab === 'copyright') {
-                // 更新桌面端
-                if (desktopCopyrightContent) {
-                    desktopCopyrightContent.style.display = 'block';
-                    desktopDisclaimerContent.style.display = 'none';
-                    desktopTabBtnCopyright.classList.add('active');
-                    desktopTabBtnDisclaimer.classList.remove('active');
-                    desktopAboutTabTitle.textContent = '版权声明';
-                }
-                // 更新移动端
-                if (mobileCopyrightContent) {
-                    mobileCopyrightContent.style.display = 'block';
-                    mobileDisclaimerContent.style.display = 'none';
-                    mobileTabBtnCopyright.classList.add('active');
-                    mobileTabBtnDisclaimer.classList.remove('active');
-                    mobileAboutTabTitle.textContent = '版权声明';
-                }
-            } else if (tab === 'disclaimer') {
-                // 更新桌面端
-                if (desktopCopyrightContent) {
-                    desktopCopyrightContent.style.display = 'none';
-                    desktopDisclaimerContent.style.display = 'block';
-                    desktopTabBtnCopyright.classList.remove('active');
-                    desktopTabBtnDisclaimer.classList.add('active');
-                    desktopAboutTabTitle.textContent = '免责声明';
-                }
-                // 更新移动端
-                if (mobileCopyrightContent) {
-                    mobileCopyrightContent.style.display = 'none';
-                    mobileDisclaimerContent.style.display = 'block';
-                    mobileTabBtnCopyright.classList.remove('active');
-                    mobileTabBtnDisclaimer.classList.add('active');
-                    mobileAboutTabTitle.textContent = '免责声明';
-                }
-            }
-        }
-        
-        // 显示MIT License模态框
-        function showMitLicenseModal() {
-            var modal = document.createElement('div');
-            modal.id = 'mitLicenseModal';
-            modal.className = 'custom-alert';
-            
-            modal.innerHTML = `
-                <div class="alert-content" style="max-width: 700px;">
-                    <div class="alert-header">
-                        <h2>MIT 开源许可</h2>
-                    </div>
-                    <div class="about-content" style="text-align: left; max-height: 50vh; overflow-y: auto;">
-                        <div id="mitLicenseChinese">
-                            <h3 style="margin-bottom: 15px; color: #d45d79;">中文版</h3>
-                            <p style="margin: 10px 0;">版权所有 © 2026 PREAlmax, All rights reserved.</p>
-                            <p style="margin: 10px 0;">特此免费授予任何获得本软件及相关文档文件（以下简称 "软件"）副本的人，不受限制地处理本软件，包括但不限于使用、复制、修改、合并、发布、分发、再许可和 / 或出售本软件副本的权利，并允许向其提供本软件的人这样做，但须符合以下条件：</p>
-                            <p style="margin: 10px 0;">上述版权声明和本许可声明应包含在本软件的所有副本或重要部分中。</p>
-                            <p style="margin: 10px 0;">本软件按 "现状" 提供，不提供任何明示或暗示的保证，包括但不限于对适销性、特定用途适用性和非侵权性的保证。在任何情况下，作者或版权持有人均不对任何索赔、损害或其他责任承担任何责任，无论是在合同、侵权或其他法律行为中，因使用或与本软件有关或由此产生的、使用本软件而产生的任何索赔、损害或其他责任。</p>
-                            <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
-                        </div>
-                        <div id="mitLicenseEnglish" style="display: none;">
-                            <h3 style="margin-bottom: 15px; color: #d45d79;">English Ver</h3>
-                            <p style="margin: 10px 0;">Copyright (c) 2026 PREAlmax, All rights reserved.</p>
-                            <p style="margin: 10px 0;">Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
-                            <p style="margin: 10px 0;">The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
-                            <p style="margin: 10px 0;">THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-                            <p style="margin: 15px 0;"><strong>GitHub Website：</strong><a href="https://github.com/Almax202/PRE_Launcher" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/Almax202/PRE_Launcher</a></p>
-                        </div>
-                    </div>
-                    <div class="modal-buttons">
-                        <button class="alert-confirm" onclick="toggleMitLicenseLanguage()" style="margin-right: 10px;">English Ver</button>
-                        <button class="alert-confirm" onclick="closeMitLicenseModal()">关闭</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            modal.style.display = 'flex';
-            setTimeout(function() {
-                modal.classList.add('show');
-            }, 10);
-        }
-        
-        // 切换MIT License语言版本
-        function toggleMitLicenseLanguage() {
-            var chineseDiv = document.getElementById('mitLicenseChinese');
-            var englishDiv = document.getElementById('mitLicenseEnglish');
-            var toggleBtn = document.querySelector('#mitLicenseModal .modal-buttons button:first-child');
-            
-            if (chineseDiv && englishDiv && toggleBtn) {
-                if (chineseDiv.style.display !== 'none') {
-                    chineseDiv.style.display = 'none';
-                    englishDiv.style.display = 'block';
-                    toggleBtn.textContent = '中文版';
-                } else {
-                    chineseDiv.style.display = 'block';
-                    englishDiv.style.display = 'none';
-                    toggleBtn.textContent = 'English Ver';
-                }
-            }
-        }
-        
-        // 关闭MIT License模态框
-        function closeMitLicenseModal() {
-            var mitLicenseModal = document.getElementById('mitLicenseModal');
-            if (mitLicenseModal) {
-                mitLicenseModal.classList.remove('show');
-                setTimeout(function() {
-                    mitLicenseModal.remove();
-                }, 300);
-            }
-        }
-        
-        // 显示前端框架版权信息模态框（Tailwind CSS / GSAP / Lenis）
-        var __frameworkInfo = {
-            tailwind: {
-                title: 'Tailwind CSS 版权声明',
-                desc: '本项目使用 Tailwind CSS 作为原子化 CSS 框架，用于快速构建现代化 UI 界面与样式工具类。',
-                license: 'Tailwind CSS 基于 MIT 许可证开源，其著作权、知识产权归属 Tailwind Labs 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用，未对源码进行恶意篡改或二次分发。',
-                url: 'https://github.com/tailwindlabs/tailwindcss',
-                urlText: 'https://github.com/tailwindlabs/tailwindcss'
-            },
-            gsap: {
-                title: 'GSAP 版权声明',
-                desc: '本项目使用 GSAP（GreenSock Animation Platform）作为高性能 JavaScript 动画引擎，用于实现界面过渡与交互动画。',
-                license: 'GSAP 核心库基于 MIT 许可证开源（部分插件为 Club GSAP 付费授权），本项目仅使用其 MIT 核心功能。著作权归 GreenSock 及贡献者所有，未对源码进行恶意篡改或二次分发。',
-                url: 'https://github.com/greensock/GSAP',
-                urlText: 'https://github.com/greensock/GSAP'
-            },
-            lenis: {
-                title: 'Lenis 版权声明',
-                desc: '本项目使用 Lenis 作为平滑滚动库，用于提升页面滚动体验与流畅度。',
-                license: 'Lenis 基于 MIT 许可证开源，其著作权、知识产权归属 Studio Freight 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用。',
-                url: 'https://github.com/studio-freight/lenis',
-                urlText: 'https://github.com/studio-freight/lenis'
-            },
-            three: {
-                title: 'Three.js 版权声明',
-                desc: '本项目使用 Three.js 作为 Web 3D 渲染引擎，用于实现 3D 场景图、几何体、材质、光照、阴影、相机等 3D 可视化渲染能力，是光影冲刺等 3D 游戏的渲染基础。',
-                license: 'Three.js 基于 MIT 许可证开源，其著作权、知识产权归属 Three.js 作者及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用，未对源码进行恶意篡改或二次分发。',
-                url: 'https://github.com/mrdoob/three.js',
-                urlText: 'https://github.com/mrdoob/three.js'
-            },
-            cannon: {
-                title: 'cannon-es 版权声明',
-                desc: '本项目使用 cannon-es（Cannon ES）作为 3D 物理引擎，用于实现刚体物理模拟、碰撞检测、接触材质、重力等物理效果，是光影冲刺等 3D 游戏的物理模拟基础。',
-                license: 'cannon-es 基于 MIT 许可证开源（Cannon 物理引擎的 ES Module 版本），其著作权、知识产权归属 theturtle3d 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用。',
-                url: 'https://github.com/pmndrs/cannon-es',
-                urlText: 'https://github.com/pmndrs/cannon-es'
-            }
-        };
-
-        function showFrontendFrameworkModal(type) {
-            var info = __frameworkInfo[type];
-            if (!info) return;
-            var modal = document.createElement('div');
-            modal.id = 'frontendFrameworkModal';
-            modal.className = 'custom-alert';
-            modal.innerHTML = `
-                <div class="alert-content" style="max-width: 600px;">
-                    <div class="alert-header">
-                        <h2>${info.title}</h2>
-                    </div>
-                    <div class="about-content" style="text-align: left;">
-                        <p style="margin: 15px 0;">${info.desc}</p>
-                        <p style="margin: 15px 0;">${info.license}</p>
-                        <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="${info.url}" target="_blank" style="color: #d45d79; text-decoration: underline;">${info.urlText}</a></p>
-                    </div>
-                    <div class="modal-buttons">
-                        <button class="alert-confirm" onclick="closeFrontendFrameworkModal()">关闭</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            modal.style.display = 'flex';
-            setTimeout(function() {
-                modal.classList.add('show');
-            }, 10);
-        }
-
-        // 关闭前端框架版权信息模态框
-        function closeFrontendFrameworkModal() {
-            var frontendFrameworkModal = document.getElementById('frontendFrameworkModal');
-            if (frontendFrameworkModal) {
-                frontendFrameworkModal.classList.remove('show');
-                setTimeout(function() {
-                    frontendFrameworkModal.remove();
-                }, 300);
-            }
-        }
-        
-        // 显示Open-Meteo API版权声明模态框
-        function showOpenMeteoModal() {
-            var modal = document.createElement('div');
-            modal.id = 'openMeteoModal';
-            modal.className = 'custom-alert';
-            
-            modal.innerHTML = `
-                <div class="alert-content" style="max-width: 600px;">
-                    <div class="alert-header">
-                        <h2>Open-Meteo API 版权声明</h2>
-                    </div>
-                    <div class="about-content" style="text-align: left;">
-                        <p style="margin: 15px 0;">本项目的天气查询功能使用 Open-Meteo API 获取实时天气数据。</p>
-                        <p style="margin: 15px 0;">Open-Meteo 提供免费的天气 API 服务，其数据来源于全球气象机构，本项目严格遵守其使用条款，仅用于非商业用途的天气信息展示。</p>
-                        <p style="margin: 15px 0;"><strong>官方网站：</strong><a href="https://open-meteo.com" target="_blank" style="color: #d45d79; text-decoration: underline;">https://open-meteo.com</a></p>
-                        <p style="margin: 15px 0;"><strong>GitHub 地址：</strong><a href="https://github.com/open-meteo/open-meteo" target="_blank" style="color: #d45d79; text-decoration: underline;">https://github.com/open-meteo/open-meteo</a></p>
-                    </div>
-                    <div class="modal-buttons">
-                        <button class="alert-confirm" onclick="closeOpenMeteoModal()">关闭</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            modal.style.display = 'flex';
-            setTimeout(function() {
-                modal.classList.add('show');
-            }, 10);
-        }
-        
-        // 关闭Open-Meteo API版权信息模态框
-        function closeOpenMeteoModal() {
-            var openMeteoModal = document.getElementById('openMeteoModal');
-            if (openMeteoModal) {
-                openMeteoModal.classList.remove('show');
-                setTimeout(function() {
-                    openMeteoModal.remove();
-                }, 300);
-            }
-        }
         
         // 显示用户名片模态框
         function showUserCardModal() {

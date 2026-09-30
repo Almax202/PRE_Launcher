@@ -42,6 +42,12 @@
         bindMinimalistSettingsNav(currentUser);
     }
 
+    // 尽早暴露开发者模式入口（fireDevModeEntry 为函数声明，已被提升）：
+    // 避免本函数后续大量初始化代码一旦抛错，导致「关于启动器 → 内部版本号」连点入口拿不到该函数
+    window.triggerDevModeEntry = fireDevModeEntry;
+    // 供「关于启动器 → 开发者调试」集中入口一键启用/关闭所有小游戏成就（复用同款确认弹窗）
+    window.devToggleAllAchievements = showToggleAchievementsConfirmModal;
+
     // 开发者模式隐藏入口：登录页 / 游戏中心 / 系统设置页左上角 Logo 连点 5 次触发（所有页面生效）
     initDevModeLogoTrigger();
     
@@ -7409,12 +7415,18 @@
                 clearTimeout(devModeLogoClickTimer);
                 devModeLogoClickTimer = null;
             }
-            ensureDevModeTriggerModals();
-            if (isDevModeEnabled()) {
-                showTriggerModal('exitDevModeConfirmModal');
-            } else {
-                showTriggerModal('devModePasswordModal');
-            }
+            fireDevModeEntry();
+        }
+    }
+
+    // 触发开发者模式入口弹窗（供 Logo 连点与「关于启动器 → 内部版本号」连点复用）：
+    // 已开启 → 「是否要退出开发者模式？」确认弹窗；未开启 → 开发者密码弹窗
+    function fireDevModeEntry() {
+        ensureDevModeTriggerModals();
+        if (isDevModeEnabled()) {
+            showTriggerModal('exitDevModeConfirmModal');
+        } else {
+            showTriggerModal('devModePasswordModal');
         }
     }
 
@@ -7446,7 +7458,7 @@
                         '<i class="fas fa-check-circle"></i>' +
                     '</div>' +
                     '<h3>验证成功</h3>' +
-                    '<p style="color: #666; margin: 15px 0;">开发者模式已启用</p>' +
+                    '<p style="color: #666; margin: 15px 0;">您已进入开发者模式</p>' +
                     '<div class="modal-buttons">' +
                         '<button class="alert-confirm" id="devModeSuccessOk" style="background-color: #4CAF50;">确认</button>' +
                     '</div>' +
@@ -7561,10 +7573,10 @@
         var allUnlocked = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements);
         var totalAchievements = 40;
         
-        var modal = document.getElementById('toggleAchievementsConfirmModal');
-        var title = document.getElementById('toggleAchievementsTitle');
-        var message = document.getElementById('toggleAchievementsMessage');
-        
+        var modal = ensureToggleAchievementsModal();
+        var title = modal.querySelector('#toggleAchievementsTitle');
+        var message = modal.querySelector('#toggleAchievementsMessage');
+
         if (allUnlocked.length >= totalAchievements) {
             title.textContent = '关闭所有成就';
             message.textContent = '此操作将关闭所有成就并清零相关游戏数据，且无法恢复。您确定要继续吗？';
@@ -7572,11 +7584,44 @@
             title.textContent = '启用所有成就';
             message.textContent = '此操作将启用所有成就。您确定要继续吗？';
         }
-        
+
         modal.style.display = 'flex';
         setTimeout(function() {
             modal.classList.add('show');
         }, 10);
+    }
+
+    // 「一键启用/关闭所有小游戏成就」确认弹窗：
+    // 系统设置页使用静态 DOM；其他页面（如「关于启动器 → 开发者调试」）按相同结构/样式懒建到 body
+    function ensureToggleAchievementsModal() {
+        var existing = document.getElementById('toggleAchievementsConfirmModal');
+        if (existing) return existing;
+
+        var wrap = document.createElement('div');
+        wrap.innerHTML =
+            '<div id="toggleAchievementsConfirmModal" class="custom-alert">' +
+                '<div class="alert-content" style="max-width: 400px;">' +
+                    '<div class="alert-icon" style="color: #e74c3c;"><i class="fas fa-trophy"></i></div>' +
+                    '<h3 id="toggleAchievementsTitle">确认操作</h3>' +
+                    '<p id="toggleAchievementsMessage" style="color: #666; margin: 15px 0;">是否要执行此操作？</p>' +
+                    '<div class="modal-buttons">' +
+                        '<button class="alert-confirm" id="toggleAchievementsCancel">取消</button>' +
+                        '<button class="alert-confirm" id="toggleAchievementsConfirm" style="background-color: #e74c3c;">确认</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        var modal = wrap.firstChild;
+        document.body.appendChild(modal);
+
+        modal.querySelector('#toggleAchievementsCancel').addEventListener('click', hideToggleAchievementsConfirmModal);
+        modal.querySelector('#toggleAchievementsConfirm').addEventListener('click', function() {
+            hideToggleAchievementsConfirmModal();
+            toggleAllAchievements();
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) hideToggleAchievementsConfirmModal();
+        });
+        return modal;
     }
     
     function hideToggleAchievementsConfirmModal() {
@@ -9867,6 +9912,12 @@
         var isRedeemCodeEnabled = localStorage.getItem('redeemCodeEnabled') === 'true';
         redeemCodeToggle.checked = isRedeemCodeEnabled;
     }
+
+    var networkSpeedTestToggle = document.getElementById('enableNetworkSpeedTest');
+    if (networkSpeedTestToggle) {
+        var isNetworkSpeedTestFeatureEnabled = localStorage.getItem('networkSpeedTestEnabled') === 'true';
+        networkSpeedTestToggle.checked = isNetworkSpeedTestFeatureEnabled;
+    }
     
     var globalThemeColorPicker = document.getElementById('globalThemeColorPicker');
     if (globalThemeColorPicker) {
@@ -9962,13 +10013,28 @@ function toggleCalendarFeature() {
 function toggleRedeemCodeFeature() {
     var enabled = document.getElementById('enableRedeemCode').checked;
     localStorage.setItem('redeemCodeEnabled', enabled ? 'true' : 'false');
-    
+
     if (enabled) {
         showAlert('兑换码功能已启用，在登录页更多功能中可使用');
     } else {
         showAlert('兑换码功能已关闭');
     }
-    
+
+    if (typeof parent.updateEnhancedFeatureButtons === 'function') {
+        parent.updateEnhancedFeatureButtons();
+    }
+}
+
+function toggleNetworkSpeedTestFeature() {
+    var enabled = document.getElementById('enableNetworkSpeedTest').checked;
+    localStorage.setItem('networkSpeedTestEnabled', enabled ? 'true' : 'false');
+
+    if (enabled) {
+        showAlert('网络测速功能已启用，在登录页更多功能中可使用');
+    } else {
+        showAlert('网络测速功能已关闭');
+    }
+
     if (typeof parent.updateEnhancedFeatureButtons === 'function') {
         parent.updateEnhancedFeatureButtons();
     }

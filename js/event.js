@@ -46,7 +46,7 @@ var eventAnnouncementData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 公告侧边栏排序配置：按数组顺序显示
-    sortOrder: ['event_season_s1', 'event_level_boost', 'event_autumn_sale', 'event_001', 'event_daily_checkin'],
+    sortOrder: ['event_season_s1', 'event_level_boost', 'event_autumn_sale', 'event_002', 'event_001', 'event_daily_checkin'],
     announcements: [
         {
             id: 'event_level_boost',
@@ -87,9 +87,23 @@ var eventAnnouncementData = {
             category: 'current',
             title: '秋季签到与等级提速特别活动',
             date: '2026-08-27',
-            endDate: '2026-09-30<p>（下一季度前）</p>',
+            endDate: '2026-09-30<p>（第三季度）</p>',
+            startTime: '2026-08-27 00:00:00',
+            endTime: '2026-09-30 23:59:59',
             description: '常驻活动，注册即可参与！14天签到领取丰厚奖励，含名片样式、3D太空背景与海量经验值。',
-            content: '<h2>秋季签到与等级提速特别活动</h2><p>秋季来临，全新启程！本次活动为<span style="color:#d45d79;font-weight:600;">第三季度常驻活动</span>，成功注册账号即可直接参与！</p><h3>活动时间</h3><p>起始日：2026年8月27日（UTC+8）<br>结束时间：下一季度前（2026年9月30日）<br>领取完成后活动将纳入已结束类别</p><h3>签到奖励（共14天）</h3><ul><li><strong>第1天：</strong>新名片样式「星河漫游」（特殊获取）</li><li><strong>第2-7天：</strong>每天500经验值（共3000exp）</li><li><strong>第8天：</strong>新3D太空遨游背景（特殊获取）</li><li><strong>第9-13天：</strong>每天1000经验值（共5000exp）</li><li><strong>第14天：</strong>2000经验值（总计10000exp）</li></ul><h3>参与方式</h3><p>进入活动中心 → 找到本活动 → 点击签到奖励卡或一键领取按钮领取对应奖励</p><h3>奖励说明</h3><p>经验值将立即对账户等级生效，名片样式和3D背景将解锁到对应系统中。</p>',
+            content: '<h2>秋季签到与等级提速特别活动</h2><p>秋季来临，全新启程！本次活动为<span style="color:#d45d79;font-weight:600;">第三季度限时签到活动</span>，成功注册账号即可直接参与！</p><h3>活动时间</h3><p>起始日：2026年8月27日（UTC+8）<br>结束时间：下一季度前（2026年9月30日）<br>领取完成后活动将纳入已结束类别</p><h3>签到奖励（共14天）</h3><ul><li><strong>第1天：</strong>新名片样式「星河漫游」（特殊获取）</li><li><strong>第2-7天：</strong>每天500经验值（共3000exp）</li><li><strong>第8天：</strong>新3D太空遨游背景（特殊获取）</li><li><strong>第9-13天：</strong>每天1000经验值（共5000exp）</li><li><strong>第14天：</strong>2000经验值（总计10000exp）</li></ul><h3>参与方式</h3><p>进入活动中心 → 找到本活动 → 点击签到奖励卡或一键领取按钮领取对应奖励</p><h3>奖励说明</h3><p>经验值将立即对账户等级生效，名片样式和3D背景将解锁到对应系统中。</p>',
+            banner: ''
+        },
+        {
+            id: 'event_002',
+            category: 'upcoming',
+            title: '冬季签到特别活动',
+            date: '2026-10-01',
+            endDate: '2026-12-31<p>（第四季度）</p>',
+            startTime: '2026-10-01 00:00:00',
+            endTime: '2026-12-31 23:59:59',
+            description: '第四季度限时签到活动，共30天，签到领取各类经验值加成卡、补给卡与 PRE Coin 补给包，奖励自动发送至仓库。',
+            content: '<h2>冬季签到特别活动</h2><p>寒冬将至，温暖相伴！本次活动为<span style="color:#d45d79;font-weight:600;">第四季度限时签到活动</span>，共计 30 天签到日程，每天登录即可领取对应奖励，所有奖励均自动发放至仓库。</p><h3>活动时间</h3><p>起始日：2026年10月1日 00:00:00（UTC+8）<br>结束时间：2026年12月31日 23:59:59（UTC+8）</p><h3>签到奖励（共30天）</h3><ul><li><strong>第1/3/5/7天：</strong>经验值加成卡 Ⅰ ×1</li><li><strong>第2/4/6/8天：</strong>经验值补给卡 Ⅰ ×1</li><li><strong>第9天：</strong>PRE Coin 补给包 Ⅰ ×3</li><li><strong>第10/12/14天：</strong>经验值加成卡 Ⅱ ×1</li><li><strong>第11/13/15天：</strong>经验值补给卡 Ⅱ ×1</li><li><strong>第16天：</strong>PRE Coin 补给包 Ⅱ ×3</li><li><strong>第17/19/21天：</strong>经验值加成卡 Ⅲ ×1</li><li><strong>第18/20/22天：</strong>经验值补给卡 Ⅲ ×1</li><li><strong>第23天：</strong>PRE Coin 补给包 Ⅲ ×2</li><li><strong>第24/26/28天：</strong>经验值加成卡 Ⅳ ×1</li><li><strong>第25/27/29天：</strong>经验值补给卡 Ⅳ ×1</li><li><strong>第30天：</strong>PRE Coin 补给包 Ⅳ ×1</li></ul><h3>参与方式</h3><p>活动期间进入活动中心 → 找到本活动 → 点击签到奖励卡或一键领取按钮领取对应奖励，奖励自动发放至仓库（单发 PRE Coin 直接计入余额）。</p><h3>补签规则</h3><p>持有补签卡时可补签已过登录天数内、且尚未领取的奖励；超出当前已过天数的奖励无法补签。</p>',
             banner: ''
         },
         {
@@ -117,13 +131,13 @@ var eventCenterData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 活动侧边栏排序配置：按数组顺序显示
-    sortOrder: ['center_season_s1', 'center_004', 'center_003', 'center_002', 'center_001'],
+    sortOrder: ['center_season_s1', 'center_005', 'center_004', 'center_003', 'center_002', 'center_001'],
     events: [
         {
             id: 'center_season_s1',
             category: 'season',
             title: '第一赛季「初始化」',
-            subtitle: '赛季通行证正式开启 · 120级奖励等你解锁',
+            subtitle: '赛季通行证正式开启',
             status: 'upcoming',
             description: '全新赛季通行证第一赛季「初始化」即将开启！<p>120 级免费/付费双档位奖励长线，日常/周常/赛季三层任务系统，满级后更有 EX 溢出奖励持续发放。</p><p>赛季期间购买通行证组合包可立即获得 10 级、经验值补给卡Ⅳ×2、PRE Coin 补给包Ⅳ×1 与限定「第一赛季纪念徽章」。</p><p>赛季时间：2026年10月1日 08:00 - 2026年12月31日 17:00（UTC+8）</p><p>赛季开始后点击「立即参与」即可打开赛季通行证界面</p>',
             icon: 'fa-trophy',
@@ -138,7 +152,7 @@ var eventCenterData = {
             id: 'center_004',
             category: 'special',
             title: '限时等级倍率提速活动',
-            subtitle: '全账户经验倍率限时提升 · 共14天',
+            subtitle: '全账户经验倍率限时提升',
             status: 'active',
             description: '活动期间全账户成长等级经验获取倍率限时提升，等级成长快人一步，无需报名自动生效！<p>第一阶段（第1-7天，9月17日 17:00 - 9月24日 10:00）：经验倍率 ×1.25</p><p>第二阶段（第8-14天，9月24日 10:00 - 10月1日 23:59）：经验倍率 ×1.50</p><p>活动固定倍率可与仓库经验值加成卡叠加（总倍率 = 活动倍率 × 加成卡倍率），活动结束后恢复 ×1.00</p>',
             icon: 'fa-gauge-high',
@@ -178,14 +192,31 @@ var eventCenterData = {
             id: 'center_002',
             category: 'featured',
             title: '秋季签到与等级提速特别活动',
-            subtitle: '第三季度常驻活动 · 注册即可参与',
+            subtitle: '第三季度限时活动',
             status: 'active',
             description: '14天签到领丰厚奖励：名片样式、3D太空背景与海量经验值<p>（共10000exp）</p><p>活动时间：2026年8月27日 - 2026年9月30日（UTC+8）（下一季度前）</p>',
             icon: 'fa-rocket',
             hasCheckin: true,
             checkinDays: 14,
             announcementId: 'event_001',
-            showParticipate: false
+            showParticipate: false,
+            startTime: '2026-08-27 00:00:00',
+            endTime: '2026-09-30 23:59:59'
+        },
+        {
+            id: 'center_005',
+            category: 'featured',
+            title: '冬季签到特别活动',
+            subtitle: '第四季度限时活动',
+            status: 'upcoming',
+            description: '第四季度限时签到活动，共30天，每天签到领取经验值加成卡/补给卡与 PRE Coin 补给包，奖励自动发放至仓库<p>活动时间：2026年10月1日 00:00 - 2026年12月31日 23:59（UTC+8）</p>',
+            icon: 'fa-snowflake',
+            hasCheckin: true,
+            checkinDays: 30,
+            announcementId: 'event_002',
+            showParticipate: false,
+            startTime: '2026-10-01 00:00:00',
+            endTime: '2026-12-31 23:59:59'
         },
     ]
 };
@@ -226,20 +257,30 @@ function getEventStatusText(status) {
 // 依据起止时间自动调整活动/公告的状态与分类（结束后归入已结束类别），返回是否有变化
 function applyTimedEventStates() {
     var changed = false;
+    // 通行证 Dev「全部解禁」开启时，赛季通行证活动/公告视为进行中
+    var devUnlockActive = (window.pass && typeof window.pass.isDevUnlockAll === 'function' && window.pass.isDevUnlockAll());
 
     eventCenterData.events.forEach(function(evt) {
         if (!evt.startTime && !evt.endTime) return;
         var state = getEventTimeState(evt.startTime, evt.endTime);
+        // 赛季通行证活动：Dev 全部解禁时强制视为进行中
+        if (devUnlockActive && evt.id === SEASON_PASS_EVENT.eventId) state = 'active';
         if (evt.status !== state) { evt.status = state; changed = true; }
-        // 已结束的活动归入「已结束」类别
+        // 已结束的活动归入「已结束」类别（Dev 解禁的赛季活动除外，保持原分类）
         if (state === 'ended' && evt.category !== 'ended') { evt.category = 'ended'; changed = true; }
+        if (devUnlockActive && evt.id === SEASON_PASS_EVENT.eventId && evt.category === 'ended') {
+            evt.category = 'season'; changed = true;
+        }
     });
 
     // 公告分类跟随时间：即将到来 → 当前活动 → 已结束
     var annCatMap = { upcoming: 'upcoming', active: 'current', ended: 'ended' };
     eventAnnouncementData.announcements.forEach(function(ann) {
         if (!ann.startTime && !ann.endTime) return;
-        var newCat = annCatMap[getEventTimeState(ann.startTime, ann.endTime)];
+        var state = getEventTimeState(ann.startTime, ann.endTime);
+        // 赛季通行证公告：Dev 全部解禁时强制视为当前活动（进行中）
+        if (devUnlockActive && ann.id === SEASON_PASS_EVENT.announcementId) state = 'active';
+        var newCat = annCatMap[state];
         if (newCat && ann.category !== newCat) { ann.category = newCat; changed = true; }
     });
 
@@ -950,6 +991,38 @@ var CHECKIN_REWARDS = {
         { day: 12, type: 'exp', value: 1000, label: '1000 经验值', icon: 'fa-star', isGold: false },
         { day: 13, type: 'exp', value: 1000, label: '1000 经验值', icon: 'fa-star', isGold: false },
         { day: 14, type: 'exp', value: 2000, label: '2000 经验值', icon: 'fa-crown', isGold: true }
+    ],
+    center_005: [
+        { day: 1,  type: 'warehouse', itemId: 'exp_boost_small',  count: 1, label: '经验值加成卡 Ⅰ',  icon: 'fa-gauge',      color: '#3498db', isGold: false },
+        { day: 2,  type: 'warehouse', itemId: 'exp_supply_1',     count: 1, label: '经验值补给卡 Ⅰ',  icon: 'fa-star',       color: '#3498db', isGold: false },
+        { day: 3,  type: 'warehouse', itemId: 'exp_boost_small',  count: 1, label: '经验值加成卡 Ⅰ',  icon: 'fa-gauge',      color: '#3498db', isGold: false },
+        { day: 4,  type: 'warehouse', itemId: 'exp_supply_1',     count: 1, label: '经验值补给卡 Ⅰ',  icon: 'fa-star',       color: '#3498db', isGold: false },
+        { day: 5,  type: 'warehouse', itemId: 'exp_boost_small',  count: 1, label: '经验值加成卡 Ⅰ',  icon: 'fa-gauge',      color: '#3498db', isGold: false },
+        { day: 6,  type: 'warehouse', itemId: 'exp_supply_1',     count: 1, label: '经验值补给卡 Ⅰ',  icon: 'fa-star',       color: '#3498db', isGold: false },
+        { day: 7,  type: 'warehouse', itemId: 'exp_boost_small',  count: 1, label: '经验值加成卡 Ⅰ',  icon: 'fa-gauge',      color: '#3498db', isGold: false },
+        { day: 8,  type: 'warehouse', itemId: 'exp_supply_1',     count: 1, label: '经验值补给卡 Ⅰ',  icon: 'fa-star',       color: '#3498db', isGold: false },
+        { day: 9,  type: 'warehouse', itemId: 'precoin_supply_1', count: 3, label: 'PRE Coin 补给包 Ⅰ', icon: 'fa-coins',    color: '#3498db', isGold: true },
+        { day: 10, type: 'warehouse', itemId: 'exp_boost_mid',    count: 1, label: '经验值加成卡 Ⅱ',  icon: 'fa-chart-line', color: '#9b59b6', isGold: false },
+        { day: 11, type: 'warehouse', itemId: 'exp_supply_2',     count: 1, label: '经验值补给卡 Ⅱ',  icon: 'fa-atom',       color: '#9b59b6', isGold: false },
+        { day: 12, type: 'warehouse', itemId: 'exp_boost_mid',    count: 1, label: '经验值加成卡 Ⅱ',  icon: 'fa-chart-line', color: '#9b59b6', isGold: false },
+        { day: 13, type: 'warehouse', itemId: 'exp_supply_2',     count: 1, label: '经验值补给卡 Ⅱ',  icon: 'fa-atom',       color: '#9b59b6', isGold: false },
+        { day: 14, type: 'warehouse', itemId: 'exp_boost_mid',    count: 1, label: '经验值加成卡 Ⅱ',  icon: 'fa-chart-line', color: '#9b59b6', isGold: false },
+        { day: 15, type: 'warehouse', itemId: 'exp_supply_2',     count: 1, label: '经验值补给卡 Ⅱ',  icon: 'fa-atom',       color: '#9b59b6', isGold: false },
+        { day: 16, type: 'warehouse', itemId: 'precoin_supply_2', count: 3, label: 'PRE Coin 补给包 Ⅱ', icon: 'fa-piggy-bank', color: '#9b59b6', isGold: true },
+        { day: 17, type: 'warehouse', itemId: 'exp_boost_large',  count: 1, label: '经验值加成卡 Ⅲ',  icon: 'fa-rocket',     color: '#f39c12', isGold: false },
+        { day: 18, type: 'warehouse', itemId: 'exp_supply_3',     count: 1, label: '经验值补给卡 Ⅲ',  icon: 'fa-asterisk',   color: '#f39c12', isGold: false },
+        { day: 19, type: 'warehouse', itemId: 'exp_boost_large',  count: 1, label: '经验值加成卡 Ⅲ',  icon: 'fa-rocket',     color: '#f39c12', isGold: false },
+        { day: 20, type: 'warehouse', itemId: 'exp_supply_3',     count: 1, label: '经验值补给卡 Ⅲ',  icon: 'fa-asterisk',   color: '#f39c12', isGold: false },
+        { day: 21, type: 'warehouse', itemId: 'exp_boost_large',  count: 1, label: '经验值加成卡 Ⅲ',  icon: 'fa-rocket',     color: '#f39c12', isGold: false },
+        { day: 22, type: 'warehouse', itemId: 'exp_supply_3',     count: 1, label: '经验值补给卡 Ⅲ',  icon: 'fa-asterisk',   color: '#f39c12', isGold: false },
+        { day: 23, type: 'warehouse', itemId: 'precoin_supply_3', count: 2, label: 'PRE Coin 补给包 Ⅲ', icon: 'fa-wallet',   color: '#f39c12', isGold: true },
+        { day: 24, type: 'warehouse', itemId: 'exp_boost_premium',count: 1, label: '经验值加成卡 Ⅳ',  icon: 'fa-fire',       color: '#c0392b', isGold: false },
+        { day: 25, type: 'warehouse', itemId: 'exp_supply_4',     count: 1, label: '经验值补给卡 Ⅳ',  icon: 'fa-sun',        color: '#e74c3c', isGold: false },
+        { day: 26, type: 'warehouse', itemId: 'exp_boost_premium',count: 1, label: '经验值加成卡 Ⅳ',  icon: 'fa-fire',       color: '#c0392b', isGold: false },
+        { day: 27, type: 'warehouse', itemId: 'exp_supply_4',     count: 1, label: '经验值补给卡 Ⅳ',  icon: 'fa-sun',        color: '#e74c3c', isGold: false },
+        { day: 28, type: 'warehouse', itemId: 'exp_boost_premium',count: 1, label: '经验值加成卡 Ⅳ',  icon: 'fa-fire',       color: '#c0392b', isGold: false },
+        { day: 29, type: 'warehouse', itemId: 'exp_supply_4',     count: 1, label: '经验值补给卡 Ⅳ',  icon: 'fa-sun',        color: '#e74c3c', isGold: false },
+        { day: 30, type: 'warehouse', itemId: 'precoin_supply_4', count: 1, label: 'PRE Coin 补给包 Ⅳ', icon: 'fa-box-open', color: '#e74c3c', isGold: true }
     ]
 };
 
@@ -1063,10 +1136,29 @@ function getCurrentCheckinDay(eventId) {
     return data.unlockedDays || 0;
 }
 
+// 获取活动当前可参与的总天数（基于活动起始时间已过的自然日数，封顶为签到总天数）
+// 用于限制补签卡仅可补签该范围内的奖励；活动未开始返回 0，无起始时间时回退为已解锁天数
+function getCheckinAvailableDays(eventId) {
+    var evt = eventCenterData.events.find(function(e) { return e.id === eventId; });
+    var rewards = getCheckinRewards(eventId);
+    var maxDays = rewards ? rewards.length : 0;
+    var startTs = evt ? parseEventTimeUtc8(evt.startTime) : null;
+    if (startTs === null) {
+        var data = getCheckinData(eventId);
+        return Math.min(data.unlockedDays || 0, maxDays);
+    }
+    var now = Date.now();
+    if (now < startTs) return 0;
+    var elapsedDays = Math.floor((now - startTs) / (1000 * 60 * 60 * 24)) + 1;
+    return Math.min(elapsedDays, maxDays);
+}
+
 function isCheckinDayUnlocked(eventId, rewardDay) {
     var data = getCheckinData(eventId);
     if (rewardDay <= (data.unlockedDays || 0)) return true;
-    // 补签卡解锁的天数同样视为已解锁
+    // 补签卡解锁的天数同样视为已解锁，但必须在活动已过天数范围内
+    var availableDays = getCheckinAvailableDays(eventId);
+    if (rewardDay > availableDays) return false;
     return !!(data.makeupDays && data.makeupDays.indexOf(rewardDay) !== -1);
 }
 
@@ -1074,10 +1166,36 @@ function generateCheckinSection(eventId) {
     var rewards = getCheckinRewards(eventId);
     if (!rewards || rewards.length === 0) return '';
 
+    // 活动已结束：签到区不显示任何奖励卡片，改为居中提示文本
+    var centerEvt = eventCenterData.events.find(function(e) { return e.id === eventId; });
+    if (centerEvt && getEventTimeState(centerEvt.startTime, centerEvt.endTime) === 'ended') {
+        return `
+            <div class="checkin-section" id="checkinSection_${eventId}">
+                <div class="checkin-section-header">
+                    <div class="checkin-section-title"><i class="fas fa-calendar-check"></i> 签到区</div>
+                </div>
+                <div class="checkin-ended-note">⛔ 活动已结束 ⛔</div>
+            </div>
+        `;
+    }
+
+    // 活动未开始：签到区不显示奖励卡片，改为居中提示文本
+    if (centerEvt && getEventTimeState(centerEvt.startTime, centerEvt.endTime) === 'upcoming') {
+        return `
+            <div class="checkin-section" id="checkinSection_${eventId}">
+                <div class="checkin-section-header">
+                    <div class="checkin-section-title"><i class="fas fa-calendar-check"></i> 签到区</div>
+                </div>
+                <div class="checkin-ended-note checkin-upcoming-note">⛔ 活动未开始 ⛔</div>
+            </div>
+        `;
+    }
+
     updateCheckinProgress(eventId);
     var checkinData = getCheckinData(eventId);
     var claimedDays = checkinData.claimedDays || [];
     var currentDay = getCurrentCheckinDay(eventId);
+    var availableDays = getCheckinAvailableDays(eventId);
     var allClaimed = claimedDays.length >= rewards.length;
 
     var cardsHtml = rewards.map(function(reward) {
@@ -1107,6 +1225,10 @@ function generateCheckinSection(eventId) {
             innerContent = '<div class="evt-reward-card-icon" style="background: rgba(212, 93, 121, 0.15);"><i class="fas fa-id-card" style="color: #d45d79;"></i></div><div class="evt-reward-card-label">' + reward.label + '</div>';
         } else if (reward.type === 'background3d') {
             innerContent = '<div class="evt-reward-card-icon" style="background: rgba(124, 92, 191, 0.15);"><i class="fas fa-rocket" style="color: #7c5cbf;"></i></div><div class="evt-reward-card-label">' + reward.label + '</div>';
+        } else if (reward.type === 'warehouse') {
+            var wColor = reward.color || '#d45d79';
+            var wCountBadge = reward.count > 1 ? '<span class="evt-reward-card-count">×' + reward.count + '</span>' : '';
+            innerContent = '<div class="evt-reward-card-icon" style="background: ' + wColor + '22;"><i class="fas ' + reward.icon + '" style="color: ' + wColor + ';"></i>' + wCountBadge + '</div><div class="evt-reward-card-label">' + reward.label + '</div>';
         } else {
             innerContent = '<div class="evt-reward-card-icon"><i class="fas ' + reward.icon + '"></i></div><div class="evt-reward-card-label">' + reward.label + '</div>';
         }
@@ -1125,6 +1247,13 @@ function generateCheckinSection(eventId) {
 
     var progressText = '已领取 ' + claimedDays.length + ' / ' + rewards.length + ' 天';
 
+    // 可补签天数：在活动已过天数范围内、尚未领取、且未自然解锁的奖励天数
+    var makeupableCount = 0;
+    for (var md = currentDay + 1; md <= availableDays; md++) {
+        if (claimedDays.indexOf(md) === -1) makeupableCount++;
+    }
+    var loginTagHtml = '<div class="checkin-login-tag"><i class="fas fa-user-clock"></i> 已登录 ' + currentDay + ' 天 · 可补签 ' + makeupableCount + ' 天</div>';
+
     var canClaimAny = rewards.some(function(r) { return r.day <= currentDay && claimedDays.indexOf(r.day) === -1; });
     var claimAllDisabled = claimedDays.length >= rewards.length || !canClaimAny;
 
@@ -1133,10 +1262,17 @@ function generateCheckinSection(eventId) {
             <div class="checkin-section-header">
                 <div class="checkin-section-title"><i class="fas fa-calendar-check"></i> 签到区</div>
                 <div class="checkin-progress">${progressText}</div>
-                <button class="checkin-toggle-btn" id="checkinToggleBtn_${eventId}" data-collapsed="false">
-                    <span>收起</span>
-                    <i class="fas fa-chevron-up"></i>
-                </button>
+                ${loginTagHtml}
+                <div class="checkin-header-btn-group">
+                    <button class="checkin-toggle-btn" id="checkinToggleBtn_${eventId}" data-collapsed="false">
+                        <span>收起</span>
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                    <button class="checkin-full-display-btn" id="checkinFullDisplayBtn_${eventId}" data-full="false">
+                        <i class="fas fa-expand"></i>
+                        <span>完整显示</span>
+                    </button>
+                </div>
                 <button class="checkin-claim-all-btn" id="checkinClaimAllBtn" ${claimAllDisabled ? 'disabled' : ''}>
                     <i class="fas fa-gift"></i>
                     <span>一键领取</span>
@@ -1182,7 +1318,13 @@ function bindCheckinInteractions(eventId) {
             }
 
             if (isLocked || day > currentDay) {
-                // 补签卡：持有补签卡时可解锁未解锁的奖励卡
+                // 补签卡：仅可补签活动已过天数范围内的奖励；超出范围直接提示无法补签
+                var availableDays = getCheckinAvailableDays(eventId);
+                if (day > availableDays) {
+                    showToast({ type: 'info', title: '无法补签', message: '第 ' + day + ' 天奖励尚未到可补签时间，需活动进行至该天后再补签' });
+                    return;
+                }
+                // 持有补签卡时可解锁未解锁的奖励卡
                 if (typeof warehousePromptMakeupCard === 'function') {
                     warehousePromptMakeupCard(eventId, day, function(used) {
                         if (used) {
@@ -1242,6 +1384,28 @@ function bindCheckinInteractions(eventId) {
         });
     }
 
+    // 完整显示：签到区上移覆盖头图区域，卡片改为每行7张网格布局
+    var fullDisplayBtn = document.getElementById('checkinFullDisplayBtn_' + eventId);
+    var eventMainEl = document.querySelector('.event-main');
+    if (fullDisplayBtn && section && eventMainEl) {
+        fullDisplayBtn.addEventListener('click', function() {
+            var isFull = fullDisplayBtn.getAttribute('data-full') === 'true';
+            if (isFull) {
+                eventMainEl.classList.remove('checkin-full-mode');
+                section.classList.remove('full-display');
+                fullDisplayBtn.setAttribute('data-full', 'false');
+                fullDisplayBtn.querySelector('span').textContent = '完整显示';
+                fullDisplayBtn.querySelector('i').className = 'fas fa-expand';
+            } else {
+                eventMainEl.classList.add('checkin-full-mode');
+                section.classList.add('full-display');
+                fullDisplayBtn.setAttribute('data-full', 'true');
+                fullDisplayBtn.querySelector('span').textContent = '退出完整';
+                fullDisplayBtn.querySelector('i').className = 'fas fa-compress';
+            }
+        });
+    }
+
     var claimAllBtn = document.getElementById('checkinClaimAllBtn');
     if (claimAllBtn) {
         claimAllBtn.addEventListener('click', function() {
@@ -1292,6 +1456,14 @@ function claimCheckinReward(eventId, day, reward) {
     } else if (reward.type === 'background3d') {
         unlock3DBackground(reward.value);
         showToast({ type: 'success', title: '3D背景解锁', message: '成功解锁：' + reward.label });
+    } else if (reward.type === 'warehouse') {
+        var qty = reward.count || 1;
+        if (typeof warehouseAddItem === 'function') {
+            warehouseAddItem(reward.itemId, qty, '冬季签到第' + day + '天奖励', true);
+            showToast({ type: 'success', title: '奖励领取', message: '获得 ' + reward.label + (qty > 1 ? ' ×' + qty : '') + '，已发送至仓库' });
+        } else {
+            showToast({ type: 'error', title: '领取失败', message: '仓库系统未就绪，请稍后重试' });
+        }
     }
 }
 
@@ -1303,9 +1475,11 @@ function updateCheckinUI(eventId) {
     if (!rewards || rewards.length === 0) return;
 
     var wasCollapsed = false;
+    var wasFullDisplay = false;
     var oldSection = checkinEl.querySelector('.checkin-section');
-    if (oldSection && oldSection.classList.contains('collapsed')) {
-        wasCollapsed = true;
+    if (oldSection) {
+        if (oldSection.classList.contains('collapsed')) wasCollapsed = true;
+        if (oldSection.classList.contains('full-display')) wasFullDisplay = true;
     }
 
     checkinEl.innerHTML = generateCheckinSection(eventId);
@@ -1319,6 +1493,19 @@ function updateCheckinUI(eventId) {
             newToggleBtn.setAttribute('data-collapsed', 'true');
             newToggleBtn.querySelector('span').textContent = '展开';
             newToggleBtn.querySelector('i').className = 'fas fa-chevron-down';
+        }
+    }
+
+    if (wasFullDisplay) {
+        var newSection2 = checkinEl.querySelector('.checkin-section');
+        var newFullBtn = document.getElementById('checkinFullDisplayBtn_' + eventId);
+        var eventMainEl2 = document.querySelector('.event-main');
+        if (newSection2 && newFullBtn && eventMainEl2) {
+            newSection2.classList.add('full-display');
+            eventMainEl2.classList.add('checkin-full-mode');
+            newFullBtn.setAttribute('data-full', 'true');
+            newFullBtn.querySelector('span').textContent = '退出完整';
+            newFullBtn.querySelector('i').className = 'fas fa-compress';
         }
     }
 

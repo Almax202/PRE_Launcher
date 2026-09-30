@@ -156,6 +156,10 @@
             </div>
         </div>
         <div class="ui-min-topnav-right">
+            <button class="ui-min-search-btn" id="settingsSearchBtn" type="button" title="搜索系统设置">
+                <i class="fas fa-search"></i>
+                <span>搜索</span>
+            </button>
             <div class="ui-min-user-area" id="uiMinUserArea">
                 <div class="ui-min-user-avatar">
                     <i class="fas fa-user"></i>
@@ -501,7 +505,21 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="experimental-empty-state" id="experimentalEmptyState">
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-gauge-high" style="color: #0ea5e9; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">网络测速</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"网络测速"按钮，可测试 Ping 延迟、下载与上传速度</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableNetworkSpeedTest" onchange="toggleNetworkSpeedTestFeature()">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="experimental-empty-state" id="experimentalEmptyState" style="display: none;">
                                 <div class="empty-icon">
                                     <i class="fas fa-inbox"></i>
                                 </div>
@@ -1715,7 +1733,7 @@
                                     <i class="fas fa-eye-slash" style="color: #e67e22; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">隐藏UI</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页"更多功能"中显示"隐藏UI"按钮</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"隐藏UI"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1762,7 +1780,7 @@
                                     <i class="fas fa-calendar-alt" style="color: #e74c3c; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">日历</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"日历"按钮</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"日历"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1775,7 +1793,7 @@
                                     <i class="fas fa-info-circle" style="color: #e74c3c; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">关于启动器</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"关于启动器"按钮</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"关于启动器"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1788,7 +1806,7 @@
                                     <i class="fas fa-compass" style="color: #e74c3c; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">查看引导</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"查看引导"按钮</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"查看引导"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1801,7 +1819,7 @@
                                     <i class="fas fa-search" style="color: #9b59b6; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">调整UI比例</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"调整UI比例"按钮</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"调整UI比例"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1814,7 +1832,7 @@
                                     <i class="fas fa-sticky-note" style="color: #ffc107; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">便签</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"便签"按钮</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"便签"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1827,7 +1845,7 @@
                                     <i class="fas fa-gift" style="color: #d45d79; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">兑换码</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"兑换码"按钮，可使用兑换码兑换动态背景等福利</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"兑换码"按钮，可使用兑换码兑换动态背景等福利</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1840,7 +1858,7 @@
                                     <i class="fas fa-cloud-sun" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">天气</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中显示"天气"按钮</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"天气"按钮</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -1867,7 +1885,7 @@
                                     <i class="fas fa-info-circle" style="color: #3498db; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
                                     <div>
                                         <h4 style="margin: 0;">显示组件信息</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在登录页的"更多功能"中，每个卡片按钮右上角显示信息图标（仅包含部分组件）</p>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中，每个卡片按钮右上角显示信息图标（仅包含部分组件）</p>
                                     </div>
                                 </div>
                                 <label class="toggle-switch">
@@ -3044,6 +3062,453 @@
         </div>
     </div>
 
+    <!-- ===== 系统设置全局搜索浮层 ===== -->
+    <div class="settings-search-overlay" id="settingsSearchOverlay" aria-hidden="true">
+        <div class="settings-search-backdrop" id="settingsSearchBackdrop"></div>
+        <div class="settings-search-panel" role="dialog" aria-modal="true" aria-label="搜索系统设置">
+            <div class="settings-search-box">
+                <i class="fas fa-search settings-search-icon"></i>
+                <input type="text" id="settingsSearchInput" placeholder="搜索设置项，如：密码、主题、头像、天气…" autocomplete="off" maxlength="30" spellcheck="false">
+                <button class="settings-search-clear" id="settingsSearchClear" type="button" aria-label="清空关键词" style="display:none;">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+                <kbd class="settings-search-kbd">ESC</kbd>
+                <button class="settings-search-close" id="settingsSearchClose" type="button" aria-label="关闭搜索">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-search-body" id="settingsSearchBody"></div>
+        </div>
+    </div>
+
     <script src="../js/account-settings.js"></script>
+    <script>
+    /* ============================================================
+     * 系统设置全局搜索
+     * 功能：顶部滑出搜索框 / 模糊匹配 / 联想词 / 直达并高亮设置卡片
+     * ============================================================ */
+    (function () {
+        'use strict';
+
+        /* ---------- 热门联想词（预设，精选高频） ---------- */
+        var HOT_WORDS = ['密码', '两步验证', '头像', '主题颜色',
+            '深色模式', '毛玻璃', '通知', '天气'];
+
+        /* ---------- 卡片级联想词（按卡片标题补充近义/口语化关键词） ---------- */
+        var CARD_ALIASES = {
+            '基本信息': ['用户名', '昵称', '用户id', 'uid', '账号', '账户', '注册时间', '复制id', '修改用户名', '编辑用户名'],
+            '个人资料': ['个性签名', '签名', '简介', '个人介绍', 'bio', '保存签名'],
+            '头像设置': ['头像', '头像图片', 'avatar', '上传头像', '自定义头像', '选择头像', '保存头像', '更换头像'],
+            '联系方式': ['邮箱', '电子邮件', 'email', '手机', '手机号', '电话', '联系方式', 'qq', '微信'],
+            '密码管理': ['密码', '修改密码', '更改密码', '当前密码', '验证密码', '新密码', 'password', '忘记密码'],
+            '两步验证': ['两步验证', '二次验证', '双因素', '2fa', 'pin', 'pin码', '登录pin', '安全问题', '更改pin', '登录验证'],
+            '资料可见性': ['公开资料', '在线状态', '好友请求', '可见性', '谁可以看', '隐私开关'],
+            '消息隐私': ['陌生人消息', '已读回执', '私信', '消息权限', '消息隐私'],
+            '成就系统': ['成就', '徽章', '成就点', '等级', '经验', '游戏统计', '游戏数据', '战绩', 'stats'],
+            '通知设置': ['通知', '推送', '消息提醒', '系统通知', '游戏通知', '活动通知', '营销通知', '广告'],
+            '声音设置': ['声音', '音量', '音效', '消息音效', '通知音量', '静音', '铃声'],
+            '已登录设备': ['设备', '登录设备', '已登录设备', 'pc', '电脑', 'iphone', '手机', '信任设备', '设备管理', '下线'],
+            '登录历史': ['登录历史', '登录记录', '登录ip', '异地登录', '登陆记录', '登录地点'],
+            '个性化': ['个性化', '主题', '颜色模式', '深色', '深色模式', '暗色', '暗色模式', '浅色模式', '夜间模式', '跟随系统', 'dark', 'rgb', '透明度', '对比度', '毛玻璃', '磨砂', '模糊', 'gpu', '硬件加速', '界面设置', '预览'],
+            '自定义背景': ['背景', '壁纸', '自定义背景', '背景图片', '预设背景', '上传背景', '自适应', '不透明度', '背景模糊', '应用背景', '墙纸'],
+            '全局主题颜色': ['主题颜色', '主题色', '全局颜色', '主色调', '配色', '主题预览'],
+            '语言设置': ['语言', '多语言', '中文', '英文', '英语', 'english', '日语', '韩语', 'language', '界面语言'],
+            '增强功能': ['增强功能', '隐藏ui', '页面时钟', '时钟', '日历', '关于启动器', '关于', '引导', '新手引导', 'ui比例', '缩放', '便签', '备忘录', '兑换码', '激活码', '礼包码', '天气', '组件'],
+            '其他设置': ['组件信息', '显示组件信息', '其他设置', '组件版本'],
+            '数据管理': ['数据管理', '导出', '导入', '备份', '恢复', '还原', '清除缓存', '清理缓存', '缓存', '数据备份', '重置设置'],
+            '危险区域': ['注销', '注销账号', '删除账号', '销户', '销毁账号', '危险操作', '重置'],
+            '实验性功能': ['实验', '实验室', 'beta', '测试功能', '新功能', '尝鲜'],
+            '实验性功能提示': ['实验', '注意事项', '实验室警告', '风险'],
+            '用户协议': ['用户协议', '服务协议', '条款', '协议', 'terms', '服务条款'],
+            '隐私政策': ['隐私政策', '隐私权', '政策', 'policy', '个人信息保护', '信息收集'],
+            '测试页面': ['测试', 'test', '测试卡片', '测试按钮']
+        };
+
+        var overlay = document.getElementById('settingsSearchOverlay');
+        var openBtn = document.getElementById('settingsSearchBtn');
+        var closeBtn = document.getElementById('settingsSearchClose');
+        var backdrop = document.getElementById('settingsSearchBackdrop');
+        var input = document.getElementById('settingsSearchInput');
+        var clearBtn = document.getElementById('settingsSearchClear');
+        var body = document.getElementById('settingsSearchBody');
+        var searchIndex = [];
+        var currentResults = [];
+        var activeIndex = -1;
+
+        if (!overlay || !openBtn || !input || !body) return;
+
+        /* ---------- 工具 ---------- */
+        function norm(s) {
+            return (s || '').toString().toLowerCase().replace(/\s+/g, '');
+        }
+
+        function escHtml(s) {
+            return (s || '').replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        // 子序列模糊匹配：返回命中字符比例（0~1），-1 表示不匹配
+        function fuzzyRatio(term, hay) {
+            if (!term) return 0;
+            var ti = 0;
+            for (var i = 0; i < hay.length && ti < term.length; i++) {
+                if (hay.charAt(i) === term.charAt(ti)) ti++;
+            }
+            if (ti < term.length) return -1;
+            return ti / term.length;
+        }
+
+        /* ---------- 分区工具 ----------
+         * 注意：简约模式（body.ui-minimalist）下侧边栏被 display:none 整体隐藏，
+         * 不能用 offsetParent/getClientRects 判断菜单是否可用，否则索引会全部丢失。
+         */
+        function getSectionName(sid) {
+            var span = document.querySelector('.menu-item[data-section="' + sid + '"] span');
+            if (span && span.textContent.trim()) return span.textContent.trim();
+            var nav = document.querySelector('.ui-min-dropdown-item[data-nav="' + sid + '"] span, .ui-min-nav-item[data-nav="' + sid + '"] span');
+            if (nav && nav.textContent.trim()) return nav.textContent.trim();
+            return sid;
+        }
+
+        // 开发测试页仅在开发者模式分组可见时纳入（分组默认内联 display:none）
+        function isTestSectionEnabled() {
+            var g = document.getElementById('devModeGroup');
+            return !!(g && g.style.display && g.style.display !== 'none');
+        }
+
+        function getAvailableSections() {
+            var list = [];
+            document.querySelectorAll('.settings-section').forEach(function (section) {
+                var sid = section.id.replace(/^section-/, '');
+                if (sid === 'test' && !isTestSectionEnabled()) return;
+                list.push({ sid: sid, name: getSectionName(sid) });
+            });
+            return list;
+        }
+
+        /* ---------- 构建搜索索引（每次打开时重建，兼容动态卡片） ---------- */
+        function buildIndex() {
+            searchIndex = [];
+            getAvailableSections().forEach(function (secInfo) {
+                var section = document.getElementById('section-' + secInfo.sid);
+                if (!section) return;
+
+                section.querySelectorAll('.section-card').forEach(function (card) {
+                    var h3 = card.querySelector('.card-title h3');
+                    if (!h3) return;
+                    var title = h3.textContent.trim();
+                    if (!title) return;
+
+                    var descEl = card.querySelector('.card-title p');
+                    var desc = descEl ? descEl.textContent.trim() : '';
+
+                    var iconEl = card.querySelector('.card-icon i');
+                    var icon = iconEl ? iconEl.className : 'fas fa-cog';
+
+                    // 收集卡片内的子条目标签（h4）与基本信息字段名
+                    var subMap = {};
+                    card.querySelectorAll('.two-factor-info h4, .two-factor-item h4, .basic-info-label span, .toggle-info h4, h4').forEach(function (el) {
+                        var t = el.textContent.trim();
+                        if (t && t !== title && t.length <= 20 && !/示例文本|红色 \(r\)|绿色 \(g\)|蓝色 \(b\)/i.test(t)) {
+                            subMap[t] = true;
+                        }
+                    });
+                    var subs = Object.keys(subMap);
+
+                    searchIndex.push({
+                        title: title,
+                        desc: desc,
+                        section: secInfo.name,
+                        sid: secInfo.sid,
+                        card: card,
+                        subs: subs,
+                        icon: icon,
+                        aliases: CARD_ALIASES[title] || []
+                    });
+                });
+            });
+        }
+
+        /* ---------- 搜索打分（按词元独立匹配，取最高分） ---------- */
+        function scoreEntry(entry, term) {
+            var t = norm(term);
+            if (!t) return null;
+
+            // 词元表：文本 + 权重；子条目命中时还要记录用于结果副标题
+            var tokens = [{ text: norm(entry.title), weight: 10, label: '' }];
+            entry.aliases.forEach(function (a) { tokens.push({ text: norm(a), weight: 6, label: a }); });
+            tokens.push({ text: norm(entry.section), weight: 3, label: '' });
+            entry.subs.forEach(function (s) { tokens.push({ text: norm(s), weight: 4, label: s }); });
+            // 描述按标点拆词元
+            entry.desc.split(/[，。；、,\s\/]+/).forEach(function (d) {
+                if (d) tokens.push({ text: norm(d), weight: 2, label: '' });
+            });
+
+            var best = 0;
+            var matchedSub = '';
+            tokens.forEach(function (tk) {
+                if (!tk.text) return;
+                var s = 0;
+                if (tk.text.indexOf(t) !== -1) {
+                    s = tk.weight * (1 + t.length * 0.1);
+                } else if (t.length >= 2) {
+                    var r = fuzzyRatio(t, tk.text);
+                    if (r >= 0.85) s = tk.weight * r * 0.45;
+                }
+                if (s > best) {
+                    best = s;
+                    matchedSub = tk.label;
+                }
+            });
+
+            if (best <= 0) return null;
+            return { entry: entry, score: best, matchedSub: matchedSub };
+        }
+
+        function doSearch(term) {
+            var results = [];
+            var seen = {};
+            // 支持空格分隔多关键词（AND）
+            var terms = term.split(/\s+/).filter(Boolean);
+            if (!terms.length) return results;
+
+            searchIndex.forEach(function (entry) {
+                var total = 0;
+                var matchedSub = '';
+                for (var i = 0; i < terms.length; i++) {
+                    var r = scoreEntry(entry, terms[i]);
+                    if (!r) { total = -1; break; }
+                    total += r.score;
+                    if (!matchedSub && r.matchedSub) matchedSub = r.matchedSub;
+                }
+                if (total > 0 && !seen[entry.sid + '@' + entry.title]) {
+                    seen[entry.sid + '@' + entry.title] = true;
+                    results.push({ entry: entry, score: total, matchedSub: matchedSub });
+                }
+            });
+
+            results.sort(function (a, b) { return b.score - a.score; });
+            return results.slice(0, 12);
+        }
+
+        /* ---------- 高亮关键词 ---------- */
+        function highlight(text, term) {
+            var safe = escHtml(text);
+            var t = escHtml(term.trim());
+            if (!t) return safe;
+            try {
+                var re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '|') + ')', 'gi');
+                return safe.replace(re, '<mark>$1</mark>');
+            } catch (e) {
+                return safe;
+            }
+        }
+
+        /* ---------- 视图渲染 ---------- */
+        function chipsHtml(words) {
+            return words.map(function (w) {
+                return '<button type="button" class="ss-chip" data-q="' + escHtml(w) + '"><i class="fas fa-search"></i>' + escHtml(w) + '</button>';
+            }).join('');
+        }
+
+        function renderSuggestions() {
+            currentResults = [];
+            activeIndex = -1;
+            var sections = getAvailableSections();
+
+            body.innerHTML =
+                '<div class="ss-suggest">' +
+                    '<div class="ss-suggest-title"><i class="fas fa-fire"></i>热门搜索</div>' +
+                    '<div class="ss-chips">' + chipsHtml(HOT_WORDS) + '</div>' +
+                    '<div class="ss-suggest-title"><i class="fas fa-th-large"></i>设置分类（直达）</div>' +
+                    '<div class="ss-chips">' +
+                        sections.map(function (s) {
+                            return '<button type="button" class="ss-chip ss-chip-section" data-section="' + escHtml(s.sid) + '"><i class="fas fa-folder"></i>' + escHtml(s.name) + '</button>';
+                        }).join('') +
+                    '</div>' +
+                '</div>';
+        }
+
+        function renderResults(term) {
+            currentResults = doSearch(term);
+            activeIndex = currentResults.length ? 0 : -1;
+
+            if (!currentResults.length) {
+                body.innerHTML =
+                    '<div class="ss-empty">' +
+                        '<div class="ss-empty-icon"><i class="fas fa-search"></i></div>' +
+                        '<p class="ss-empty-text">没有找到与「<span>' + escHtml(term.trim()) + '</span>」相关的结果</p>' +
+                        '<p class="ss-empty-sub">换个关键词试试，或点击下方热门搜索</p>' +
+                        '<div class="ss-chips ss-empty-chips">' + chipsHtml(HOT_WORDS.slice(0, 6)) + '</div>' +
+                    '</div>';
+                return;
+            }
+
+            var html = '<div class="ss-result-meta">找到 <b>' + currentResults.length + '</b> 个相关设置</div><div class="ss-result-list">';
+            currentResults.forEach(function (r, idx) {
+                var e = r.entry;
+                var sub = r.matchedSub || e.desc;
+                html +=
+                    '<button type="button" class="ss-result-item' + (idx === activeIndex ? ' active' : '') + '" data-idx="' + idx + '">' +
+                        '<span class="ss-result-icon ' + escHtml(e.sid) + '"><i class="' + escHtml(e.icon) + '"></i></span>' +
+                        '<span class="ss-result-main">' +
+                            '<span class="ss-result-title">' + highlight(e.title, term) + '</span>' +
+                            (sub ? '<span class="ss-result-desc">' + highlight(sub, term) + '</span>' : '') +
+                        '</span>' +
+                        '<span class="ss-result-crumb"><i class="fas fa-folder-open"></i>' + escHtml(e.section) + '<i class="fas fa-chevron-right ss-crumb-arrow"></i></span>' +
+                    '</button>';
+            });
+            html += '</div>';
+            body.innerHTML = html;
+        }
+
+        /* ---------- 打开 / 关闭 ---------- */
+        function openOverlay() {
+            buildIndex();
+            renderSuggestions();
+            input.value = '';
+            clearBtn.style.display = 'none';
+            overlay.classList.add('open');
+            overlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            setTimeout(function () { input.focus(); }, 220);
+        }
+
+        function closeOverlay() {
+            overlay.classList.remove('open');
+            overlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        /* ---------- 跳转并高亮目标卡片 ---------- */
+        function jumpTo(r) {
+            if (!r || !r.entry) return;
+            var entry = r.entry;
+            closeOverlay();
+
+            // 通过侧边栏菜单的既有逻辑切换分区（兼容实验区警告弹窗等原有行为）
+            var menuItem = document.querySelector('.menu-item[data-section="' + entry.sid + '"]');
+            if (menuItem) menuItem.click();
+
+            setTimeout(function () {
+                var card = entry.card;
+                if (!card || !document.body.contains(card)) return;
+
+                // 目标卡片若处于折叠状态，先展开（展开动画约 0.4s）
+                var wasCollapsed = card.classList.contains('collapsed');
+                if (wasCollapsed) {
+                    var collapseBtn = card.querySelector('.card-collapse-btn');
+                    if (collapseBtn) collapseBtn.click();
+                }
+
+                // 折叠展开需要等 max-height 过渡结束再定位，避免滚动到中间位置
+                var delay = wasCollapsed ? 430 : 60;
+                setTimeout(function () {
+                    var container = document.querySelector('.settings-content');
+                    if (container) {
+                        var cr = card.getBoundingClientRect();
+                        var kr = container.getBoundingClientRect();
+                        var top = container.scrollTop + (cr.top - kr.top) - 16;
+                        container.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                    }
+                    card.classList.remove('search-flash');
+                    void card.offsetWidth; // 重置动画
+                    card.classList.add('search-flash');
+                    setTimeout(function () { card.classList.remove('search-flash'); }, 2600);
+                }, delay);
+            }, 90);
+        }
+
+        // 直达整个分区
+        function jumpToSection(sid) {
+            closeOverlay();
+            var menuItem = document.querySelector('.menu-item[data-section="' + sid + '"]');
+            if (menuItem) {
+                menuItem.click();
+                setTimeout(function () {
+                    var container = document.querySelector('.settings-content');
+                    if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 90);
+            }
+        }
+
+        /* ---------- 键盘上下选择 ---------- */
+        function updateActive() {
+            var items = body.querySelectorAll('.ss-result-item');
+            items.forEach(function (el, i) {
+                el.classList.toggle('active', i === activeIndex);
+            });
+            var cur = items[activeIndex];
+            if (cur) cur.scrollIntoView({ block: 'nearest' });
+        }
+
+        /* ---------- 事件绑定（均带判空，防止节点缺失中断脚本） ---------- */
+        openBtn.addEventListener('click', openOverlay);
+        closeBtn.addEventListener('click', closeOverlay);
+        backdrop.addEventListener('click', closeOverlay);
+
+        input.addEventListener('input', function () {
+            var q = input.value;
+            clearBtn.style.display = q.trim() ? 'flex' : 'none';
+            if (q.trim()) renderResults(q); else renderSuggestions();
+        });
+
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            clearBtn.style.display = 'none';
+            renderSuggestions();
+            input.focus();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && overlay.classList.contains('open')) {
+                closeOverlay();
+            }
+            if (!overlay.classList.contains('open')) return;
+
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                if (!currentResults.length) return;
+                e.preventDefault();
+                if (e.key === 'ArrowDown') {
+                    activeIndex = (activeIndex + 1) % currentResults.length;
+                } else {
+                    activeIndex = activeIndex <= 0 ? currentResults.length - 1 : activeIndex - 1;
+                }
+                updateActive();
+            } else if (e.key === 'Enter') {
+                if (activeIndex >= 0 && currentResults[activeIndex]) {
+                    e.preventDefault();
+                    jumpTo(currentResults[activeIndex]);
+                }
+            }
+        });
+
+        // 结果/联想词点击委托（结果列表随输入重建，委托最稳）
+        body.addEventListener('click', function (e) {
+            var resultBtn = e.target.closest('.ss-result-item');
+            if (resultBtn) {
+                var idx = parseInt(resultBtn.getAttribute('data-idx'), 10);
+                if (!isNaN(idx) && currentResults[idx]) jumpTo(currentResults[idx]);
+                return;
+            }
+            var chip = e.target.closest('.ss-chip');
+            if (chip) {
+                var section = chip.getAttribute('data-section');
+                if (section) {
+                    jumpToSection(section);
+                } else {
+                    var q = chip.getAttribute('data-q');
+                    if (q) {
+                        input.value = q;
+                        clearBtn.style.display = 'flex';
+                        renderResults(q);
+                        input.focus();
+                    }
+                }
+            }
+        });
+    })();
+    </script>
 </body>
 </html>

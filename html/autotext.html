@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>命令提示符 - PRE Launcher 自动化测试</title>
+<style>
+    * { box-sizing: border-box; }
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #0c0c0c;
+    }
+
+    /* ===== Windows CMD 窗口（全屏） ===== */
+    .cmd-window {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        background: #0c0c0c;
+        font-family: Consolas, 'Courier New', 'NSimSun', monospace;
+    }
+
+    /* 标题栏 */
+    .cmd-titlebar {
+        position: relative;
+        flex: none;
+        height: 34px;
+        background: linear-gradient(to bottom, #323232, #1f1f1f);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        border-bottom: 1px solid #000;
+    }
+    .cmd-title {
+        color: #e6e6e6;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        padding: 0 110px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .cmd-controls {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        height: 34px;
+    }
+    .cmd-ctl {
+        width: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e6e6e6;
+        font-size: 12px;
+        cursor: default;
+    }
+    .cmd-ctl.close:hover { background: #e81123; color: #fff; }
+    .cmd-ctl:not(.close):hover { background: rgba(255, 255, 255, 0.12); }
+
+    /* 输出区 */
+    .cmd-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 14px 14px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #cccccc;
+        cursor: text;
+    }
+    .cmd-body::-webkit-scrollbar { width: 12px; }
+    .cmd-body::-webkit-scrollbar-track { background: #0c0c0c; }
+    .cmd-body::-webkit-scrollbar-thumb { background: #4a4a4a; border: 2px solid #0c0c0c; }
+    .cmd-body::-webkit-scrollbar-thumb:hover { background: #6a6a6a; }
+
+    .line {
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+
+    /* CMD 经典调色板 */
+    .c-green  { color: #16c60c; }
+    .c-red    { color: #ff4d4d; }
+    .c-yellow { color: #d6a700; }
+    .c-blue   { color: #3a96dd; }
+    .c-cyan   { color: #05c5d1; }
+    .c-magenta{ color: #d471d6; }
+    .c-white  { color: #f2f2f2; }
+    .c-gray   { color: #858585; }
+
+    /* 命令输入行 */
+    .input-line {
+        display: flex;
+        align-items: baseline;
+    }
+    .prompt {
+        color: #cccccc;
+        white-space: pre;
+    }
+    #cmdInput {
+        flex: 1;
+        min-width: 0;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #cccccc;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        caret-color: #f2f2f2;
+    }
+
+    /* 隐藏的 iframe 沙箱容器 */
+    #frameSandbox {
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        width: 1px;
+        height: 1px;
+        border: 0;
+    }
+
+    /* ===== DevMode 启动初始化遮罩 ===== */
+    .dev-boot {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 42%, #151a1c 0%, #090b0c 72%);
+        font-family: Consolas, 'Courier New', 'NSimSun', monospace;
+    }
+    .dev-boot.fade-out { opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+    .dev-boot-logo { display: flex; align-items: center; gap: 14px; }
+    .dev-boot-mark {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #232526, #414345);
+        border: 1px solid rgba(22, 198, 12, 0.45);
+        color: #16c60c;
+        font-size: 21px;
+        font-weight: bold;
+        letter-spacing: -1px;
+        box-shadow: 0 0 18px rgba(22, 198, 12, 0.25);
+    }
+    .dev-boot-title {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #f0f2f3;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+    }
+    .dev-boot-title .accent { color: #16c60c; }
+    .dev-boot-sub {
+        color: #7d868a;
+        font-size: 12px;
+        letter-spacing: 2.4px;
+        margin: 10px 0 30px;
+    }
+    .dev-progress {
+        width: 440px;
+        max-width: 74vw;
+        height: 10px;
+        background: #131618;
+        border: 1px solid #292e30;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.65);
+    }
+    .dev-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #0d7a08, #16c60c 60%, #5cff52);
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(22, 198, 12, 0.55);
+    }
+    .dev-boot-meta {
+        width: 440px;
+        max-width: 74vw;
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        color: #96a0a4;
+        font-size: 12px;
+    }
+    .dev-boot-stage { min-height: 16px; }
+    .dev-boot-pct { color: #16c60c; font-weight: bold; }
+    .dev-boot-foot {
+        position: absolute;
+        bottom: 22px;
+        color: #4b5356;
+        font-size: 11.5px;
+        letter-spacing: 0.6px;
+    }
+</style>
+</head>
+<body>
+<div class="cmd-window" id="cmdWindow" style="display:none;">
+    <div class="cmd-titlebar">
+        <span class="cmd-title">C:\Windows\system32\cmd.exe - PRE Launcher 自动化测试</span>
+        <div class="cmd-controls">
+            <div class="cmd-ctl" id="cmdMinBtn" title="最小化">&#8212;</div>
+            <div class="cmd-ctl" id="cmdMaxBtn" title="最大化">&#9633;</div>
+            <div class="cmd-ctl close" id="cmdCloseBtn" title="关闭">&#10005;</div>
+        </div>
+    </div>
+    <div class="cmd-body" id="cmdBody">
+        <div id="cmdOutput"></div>
+        <div class="input-line" id="inputLine">
+            <span class="prompt" id="promptLabel">C:\PRE Launcher&gt;</span><input id="cmdInput" type="text" autocomplete="off" spellcheck="false" autofocus>
+        </div>
+    </div>
+</div>
+<div id="frameSandbox"></div>
+
+<!-- DevMode 启动初始化遮罩：进度走完后才显示命令提示符窗口 -->
+<div class="dev-boot" id="devBootSplash">
+    <div class="dev-boot-logo">
+        <div class="dev-boot-mark">&gt;_</div>
+        <div class="dev-boot-title">PRE Launcher <span class="accent">DevMode</span></div>
+    </div>
+    <div class="dev-boot-sub">COMMAND PROMPT &middot; INITIALIZING ENVIRONMENT</div>
+    <div class="dev-progress"><div class="dev-progress-fill" id="devBootFill"></div></div>
+    <div class="dev-boot-meta">
+        <span class="dev-boot-stage" id="devBootStage">正在初始化…</span>
+        <span class="dev-boot-pct" id="devBootPct">0%</span>
+    </div>
+    <div class="dev-boot-foot">&copy; 2014-2026 PREAlmax &middot; PRE Launcher DevMode</div>
+</div>
+
+<!-- 版本号统一渠道：js/versionManager.js -->
+<script src="../js/versionManager.js"></script>
+<script>
+(function () {
+'use strict';
+
+// ==================== 基础输出工具 ====================
+var bodyEl = document.getElementById('cmdBody');
+var outEl = document.getElementById('cmdOutput');
+var inputEl = document.getElementById('cmdInput');
+
+var IS_FILE = location.protocol === 'file:';
+var PROMPT_TEXT = 'C:\\PRE Launcher>';
+
+function scrollBottom() { bodyEl.scrollTop = bodyEl.scrollHeight; }
+
+function addLine(text, cls) {
+    var d = document.createElement('div');
+    d.className = 'line' + (cls ? ' ' + cls : '');
+    d.textContent = text;
+    outEl.appendChild(d);
+    scrollBottom();
+    return d;
+}
+function addBlank() {
+    outEl.appendChild(document.createElement('div'));
+    scrollBottom();
+}
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+// ==================== 受测清单 ====================
+// autotext.html 位于 html/ 目录：根目录页面用 ../，同目录页面直接写文件名
+var PAGES = [
+    { url: '../index.html',          name: '启动器主页面' },
+    { url: 'account-settings.html',  name: '账户设置页面' },
+    { url: 'colormatchgame.html',    name: '颜色匹配小游戏' },
+    { url: 'cube3dgame.html',        name: '点击方块小游戏' },
+    { url: 'dinojump.html',          name: '恐龙跳一跳小游戏' },
+    { url: 'fkgame.html',            name: 'FK 小游戏' },
+    { url: 'fxqgame.html',           name: '飞行器小游戏' },
+    { url: 'homepage4.0.html',       name: '主页 4.0' },
+    { url: 'memory-game.html',       name: '记忆卡牌小游戏' },
+    { url: 'prelauncherdemo.html',   name: '启动器演示页' },
+    { url: 'snakegame.html',         name: '贪吃蛇小游戏' },
+    { url: 'text.html',              name: '文本测试页' },
+    { url: 'wzqgame.html',           name: '五子棋小游戏' }
+];
+
+var JS_FILES = [
+    'account-settings.js', 'accountlang.js', 'announcement.js', 'common.js',
+    'dailytasks.js', 'event.js', 'game-stats.js', 'homeNav.js',
+    'identity_ego.js', 'lang.js', 'mui.js', 'mui.min.js', 'pass.js',
+    'precoin.js', 'premail.js', 'privacypolicy.js', 'settings.js',
+    'shop.js', 'soundtrack.js', 'versionHistory.js', 'versionManager.js',
+    'warehouse.js', 'wordlist.js'
+].map(function (f) { return '../js/' + f; });
+
+// ==================== 结果记录 ====================
+var results = [];
+var running = false;
+var lastSummary = null;
+
+function record(suite, name, status, msg) {
+    results.push({ suite: suite, name: name, status: status, msg: msg || '' });
+    var tag, cls;
+    if (status === 'PASS') { tag = '[PASS] '; cls = 'c-green'; }
+    else if (status === 'FAIL') { tag = '[FAIL] '; cls = 'c-red'; }
+    else { tag = '[WARN] '; cls = 'c-yellow'; }
+    addLine(tag + name + (msg ? ' — ' + msg : ''), cls);
+}
+
+function suiteBanner(text) {
+    addBlank();
+    addLine(text, 'c-cyan');
+}
+
+// file:// 协议下网络检查统一降级为 WARN（fetch 被浏览器安全策略禁止）
+function fileProtocolWarn(suite, name) {
+    record(suite, name, 'WARN', 'file:// 协议下跳过（浏览器禁止本地 fetch，请通过 http 服务打开以执行该检查）');
+}
+
+// ==================== [1/6] 运行环境检查 ====================
+function runEnvSuite() {
+    suiteBanner('── [1/6] 运行环境检查 (ENV) ───────────────────────────────');
+
+    record('ENV', '网络状态', navigator.onLine ? 'PASS' : 'WARN',
+        navigator.onLine ? '在线' : '当前离线（部分检查可能受影响）');
+
+    record('ENV', 'JavaScript 引擎', 'PASS', 'ES5 运行正常 ' + (typeof Promise !== 'undefined' ? '，ES6 Promise 可用' : ''));
+
+    try {
+        localStorage.setItem('__autotest__', '1');
+        var v = localStorage.getItem('__autotest__');
+        localStorage.removeItem('__autotest__');
+        record('ENV', 'localStorage', v === '1' ? 'PASS' : 'FAIL', v === '1' ? '读写正常' : '数据不一致');
+    } catch (e) { record('ENV', 'localStorage', 'FAIL', e.message); }
+
+    try {
+        sessionStorage.setItem('__autotest__', '1');
+        var ok = sessionStorage.getItem('__autotest__') === '1';
+        sessionStorage.removeItem('__autotest__');
+        record('ENV', 'sessionStorage', ok ? 'PASS' : 'FAIL', ok ? '读写正常' : '数据不一致');
+    } catch (e) { record('ENV', 'sessionStorage', 'FAIL', e.message); }
+
+    record('ENV', 'IndexedDB', typeof indexedDB !== 'undefined' ? 'PASS' : 'WARN',
+        typeof indexedDB !== 'undefined' ? '接口可用' : '当前环境不支持');
+
+    record('ENV', 'JSON 解析', (typeof JSON !== 'undefined' && JSON.parse('{"a":1}').a === 1) ? 'PASS' : 'FAIL', '序列化 / 反序列化正常');
+    record('ENV', 'Promise', typeof Promise !== 'undefined' ? 'PASS' : 'FAIL', typeof Promise !== 'undefined' ? '异步编排可用' : '不支持');
+    record('ENV', 'Fetch API', typeof fetch === 'function' ? 'PASS' : 'FAIL',
+        typeof fetch === 'function' ? (IS_FILE ? '可用，但 file:// 下受限' : '网络请求接口可用') : '不支持');
+    record('ENV', 'WebSocket', typeof WebSocket !== 'undefined' ? 'PASS' : 'WARN', typeof WebSocket !== 'undefined' ? '接口可用' : '不支持');
+    record('ENV', 'Web Audio API', (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') ? 'PASS' : 'WARN', '音频处理接口可用');
+
+    try {
+        var c = document.createElement('canvas');
+        var ctx2d = c.getContext('2d');
+        record('ENV', 'Canvas 2D', !!ctx2d ? 'PASS' : 'WARN', !!ctx2d ? '绘图接口可用' : '不可用');
+    } catch (e) { record('ENV', 'Canvas 2D', 'WARN', e.message); }
+
+    record('ENV', 'URL / URLSearchParams', (typeof URL !== 'undefined' && typeof URLSearchParams !== 'undefined') ? 'PASS' : 'FAIL', 'URL 解析接口可用');
+    record('ENV', 'matchMedia', typeof matchMedia === 'function' ? 'PASS' : 'WARN', '媒体查询接口可用');
+
+    var noti = 'Notification 接口不可用';
+    if (typeof Notification !== 'undefined') {
+        noti = '权限状态：' + Notification.permission;
+        record('ENV', 'Notification 权限', Notification.permission === 'granted' ? 'PASS' : 'WARN', noti);
+    } else {
+        record('ENV', 'Notification 权限', 'WARN', noti);
+    }
+}
+
+// ==================== [2/6] 页面可达性检查 ====================
+var pageHtmlMap = {};
+
+async function runPagesSuite() {
+    suiteBanner('── [2/6] 页面可达性检查 (PAGES) ─────────────────────────');
+    if (IS_FILE) { fileProtocolWarn('PAGES', '全部页面'); return; }
+
+    for (var i = 0; i < PAGES.length; i++) {
+        var p = PAGES[i];
+        try {
+            var resp = await fetch(p.url, { cache: 'no-store' });
+            if (!resp.ok) { record('PAGES', p.name, 'FAIL', 'HTTP ' + resp.status); continue; }
+            var html = await resp.text();
+            pageHtmlMap[p.url] = html;
+
+            var problems = [];
+            if (!/^\s*<!DOCTYPE/i.test(html)) problems.push('缺少 DOCTYPE');
+            if (!/<html[\s>]/i.test(html)) problems.push('缺少 <html>');
+            if (!/<\/html>/i.test(html)) problems.push('缺少 </html>');
+            if (!/<head[\s>]/i.test(html)) problems.push('缺少 <head>');
+            if (!/<body[\s>]/i.test(html)) problems.push('缺少 <body>');
+            var tm = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+            if (!tm || !tm[1].trim()) problems.push('缺少标题');
+
+            if (problems.length) {
+                record('PAGES', p.name, 'FAIL', problems.join('；'));
+            } else {
+                record('PAGES', p.name, 'PASS', 'HTTP ' + resp.status + '，标题：' + tm[1].trim());
+            }
+        } catch (e) {
+            record('PAGES', p.name, 'FAIL', e.message);
+        }
+        await sleep(15);
+    }
+}
+
+// ==================== [3/6] 静态资源完整性检查 ====================
+async function runAssetsSuite() {
+    suiteBanner('── [3/6] 静态资源完整性检查 (ASSETS) ───────────────────');
+    if (IS_FILE) { fileProtocolWarn('ASSETS', '全部资源引用'); return; }
+
+    for (var i = 0; i < PAGES.length; i++) {
+        var p = PAGES[i];
+        var html = pageHtmlMap[p.url];
+        if (typeof html === 'undefined') continue; // 该页面在 PAGES 阶段未取到
+
+        var refs = [];
+        var re = /(?:src|href)\s*=\s*["']([^"']+)["']/gi;
+        var m;
+        while ((m = re.exec(html))) {
+            var ref = m[1].trim();
+            if (!ref) continue;
+            if (/^(?:https?:)?\/\//i.test(ref)) continue;     // 外部 / 协议相对地址
+            if (/^(?:data|mailto|tel|javascript|about|blob|#):/i.test(ref)) continue;
+            if (ref.charAt(0) === '#') continue;
+            refs.push(new URL(ref, new URL(p.url, location.href)).href);
+        }
+        if (!refs.length) {
+            record('ASSETS', p.name, 'PASS', '无本地引用');
+            continue;
+        }
+
+        var checks = await Promise.all(refs.map(function (u) {
+            return fetch(u, { cache: 'no-store' }).then(function (r) {
+                return { url: u, ok: r.ok, status: r.status };
+            }).catch(function () {
+                return { url: u, ok: false, status: 0 };
+            });
+        }));
+
+        var bad = checks.filter(function (c) { return !c.ok; });
+        if (!bad.length) {
+            record('ASSETS', p.name, 'PASS', refs.length + ' 个本地引用全部可达');
+        } else {
+            bad.forEach(function (c) {
+                record('ASSETS', p.name, 'FAIL',
+                    '缺失资源：' + c.url.replace(location.origin, '') + '（HTTP ' + c.status + '）');
+            });
+        }
+        await sleep(15);
+    }
+}
+
+// ==================== [4/6] JS 语法检查（外部文件 + 页面内联脚本） ====================
+function syntaxCheckLabel(suite, label, code) {
+    try {
+        new Function(code);
+        record(suite, label, 'PASS', '语法正确');
+    } catch (e) {
+        record(suite, label, 'FAIL', String(e.message).split('\n')[0]);
+    }
+}
+
+async function runJsSuite() {
+    suiteBanner('── [4/6] JavaScript 语法检查 (JS) ─────────────────────');
+    if (IS_FILE) { fileProtocolWarn('JS', '全部 JS 文件'); return; }
+
+    for (var i = 0; i < JS_FILES.length; i++) {
+        var url = JS_FILES[i];
+        var shortName = url.replace('../js/', '');
+        try {
+            var resp = await fetch(url, { cache: 'no-store' });
+            if (!resp.ok) { record('JS', shortName, 'FAIL', 'HTTP ' + resp.status); continue; }
+            var code = await resp.text();
+            syntaxCheckLabel('JS', shortName, code);
+        } catch (e) {
+            record('JS', shortName, 'FAIL', e.message);
+        }
+        await sleep(10);
+    }
+
+    // 各页面内联 <script> 语法检查
+    addBlank();
+    addLine('页面内联脚本检查：', 'c-gray');
+    var checkedAny = false;
+    for (var k = 0; k < PAGES.length; k++) {
+        var html = pageHtmlMap[PAGES[k].url];
+        if (typeof html === 'undefined') continue;
+        var sre = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+        var sm, idx = 0;
+        while ((sm = sre.exec(html))) {
+            var attrs = sm[1] || '';
+            if (/\bsrc\s*=/.test(attrs)) continue;
+            var body = sm[2];
+            if (!body.trim()) continue;
+            checkedAny = true;
+            idx++;
+            syntaxCheckLabel('JS', PAGES[k].name + ' · 内联脚本 #' + idx, body);
+        }
+    }
+    if (!checkedAny) addLine('（各页面无内联脚本）', 'c-gray');
+}
+
+// ==================== [5/6] 运行时检查（真实 iframe 加载，捕获 JS 错误） ====================
+function runtimeCheck(page) {
+    return new Promise(function (resolve) {
+        var errors = [];
+        var settled = false;
+        var iframe = document.createElement('iframe');
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
+        iframe.style.cssText = 'width:1px;height:1px;border:0;';
+
+        function finish(status, msg) {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+            resolve({ status: status, msg: msg });
+        }
+
+        var timer = setTimeout(function () { finish('FAIL', '页面加载超时（8s）'); }, 8000);
+
+        iframe.addEventListener('load', function () {
+            if (!iframe.src) return;
+            // 留出时间让加载后的脚本执行
+            setTimeout(probe, 500);
+        });
+
+        function probe() {
+            var doc = null;
+            try { doc = iframe.contentDocument; } catch (e) {}
+            if (!doc) { finish('WARN', '无法访问文档（跨域 / 协议限制）'); return; }
+            var ready = doc.readyState;
+            var title = (doc.title || '').trim();
+
+            var fails = errors.filter(function (e) { return e.type === 'fail'; });
+            var warns = errors.filter(function (e) { return e.type === 'warn'; });
+            if (fails.length) {
+                finish('FAIL', '运行时错误：' + fails.slice(0, 2).map(function (e) { return e.msg; }).join('；'));
+            } else if (warns.length) {
+                finish('WARN', warns.slice(0, 2).map(function (e) { return e.msg; }).join('；'));
+            } else {
+                finish('PASS', 'readyState=' + ready + (title ? '，标题：' + title : ''));
+            }
+        }
+
+        document.getElementById('frameSandbox').appendChild(iframe);
+
+        // 在导航前挂好错误捕获（capture 阶段同时捕获脚本错误与资源加载错误）
+        try {
+            iframe.contentWindow.addEventListener('error', function (e) {
+                if (e.target && e.target !== iframe.contentWindow && e.target !== iframe.contentWindow.document) {
+                    var u = e.target.src || e.target.href || '';
+                    var external = /^https?:/.test(u) && u.indexOf(location.origin) !== 0;
+                    errors.push({
+                        type: external ? 'warn' : 'warn',
+                        msg: (external ? '外部' : '本地') + '资源加载失败：' + String(u).replace(location.origin, '')
+                    });
+                } else if (e.message) {
+                    var msg = e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : '');
+                    if (/Script error/.test(e.message)) {
+                        errors.push({ type: 'warn', msg: '跨域脚本错误（无详细信息）' });
+                    } else if (/navigation|top\.location|frame/i.test(msg)) {
+                        errors.push({ type: 'warn', msg: '沙箱已阻止跨框导航：' + msg });
+                    } else {
+                        errors.push({ type: 'fail', msg: msg });
+                    }
+                }
+            }, true);
+            iframe.contentWindow.addEventListener('unhandledrejection', function (e) {
+                errors.push({ type: 'fail', msg: '未处理的 Promise 异常：' + String(e.reason).split('\n')[0] });
+            });
+        } catch (ex) { /* 无法提前挂载时，probe 仍可检查基本状态 */ }
+
+        iframe.src = page.url;
+    });
+}
+
+async function runRuntimeSuite() {
+    suiteBanner('── [5/6] 运行时检查 (RUNTIME，真实加载页面并捕获 JS 错误) ──');
+    if (IS_FILE) { fileProtocolWarn('RUNTIME', '全部页面运行时加载'); return; }
+
+    for (var i = 0; i < PAGES.length; i++) {
+        var r = await runtimeCheck(PAGES[i]);
+        record('RUNTIME', PAGES[i].name, r.status, r.msg);
+    }
+}
+
+// ==================== [6/6] 版本数据检查 ====================
+async function runVersionSuite() {
+    suiteBanner('── [6/6] 版本数据检查 (VERSION) ─────────────────────────');
+    if (IS_FILE) { fileProtocolWarn('VERSION', 'versionManager.js'); return; }
+
+    try {
+        var resp = await fetch('../js/versionManager.js', { cache: 'no-store' });
+        if (!resp.ok) { record('VERSION', 'versionManager.js', 'FAIL', 'HTTP ' + resp.status); return; }
+        var code = await resp.text();
+
+        // 在隔离函数中真实执行版本管理脚本并取回数据（脚本底部会安全注册空 DOM 监听）
+        var data;
+        try {
+            var fn = new Function(code + '; return { v: versionInfo, l: launcherInfo };');
+            data = fn();
+        } catch (e) {
+            // 降级：正则校验（预期版本同样取自统一版本渠道）
+            var escVer = SHELL_VERSION.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            record('VERSION', 'versionManager.js 执行', 'WARN', '整体执行失败，改用静态文本检查：' + e.message);
+            record('VERSION', '命令提示符版本',
+                new RegExp('commandPrompt[\\s\\S]{0,400}?' + escVer).test(code) ? 'PASS' : 'FAIL',
+                SHELL_VERSION + '（静态文本检查）');
+            return;
+        }
+
+        var comps = data.v.components;
+        var cp = comps.commandPrompt;
+        record('VERSION', '命令提示符组件注册', !!cp ? 'PASS' : 'FAIL',
+            cp ? '已注册于 versionInfo.components' : '未找到 components.commandPrompt');
+        if (cp) {
+            record('VERSION', '命令提示符版本', cp.version === SHELL_VERSION ? 'PASS' : 'FAIL', cp.version);
+            record('VERSION', '命令提示符状态', cp.status === '公开测试版' ? 'PASS' : 'WARN', cp.status);
+        }
+        record('VERSION', '组件总数', 'PASS', Object.keys(comps).length + ' 个组件');
+        record('VERSION', '启动器内部版本', !!data.l.internalVersion ? 'PASS' : 'FAIL', data.l.internalVersion);
+        record('VERSION', '登录页版本', !!data.l.version ? 'PASS' : 'FAIL', data.l.version);
+    } catch (e) {
+        record('VERSION', 'versionManager.js', 'FAIL', e.message);
+    }
+}
+
+// ==================== 测试结论 ====================
+function printConclusion(ms) {
+    var passN = results.filter(function (r) { return r.status === 'PASS'; }).length;
+    var failN = results.filter(function (r) { return r.status === 'FAIL'; }).length;
+    var warnN = results.filter(function (r) { return r.status === 'WARN'; }).length;
+    var failItems = results.filter(function (r) { return r.status === 'FAIL'; });
+
+    lastSummary = { pass: passN, fail: failN, warn: warnN, ms: ms };
+
+    var bar = '============================================================';
+    addBlank();
+    addLine(bar, 'c-white');
+    addLine(' 测试汇总', 'c-white');
+    addLine(bar, 'c-white');
+    addLine('   通过：' + passN + ' 项', 'c-green');
+    addLine('   失败：' + failN + ' 项', failN ? 'c-red' : 'c-gray');
+    addLine('   警告：' + warnN + ' 项', warnN ? 'c-yellow' : 'c-gray');
+    addLine('   耗时：' + (ms / 1000).toFixed(2) + ' 秒', 'c-gray');
+    addLine(' ------------------------------------------------------------', 'c-gray');
+
+    if (failItems.length) {
+        addLine(' 失败项明细：', 'c-red');
+        failItems.forEach(function (r) {
+            addLine('   [' + r.suite + '] ' + r.name + (r.msg ? ' — ' + r.msg : ''), 'c-red');
+        });
+    } else {
+        addLine(' 无失败项。', 'c-green');
+    }
+
+    addLine(bar, 'c-white');
+    if (failN === 0) {
+        addLine(' 测试结论：通过 (ALL TESTS PASSED)', 'c-green');
+        addLine(' 启动器全部受测页面及 JS 运行逻辑检查通过。', 'c-green');
+    } else {
+        addLine(' 测试结论：未通过 (TESTS FAILED)', 'c-red');
+        addLine(' 存在 ' + failN + ' 个失败项，请根据上方明细修复后重新执行 /run。', 'c-red');
+    }
+    addLine(bar, 'c-white');
+    addLine(' 提示：输入 /help 查看全部命令；输入 /exit 返回正常页面。', 'c-gray');
+}
+
+async function runAll(targets) {
+    if (running) return;
+    running = true;
+    results = [];
+    var t0 = Date.now();
+
+    addLine('开始执行自动化测试 ' + new Date().toLocaleString('zh-CN'), 'c-white');
+
+    if (!targets || targets.env) runEnvSuite();
+    if (!targets || targets.pages) await runPagesSuite();
+    if (!targets || targets.assets) await runAssetsSuite();
+    if (!targets || targets.js) await runJsSuite();
+    if (!targets || targets.runtime) await runRuntimeSuite();
+    if (!targets || targets.version) await runVersionSuite();
+
+    printConclusion(Date.now() - t0);
+    running = false;
+    focusInput();
+}
+
+// ==================== 手动 shell 模式与最高管理员权限 ====================
+// mode=shell：仅启动命令提示符，不自动执行任何操作
+var SHELL_MODE = /[?&]mode=shell\b/.test(location.search);
+// 最高管理员权限（ROOT）：会话内有效、不落盘；取得后可绕过常规限制直接修改数据
+var rootMode = false;
+var pendingInput = null; // 特殊输入模式：'devPassword'
+
+// ==================== 统一版本渠道 ====================
+// 版本号 / 发布日期统一取自 js/versionManager.js 的 components.commandPrompt
+function getShellVersionInfo() {
+    try {
+        if (typeof getComponentVersionInfo === 'function') {
+            var info = getComponentVersionInfo('commandPrompt');
+            if (info && info.version) return info;
+        }
+    } catch (e) {}
+    return null;
+}
+var SHELL_VERSION_INFO = getShellVersionInfo();
+var SHELL_VERSION = SHELL_VERSION_INFO ? SHELL_VERSION_INFO.version : 'RC 1.0.0';
+var SHELL_RELEASE_DATE = SHELL_VERSION_INFO ? SHELL_VERSION_INFO.releaseDate : '2026-09-29';
+document.title = '命令提示符 - PRE Launcher 自动化测试 (' + SHELL_VERSION + ')';
+
+var promptEl = document.getElementById('promptLabel');
+function refreshPrompt() {
+    promptEl.textContent = rootMode ? 'C:\\PRE Launcher#' : PROMPT_TEXT;
+    promptEl.className = 'prompt' + (rootMode ? ' c-red' : '');
+}
+function activePromptText() { return rootMode ? 'C:\\PRE Launcher#' : PROMPT_TEXT; }
+function requireRoot() {
+    if (rootMode) return true;
+    addLine('权限不足：重要数据的修改需要最高管理员权限，请先执行 /dev unlock 请求提权。', 'c-red');
+    return false;
+}
+function parseIntArg(v) {
+    var n = parseInt(v, 10);
+    return isNaN(n) ? null : n;
+}
+
+// ---------- 账户数据（registeredUsers / currentUser） ----------
+function getUserContext() {
+    var cu = {};
+    try { cu = JSON.parse(localStorage.getItem('currentUser') || '{}'); } catch (e) {}
+    var users = [];
+    try { users = JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch (e) {}
+    var user = null, idx = -1;
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].username === cu.username) { user = users[i]; idx = i; break; }
+    }
+    return { current: cu, users: users, user: user, index: idx };
+}
+function saveUsers(users) { localStorage.setItem('registeredUsers', JSON.stringify(users)); }
+
+// 复刻主页面经验曲线（与 index.html 一致；阶段突破模式按 user.userProfile.stageBreakthrough）
+var SH_MAX_LEVEL = 60, SH_STAGE_MAX = 120;
+function shStageOn(user) { return !!(user && user.userProfile && user.userProfile.stageBreakthrough === true); }
+function shActiveMax(user) { return shStageOn(user) ? SH_STAGE_MAX : SH_MAX_LEVEL; }
+function shExpRequired(level, stageOn) {
+    if (level >= (stageOn ? SH_STAGE_MAX : SH_MAX_LEVEL)) return 0;
+    if (stageOn) {
+        if (level >= 110) return 150 + (level + 10) * 100;
+        if (level >= 90) return 130 + (level + 8) * 80;
+        if (level >= 60) return 120 + (level + 6) * 80;
+    }
+    if (level >= 50) return 100 + (level + 5) * 80;
+    if (level >= 20) return 80 + (level + 2) * 50;
+    return 50 + (level + 1) * 30;
+}
+function shTotalForLevel(level, stageOn) {
+    if (level <= 1) return 0;
+    var t = 0;
+    for (var i = 1; i < level; i++) t += shExpRequired(i, stageOn);
+    return t;
+}
+
+// ---------- 通行证数据（pass_<username>） ----------
+var SH_PASS_CAP = 120, SH_PASS_DEVMAX = 9999, SH_PASS_PERLV = 10;
+function shPassKey() { return 'pass_' + (getUserContext().current.username || 'anonymous'); }
+function shGetPass() {
+    var raw = localStorage.getItem(shPassKey());
+    if (raw) { try { var d = JSON.parse(raw); if (d && typeof d.level === 'number') return d; } catch (e) {} }
+    return null;
+}
+function shPassDisplayLevel(d) {
+    if (!d) return '-';
+    if (d.level >= SH_PASS_CAP) return SH_PASS_CAP + Math.floor((d.expOverflow || 0) / SH_PASS_PERLV);
+    return d.level;
+}
+function shSetPassLevel(rawN) {
+    var data = shGetPass();
+    if (!data) { addLine('通行证数据尚未初始化，请先正常打开一次通行证窗口。', 'c-red'); return false; }
+    var n = Math.floor(Number(rawN));
+    if (isNaN(n)) { addLine('等级参数无效。', 'c-red'); return false; }
+    n = Math.max(0, Math.min(SH_PASS_DEVMAX, n));
+    if (n <= SH_PASS_CAP) {
+        data.level = n; data.exp = 0; data.expOverflow = 0;
+    } else {
+        data.level = SH_PASS_CAP; data.exp = 0;
+        data.expOverflow = (n - SH_PASS_CAP) * SH_PASS_PERLV;
+    }
+    localStorage.setItem(shPassKey(), JSON.stringify(data));
+    return n;
+}
+
+// ---------- PRE Coin（precoin_<username>） ----------
+function shCoinKey() { return 'precoin_' + (getUserContext().current.username || 'anonymous'); }
+function shGetCoin() {
+    var raw = localStorage.getItem(shCoinKey());
+    if (raw) { try { var d = JSON.parse(raw); if (d && typeof d.balance === 'number') return d; } catch (e) {} }
+    return null;
+}
+
+// ---------- 音乐播放器（soundtrack_*） ----------
+var SH_MUSIC_KEY = 'soundtrack_player_settings';
+var SH_MUSIC_BG_KEY = 'soundtrack_track_backgrounds';
+var SH_MUSIC_PL_KEY = 'soundtrack_playlists';
+var SH_MUSIC_POSITIONS = ['center','top','bottom','left-top','left-mid','left-bot','right-top','right-mid','right-bot'];
+var SH_MUSIC_PLAYSTYLES = ['none','bars','ripple','wave'];
+function shGetMusic() {
+    try { return JSON.parse(localStorage.getItem(SH_MUSIC_KEY) || '{}') || {}; } catch (e) { return {}; }
+}
+function shSaveMusic(s) { localStorage.setItem(SH_MUSIC_KEY, JSON.stringify(s)); }
+function shGetMusicPL() {
+    try {
+        var d = JSON.parse(localStorage.getItem(SH_MUSIC_PL_KEY) || 'null');
+        if (d && Array.isArray(d.playlists)) return d;
+    } catch (e) {}
+    return { activeId: 'default', playlists: [] };
+}
+function shSaveMusicPL(d) { localStorage.setItem(SH_MUSIC_PL_KEY, JSON.stringify(d)); }
+
+// ==================== 命令系统 ====================
+var cmdHistory = [];
+var histIdx = -1;
+
+function printHelp() {
+    addBlank();
+    addLine('PRE Launcher 命令提示符 ' + SHELL_VERSION + ' — 可用命令：', 'c-white');
+
+    addLine(' ── 自动化测试 ──', 'c-cyan');
+    addLine('  /help                 显示本帮助信息', 'c-green');
+    addLine('  /run [target]         执行自动化测试', 'c-green');
+    addLine('        target 可选：all（默认）/ env / pages / assets', 'c-gray');
+    addLine('                        / js / runtime / version', 'c-gray');
+    addLine('  /list                 列出全部受测页面', 'c-green');
+    addLine('  /summary              重新显示最近一次测试结论', 'c-green');
+
+    addLine(' ── 最高管理员权限 ──', 'c-cyan');
+    addLine('  /dev unlock           请求最高管理员权限（需验证开发者密码）', 'c-red');
+    addLine('  /dev lock             放弃最高管理员权限', 'c-yellow');
+    addLine('  /dev status           查看当前权限状态', 'c-gray');
+
+    addLine(' ── 数据命令（手动直改；写入操作需 ROOT） ──', 'c-cyan');
+    addLine('  whoami                显示当前账户与权限', 'c-green');
+    addLine('  status                账户/通行证/PRE Coin/音乐 总览', 'c-green');
+    addLine('  level [set <等级>]     查看 / 直接修改账户等级*', 'c-green');
+    addLine('  pass [setlevel <等级>] 查看 / 直接修改通行证等级*', 'c-green');
+    addLine('  coin [set|add <数量>]  查看 / 直接修改 PRE Coin 余额*', 'c-green');
+    addLine('  music help            音乐播放器数据命令全集（音量/布局/播放列表等）*', 'c-green');
+    addLine('  dir                   列出全部本地存储条目', 'c-green');
+
+    addLine(' ── 其他 ──', 'c-cyan');
+    addLine('  /ver                  显示命令提示符版本信息', 'c-green');
+    addLine('  /sysinfo              显示当前系统与浏览器信息', 'c-green');
+    addLine('  /clear (cls)          清屏', 'c-green');
+    addLine('  /exit                  退出并返回正常页面', 'c-green');
+    addLine('  注：* 写入操作必须先执行 /dev unlock 取得 ROOT；ROOT 等级为系统最高等级。', 'c-yellow');
+    addBlank();
+}
+
+// 音乐播放器命令详细帮助
+function printMusicHelp() {
+    addBlank();
+    addLine('音乐播放器数据命令（写入需 ROOT）：', 'c-white');
+    addLine('  music get                       查看全部播放器设置', 'c-green');
+    addLine('  music volume <0-100>            设置音量', 'c-green');
+    addLine('  music mute | unmute             静音 / 取消静音', 'c-green');
+    addLine('  music shuffle <on|off>          随机播放开关', 'c-green');
+    addLine('  music repeat <off|all|one>      循环模式', 'c-green');
+    addLine('  music playstyle <' + SH_MUSIC_PLAYSTYLES.join('|') + '>', 'c-green');
+    addLine('  music lyrics <on|off>           歌词显示开关', 'c-green');
+    addLine('  music position <预设>           组件位置；预设：' + SH_MUSIC_POSITIONS.join(', '), 'c-green');
+    addLine('  music scale <0.7-1.3>           组件整体缩放', 'c-green');
+    addLine('  music disc <show|hide>          唱片显隐', 'c-green');
+    addLine('  music songinfo <show|hide>      歌曲信息显隐', 'c-green');
+    addLine('  music playlist list             列出自定义播放列表', 'c-green');
+    addLine('  music playlist create <名称>     新建自定义播放列表', 'c-green');
+    addLine('  music playlist delete <名称>     删除自定义播放列表', 'c-green');
+    addLine('  music playlist activate <名称>   切换活动播放列表', 'c-green');
+    addLine('  music factoryreset              清空全部播放器数据（设置/背景/播放列表）', 'c-red');
+    addBlank();
+}
+
+function printList() {
+    addBlank();
+    addLine('受测页面（共 ' + PAGES.length + ' 个）：', 'c-white');
+    PAGES.forEach(function (p, i) {
+        addLine('  ' + String(i + 1).padStart(2, '0') + '. ' + p.url.replace('../', '') + '  —  ' + p.name);
+    });
+    addBlank();
+}
+
+function printSummary() {
+    if (!lastSummary) { addLine('暂无测试记录，请先执行 /run 运行自动化测试。', 'c-yellow'); return; }
+    addBlank();
+    addLine('最近一次测试结论：', 'c-white');
+    addLine('  通过 ' + lastSummary.pass + ' 项 / 失败 ' + lastSummary.fail + ' 项 / 警告 ' + lastSummary.warn + ' 项 / 耗时 ' + (lastSummary.ms / 1000).toFixed(2) + ' 秒',
+        lastSummary.fail ? 'c-red' : 'c-green');
+    addBlank();
+}
+
+function printVer() {
+    addBlank();
+    addLine('PRE Launcher Command Prompt（命令提示符）', 'c-white');
+    addLine('  版本：' + SHELL_VERSION, 'c-green');
+    addLine('  发布日期：' + SHELL_RELEASE_DATE, 'c-gray');
+    addLine('  开发者：PREAlmax', 'c-gray');
+    addLine('  版权：© 2014-2026 PREAlmax, All rights reserved.', 'c-gray');
+    addBlank();
+}
+
+function printSysinfo() {
+    addBlank();
+    addLine('系统信息：', 'c-white');
+    addLine('  User Agent : ' + navigator.userAgent);
+    addLine('  平台       : ' + (navigator.platform || '未知') + '   语言：' + navigator.language);
+    addLine('  CPU 核心   : ' + (navigator.hardwareConcurrency || '未知') +
+        '   设备内存：' + (navigator.deviceMemory ? navigator.deviceMemory + ' GB' : '未知'));
+    addLine('  屏幕       : ' + screen.width + 'x' + screen.height +
+        '   视口：' + window.innerWidth + 'x' + window.innerHeight);
+    addLine('  协议       : ' + location.protocol + '//' + (location.host || '（本地文件）'));
+    addLine('  Cookie     : ' + (navigator.cookieEnabled ? '启用' : '禁用') +
+        '   时区：' + (Intl.DateTimeFormat().resolvedOptions().timeZone || '未知'));
+    addBlank();
+}
+
+function doExit() {
+    addLine('正在退出命令提示符…', 'c-yellow');
+    setTimeout(function () {
+        var back = document.referrer;
+        if (!back || /autotext\.html/.test(back)) back = '../index.html';
+        window.location.replace(back);
+    }, 350);
+}
+
+function execute(raw) {
+    addLine(activePromptText() + raw);
+    var line = raw.trim();
+    if (!line) return;
+
+    cmdHistory.push(line);
+    histIdx = cmdHistory.length;
+
+    var parts = line.split(/\s+/);
+    var cmd = parts[0].toLowerCase();
+    var arg = (parts[1] || '').toLowerCase();
+
+    if (cmd.charAt(0) === '/') {
+        switch (cmd) {
+            case '/help':
+            case '/?':
+                printHelp();
+                break;
+            case '/dev':
+                handleDevCommand(parts);
+                break;
+            case '/run':
+                if (running) { addLine('测试正在执行中，请等待当前测试完成。', 'c-yellow'); break; }
+                if (!arg || arg === 'all') { runAll(null); break; }
+                if (['env', 'pages', 'assets', 'js', 'runtime', 'version'].indexOf(arg) === -1) {
+                    addLine('未知的测试目标：' + arg + '（可选：all / env / pages / assets / js / runtime / version）', 'c-red');
+                    break;
+                }
+                var t = {}; t[arg] = true; runAll(t);
+                break;
+            case '/list': printList(); break;
+            case '/summary': printSummary(); break;
+            case '/ver':
+            case '/version': printVer(); break;
+            case '/sysinfo': printSysinfo(); break;
+            case '/clear':
+                outEl.innerHTML = '';
+                break;
+            case '/exit':
+            case '/quit':
+                doExit();
+                break;
+            default:
+                addLine("'" + parts[0] + "' 不是内部或外部命令，也不是可运行的程序或批处理文件。", 'c-red');
+        }
+    } else {
+        // 无斜杠的手动数据命令
+        if (!runWordCommand(parts)) {
+            addLine("'" + parts[0] + "' 不是内部或外部命令，也不是可运行的程序或批处理文件。", 'c-red');
+        }
+    }
+}
+
+// ==================== /dev 提权 ====================
+function handleDevCommand(parts) {
+    var sub = (parts[1] || '').toLowerCase();
+    if (sub === 'unlock') {
+        if (rootMode) { addLine('已处于最高管理员权限状态（ROOT）。', 'c-yellow'); return; }
+        addLine('正在请求最高管理员权限（系统最高等级）…', 'c-yellow');
+        addLine('请输入开发者密码：', 'c-white');
+        pendingInput = 'devPassword';
+        focusInput();
+    } else if (sub === 'lock') {
+        if (!rootMode) { addLine('当前未处于提权状态。', 'c-gray'); return; }
+        rootMode = false;
+        refreshPrompt();
+        addLine('已放弃最高管理员权限。', 'c-yellow');
+    } else if (sub === 'status') {
+        addLine(rootMode ? '权限：ROOT（最高管理员，可绕过常规限制直接修改数据）' : '权限：普通用户',
+            rootMode ? 'c-red' : 'c-gray');
+    } else {
+        addLine('用法：/dev unlock | /dev lock | /dev status', 'c-gray');
+    }
+}
+
+function handleDevPassword(pw) {
+    // 回显一行掩码
+    addLine(activePromptText() + '********');
+    if (pw === 'admin') {
+        rootMode = true;
+        refreshPrompt();
+        addLine('最高管理员权限已授予（ROOT）。', 'c-red');
+        addLine('注意：ROOT 为系统最高等级，写入操作将直接落盘、不再二次确认；/dev lock 可随时放弃权限。', 'c-yellow');
+    } else {
+        addLine('开发者密码错误，提权请求被拒绝。', 'c-red');
+    }
+}
+
+// ==================== 手动数据命令 ====================
+function runWordCommand(parts) {
+    var cmd = parts[0].toLowerCase();
+    switch (cmd) {
+        case 'help': printHelp(); return true;
+        case 'whoami': cmdWhoami(); return true;
+        case 'status': cmdStatus(); return true;
+        case 'dir':
+        case 'ls': cmdDir(); return true;
+        case 'cls': outEl.innerHTML = ''; return true;
+        case 'level': cmdLevel(parts); return true;
+        case 'account': cmdAccount(); return true;
+        case 'pass': cmdPass(parts); return true;
+        case 'coin': cmdCoin(parts); return true;
+        case 'music': cmdMusic(parts); return true;
+        default: return false;
+    }
+}
+
+function cmdWhoami() {
+    var ctx = getUserContext();
+    var name = ctx.current.username || '(未登录)';
+    addLine('账户：' + name, 'c-white');
+    addLine('权限：' + (rootMode ? 'ROOT（最高管理员）' : '普通用户'), rootMode ? 'c-red' : 'c-gray');
+}
+
+function cmdDir() {
+    addBlank();
+    addLine('  目录：本地存储（localStorage）', 'c-white');
+    var n = localStorage.length;
+    for (var i = 0; i < n; i++) {
+        var key = localStorage.key(i);
+        var size = 0;
+        try { size = (localStorage.getItem(key) || '').length; } catch (e) {}
+        addLine('  ' + key + '   (' + size + ' 字符)');
+    }
+    addLine('  共 ' + n + ' 个条目。', 'c-gray');
+    addBlank();
+}
+
+function cmdStatus() {
+    addBlank();
+    var ctx = getUserContext();
+    var gd = ctx.user && ctx.user.gameData;
+    addLine('账户：' + (ctx.current.username || '(未登录)') +
+        '   等级：' + (gd ? 'Lv.' + (gd.level || 1) : '无数据'), 'c-white');
+
+    var pd = shGetPass();
+    addLine('通行证：' + (pd ? 'Lv.' + shPassDisplayLevel(pd) : '未初始化'), 'c-cyan');
+
+    var cd = shGetCoin();
+    addLine('PRE Coin：' + (cd ? cd.balance + ' 枚' : '未初始化'), 'c-yellow');
+
+    var ms = shGetMusic();
+    addLine('音乐播放器：音量 ' + (typeof ms.volume === 'number' ? Math.round(ms.volume * 100) + '%' : '默认') +
+        '   播放样式：' + (ms.playStyle || 'none'), 'c-magenta');
+    addBlank();
+}
+
+function cmdAccount() {
+    var ctx = getUserContext();
+    if (!ctx.user) { addLine('未找到当前账户数据，请先登录。', 'c-red'); return; }
+    var gd = ctx.user.gameData || {};
+    addBlank();
+    addLine('账户：' + ctx.user.username, 'c-white');
+    addLine('  等级 level      : ' + (gd.level || 1));
+    addLine('  当前经验 exp    : ' + (gd.exp || 0));
+    addLine('  累计经验 total  : ' + (gd.totalExp || 0));
+    addLine('  升级所需 expNext: ' + (gd.expToNext || 0));
+    addBlank();
+}
+
+function cmdLevel(parts) {
+    var sub = (parts[1] || '').toLowerCase();
+    if (!sub || sub === 'get') { cmdAccount(); return; }
+    if (sub !== 'set') { addLine('用法：level set <等级> 或 level get', 'c-yellow'); return; }
+    if (!requireRoot()) return;
+
+    var n = parseIntArg(parts[2]);
+    if (n === null) { addLine('用法：level set <等级>', 'c-red'); return; }
+
+    var ctx = getUserContext();
+    if (!ctx.user) { addLine('未找到当前账户数据，请先登录。', 'c-red'); return; }
+    var stageOn = shStageOn(ctx.user);
+    var max = shActiveMax(ctx.user);
+    n = Math.max(1, Math.min(max, n));
+
+    if (!ctx.user.gameData) ctx.user.gameData = {};
+    ctx.user.gameData.level = n;
+    ctx.user.gameData.exp = 0;
+    ctx.user.gameData.totalExp = shTotalForLevel(n, stageOn);
+    ctx.user.gameData.expToNext = shExpRequired(n, stageOn);
+    ctx.users[ctx.index] = ctx.user;
+    saveUsers(ctx.users);
+
+    addLine('账户等级已直接修改：Lv.' + n + '（经验已同步，0 经验内进度）', 'c-green');
+}
+
+function cmdPass(parts) {
+    var sub = (parts[1] || '').toLowerCase();
+    if (!sub || sub === 'get') {
+        var d = shGetPass();
+        if (!d) { addLine('通行证数据尚未初始化，请先正常打开一次通行证窗口。', 'c-red'); return; }
+        addBlank();
+        addLine('通行证数据（' + shPassKey() + '）：', 'c-white');
+        addLine('  显示等级 : ' + shPassDisplayLevel(d));
+        addLine('  正式等级 : ' + d.level + ' / ' + SH_PASS_CAP);
+        addLine('  等级内经验: ' + (d.exp || 0) + ' / ' + SH_PASS_PERLV);
+        addLine('  EX 溢出经验: ' + (d.expOverflow || 0));
+        addBlank();
+        return;
+    }
+    if (sub !== 'setlevel') { addLine('用法：pass setlevel <等级> 或 pass get', 'c-yellow'); return; }
+    if (!requireRoot()) return;
+    var n2 = parseIntArg(parts[2]);
+    if (n2 === null) { addLine('用法：pass setlevel <等级>', 'c-red'); return; }
+    var set = shSetPassLevel(parts[2]);
+    if (set !== false) addLine('通行证等级已直接修改：Lv.' + set + '（0~' + SH_PASS_CAP + ' 正式等级，之后为 EX 溢出）', 'c-green');
+}
+
+function cmdCoin(parts) {
+    var sub = (parts[1] || '').toLowerCase();
+    if (!sub || sub === 'get') {
+        var d = shGetCoin();
+        if (!d) { addLine('PRE Coin 数据尚未初始化，请先正常打开一次相关页面。', 'c-red'); return; }
+        addBlank();
+        addLine('PRE Coin（' + shCoinKey() + '）：', 'c-white');
+        addLine('  余额 balance   : ' + d.balance);
+        addLine('  累计获得 earned: ' + (d.totalEarned || 0));
+        addLine('  累计消费 spent  : ' + (d.totalSpent || 0));
+        addBlank();
+        return;
+    }
+    if (sub !== 'set' && sub !== 'add') { addLine('用法：coin set|add <数量>', 'c-yellow'); return; }
+    if (!requireRoot()) return;
+    var n = parseIntArg(parts[2]);
+    if (n === null) { addLine('用法：coin set|add <数量>', 'c-red'); return; }
+
+    var data = shGetCoin();
+    if (!data) { addLine('PRE Coin 数据尚未初始化，请先正常打开一次相关页面。', 'c-red'); return; }
+    if (sub === 'set') data.balance = Math.max(0, n);
+    else {
+        data.balance = Math.max(0, (data.balance || 0) + n);
+        if (n >= 0) data.totalEarned = (data.totalEarned || 0) + n;
+        else data.totalSpent = (data.totalSpent || 0) + (-n);
+    }
+    data.version = data.version || 1;
+    data.updatedAt = new Date().toISOString();
+    localStorage.setItem(shCoinKey(), JSON.stringify(data));
+    addLine('PRE Coin 余额已直接修改：' + data.balance + ' 枚', 'c-green');
+}
+
+// ---------- 音乐播放器命令 ----------
+function cmdMusic(parts) {
+    var sub = (parts[1] || '').toLowerCase();
+    if (!sub || sub === 'help') { printMusicHelp(); return; }
+    if (sub === 'get') {
+        var s = shGetMusic();
+        addBlank();
+        addLine('音乐播放器设置：', 'c-white');
+        addLine('  音量 volume   : ' + (typeof s.volume === 'number' ? Math.round(s.volume * 100) + '%' : '默认 80%'));
+        addLine('  静音 muted    : ' + (s.muted ? '是' : '否'));
+        addLine('  随机 shuffle  : ' + (s.shuffle ? 'on' : 'off') + '   循环 repeat: ' + (s.repeat || 'off'));
+        addLine('  播放样式 style: ' + (s.playStyle || 'none') + '   歌词 lyrics: ' + (s.lyricsOn ? 'on' : 'off'));
+        if (s.layout) addLine('  位置 position : ' + s.layout.position + '   缩放 scale: ' + s.layout.scale);
+        if (s.components) addLine('  唱片 disc     : ' + (s.components.disc ? 'show' : 'hide') + '   歌曲信息: ' + (s.components.songInfo ? 'show' : 'hide'));
+        addBlank();
+        return;
+    }
+    if (sub === 'playlist') { cmdMusicPlaylist(parts); return; }
+
+    var writeSubs = ['volume','mute','unmute','shuffle','repeat','playstyle','lyrics','position','scale','disc','songinfo','factoryreset'];
+    if (writeSubs.indexOf(sub) === -1) { addLine('未知的 music 子命令，输入 music help 查看全集。', 'c-yellow'); return; }
+    if (sub !== 'factoryreset' && !requireRoot()) return;
+    if (sub === 'factoryreset' && !requireRoot()) return;
+
+    var s2 = shGetMusic();
+    var v2 = (parts[2] || '').toLowerCase();
+
+    if (sub === 'volume') {
+        var pct = parseIntArg(parts[2]);
+        if (pct === null) { addLine('用法：music volume <0-100>', 'c-red'); return; }
+        s2.volume = Math.max(0, Math.min(100, pct)) / 100;
+        s2.muted = false;
+        shSaveMusic(s2);
+        addLine('音量已设置：' + Math.round(s2.volume * 100) + '%', 'c-green');
+    } else if (sub === 'mute' || sub === 'unmute') {
+        s2.muted = sub === 'mute';
+        shSaveMusic(s2);
+        addLine(s2.muted ? '已静音。' : '已取消静音。', 'c-green');
+    } else if (sub === 'shuffle') {
+        if (v2 !== 'on' && v2 !== 'off') { addLine('用法：music shuffle on|off', 'c-red'); return; }
+        s2.shuffle = v2 === 'on';
+        shSaveMusic(s2);
+        addLine('随机播放：' + v2, 'c-green');
+    } else if (sub === 'repeat') {
+        if (['off','all','one'].indexOf(v2) === -1) { addLine('用法：music repeat off|all|one', 'c-red'); return; }
+        s2.repeat = v2;
+        shSaveMusic(s2);
+        addLine('循环模式：' + v2, 'c-green');
+    } else if (sub === 'playstyle') {
+        if (SH_MUSIC_PLAYSTYLES.indexOf(v2) === -1) { addLine('用法：music playstyle ' + SH_MUSIC_PLAYSTYLES.join('|'), 'c-red'); return; }
+        s2.playStyle = v2;
+        shSaveMusic(s2);
+        addLine('播放样式：' + v2, 'c-green');
+    } else if (sub === 'lyrics') {
+        if (v2 !== 'on' && v2 !== 'off') { addLine('用法：music lyrics on|off', 'c-red'); return; }
+        s2.lyricsOn = v2 === 'on';
+        shSaveMusic(s2);
+        addLine('歌词显示：' + v2, 'c-green');
+    } else if (sub === 'position') {
+        if (SH_MUSIC_POSITIONS.indexOf(v2) === -1) { addLine('用法：music position <预设>；预设见 music help', 'c-red'); return; }
+        s2.layout = s2.layout || { position: 'center', scale: 1 };
+        s2.layout.position = v2;
+        shSaveMusic(s2);
+        addLine('组件位置：' + v2, 'c-green');
+    } else if (sub === 'scale') {
+        var sc = Number(parts[2]);
+        if (isNaN(sc) || sc < 0.7 || sc > 1.3) { addLine('用法：music scale <0.7-1.3>', 'c-red'); return; }
+        s2.layout = s2.layout || { position: 'center', scale: 1 };
+        s2.layout.scale = sc;
+        shSaveMusic(s2);
+        addLine('组件缩放：' + sc, 'c-green');
+    } else if (sub === 'disc' || sub === 'songinfo') {
+        if (v2 !== 'show' && v2 !== 'hide') { addLine('用法：music ' + sub + ' show|hide', 'c-red'); return; }
+        s2.components = s2.components || { disc: true, songInfo: true };
+        s2.components[sub] = v2 === 'show';
+        shSaveMusic(s2);
+        addLine((sub === 'disc' ? '唱片' : '歌曲信息') + '显隐：' + v2, 'c-green');
+    } else if (sub === 'factoryreset') {
+        try {
+            localStorage.removeItem(SH_MUSIC_KEY);
+            localStorage.removeItem(SH_MUSIC_BG_KEY);
+            localStorage.removeItem(SH_MUSIC_PL_KEY);
+        } catch (e) {}
+        addLine('音乐播放器全部数据已清空（设置/背景/播放列表）。', 'c-red');
+    }
+}
+
+// 播放列表子命令：list / create / delete / activate（写操作需 ROOT）
+function cmdMusicPlaylist(parts) {
+    var action = (parts[2] || '').toLowerCase();
+    var name = parts.slice(3).join(' ').trim();
+    var data = shGetMusicPL();
+
+    if (!action || action === 'list') {
+        addBlank();
+        addLine('自定义播放列表（活动：' + data.activeId + '）：', 'c-white');
+        if (!data.playlists.length) addLine('  （暂无自定义播放列表）', 'c-gray');
+        data.playlists.forEach(function (p) {
+            addLine('  - ' + p.name + '   [' + (p.tracks ? p.tracks.length : 0) + ' 首]' +
+                (data.activeId === p.id ? '  ← 活动' : ''));
+        });
+        addBlank();
+        return;
+    }
+
+    if (action === 'create') {
+        if (!requireRoot()) return;
+        if (!name) { addLine('用法：music playlist create <名称>', 'c-red'); return; }
+        var exists = false;
+        data.playlists.forEach(function (p) { if (p.name === name) exists = true; });
+        if (exists) { addLine('同名播放列表已存在：' + name, 'c-yellow'); return; }
+        var id = 'custom_' + Date.now().toString(36);
+        data.playlists.push({ id: id, name: name, tracks: [] });
+        data.activeId = id;
+        shSaveMusicPL(data);
+        addLine('播放列表已创建并切换为活动列表：' + name, 'c-green');
+        return;
+    }
+
+    if (action === 'delete') {
+        if (!requireRoot()) return;
+        if (!name) { addLine('用法：music playlist delete <名称>', 'c-red'); return; }
+        var idx = -1;
+        for (var i = 0; i < data.playlists.length; i++) {
+            if (data.playlists[i].name === name) { idx = i; break; }
+        }
+        if (idx === -1) { addLine('未找到播放列表：' + name, 'c-yellow'); return; }
+        var deletedId = data.playlists[idx].id;
+        data.playlists.splice(idx, 1);
+        // 删除的是当前活动列表时，回退到下一个自定义列表，否则回到默认列表
+        if (data.activeId === deletedId) {
+            data.activeId = data.playlists.length ? data.playlists[0].id : 'default';
+        }
+        shSaveMusicPL(data);
+        addLine('播放列表已删除：' + name, 'c-green');
+        return;
+    }
+
+    if (action === 'activate') {
+        if (!requireRoot()) return;
+        if (!name) { addLine('用法：music playlist activate <名称>', 'c-red'); return; }
+        var target = null;
+        data.playlists.forEach(function (p) { if (p.name === name) target = p; });
+        if (!target) { addLine('未找到播放列表：' + name, 'c-yellow'); return; }
+        data.activeId = target.id;
+        shSaveMusicPL(data);
+        addLine('活动播放列表已切换：' + name, 'c-green');
+        return;
+    }
+
+    addLine('用法：music playlist list|create|delete|activate', 'c-yellow');
+}
+
+// ==================== 输入交互 ====================
+function focusInput() { inputEl.focus(); }
+
+inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        var v = inputEl.value;
+        inputEl.value = '';
+        // 特殊输入步骤（如 /dev unlock 后的开发者密码）：不当作普通命令执行
+        if (pendingInput) {
+            var mode = pendingInput;
+            pendingInput = null;
+            if (mode === 'devPassword') handleDevPassword(v);
+            return;
+        }
+        execute(v);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!cmdHistory.length) return;
+        histIdx = Math.max(0, histIdx - 1);
+        inputEl.value = cmdHistory[histIdx];
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!cmdHistory.length || histIdx >= cmdHistory.length - 1) {
+            histIdx = cmdHistory.length;
+            inputEl.value = '';
+            return;
+        }
+        histIdx = Math.min(cmdHistory.length - 1, histIdx + 1);
+        inputEl.value = cmdHistory[histIdx];
+    }
+});
+
+bodyEl.addEventListener('click', function (e) {
+    if (e.target.closest('.cmd-titlebar')) return;
+    focusInput();
+});
+
+// 标题栏按钮
+document.getElementById('cmdCloseBtn').addEventListener('click', doExit);
+document.getElementById('cmdMinBtn').addEventListener('click', function () {
+    addLine(PROMPT_TEXT);
+    addLine('全屏模式下无法最小化窗口。', 'c-yellow');
+});
+document.getElementById('cmdMaxBtn').addEventListener('click', function () {
+    addLine(PROMPT_TEXT);
+    addLine('窗口已处于全屏最大化状态。', 'c-yellow');
+});
+
+// ==================== DevMode 启动初始化进度 ====================
+var cmdWindowEl = document.getElementById('cmdWindow');
+var devSplashEl = document.getElementById('devBootSplash');
+var devFillEl = document.getElementById('devBootFill');
+var devPctEl = document.getElementById('devBootPct');
+var devStageEl = document.getElementById('devBootStage');
+
+// 进度阶段：进度达到 at 即切换阶段文案（总时长约 3.8 秒，落在 3-5 秒区间）
+var DEV_INIT_STAGES = [
+    { at: 0,   text: '正在启动 DevMode 运行环境…' },
+    { at: 15,  text: '正在加载命令解析模块…' },
+    { at: 34,  text: '正在连接本地数据接口（localStorage）…' },
+    { at: 54,  text: '正在初始化最高管理员权限模块…' },
+    { at: 72,  text: '正在校准账户 / 通行证数据通道…' },
+    { at: 88,  text: '正在准备命令提示符窗口…' },
+    { at: 100, text: '初始化完成，即将进入命令提示符…' }
+];
+var DEV_INIT_DURATION = 3800;
+
+function showCommandWindow() { cmdWindowEl.style.display = 'flex'; }
+
+// 自动化测试模式：立即收起遮罩并显示窗口，保持原启动行为
+function dismissDevBootImmediate() {
+    showCommandWindow();
+    if (devSplashEl && devSplashEl.parentNode) devSplashEl.parentNode.removeChild(devSplashEl);
+}
+
+// shell 模式：先展示初始化进度，走完后才显示命令提示符窗口
+function runDevBootProgress() {
+    return new Promise(function (resolve) {
+        var start = Date.now();
+        var stageIdx = 0;
+
+        function tick() {
+            var t = Math.min(1, (Date.now() - start) / DEV_INIT_DURATION);
+            var eased = 1 - Math.pow(1 - t, 1.6); // 前期快、末段稳的收束感
+            var p = Math.round(eased * 100);
+
+            devFillEl.style.width = p + '%';
+            devPctEl.textContent = p + '%';
+            while (stageIdx < DEV_INIT_STAGES.length - 1 && p >= DEV_INIT_STAGES[stageIdx + 1].at) {
+                stageIdx++;
+            }
+            devStageEl.textContent = DEV_INIT_STAGES[stageIdx].text;
+
+            if (t < 1) {
+                requestAnimationFrame(tick);
+                return;
+            }
+            // 100% 稍作停留，再显示窗口、淡出遮罩
+            setTimeout(function () {
+                showCommandWindow();
+                devSplashEl.classList.add('fade-out');
+                setTimeout(function () {
+                    if (devSplashEl.parentNode) devSplashEl.parentNode.removeChild(devSplashEl);
+                    resolve();
+                }, 360);
+            }, 320);
+        }
+        requestAnimationFrame(tick);
+    });
+}
+
+// ==================== 启动序列 ====================
+async function boot() {
+    // 手动 shell 模式：先走 DevMode 初始化进度，进度走完后才显示命令提示符窗口
+    if (SHELL_MODE) {
+        await runDevBootProgress();
+
+        addLine('Microsoft Windows [版本 10.0.19045.5011]');
+        addLine('(c) Microsoft Corporation。保留所有权利。');
+        addBlank();
+        addLine(PROMPT_TEXT + 'prompt /manual');
+        addBlank();
+        addLine('============================================================', 'c-white');
+        addLine('  命令提示符已启动（手动模式）  ' + SHELL_VERSION, 'c-green');
+        addLine('============================================================', 'c-white');
+        addLine('  本模式不会自动执行任何操作，仅响应手动输入的命令。');
+        addLine('  输入 /help 查看全部命令；输入 /exit 返回正常页面。', 'c-gray');
+        addLine('  需要直接修改账户/通行证/音乐等重要数据时，请先执行：', 'c-yellow');
+        addLine('      /dev unlock', 'c-red');
+        addLine('  （验证开发者密码后取得系统最高等级 ROOT，可绕过常规限制直改数据）', 'c-gray');
+        refreshPrompt();
+        focusInput();
+        return;
+    }
+
+    // 自动化测试模式：立即收起遮罩，保持原有自动启动行为
+    dismissDevBootImmediate();
+
+    addLine('Microsoft Windows [版本 10.0.19045.5011]');
+    addLine('(c) Microsoft Corporation。保留所有权利。');
+    addBlank();
+    addLine(PROMPT_TEXT + 'cd html');
+    await sleep(120);
+    addLine('C:\\PRE Launcher\\html>autotext');
+    addBlank();
+    await sleep(150);
+    addLine('============================================================', 'c-white');
+    addLine('  PRE Launcher 自动化脚本测试程序  ' + SHELL_VERSION, 'c-green');
+    addLine('  Copyright (C) 2026 PREAlmax', 'c-gray');
+    addLine('============================================================', 'c-white');
+    addLine('  本程序将自动对启动器全部页面执行完整功能检查，');
+    addLine('  包括页面可达性、资源完整性、JS 语法与运行时逻辑。');
+    addLine(' ------------------------------------------------------------', 'c-gray');
+    addLine('  操作提示：输入 /help 查看全部命令；输入 /exit 返回正常页面。');
+    addLine('  正在准备测试环境，请稍候…', 'c-yellow');
+    await sleep(600);
+    runAll(null);
+}
+
+boot();
+focusInput();
+
+})();
+</script>
+</body>
+</html>

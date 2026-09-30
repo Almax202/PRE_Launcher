@@ -1107,7 +1107,8 @@
                     alert('请先登录');
                     return;
                 }
-                window.open('account-settings.html', '_blank');
+                localStorage.setItem('prel_open_settings', '1');
+                window.open('../index.html', '_blank');
             });
         }
 

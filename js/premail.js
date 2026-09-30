@@ -1287,7 +1287,19 @@ function selectMail(mailId) {
             var expireTag = document.createElement('span');
             expireTag.id = 'mailDetailExpireTag';
             expireTag.className = 'mail-expire-tag ' + tagColor;
-            expireTag.innerHTML = '剩余<span class="expire-days">' + remainingDays + '</span>天过期，请及时领取';
+
+            // 有效期不足一天（24 小时）时按"小时 + 分钟"显示，更直观
+            if (diffMs < 24 * 60 * 60 * 1000) {
+                var remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
+                var remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                if (remainingHours <= 0 && remainingMinutes <= 0) {
+                    expireTag.textContent = '剩余不足 1 分钟过期，请及时领取';
+                } else {
+                    expireTag.innerHTML = '剩余<span class="expire-days">' + remainingHours + '</span>小时<span class="expire-days">' + remainingMinutes + '</span>分钟过期，请及时领取';
+                }
+            } else {
+                expireTag.innerHTML = '剩余<span class="expire-days">' + remainingDays + '</span>天过期，请及时领取';
+            }
             
             var timeItem = document.getElementById('mailDetailTime');
             if (timeItem && timeItem.parentNode) {
