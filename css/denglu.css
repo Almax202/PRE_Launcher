@@ -3677,6 +3677,8 @@ body.dark-mode .terms-main::-webkit-scrollbar-thumb {
 /* 图片查看器样式 */
 /* ===================== 图片查看器全屏弹窗样式 ===================== */
 #imageViewerModal {
+    /* 需高于商店等 .custom-alert 弹窗（9999/10000），确保背景预览始终位于最上层 */
+    z-index: 10001;
     background: rgba(0, 0, 0, 0.85) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);

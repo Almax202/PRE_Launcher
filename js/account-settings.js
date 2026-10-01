@@ -8869,6 +8869,21 @@
             particles: true
         },
         {
+            id: 'monthly-bg-october',
+            name: '十月枫华',
+            gradient: 'radial-gradient(circle at 18% 18%, rgba(255, 170, 80, 0.28) 0%, transparent 40%), radial-gradient(circle at 82% 78%, rgba(220, 70, 60, 0.26) 0%, transparent 45%), radial-gradient(circle at 55% 40%, rgba(255, 210, 130, 0.18) 0%, transparent 50%), radial-gradient(circle at 12% 78%, rgba(150, 40, 70, 0.22) 0%, transparent 50%), radial-gradient(circle at 75% 22%, rgba(240, 130, 50, 0.16) 0%, transparent 45%), linear-gradient(135deg, #1f0809 0%, #3d1012 15%, #6b1f16 30%, #9c3a1c 45%, #c96a24 60%, #e89a3c 72%, #a64826 88%, #401718 100%)',
+            backgroundSize: '300% 300%',
+            animation: 'octoberShift 21s ease infinite',
+            isDynamic: true,
+            category: 'special',
+            locked: true,
+            unlockType: 'mail',
+            unlockSource: 'monthly_mail_october',
+            showDate: true,
+            dateText: '2026.10',
+            particles: true
+        },
+        {
             id: 'bg-3d-space',
             name: '3D太空遨游',
             gradient: 'radial-gradient(ellipse at 50% 50%, #1a1a3e 0%, #0f0c29 50%, #050510 100%)',

@@ -865,6 +865,33 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 21,
+            date: "2026-10-01",
+            mails: [
+                {
+                    id: 'monthly_mail_october',
+                    title: '十月限定动态背景',
+                    sender: 'PRE Launcher',
+                    content: '十月限定动态背景「十月枫华」已发放！点击"领取"按钮即可获得这一专属背景。\n\n该背景以深秋红枫与金秋晚霞为主题，采用绛红、赤金与琥珀交织的渐变配色，缀以温暖流转的枫红光晕，右下角带有年月数字显示和动态星粒子效果，为您的桌面带来层林尽染、温暖浓郁的十月深秋氛围。\n\n金秋十月，霜染层林，漫山红遍。愿这抹炽热的枫色为您积蓄前行的温暖与力量，祝您在这个收获的季节里硕果累累、万事顺意。\n\n该动态背景领取有效期截止至 2026-10-31 23:59:59 (UTC+8)，请及时领取！领取后可前往 系统设置 → 个性化 → 特殊获取 中查看与应用。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '十月枫华',
+                            type: 'background',
+                            gradient: 'radial-gradient(circle at 18% 18%, rgba(255, 170, 80, 0.28) 0%, transparent 40%), radial-gradient(circle at 82% 78%, rgba(220, 70, 60, 0.26) 0%, transparent 45%), radial-gradient(circle at 55% 40%, rgba(255, 210, 130, 0.18) 0%, transparent 50%), radial-gradient(circle at 12% 78%, rgba(150, 40, 70, 0.22) 0%, transparent 50%), radial-gradient(circle at 75% 22%, rgba(240, 130, 50, 0.16) 0%, transparent 45%), linear-gradient(135deg, #1f0809 0%, #3d1012 15%, #6b1f16 30%, #9c3a1c 45%, #c96a24 60%, #e89a3c 72%, #a64826 88%, #401718 100%)',
+                            isDynamic: true,
+                            backgroundSize: '300% 300%',
+                            animation: 'octoberShift 21s ease infinite',
+                            particles: true,
+                            showDate: true,
+                            dateText: '2026.10'
+                        }
+                    ],
+                    startTime: "2026-10-01 08:00:00",
+                    endTime: "2026-10-31 23:59:59"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {

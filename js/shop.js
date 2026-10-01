@@ -539,6 +539,28 @@ var SHOP_SPECIAL_ITEMS = {
             dateText: '2026.08'
         }
     },
+    sp_bg_september: {
+        kind: 'background',
+        targetId: 'monthly-bg-september',
+        unlockSource: 'monthly_mail_september',
+        name: '限定背景「九月月华」',
+        icon: 'fas fa-image',
+        color: '#7185b8',
+        price: 5000,
+        enabled: true,
+        desc: '九月限定动态背景，深靛夜幕配月华银蓝光晕、动态星粒子与年月角标（2026.09）',
+        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往系统设置应用',
+        preview: {
+            name: '九月月华',
+            gradient: 'radial-gradient(circle at 20% 15%, rgba(170, 200, 255, 0.28) 0%, transparent 40%), radial-gradient(circle at 85% 80%, rgba(255, 220, 150, 0.22) 0%, transparent 45%), radial-gradient(circle at 55% 45%, rgba(220, 235, 255, 0.16) 0%, transparent 50%), radial-gradient(circle at 10% 75%, rgba(110, 120, 220, 0.2) 0%, transparent 50%), radial-gradient(circle at 78% 25%, rgba(255, 190, 130, 0.14) 0%, transparent 45%), linear-gradient(135deg, #0a0e23 0%, #131a3a 15%, #1c2750 30%, #2b3a6b 45%, #46588f 60%, #6f81b0 75%, #a5b4d8 88%, #3d4c7d 100%)',
+            isDynamic: true,
+            backgroundSize: '300% 300%',
+            animation: 'septemberShift 22s ease infinite',
+            particles: true,
+            showDate: true,
+            dateText: '2026.09'
+        }
+    },
     sp_nc_star: {
         kind: 'namecard',
         targetId: 'card-style-special-autumn',
