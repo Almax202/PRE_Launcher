@@ -28793,6 +28793,14 @@
                  + row('passSetLevel', 'fas fa-hashtag', '修改通行证等级')
                  + row('passCompleteTasks', 'fas fa-list-check', '一键完成日常 / 周常 / 赛季任务')
                  + row('passResetTasks', 'fas fa-rotate-left', '一键重置日常 / 周常 / 赛季任务')
+                 + row('passWeekly12Enable', 'fas fa-calendar-plus', '一键启用所有周任务（共计 12 周）')
+                 + row('passWeekly12Complete', 'fas fa-circle-check', '一键完成所有周任务（共计 12 周）')
+                 + row('passWeekly12Disable', 'fas fa-ban', '全部禁用（无视赛季时间限制）')
+                 + row('passWeekly12Reset', 'fas fa-eraser', '一键重置所有周任务完成状态')
+                 + row('passBoostOpen', 'fas fa-gauge-high', '开启等级提速')
+                 + row('passBoostClose', 'fas fa-circle-stop', '关闭等级提速')
+                 + row('passBoostWait', 'fas fa-hourglass-half', '进入等级提速等待期')
+                 + row('passBoostComplete', 'fas fa-list-check', '一键完成等级提速所有任务')
                  + row('passResetPurchase', 'fas fa-credit-card', '重置通行证购买状态')
                  + row('passUnlockSeason', 'fas fa-unlock', '全部解禁（无视赛季时间限制）')
                  + '</div>';
@@ -28834,6 +28842,14 @@
                 case 'passSetLevel': if (p && p.devOpenSetLevelModal) p.devOpenSetLevelModal(); break;
                 case 'passCompleteTasks': if (p) p.devCompleteAllTasks(); break;
                 case 'passResetTasks': if (p) p.devResetAllTasks(); break;
+                case 'passWeekly12Enable': if (p) p.devWeekly12EnableAll(); break;
+                case 'passWeekly12Complete': if (p) p.devWeekly12CompleteAll(); break;
+                case 'passWeekly12Disable': if (p) p.devWeekly12DisableAll(); break;
+                case 'passWeekly12Reset': if (p) p.devWeekly12ResetAll(); break;
+                case 'passBoostOpen': if (p) p.devBoostOpen(); break;
+                case 'passBoostClose': if (p) p.devBoostClose(); break;
+                case 'passBoostWait': if (p) p.devBoostWait(); break;
+                case 'passBoostComplete': if (p) p.devBoostCompleteAll(); break;
                 case 'passResetPurchase': if (p && p.devOpenResetPurchaseModal) p.devOpenResetPurchaseModal(); break;
                 case 'passUnlockSeason': if (p) p.devToggleUnlockAll(); break;
                 case 'runScriptTest':
