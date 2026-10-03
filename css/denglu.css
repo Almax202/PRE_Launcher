@@ -30402,3 +30402,194 @@ body.dark-mode .status-locked {
         font-size: 28px;
     }
 }
+
+/* ============================================================
+   3D 骰子投掷 / 3D 抛硬币弹窗
+   ============================================================ */
+.dice3d-modal-content,
+.coin3d-modal-content {
+    width: 92%;
+    max-width: 560px;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f3fb 100%);
+    overflow: hidden;
+}
+
+.dice3d-modal-body,
+.coin3d-modal-body {
+    padding: 26px 26px 24px;
+}
+
+.dice3d-modal-title,
+.coin3d-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px;
+    color: #4a3f63;
+}
+
+.dice3d-modal-title i,
+.coin3d-modal-title i {
+    color: #764ba2;
+    font-size: 20px;
+}
+
+.dice3d-modal-title h2,
+.coin3d-modal-title h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* 3D 舞台 */
+.dice3d-stage,
+.coin3d-stage {
+    position: relative;
+    height: 380px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 28%, #3d3168 0%, #241c42 55%, #130e27 100%);
+    box-shadow: inset 0 0 42px rgba(0, 0, 0, 0.4);
+}
+
+.dice3d-canvas,
+.coin3d-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* 结果胶囊 */
+.dice3d-result-pill,
+.coin3d-result-pill {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 64px;
+    padding: 5px 20px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    z-index: 2;
+}
+
+.dice3d-result-pill.pop,
+.coin3d-result-pill.pop {
+    animation: dice3dResultPop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+@keyframes dice3dResultPop {
+    0% { transform: translateX(-50%) scale(0.6); }
+    70% { transform: translateX(-50%) scale(1.15); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+/* 骰子面数选择 */
+.dice3d-options {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0 14px;
+}
+
+.dice3d-option {
+    flex: 1;
+    padding: 8px 0;
+    border: 1.5px solid #ddd6ec;
+    border-radius: 10px;
+    background: #fff;
+    color: #6a6280;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.dice3d-option:hover {
+    border-color: #9a86d8;
+    color: #764ba2;
+}
+
+.dice3d-option.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.35);
+}
+
+/* 投掷 / 抛硬币主按钮 */
+.dice3d-action-btn,
+.coin3d-action-btn {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.25s ease;
+}
+
+.dice3d-action-btn:hover,
+.coin3d-action-btn:hover {
+    box-shadow: 0 6px 18px rgba(118, 75, 162, 0.4);
+    transform: translateY(-1px);
+}
+
+.dice3d-action-btn:active,
+.coin3d-action-btn:active {
+    transform: translateY(0);
+}
+
+/* 百宝箱卡片内说明文字 */
+.treasure-tool-desc {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+    line-height: 1.7;
+}
+
+/* 暗色模式适配 */
+body.dark-mode .dice3d-modal-content,
+body.dark-mode .coin3d-modal-content {
+    background: linear-gradient(180deg, #232338 0%, #1c1c2f 100%);
+}
+
+body.dark-mode .dice3d-modal-title,
+body.dark-mode .coin3d-modal-title {
+    color: #e8e6f2;
+}
+
+body.dark-mode .treasure-tool-desc {
+    color: #a5a5b5;
+}
+
+body.dark-mode .dice3d-option {
+    background: #2a2a40;
+    border-color: #3a3a52;
+    color: #c9c6da;
+}
+
+/* 移动端适配 */
+@media (max-width: 480px) {
+    .dice3d-stage,
+    .coin3d-stage {
+        height: 320px;
+    }
+
+    .dice3d-modal-body,
+    .coin3d-modal-body {
+        padding: 20px 18px;
+    }
+}

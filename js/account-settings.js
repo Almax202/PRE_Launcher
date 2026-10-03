@@ -5570,7 +5570,8 @@
         var animation = '';
         var hasParticles = false;
         var is3D = false;
-        
+        var bg3dId = '';
+
         if (userDefaultBg) {
             try {
                 var parsedDefaultBg = JSON.parse(userDefaultBg);
@@ -5591,6 +5592,9 @@
             }
             if (parsedDefaultBg && parsedDefaultBg.is3D) {
                 is3D = true;
+                if (parsedDefaultBg.backgroundId) {
+                    bg3dId = parsedDefaultBg.backgroundId;
+                }
             }
             } catch (e) {
                 console.warn('解析用户默认背景失败:', e);
@@ -5616,12 +5620,12 @@
             console.log('DEBUG - particles container added to DOM');
         }
 
-        if (is3D && typeof window.create3DSpaceBackground === 'function') {
+        if (is3D && typeof window.create3DBackground === 'function') {
             var spaceContainer = document.createElement('div');
             spaceContainer.id = 'global-3d-space-bg';
             spaceContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:hidden;';
             document.body.appendChild(spaceContainer);
-            window.create3DSpaceBackground('global-3d-space-bg');
+            window.create3DBackground('global-3d-space-bg', bg3dId);
         }
         
         if (is3D) {
@@ -8892,6 +8896,21 @@
             is3D: true,
             unlockType: 'event',
             unlockSource: 'center_002'
+        },
+        {
+            id: 'pass-bg-s1-120',
+            name: '赛季顶点',
+            gradient: 'linear-gradient(180deg, #2a1150 0%, #1a0b36 45%, #0c0618 100%)',
+            backgroundSize: '300% 300%',
+            animation: 'passS1Shift 24s ease infinite',
+            isDynamic: true,
+            category: 'special',
+            locked: true,
+            unlockType: 'pass',
+            unlockSource: 'pass_phase_120',
+            showDate: true,
+            dateText: 'S1 · 顶点',
+            is3D: true
         }
     ];
     

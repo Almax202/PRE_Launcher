@@ -314,6 +314,64 @@ function buildSeasonTasks() {
     ];
 }
 
+// ==================== 阶段奖励（购买通行证本体或组合包后解锁） ====================
+// 节点沿一条超长横线分布：左侧 0 级为初始奖励，横线之上为 30 / 80 级，横线之下为 50 / 100 级，最右侧 120 级为终点奖励
+// position: 'left' 横线左端点 | 'right' 横线右端点 | 'top' 横线上方 | 'bottom' 横线下方
+// reward.type: 'item' 仓库物品 | 'cardStyle' 用户名片样式 | 'background' 3D 动态背景
+var PASS_PHASE_REWARDS = [
+    {
+        level: 0,
+        position: 'left',
+        name: '经验值补给卡 Ⅲ',
+        icon: 'fas fa-asterisk',
+        color: '#f39c12',
+        reward: { type: 'item', id: 'exp_supply_3', qty: 1 }
+    },
+    {
+        level: 30,
+        position: 'top',
+        name: 'PRE Coin 补给包 Ⅲ',
+        icon: 'fas fa-wallet',
+        color: '#f39c12',
+        reward: { type: 'item', id: 'precoin_supply_3', qty: 1 }
+    },
+    {
+        level: 50,
+        position: 'bottom',
+        name: '经验值补给卡 Ⅳ',
+        icon: 'fas fa-sun',
+        color: '#e74c3c',
+        reward: { type: 'item', id: 'exp_supply_4', qty: 1 }
+    },
+    {
+        level: 80,
+        position: 'top',
+        name: '名片样式「通行证·第一赛季」',
+        icon: 'fas fa-id-card',
+        color: '#6366f1',
+        reward: { type: 'cardStyle', id: 'card-style-pass-s1' }
+    },
+    {
+        level: 100,
+        position: 'bottom',
+        name: 'PRE Coin 补给包 Ⅳ',
+        icon: 'fas fa-box-open',
+        color: '#e74c3c',
+        reward: { type: 'item', id: 'precoin_supply_4', qty: 1 }
+    },
+    {
+        level: 120,
+        position: 'right',
+        name: '3D 动态背景「赛季顶点」',
+        icon: 'fas fa-mountain-sun',
+        color: '#f59e0b',
+        reward: { type: 'background', id: 'pass-bg-s1-120' }
+    }
+];
+
+// Dev：一键解锁阶段奖励所有等级（session 级开关，开启后所有阶段节点可领取，不受等级限制）
+var _passDevPhaseUnlockAll = false;
+
 // ==================== 账户隔离存储 ====================
 function getPassStorageKey() {
     var currentUser = {};
@@ -362,6 +420,7 @@ function createDefaultPassData() {
         seasonTasks: [],                  // [{ id, progress, claimed }]
         weekly12Tasks: {},                // { weekIndex: [{ id, progress, claimed }] } 周次索引从 1 开始
         boostTasks: [],                   // [{ id, progress, claimed }] 等级提速 15 任务
+        phaseRewardsClaimed: {},          // { 30:true, 80:true, ... } 阶段奖励已领取等级
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };
@@ -869,11 +928,22 @@ function _getPassSeasonDaysUntilStart() {
     return Math.max(1, Math.ceil(diff / (24 * 3600 * 1000)));
 }
 
+// 赛季结束倒计时：将毫秒差拆分为 天/时/分（向下取整，结束后归零）
+function _fmtSeasonCountdown(msLeft) {
+    var totalSec = Math.max(0, Math.floor(msLeft / 1000));
+    return {
+        days: Math.floor(totalSec / 86400),
+        hours: Math.floor((totalSec % 86400) / 3600),
+        minutes: Math.floor((totalSec % 3600) / 60)
+    };
+}
+
 // 赛季未开启卡片（结构与样式复用等级提速等待卡片 pass-boost-wait）
-// opts: { title, desc, note }
+// opts: { title, desc, note, icon }  icon 可选，默认 fa-hourglass-half
 function _buildPassLockedCard(opts) {
+    var icon = opts.icon || 'fa-hourglass-half';
     return '<div class="pass-boost-wait">' +
-        '<div class="pass-boost-wait-icon"><i class="fas fa-hourglass-half"></i></div>' +
+        '<div class="pass-boost-wait-icon"><i class="fas ' + icon + '"></i></div>' +
         '<div class="pass-boost-wait-title">' + opts.title + '</div>' +
         '<div class="pass-boost-wait-desc">' + opts.desc + '</div>' +
         '<div class="pass-boost-wait-note">' + opts.note + '</div>' +
@@ -1772,6 +1842,13 @@ window.pass = {
     devBoostClose: passDevBoostClose,
     devBoostWait: passDevBoostWait,
     devBoostCompleteAll: passDevBoostCompleteAll,
+    // 阶段奖励
+    getPhaseRewards: function() { return PASS_PHASE_REWARDS; },
+    claimPhaseReward: passClaimPhaseReward,
+    isPhaseUnlocked: _isPassPhaseUnlocked,
+    devPhaseUnlockAll: passDevPhaseUnlockAll,
+    devPhaseLockAll: passDevPhaseLockAll,
+    devPhaseSetLevels: _openPassDevPhaseSetLevelsModal,
     // 赛季是否处于进行中（供每日签到等外部模块判断是否发放通行证固定奖励）
     // Dev「全部解禁」开启时视为赛季已开启；Dev「关闭通行证进行状态」开启时视为未开启
     isSeasonActive: function() { return _getPassSeasonState() === 'active'; },
@@ -1920,6 +1997,9 @@ function _buildPassHTML() {
                 <i class="fas fa-calendar-check"></i> 每周事项
                 <span class="pass-tab-dot" id="passWeekly12Dot" style="display:none;"></span>
             </div>
+            <div class="pass-tab" data-tab="phase" id="passTabPhase">
+                <i class="fas fa-route"></i> 阶段奖励
+            </div>
             <div class="pass-tab" data-tab="boost" id="passTabBoost" style="display:none;">
                 <i class="fas fa-gauge-high"></i> 等级提速
                 <span class="pass-tab-dot" id="passBoostDot" style="display:none;"></span>
@@ -1996,6 +2076,19 @@ function _buildPassHTML() {
                             <span class="pass-dev-item-label">一键完成等级提速所有任务</span>
                         </button>
                         <div class="pass-dev-dropdown-divider"></div>
+                        <button class="pass-dev-item" type="button" data-dev-action="phaseUnlockAll">
+                            <i class="fas fa-route pass-dev-item-icon"></i>
+                            <span class="pass-dev-item-label">一键解锁阶段奖励所有等级</span>
+                        </button>
+                        <button class="pass-dev-item" type="button" data-dev-action="phaseLockAll">
+                            <i class="fas fa-lock pass-dev-item-icon"></i>
+                            <span class="pass-dev-item-label">一键关闭阶段奖励所有等级</span>
+                        </button>
+                        <button class="pass-dev-item" type="button" data-dev-action="phaseSetLevels">
+                            <i class="fas fa-pen pass-dev-item-icon"></i>
+                            <span class="pass-dev-item-label">自定义阶段奖励等级解锁状态</span>
+                        </button>
+                        <div class="pass-dev-dropdown-divider"></div>
                         <button class="pass-dev-item" type="button" data-dev-action="setLevel">
                             <i class="fas fa-pen pass-dev-item-icon"></i>
                             <span class="pass-dev-item-label">修改通行证等级</span>
@@ -2039,6 +2132,10 @@ function _buildPassHTML() {
             <div class="pass-view pass-view-hidden" id="passViewBoost">
                 <div class="pass-boost-header" id="passBoostHeader"></div>
                 <div class="pass-tasks-list" id="passBoostTasksList"></div>
+            </div>
+            <!-- 阶段奖励视图 -->
+            <div class="pass-view pass-view-hidden" id="passViewPhase">
+                <div id="passPhaseContent"></div>
             </div>
         </div>
 
@@ -2381,6 +2478,7 @@ function _bindPassEvents() {
     document.getElementById('passTabRewards').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('rewards'); });
     document.getElementById('passTabTasks').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('tasks'); });
     document.getElementById('passTabWeekly12').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('weekly12'); });
+    document.getElementById('passTabPhase').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('phase'); });
     document.getElementById('passTabBoost').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('boost'); });
 
     // 子 tab（日常/周常/赛季）
@@ -2587,6 +2685,9 @@ function _bindPassEvents() {
             else if (action === 'boostClose') passDevBoostClose();
             else if (action === 'boostWait') passDevBoostWait();
             else if (action === 'boostComplete') passDevBoostCompleteAll();
+            else if (action === 'phaseUnlockAll') passDevPhaseUnlockAll();
+            else if (action === 'phaseLockAll') passDevPhaseLockAll();
+            else if (action === 'phaseSetLevels') _openPassDevPhaseSetLevelsModal();
             else acted = false;
             _setPassDevMenuOpen(false);
             if (acted) renderPassUI();
@@ -2811,14 +2912,16 @@ function _switchPassTab(tab) {
     document.getElementById('passTabRewards').classList.toggle('active', tab === 'rewards');
     document.getElementById('passTabTasks').classList.toggle('active', tab === 'tasks');
     document.getElementById('passTabWeekly12').classList.toggle('active', tab === 'weekly12');
+    document.getElementById('passTabPhase').classList.toggle('active', tab === 'phase');
     document.getElementById('passTabBoost').classList.toggle('active', tab === 'boost');
     document.getElementById('passViewRewards').classList.toggle('pass-view-hidden', tab !== 'rewards');
     document.getElementById('passViewTasks').classList.toggle('pass-view-hidden', tab !== 'tasks');
     document.getElementById('passViewWeekly12').classList.toggle('pass-view-hidden', tab !== 'weekly12');
+    document.getElementById('passViewPhase').classList.toggle('pass-view-hidden', tab !== 'phase');
     document.getElementById('passViewBoost').classList.toggle('pass-view-hidden', tab !== 'boost');
     // 滚动提示仅奖励页显示
     var scrollHint = document.getElementById('passScrollHint');
-    if (scrollHint) scrollHint.style.display = (tab === 'tasks' || tab === 'weekly12' || tab === 'boost') ? 'none' : '';
+    if (scrollHint) scrollHint.style.display = (tab === 'tasks' || tab === 'weekly12' || tab === 'boost' || tab === 'phase') ? 'none' : '';
     // 刷新倒计时标签仅任务页显示（每周事项使用独立倒计时标签）
     var refreshHint = document.getElementById('passRefreshHint');
     if (refreshHint) refreshHint.style.display = tab === 'tasks' ? '' : 'none';
@@ -2833,6 +2936,8 @@ function _switchPassTab(tab) {
     } else if (tab === 'weekly12') {
         _renderPassWeekly12Subtabs();
         _switchPassWeekly12Week(_passUI.activeWeek12);
+    } else if (tab === 'phase') {
+        _renderPassPhaseRewards();
     } else if (tab === 'boost') {
         _renderPassBoostTasks();
     }
@@ -2947,9 +3052,9 @@ function renderPassUI() {
             daysLeftVal.textContent = '已结束';
         } else {
             var msLeft = new Date(PASS_CONFIG.endTime).getTime() - Date.now();
-            var daysLeftNum = Math.max(0, Math.ceil(msLeft / 86400000));
+            var cd = _fmtSeasonCountdown(msLeft);
             daysLeftLabel.textContent = '剩余';
-            daysLeftVal.textContent = '本赛季剩余 ' + daysLeftNum + ' 天';
+            daysLeftVal.textContent = cd.days + ' 天 ' + cd.hours + ' 时 ' + cd.minutes + ' 分后结束';
         }
     }
 
@@ -3096,6 +3201,11 @@ function renderPassUI() {
     if (_passUI.activeTab === 'weekly12') {
         _renderPassWeekly12Subtabs();
         _renderPassWeekly12Tasks(data);
+    }
+
+    // 阶段奖励（阶段奖励 Tab 激活时渲染）
+    if (_passUI.activeTab === 'phase') {
+        _renderPassPhaseRewards();
     }
 
     // 等级提速（等级提速 Tab 激活时渲染；条目隐藏时自动退回奖励页）
@@ -3329,8 +3439,9 @@ function _renderPassTasks(data) {
             if (weeklyDays === 0) weeklyDays = 7;
             hintText.textContent = '距离下一次周常刷新还剩 ' + weeklyDays + ' 天';
         } else {
-            var seasonDays = Math.max(0, Math.ceil((new Date(PASS_CONFIG.endTime).getTime() - Date.now()) / 86400000));
-            hintText.textContent = '本赛季剩余 ' + seasonDays + ' 天';
+            var seasonMs = new Date(PASS_CONFIG.endTime).getTime() - Date.now();
+            var seasonCd = _fmtSeasonCountdown(seasonMs);
+            hintText.textContent = seasonCd.days + ' 天 ' + seasonCd.hours + ' 时 ' + seasonCd.minutes + ' 分后结束';
         }
     }
 
@@ -3617,6 +3728,253 @@ function _renderPassBoostTasks() {
         });
     });
 }
+
+// ==================== 阶段奖励核心逻辑 ====================
+// 阶段奖励是否已解锁（购买通行证本体或组合包）
+function _isPassPhaseUnlocked() {
+    var data = getPassData();
+    return !!(data.isPremium || data.hasBundle);
+}
+
+// 某阶段等级是否可领取（等级达标 / Dev 一键解锁）
+function _isPassPhaseLevelReachable(level) {
+    if (_passDevPhaseUnlockAll) return true;
+    var data = getPassData();
+    return data.level >= level;
+}
+
+// 渲染阶段奖励时间轴
+function _renderPassPhaseRewards() {
+    var container = document.getElementById('passPhaseContent');
+    if (!container) return;
+
+    var data = getPassData();
+    var claimed = data.phaseRewardsClaimed || {};
+
+    // 未购买通行证本体 / 组合包：显示「尚未购买通行证」提示（与每周事项/通行证任务未开启卡片同款样式）
+    if (!_isPassPhaseUnlocked()) {
+        container.innerHTML = _buildPassLockedCard({
+            icon: 'fa-lock',
+            title: '尚未购买通行证',
+            desc: '购买「付费通行证」或「通行证组合包」后，即可解锁全部阶段奖励',
+            note: '阶段奖励为付费通行证专属内容，免费通行证用户无法领取'
+        });
+        return;
+    }
+
+    var html = '<div class="pass-phase-timeline-wrap">';
+    html += '<div class="pass-phase-timeline" id="passPhaseTimeline">';
+
+    // 按 position 分组：left / top / bottom / right
+    PASS_PHASE_REWARDS.forEach(function(node) {
+        var isClaimed = !!claimed[node.level];
+        var reachable = _isPassPhaseLevelReachable(node.level);
+        var canClaim = reachable && !isClaimed;
+
+        // 节点位置：left 0% → right 100%，其余按等级在 0~120 间线性分布
+        var leftPct = (node.level / 120) * 100;
+        if (node.position === 'left') leftPct = 0;
+        if (node.position === 'right') leftPct = 100;
+
+        var nodeCls = 'pass-phase-node pass-phase-node-' + node.position;
+        if (isClaimed) nodeCls += ' pass-phase-node-claimed';
+        else if (reachable) nodeCls += ' pass-phase-node-reachable';
+        else nodeCls += ' pass-phase-node-locked';
+
+        var btnCls = isClaimed ? 'pass-btn-disabled' : (canClaim ? 'pass-btn-primary' : 'pass-btn-disabled');
+        var btnText = isClaimed
+            ? '<i class="fas fa-check"></i> 已领取'
+            : (canClaim ? '<i class="fas fa-gift"></i> 领取' : '<i class="fas fa-lock"></i> 未达成');
+        var btnDisabled = canClaim ? '' : 'disabled';
+
+        var qtyText = (node.reward.type === 'item' && node.reward.qty && node.reward.qty > 1)
+            ? ' × ' + node.reward.qty : '';
+
+        html += '<div class="' + nodeCls + '" style="left:' + leftPct + '%;">';
+        // 竖线连接线（top/bottom 节点连接到横线；left/right 节点本身在横线上）
+        if (node.position === 'top') html += '<div class="pass-phase-connector pass-phase-connector-down"></div>';
+        if (node.position === 'bottom') html += '<div class="pass-phase-connector pass-phase-connector-up"></div>';
+        // 节点圆点
+        html += '<div class="pass-phase-dot"><i class="' + node.icon + '"></i></div>';
+        // 奖励卡片
+        html += '<div class="pass-phase-card">';
+        html +=   '<div class="pass-phase-level-tag">' + node.level + ' 级</div>';
+        html +=   '<div class="pass-phase-reward-icon" style="color:' + node.color + ';"><i class="' + node.icon + '"></i></div>';
+        html +=   '<div class="pass-phase-reward-name">' + node.name + qtyText + '</div>';
+        html +=   '<button class="pass-btn ' + btnCls + ' pass-phase-claim-btn" data-phase-level="' + node.level + '" ' + btnDisabled + '>' + btnText + '</button>';
+        html += '</div>';
+        html += '</div>';
+    });
+
+    html += '<div class="pass-phase-line"></div>';
+    html += '</div>';
+    html += '</div>';
+
+    container.innerHTML = html;
+
+    // 绑定领取
+    container.querySelectorAll('.pass-phase-claim-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var lv = parseInt(this.getAttribute('data-phase-level'), 10);
+            if (passClaimPhaseReward(lv)) {
+                renderPassUI();
+            }
+        });
+    });
+}
+
+// 领取阶段奖励
+function passClaimPhaseReward(level) {
+    var data = getPassData();
+    if (!_isPassPhaseUnlocked()) {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '阶段奖励', message: '尚未购买通行证，无法领取阶段奖励' });
+        return false;
+    }
+    if (data.phaseRewardsClaimed && data.phaseRewardsClaimed[level]) {
+        if (typeof showToast === 'function') showToast({ type: 'warning', title: '阶段奖励', message: '该阶段奖励已领取' });
+        return false;
+    }
+    if (!_isPassPhaseLevelReachable(level)) {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '阶段奖励', message: '通行证等级未达到 ' + level + ' 级' });
+        return false;
+    }
+    var node = PASS_PHASE_REWARDS.find(function(n) { return n.level === level; });
+    if (!node) return false;
+
+    var r = node.reward;
+    if (r.type === 'item') {
+        // 仓库物品（静默添加，避免与阶段奖励领取成功 toast 重复）
+        if (typeof warehouseAddItem === 'function') {
+            warehouseAddItem(r.id, r.qty || 1, '阶段奖励', true);
+        }
+    } else if (r.type === 'cardStyle') {
+        // 用户名片样式
+        _unlockCardStyle(r.id);
+    } else if (r.type === 'background') {
+        // 3D 动态背景
+        _unlockBackground(r.id);
+    }
+
+    if (!data.phaseRewardsClaimed) data.phaseRewardsClaimed = {};
+    data.phaseRewardsClaimed[level] = true;
+    savePassData(data);
+
+    if (typeof showToast === 'function') showToast({ type: 'success', title: '阶段奖励', message: '已领取「' + node.name + '」' });
+    return true;
+}
+
+// 解锁用户名片样式（写入 registeredUsers 的 userProfile.unlockedCardStyles）
+function _unlockCardStyle(styleId) {
+    try {
+        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (!currentUser.username) return;
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var target = users.find(function(u) { return u.username === currentUser.username; });
+        if (!target) return;
+        if (!target.userProfile) target.userProfile = {};
+        if (!target.userProfile.unlockedCardStyles) target.userProfile.unlockedCardStyles = [];
+        if (target.userProfile.unlockedCardStyles.indexOf(styleId) === -1) {
+            target.userProfile.unlockedCardStyles.push(styleId);
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+    } catch (e) {}
+}
+
+// 解锁动态背景（写入 localStorage[userPrefix + 'unlockedBackgroundIds']）
+function _unlockBackground(bgId) {
+    try {
+        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        var prefix = (currentUser && currentUser.username) ? currentUser.username + '_' : '';
+        var key = prefix + 'unlockedBackgroundIds';
+        var ids = JSON.parse(localStorage.getItem(key) || '[]');
+        if (ids.indexOf(bgId) === -1) {
+            ids.push(bgId);
+            localStorage.setItem(key, JSON.stringify(ids));
+        }
+    } catch (e) {}
+}
+
+// ==================== 阶段奖励 Dev 调试 ====================
+function passDevPhaseUnlockAll() {
+    _passDevPhaseUnlockAll = true;
+    if (typeof showToast === 'function') showToast({ type: 'success', title: '通行证 Dev', message: '已一键解锁阶段奖励所有等级（不受通行证等级限制，可直接领取）' });
+    renderPassUI();
+}
+
+function passDevPhaseLockAll() {
+    _passDevPhaseUnlockAll = false;
+    if (typeof showToast === 'function') showToast({ type: 'success', title: '通行证 Dev', message: '已关闭阶段奖励所有等级解锁（恢复按通行证等级判断）' });
+    renderPassUI();
+}
+
+// 自定义阶段奖励等级解锁状态：弹窗选择要解锁的等级
+function _openPassDevPhaseSetLevelsModal() {
+    var data = getPassData();
+    var claimed = data.phaseRewardsClaimed || {};
+    var levels = PASS_PHASE_REWARDS.map(function(n) { return n.level; });
+
+    // 构建复选框列表
+    var checks = levels.map(function(lv) {
+        var checked = _isPassPhaseLevelReachable(lv) ? 'checked' : '';
+        return '<label class="pass-phase-dev-level-item">' +
+                   '<input type="checkbox" data-phase-dev-level="' + lv + '" ' + checked + '>' +
+                   '<span>' + lv + ' 级</span>' +
+               '</label>';
+    }).join('');
+
+    var modal = document.getElementById('passDevPhaseLevelsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'pass-modal-overlay';
+        modal.id = 'passDevPhaseLevelsModal';
+        modal.style.display = 'none';
+        modal.innerHTML =
+            '<div class="pass-modal-box">' +
+                '<div class="pass-modal-title">自定义阶段奖励等级解锁状态</div>' +
+                '<div class="pass-modal-subtitle">勾选的等级将视为已达成（可领取奖励），未勾选的恢复按通行证等级判断</div>' +
+                '<div class="pass-modal-body">' +
+                    '<div class="pass-phase-dev-levels" id="passPhaseDevLevelsList">' + checks + '</div>' +
+                '</div>' +
+                '<div class="pass-modal-actions">' +
+                    '<button class="pass-btn pass-btn-ghost" id="passDevPhaseLevelsCancel">取消</button>' +
+                    '<button class="pass-btn pass-btn-primary" id="passDevPhaseLevelsConfirm">确认应用</button>' +
+                '</div>' +
+            '</div>';
+        document.getElementById('passOverlay').appendChild(modal);
+    } else {
+        modal.querySelector('#passPhaseDevLevelsList').innerHTML = checks;
+    }
+
+    modal.querySelector('#passDevPhaseLevelsCancel').onclick = function() { modal.style.display = 'none'; };
+    modal.querySelector('#passDevPhaseLevelsConfirm').onclick = function() {
+        var boxes = modal.querySelectorAll('#passPhaseDevLevelsList input[type="checkbox"]');
+        var selected = [];
+        boxes.forEach(function(cb) {
+            if (cb.checked) selected.push(parseInt(cb.getAttribute('data-phase-dev-level'), 10));
+        });
+        // 自定义解锁：以本地 storage 记录选中等级（session 级，不写入 pass data）
+        _passDevPhaseCustomLevels = selected;
+        _passDevPhaseUnlockAll = false; // 自定义状态下关闭一键解锁，避免冲突
+        modal.style.display = 'none';
+        if (typeof showToast === 'function') showToast({ type: 'success', title: '通行证 Dev', message: '已应用自定义阶段奖励等级解锁状态（' + selected.length + ' 个等级）' });
+        renderPassUI();
+    };
+    modal.style.display = 'flex';
+}
+
+// 自定义解锁等级列表（session 级，由「自定义阶段奖励等级解锁状态」弹窗设置）
+var _passDevPhaseCustomLevels = [];
+
+// 重写「等级是否可领取」判断：若自定义列表非空，则仅列表内等级可领取；否则走原逻辑
+var _origIsPassPhaseLevelReachable = _isPassPhaseLevelReachable;
+_isPassPhaseLevelReachable = function(level) {
+    if (_passDevPhaseUnlockAll) return true;
+    if (_passDevPhaseCustomLevels && _passDevPhaseCustomLevels.length > 0) {
+        return _passDevPhaseCustomLevels.indexOf(level) !== -1;
+    }
+    var data = getPassData();
+    return data.level >= level;
+};
 
 // ==================== CSS 自注入 ====================
 var _passCSSInjected = false;
@@ -4753,6 +5111,137 @@ function _injectPassCSS() {
 .pass-bundle-extra-name { flex: 1; font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; }
 .pass-bundle-extra-qty { font-size: 13px; color: #a78bfa; font-weight: 700; }
 
+/* ===== 阶段奖励时间轴 ===== */
+.pass-phase-timeline-wrap {
+    width: 100%;
+    padding: 20px 16px;
+    overflow-x: auto;
+    overflow-y: hidden; /* 仅保留横向滚动，纵向交由外层 .pass-content-scroll 处理，避免出现两条纵向滚动条 */
+}
+/* 阶段奖励专用：隐藏横向原生滚动条（保留滚轮/触摸横向滚动），不影响其他 Tab */
+.pass-phase-timeline-wrap::-webkit-scrollbar { height: 0; }
+.pass-phase-timeline {
+    position: relative;
+    min-height: 340px;
+    min-width: 860px;
+}
+.pass-phase-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 5px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 100%);
+    border-radius: 3px;
+    transform: translateY(-50%);
+    box-shadow: 0 0 10px rgba(120, 80, 255, 0.3);
+}
+.pass-phase-node {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+.pass-phase-node-left { top: 50%; left: 0; transform: translate(0, -50%); }
+.pass-phase-node-right { top: 50%; right: 0; transform: translate(0, -50%); }
+.pass-phase-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #fff;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    border: 2px solid rgba(255,255,255,0.25);
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
+    z-index: 3;
+}
+.pass-phase-node-claimed .pass-phase-dot { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 0 12px rgba(16, 185, 129, 0.5); }
+.pass-phase-node-locked .pass-phase-dot { background: linear-gradient(135deg, #475569, #334155); box-shadow: none; opacity: 0.75; }
+.pass-phase-connector {
+    width: 2px;
+    background: linear-gradient(180deg, rgba(124, 58, 237, 0.75), rgba(124, 58, 237, 0.25));
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.pass-phase-connector-down { top: -64px; height: 64px; }
+.pass-phase-connector-up { bottom: -64px; height: 64px; }
+.pass-phase-card {
+    position: absolute;
+    width: 144px;
+    background: rgba(20, 16, 40, 0.92);
+    border: 1px solid rgba(124, 58, 237, 0.4);
+    border-radius: 12px;
+    padding: 8px 10px 10px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    backdrop-filter: blur(6px);
+}
+.pass-phase-node-top .pass-phase-card { bottom: 80px; transform: translateX(-50%); left: 50%; }
+.pass-phase-node-bottom .pass-phase-card { top: 80px; transform: translateX(-50%); left: 50%; }
+.pass-phase-node-left .pass-phase-card { left: 48px; top: 50%; transform: translateY(-50%); }
+.pass-phase-node-right .pass-phase-card { right: 48px; top: 50%; transform: translateY(-50%); }
+.pass-phase-level-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #c4b5fd;
+    background: rgba(124, 58, 237, 0.18);
+    padding: 1px 8px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+.pass-phase-reward-icon { font-size: 18px; margin-bottom: 3px; }
+.pass-phase-reward-name {
+    font-size: 11px;
+    color: #e2e8f0;
+    line-height: 1.35;
+    margin-bottom: 6px;
+    min-height: 28px;
+    display: flex; align-items: center; justify-content: center;
+}
+.pass-phase-claim-btn { width: 100%; font-size: 11px; padding: 5px 0; }
+.pass-phase-node-locked .pass-phase-card { opacity: 0.7; }
+.pass-phase-locked {
+    text-align: center;
+    padding: 60px 20px;
+}
+.pass-phase-locked-icon {
+    font-size: 48px;
+    color: #64748b;
+    margin-bottom: 14px;
+}
+.pass-phase-locked-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 8px;
+}
+.pass-phase-locked-desc {
+    font-size: 13px;
+    color: #94a3b8;
+}
+/* 自定义阶段等级弹窗 */
+.pass-phase-dev-levels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+.pass-phase-dev-level-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #e2e8f0;
+}
+
 /* ===== 响应式 ===== */
 @media (max-width: 1100px) {
     .pass-hero { flex-direction: column; }
@@ -4909,10 +5398,20 @@ function _wireTaskHooks() {
     }
 }
 
-// 注入导航栏通行证条目
+// 注入导航栏通行证条目（仅在已登录状态下显示）
 function _injectPassNavItem() {
     var centerNav = document.querySelector('#uiMinTopnav .ui-min-topnav-center');
     if (!centerNav) return;
+
+    // 未登录时不显示通行证入口；若已注入（如退回登录页场景）则移除
+    var currentUser = {};
+    try { currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}'); } catch (e) {}
+    if (!currentUser.username) {
+        var existing = centerNav.querySelector('[data-nav="battlepass"]');
+        if (existing) existing.remove();
+        return;
+    }
+
     // 防止重复注入
     if (centerNav.querySelector('[data-nav="battlepass"]')) return;
 

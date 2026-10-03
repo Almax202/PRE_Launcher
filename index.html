@@ -11,8 +11,8 @@
     <title>LauncherLogin</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="./css/denglu.css?v=2.3" as="style">
-    <link rel="stylesheet" href="./css/denglu.css?v=2.3">
+    <link rel="preload" href="./css/denglu.css?v=2.5" as="style">
+    <link rel="stylesheet" href="./css/denglu.css?v=2.5">
     <link rel="stylesheet" href="./css/homenav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='./css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
@@ -21,7 +21,7 @@
     <script src="./js/versionHistory.js?v=3.0.2.6" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
     <script src="./js/warehouse.js?v=3.7" defer></script>
-    <script src="./js/pass.js?v=2.4" defer></script>
+    <script src="./js/pass.js?v=2.9" defer></script>
     <script src="./js/dailytasks.js" defer></script>
     <script src="./js/shop.js?v=2.3" defer></script>
     <script src="./js/premail.js?v=2.0" defer></script>
@@ -32,7 +32,7 @@
     <script src="./js/announcement.js?v=3.0.2.6" defer></script>
     <script src="./js/event.js?v=1.2" defer></script>
     <script src="./js/identity_ego.js" defer></script>
-    <script src="./js/account-settings.js" defer></script>
+    <script src="./js/account-settings.js?v=1.3" defer></script>
     <script src="./js/soundtrack.js?v=1.0" defer></script>
     <script src="./js/homeNav.js" defer></script>
     
@@ -166,7 +166,8 @@
                 var isDynamic = false;
                 var hasParticles = false;
                 var is3D = false;
-                
+                var bg3dId = '';
+
                 if (userDefaultBg) {
                     try {
                         var parsedDefaultBg = JSON.parse(userDefaultBg);
@@ -187,6 +188,9 @@
                         }
                         if (parsedDefaultBg && parsedDefaultBg.is3D) {
                             is3D = true;
+                            if (parsedDefaultBg.backgroundId) {
+                                bg3dId = parsedDefaultBg.backgroundId;
+                            }
                         }
                     } catch (e) {
                         console.warn('解析用户默认背景失败:', e);
@@ -205,7 +209,7 @@
                     document.body.style.animation = '';
                 }
                 
-                if (is3D && typeof window.create3DSpaceBackground === 'function') {
+                if (is3D && typeof window.create3DBackground === 'function') {
                     document.body.style.background = 'transparent';
                     document.body.style.backgroundSize = 'auto';
                     document.body.style.backgroundPosition = 'initial';
@@ -216,7 +220,7 @@
                     spaceContainer.id = 'global-3d-space-bg';
                     spaceContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:hidden;';
                     document.body.appendChild(spaceContainer);
-                    window.create3DSpaceBackground('global-3d-space-bg');
+                    window.create3DBackground('global-3d-space-bg', bg3dId);
                 }
                 
                 if (hasParticles) {
@@ -312,6 +316,15 @@
                         60% { background-position: 60% 85%; }
                         80% { background-position: 20% 65%; }
                         100% { background-position: 0% 50%; }
+                    }
+
+                    @keyframes passS1Shift {
+                        0% { background-position: 0% 30%; }
+                        20% { background-position: 40% 15%; }
+                        40% { background-position: 80% 40%; }
+                        60% { background-position: 100% 70%; }
+                        80% { background-position: 50% 90%; }
+                        100% { background-position: 0% 30%; }
                     }
                     
                     @keyframes particleFloat {
@@ -808,6 +821,290 @@
 
         window.create3DSpaceBackground = create3DSpaceBackground;
         window.destroy3DSpaceBackground = destroy3DSpaceBackground;
+
+        // ==================== 3D 场景：赛季顶点（第一赛季通行证 · 紫金主题） ====================
+        function create3DPassPeakBackground(containerId) {
+            if (spaceBgInstances[containerId]) {
+                spaceBgInstances[containerId].destroy();
+            }
+
+            var container = document.getElementById(containerId);
+            if (!container) return;
+
+            var canvas = document.createElement('canvas');
+            canvas.id = containerId + '_passpeak';
+            canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;';
+            container.style.position = container.style.position || 'relative';
+            container.appendChild(canvas);
+
+            var ctx = canvas.getContext('2d');
+            var w = container.offsetWidth || window.innerWidth;
+            var h = container.offsetHeight || window.innerHeight;
+            var cx = w / 2;
+            var mouseX = cx, mouseY = h / 2, tMouseX = cx, tMouseY = h / 2;
+            var animationId = null;
+            var time = 0;
+            var crystals = [];
+            var embers = [];
+            var rings = [];
+
+            function resize() {
+                w = container.offsetWidth || window.innerWidth;
+                h = container.offsetHeight || window.innerHeight;
+                cx = w / 2;
+                var dpr = window.devicePixelRatio || 1;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                initCrystals();
+                initEmbers();
+            }
+
+            function initCrystals() {
+                crystals = [];
+                var palette = [
+                    { c1: '#fbbf24', c2: '#f59e0b' },
+                    { c1: '#fde68a', c2: '#f59e0b' },
+                    { c1: '#a78bfa', c2: '#7c3aed' },
+                    { c1: '#c4b5fd', c2: '#8b5cf6' }
+                ];
+                var count = Math.max(10, Math.floor(w / 110));
+                for (var i = 0; i < count; i++) {
+                    var p = palette[Math.floor(Math.random() * palette.length)];
+                    crystals.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        size: Math.random() * 16 + 8,
+                        rot: Math.random() * Math.PI * 2,
+                        rotSpeed: (Math.random() - 0.5) * 0.01,
+                        riseSpeed: Math.random() * 0.35 + 0.15,
+                        swayPhase: Math.random() * Math.PI * 2,
+                        swayAmp: Math.random() * 20 + 10,
+                        depth: Math.random() * 0.6 + 0.2,
+                        c1: p.c1, c2: p.c2,
+                        alpha: Math.random() * 0.35 + 0.25
+                    });
+                }
+            }
+
+            function initEmbers() {
+                embers = [];
+                var count = Math.floor((w * h) / 14000);
+                for (var i = 0; i < count; i++) {
+                    embers.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        r: Math.random() * 1.8 + 0.6,
+                        speed: Math.random() * 0.5 + 0.2,
+                        tw: Math.random() * Math.PI * 2,
+                        twSpeed: Math.random() * 0.05 + 0.02,
+                        gold: Math.random() < 0.6,
+                        depth: Math.random() * 0.5 + 0.15
+                    });
+                }
+            }
+
+            function drawBase() {
+                var g = ctx.createLinearGradient(0, 0, 0, h);
+                g.addColorStop(0, '#2a1150');
+                g.addColorStop(0.45, '#1a0b36');
+                g.addColorStop(1, '#0c0618');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, w, h);
+
+                var vg = ctx.createRadialGradient(cx, h * 0.55, 0, cx, h * 0.55, Math.max(w, h) * 0.75);
+                vg.addColorStop(0, 'rgba(124, 58, 237, 0.10)');
+                vg.addColorStop(0.6, 'rgba(20, 10, 40, 0.05)');
+                vg.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+                ctx.fillStyle = vg;
+                ctx.fillRect(0, 0, w, h);
+            }
+
+            function drawCrownRays() {
+                var rayCx = cx + (tMouseX - cx) * 0.02;
+                var rayCy = -h * 0.08;
+                var rayCount = 12;
+                var pulse = 0.75 + Math.sin(time * 2) * 0.25;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (var i = 0; i < rayCount; i++) {
+                    var baseAngle = (Math.PI / (rayCount - 1)) * i;
+                    var sway = Math.sin(time * 0.6 + i) * 0.04;
+                    var angle = baseAngle + sway;
+                    var len = h * (1.1 + Math.sin(time + i * 1.3) * 0.12);
+                    var widthA = 0.028 + Math.sin(time * 1.4 + i) * 0.008;
+                    var a1 = angle - widthA;
+                    var a2 = angle + widthA;
+                    var grad = ctx.createLinearGradient(rayCx, rayCy, rayCx + Math.cos(angle) * len, rayCy + Math.sin(angle) * len);
+                    grad.addColorStop(0, 'rgba(251, 191, 36,' + (0.16 * pulse) + ')');
+                    grad.addColorStop(0.5, 'rgba(167, 139, 250,' + (0.06 * pulse) + ')');
+                    grad.addColorStop(1, 'rgba(124, 58, 237, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.moveTo(rayCx, rayCy);
+                    ctx.lineTo(rayCx + Math.cos(a1) * len, rayCy + Math.sin(a1) * len);
+                    ctx.lineTo(rayCx + Math.cos(a2) * len, rayCy + Math.sin(a2) * len);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                var core = ctx.createRadialGradient(rayCx, rayCy, 0, rayCx, rayCy, h * 0.5);
+                core.addColorStop(0, 'rgba(253, 230, 138,' + (0.35 * pulse) + ')');
+                core.addColorStop(0.25, 'rgba(245, 158, 11,' + (0.18 * pulse) + ')');
+                core.addColorStop(0.6, 'rgba(139, 92, 246,' + (0.08 * pulse) + ')');
+                core.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = core;
+                ctx.beginPath();
+                ctx.arc(rayCx, rayCy, h * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function drawRings() {
+                var ringCx = cx + (tMouseX - cx) * 0.03;
+                var ringCy = h * 0.62;
+                if (Math.random() < 0.02 && rings.length < 5) {
+                    rings.push({ r: 10, alpha: 0.5 });
+                }
+                for (var i = rings.length - 1; i >= 0; i--) {
+                    var ring = rings[i];
+                    ring.r += 2.2;
+                    ring.alpha *= 0.985;
+                    if (ring.alpha < 0.02 || ring.r > Math.max(w, h)) { rings.splice(i, 1); continue; }
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(245, 158, 11,' + ring.alpha + ')';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.ellipse(ringCx, ringCy, ring.r, ring.r * 0.32, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.strokeStyle = 'rgba(167, 139, 250,' + (ring.alpha * 0.5) + ')';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.ellipse(ringCx, ringCy, ring.r * 0.92, ring.r * 0.29, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                var horizon = ctx.createLinearGradient(0, ringCy - 30, 0, h);
+                horizon.addColorStop(0, 'rgba(245, 158, 11, 0)');
+                horizon.addColorStop(0.4, 'rgba(245, 158, 11, 0.06)');
+                horizon.addColorStop(1, 'rgba(124, 58, 237, 0.14)');
+                ctx.fillStyle = horizon;
+                ctx.fillRect(0, ringCy - 30, w, h - ringCy + 30);
+            }
+
+            function drawCrystals() {
+                crystals.forEach(function(c) {
+                    c.y -= c.riseSpeed;
+                    c.rot += c.rotSpeed;
+                    c.swayPhase += 0.012;
+                    if (c.y < -40) { c.y = h + 40; c.x = Math.random() * w; }
+                    var px = c.x + Math.sin(c.swayPhase) * c.swayAmp - (tMouseX - cx) * c.depth * 0.12;
+                    var py = c.y - (tMouseY - h / 2) * c.depth * 0.08;
+
+                    ctx.save();
+                    ctx.translate(px, py);
+                    ctx.rotate(c.rot);
+                    var s = c.size;
+                    var grad = ctx.createLinearGradient(-s, -s, s, s);
+                    grad.addColorStop(0, c.c1);
+                    grad.addColorStop(1, c.c2);
+                    ctx.globalAlpha = c.alpha;
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -s);
+                    ctx.lineTo(s * 0.62, 0);
+                    ctx.lineTo(0, s);
+                    ctx.lineTo(-s * 0.62, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.globalAlpha = c.alpha * 0.9;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -s);
+                    ctx.lineTo(0, s);
+                    ctx.moveTo(-s * 0.62, 0);
+                    ctx.lineTo(s * 0.62, 0);
+                    ctx.stroke();
+                    ctx.globalAlpha = c.alpha * 0.25;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, s * 2.2, 0, Math.PI * 2);
+                    var glow = ctx.createRadialGradient(0, 0, 0, 0, 0, s * 2.2);
+                    glow.addColorStop(0, c.c1);
+                    glow.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = glow;
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+
+            function drawEmbers() {
+                embers.forEach(function(e) {
+                    e.y -= e.speed;
+                    e.tw += e.twSpeed;
+                    if (e.y < -10) { e.y = h + 10; e.x = Math.random() * w; }
+                    var px = e.x - (tMouseX - cx) * e.depth * 0.1;
+                    var alpha = 0.35 + Math.sin(e.tw) * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(px, e.y, e.r, 0, Math.PI * 2);
+                    ctx.fillStyle = e.gold
+                        ? 'rgba(253, 224, 71,' + alpha + ')'
+                        : 'rgba(196, 181, 253,' + alpha + ')';
+                    ctx.fill();
+                });
+            }
+
+            function animate() {
+                time += 0.008;
+                tMouseX += (mouseX - tMouseX) * 0.05;
+                tMouseY += (mouseY - tMouseY) * 0.05;
+                ctx.clearRect(0, 0, w, h);
+                drawBase();
+                drawCrownRays();
+                drawRings();
+                drawCrystals();
+                drawEmbers();
+                animationId = requestAnimationFrame(animate);
+            }
+
+            function onMouseMove(e) {
+                var rect = container.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+            }
+            function onMouseLeave() {
+                mouseX = cx;
+                mouseY = h / 2;
+            }
+            function onResize() { resize(); }
+            function destroy() {
+                if (animationId) cancelAnimationFrame(animationId);
+                if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+                container.removeEventListener('mousemove', onMouseMove);
+                container.removeEventListener('mouseleave', onMouseLeave);
+                window.removeEventListener('resize', onResize);
+                delete spaceBgInstances[containerId];
+            }
+
+            container.addEventListener('mousemove', onMouseMove);
+            container.addEventListener('mouseleave', onMouseLeave);
+            window.addEventListener('resize', onResize);
+
+            resize();
+            animate();
+
+            spaceBgInstances[containerId] = { destroy: destroy };
+        }
+
+        // 3D 背景分发器：按背景 ID 路由到对应场景（默认深空场景）
+        window.create3DBackground = function(containerId, backgroundId) {
+            if (backgroundId === 'pass-bg-s1-120') {
+                create3DPassPeakBackground(containerId);
+            } else {
+                create3DSpaceBackground(containerId);
+            }
+        };
 
         function loadCustomBackground() {
             try {
@@ -2716,8 +3013,9 @@
                     pageClockInterval = null;
                 }
                 
-                // 移除page-clock-enabled类
-                document.body.classList.remove('page-clock-enabled');
+                // page-clock-enabled 类表示「时钟功能已启用」（由 updateHideInterfaceButton 统一管理），
+                // 此处不再移除，避免与功能启用状态冲突导致二次进入时按钮 CSS 选择器失效。
+                // 按钮隐藏由内联 display='' + interface-hidden 移除共同保证。
 
                 // 使用内联样式强制隐藏时钟按钮
                 var backBtn = document.getElementById('pageClockBackBtn');
@@ -3612,7 +3910,8 @@
                     updateGlobalToggleText(globalToggleBtn);
                 }
                 
-                toggleSettingsEnabled(clockSettings.globalEnabled);
+                // 时钟设置始终可编辑（手动点击按钮即可显示时钟，与自动启动开关无关）
+                toggleSettingsEnabled(true);
                 
                 updateHideInterfaceButton();
                 
@@ -3884,7 +4183,7 @@
                         clockSettings.globalEnabled = !clockSettings.globalEnabled;
                         globalToggleBtn.classList.toggle('active', clockSettings.globalEnabled);
                         updateGlobalToggleText(globalToggleBtn);
-                        toggleSettingsEnabled(clockSettings.globalEnabled);
+                        // 自动启动开关不影响设置项可编辑性
                         saveClockSettings();
                     });
                 }
@@ -4230,10 +4529,10 @@
                 var spanEl = btn.querySelector('span');
                 if (clockSettings.globalEnabled) {
                     iconEl.className = 'fas fa-clock';
-                    spanEl.textContent = '启用页面时钟';
+                    spanEl.textContent = '空闲时自动显示时钟';
                 } else {
-                    iconEl.className = 'fas fa-eye-slash';
-                    spanEl.textContent = '保持UI隐藏';
+                    iconEl.className = 'fas fa-hand-pointer';
+                    spanEl.textContent = '仅点击按钮时显示';
                 }
             }
             
@@ -5318,7 +5617,10 @@
             }
             
             // 隐藏界面按钮点击事件
-            if (hideInterfaceBtn) {
+            // 使用 _bound 标记防止与 bindGameCenterHeaderEvents 重复绑定，
+            // 避免两次 toggle interface-hidden / 两次 show/hidePageClock 互相抵消导致时钟不显示
+            if (hideInterfaceBtn && !hideInterfaceBtn._bound) {
+                hideInterfaceBtn._bound = true;
                 hideInterfaceBtn.addEventListener('click', function() {
                     var willHide = !document.body.classList.contains('interface-hidden');
                     document.body.classList.toggle('interface-hidden');
@@ -5330,12 +5632,9 @@
                     applyInterfaceHiddenUI(willHide);
                     
                     if (willHide) {
-                        var pageClockEnabled = isPageClockEnabled();
-                        if (pageClockEnabled && clockSettings.globalEnabled) {
-                            showPageClock();
-                        } else {
-                            hidePageClock();
-                        }
+                        // 手动点击「页面时钟」按钮时，始终显示时钟组件；
+                        // isPageClockEnabled / globalEnabled 仅用于空闲自动启动，不阻断手动进入。
+                        showPageClock();
                     } else {
                         hidePageClock();
                     }
@@ -5354,7 +5653,9 @@
             document.addEventListener('click', function(e) {
                 if (document.body.classList.contains('interface-hidden') && (e.target === document.body || e.target.id === 'pageClockOverlay')) {
                     var pageClockEnabled = isPageClockEnabled();
-                    if (!pageClockEnabled || !clockSettings.globalEnabled) {
+                    // 仅当时钟功能未启用时，点击空白/时钟层才退出界面隐藏模式；
+                    // 功能已启用时由返回按钮 / ESC 退出，避免误触。
+                    if (!pageClockEnabled) {
                         document.body.classList.remove('interface-hidden');
                         if (typeof applyInterfaceHiddenUI === 'function') applyInterfaceHiddenUI(false);
                         hidePageClock();
@@ -5485,7 +5786,8 @@
             }
 
             // 切换比例调整弹窗显示
-            if (uiScaleBtn && uiScaleModal) {
+            if (uiScaleBtn && uiScaleModal && !uiScaleBtn._bound) {
+                uiScaleBtn._bound = true;
                 uiScaleBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     uiScaleModal.style.display = 'flex';
@@ -5530,7 +5832,8 @@
         }
             
             // 切换按钮点击事件 - 改为弹出窗口
-            if (toggleButtonsBtn) {
+            if (toggleButtonsBtn && !toggleButtonsBtn._bound) {
+                toggleButtonsBtn._bound = true;
                 toggleButtonsBtn.addEventListener('click', function() {
                     var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
                     if (!currentUser.username) {
@@ -5880,8 +6183,17 @@
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onerror="this.onerror=null; console.warn('Lenis 加载失败')"></script>
     <!-- Three.js (3D 渲染) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="this.onerror=null; console.warn('Three.js 加载失败')"></script>
-    <!-- cannon-es (物理引擎) -->
-    <script src="https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js" onerror="this.onerror=null; console.warn('cannon-es 加载失败')"></script>
+    <!-- cannon-es (物理引擎)：官方 dist 为 ESM，经典脚本直接引入会因 export 语法报错，
+         因此用 module 方式导入并挂到 window.CANNON，供全站经典脚本使用 -->
+    <script type="module">
+        try {
+            var cannonModule = await import('https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js');
+            window.CANNON = cannonModule;
+            window.dispatchEvent(new CustomEvent('cannon-ready'));
+        } catch (err) {
+            console.warn('cannon-es 加载失败', err);
+        }
+    </script>
     <script>
         // 初始化 Lenis 平滑滚动（仅在 window 真正可滚动时启用，否则保留原生滚动）
         (function () {
@@ -7057,6 +7369,53 @@
                 </div>
             </div>
             <canvas id="luckAnimationCanvas" class="luck-animation-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- 3D 骰子投掷弹窗 -->
+    <div id="dice3dModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content dice3d-modal-content">
+            <button class="treasure-modal-close" id="dice3dModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="dice3d-modal-body">
+                <div class="dice3d-modal-title">
+                    <i class="fas fa-dice"></i>
+                    <h2>骰子投掷</h2>
+                </div>
+                <div class="dice3d-stage" id="dice3dStage">
+                    <div class="dice3d-result-pill" id="dice3dResult">--</div>
+                </div>
+                <div class="dice3d-options" id="dice3dOptions">
+                    <button class="dice3d-option active" data-sides="6">6面</button>
+                    <button class="dice3d-option" data-sides="12">12面</button>
+                    <button class="dice3d-option" data-sides="20">20面</button>
+                </div>
+                <button class="dice3d-action-btn" id="dice3dRollBtn">
+                    <i class="fas fa-dice"></i> 投掷骰子
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D 抛硬币弹窗 -->
+    <div id="coin3dModal" class="treasure-modal" style="display: none;">
+        <div class="treasure-modal-content coin3d-modal-content">
+            <button class="treasure-modal-close" id="coin3dModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="coin3d-modal-body">
+                <div class="coin3d-modal-title">
+                    <i class="fas fa-coins"></i>
+                    <h2>抛硬币</h2>
+                </div>
+                <div class="coin3d-stage" id="coin3dStage">
+                    <div class="coin3d-result-pill" id="coin3dResult">--</div>
+                </div>
+                <button class="coin3d-action-btn" id="coin3dFlipBtn">
+                    <i class="fas fa-redo"></i> 抛硬币
+                </button>
+            </div>
         </div>
     </div>
 
@@ -10899,12 +11258,9 @@
                         applyInterfaceHiddenUI(willHide);
                     }
                     if (willHide) {
-                        var pageClockEnabled = typeof isPageClockEnabled === 'function' ? isPageClockEnabled() : false;
-                        if (pageClockEnabled && typeof clockSettings !== 'undefined' && clockSettings.globalEnabled) {
-                            if (typeof showPageClock === 'function') showPageClock();
-                        } else {
-                            if (typeof hidePageClock === 'function') hidePageClock();
-                        }
+                        // 手动点击「页面时钟」按钮时，始终显示时钟组件；
+                        // isPageClockEnabled / globalEnabled 仅用于空闲自动启动，不阻断手动进入。
+                        if (typeof showPageClock === 'function') showPageClock();
                     } else {
                         if (typeof hidePageClock === 'function') hidePageClock();
                     }
@@ -11392,16 +11748,7 @@
                                 <div class="treasure-card">
                                     <div class="treasure-card-content">
                                         <h2>骰子投掷</h2>
-                                        <div class="dice-result" id="diceResult">
-                                            <i class="fas fa-dice"></i>
-                                        </div>
-                                        <div class="dice-controls">
-                                            <div class="dice-options">
-                                                <button class="dice-option active" data-sides="6">6面</button>
-                                                <button class="dice-option" data-sides="12">12面</button>
-                                                <button class="dice-option" data-sides="20">20面</button>
-                                            </div>
-                                        </div>
+                                        <p class="treasure-tool-desc">支持 6 面、12 面、20 面骰子，点击按钮进入 3D 投掷台进行投掷</p>
                                     </div>
                                     <button class="treasure-btn" id="rollDiceBtn">投掷骰子</button>
                                     <div class="treasure-icon treasure-icon-dice">
@@ -11413,10 +11760,7 @@
                                 <div class="treasure-card">
                                     <div class="treasure-card-content">
                                         <h2>抛硬币</h2>
-                                        <div class="coin-result" id="coinResult">
-                                            <i class="fas fa-question-circle"></i>
-                                        </div>
-                                        <p class="coin-text" id="coinText">点击按钮抛硬币</p>
+                                        <p class="treasure-tool-desc">点击按钮进入 3D 抛硬币，正面还是反面，由命运决定</p>
                                     </div>
                                     <button class="treasure-btn" id="flipCoinBtn">抛硬币</button>
                                     <div class="treasure-icon treasure-icon-coin">
@@ -11824,6 +12168,8 @@
                 
                 // 更新简约设计顶部导航栏为游戏中心模式
                 updateMinimalistTopNavForGameCenter();
+                // 导航栏重建后显式补注通行证入口（修复登录后需刷新才显示的问题；函数内部有防重复与登录态校验）
+                if (typeof _injectPassNavItem === 'function') _injectPassNavItem();
             }, delay);
             
             // 如果跳过淡出动画，移除内联样式并显示容器
@@ -11872,6 +12218,10 @@
                                 <span>音乐播放器</span>
                             </div>
                         </div>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="battlepass" id="uiMinBattlePass">
+                        <i class="fas fa-crown"></i>
+                        <span>通行证</span>
                     </div>
                     <div class="ui-min-nav-item" data-nav="warehouse" id="uiMinWarehouse">
                         <i class="fas fa-warehouse"></i>
@@ -12035,7 +12385,9 @@
                         });
                         this.classList.add('active');
                         
-                        if (nav === 'warehouse') {
+                        if (nav === 'battlepass') {
+                            if (typeof openPassUI === 'function') openPassUI();
+                        } else if (nav === 'warehouse') {
                             if (typeof showWarehouseModal === 'function') {
                                 showWarehouseModal();
                             }
@@ -20928,44 +21280,19 @@
                 });
             }
             
-            // 投掷骰子
+            // 投掷骰子（打开 3D 骰子弹窗）
             var rollDiceBtn = document.getElementById('rollDiceBtn');
             if (rollDiceBtn) {
                 rollDiceBtn.addEventListener('click', function() {
-                    var activeOption = document.querySelector('.dice-option.active');
-                    var sides = parseInt(activeOption ? activeOption.getAttribute('data-sides') : '6');
-                    var result = Math.floor(Math.random() * sides) + 1;
-                    var diceResultEl = document.getElementById('diceResult');
-                    if (diceResultEl) {
-                        diceResultEl.textContent = result;
-                    }
+                    showDice3dModal();
                 });
             }
             
-            // 骰子选项切换
-            var diceOptions = document.querySelectorAll('.dice-option');
-            diceOptions.forEach(function(opt) {
-                opt.addEventListener('click', function() {
-                    diceOptions.forEach(function(o) {
-                        o.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                });
-            });
-            
-            // 抛硬币
+            // 抛硬币（打开 3D 硬币弹窗）
             var flipCoinBtn = document.getElementById('flipCoinBtn');
             if (flipCoinBtn) {
                 flipCoinBtn.addEventListener('click', function() {
-                    var result = Math.random() > 0.5 ? '正面' : '反面';
-                    var coinResultEl = document.getElementById('coinResult');
-                    var coinTextEl = document.getElementById('coinText');
-                    if (coinResultEl) {
-                        coinResultEl.innerHTML = result === '正面' ? '<i class="fas fa-coins"></i>' : '<i class="fas fa-circle"></i>';
-                    }
-                    if (coinTextEl) {
-                        coinTextEl.textContent = '结果：' + result;
-                    }
+                    showCoin3dModal();
                 });
             }
             
@@ -21038,6 +21365,668 @@
             // 初始化卡片内容（如果已访问过）
             initCardContents();
         }
+        
+        // ==================== 3D 骰子投掷（Three.js + cannon-es） ====================
+        var dice3dState = {
+            renderer: null, scene: null, camera: null, world: null,
+            dieMesh: null, dieBody: null, faces: [],
+            diceMaterial: null,
+            rafId: null, rolling: false, restTime: 0, rollStart: 0,
+            sides: 6, resizeHandler: null
+        };
+
+        // 递归释放 Object3D 的几何体/材质/贴图
+        function disposeObject3D(obj) {
+            if (!obj) return;
+            obj.traverse(function(child) {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    var mats = Array.isArray(child.material) ? child.material : [child.material];
+                    mats.forEach(function(m) {
+                        if (m.map) m.map.dispose();
+                        m.dispose();
+                    });
+                }
+            });
+        }
+
+        // 生成骰子面数字贴图
+        function makeDiceFaceTexture(value) {
+            var size = 256;
+            var canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#40302a';
+            ctx.font = 'bold 148px "HarmonyOS Sans SC", "Segoe UI", Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(String(value), size / 2, size / 2 + 10);
+            var texture = new THREE.CanvasTexture(canvas);
+            texture.anisotropy = 4;
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        // 从多面体（十二面体/二十面体）几何体提取面：合并共面三角形
+        function extractPolyhedronFaces(geometry) {
+            var pos = geometry.attributes.position;
+            var index = geometry.index;
+            var triCount = index ? index.count / 3 : pos.count / 3;
+            var groups = [];
+            var va = new THREE.Vector3(), vb = new THREE.Vector3(), vc = new THREE.Vector3();
+            var e1 = new THREE.Vector3(), e2 = new THREE.Vector3(), n = new THREE.Vector3();
+            function vertexIndexAt(i) { return index ? index.getX(i) : i; }
+            for (var t = 0; t < triCount; t++) {
+                var ia = vertexIndexAt(t * 3), ib = vertexIndexAt(t * 3 + 1), ic = vertexIndexAt(t * 3 + 2);
+                va.fromBufferAttribute(pos, ia);
+                vb.fromBufferAttribute(pos, ib);
+                vc.fromBufferAttribute(pos, ic);
+                e1.subVectors(vb, va); e2.subVectors(vc, va);
+                n.crossVectors(e1, e2).normalize();
+                var key = n.x.toFixed(4) + '|' + n.y.toFixed(4) + '|' + n.z.toFixed(4);
+                var centroid = new THREE.Vector3(
+                    va.x + vb.x + vc.x, va.y + vb.y + vc.y, va.z + vb.z + vc.z
+                ).divideScalar(3);
+                var group = null;
+                for (var g = 0; g < groups.length; g++) {
+                    if (groups[g].key === key) { group = groups[g]; break; }
+                }
+                if (!group) {
+                    groups.push({ key: key, normal: n.clone(), centroids: [centroid] });
+                } else {
+                    group.centroids.push(centroid);
+                }
+            }
+            return groups.map(function(grp) {
+                var c = new THREE.Vector3();
+                grp.centroids.forEach(function(x) { c.add(x); });
+                c.divideScalar(grp.centroids.length);
+                return { normal: grp.normal.clone(), centroid: c };
+            });
+        }
+
+        // 创建指定面数的骰子（网格 + 物理刚体 + 面法线表）
+        function createDice(sides) {
+            var radius = 0.86;
+            var geometry;
+            var faceData;
+            if (sides === 6) {
+                var h = 0.7;
+                geometry = new THREE.BoxGeometry(h * 2, h * 2, h * 2);
+                faceData = [
+                    { normal: new THREE.Vector3(1, 0, 0) },
+                    { normal: new THREE.Vector3(-1, 0, 0) },
+                    { normal: new THREE.Vector3(0, 1, 0) },
+                    { normal: new THREE.Vector3(0, -1, 0) },
+                    { normal: new THREE.Vector3(0, 0, 1) },
+                    { normal: new THREE.Vector3(0, 0, -1) }
+                ].map(function(f) {
+                    f.centroid = f.normal.clone().multiplyScalar(h);
+                    return f;
+                });
+            } else if (sides === 12) {
+                geometry = new THREE.DodecahedronGeometry(radius, 0);
+                faceData = extractPolyhedronFaces(geometry);
+            } else {
+                geometry = new THREE.IcosahedronGeometry(radius, 0);
+                faceData = extractPolyhedronFaces(geometry);
+            }
+            faceData.forEach(function(f, i) { f.value = i + 1; });
+
+            var material = new THREE.MeshStandardMaterial({
+                color: 0xf6f0e4,
+                roughness: 0.34,
+                metalness: 0.08,
+                flatShading: sides !== 6
+            });
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            // 每面贴数字
+            var decalSize = sides === 6 ? 0.52 : (sides === 12 ? 0.29 : 0.21);
+            faceData.forEach(function(f) {
+                var decal = new THREE.Mesh(
+                    new THREE.PlaneGeometry(decalSize, decalSize),
+                    new THREE.MeshBasicMaterial({ map: makeDiceFaceTexture(f.value), transparent: true, depthWrite: false })
+                );
+                var attachPos = f.centroid.clone().add(f.normal.clone().multiplyScalar(0.012));
+                decal.position.copy(attachPos);
+                decal.lookAt(attachPos.clone().add(f.normal));
+                mesh.add(decal);
+            });
+
+            // cannon 碰撞形状
+            var shape;
+            if (sides === 6) {
+                shape = new CANNON.Box(new CANNON.Vec3(0.7, 0.7, 0.7));
+            } else {
+                var posAttr = geometry.attributes.position;
+                var idxAttr = geometry.index;
+                var vcount = idxAttr ? idxAttr.count : posAttr.count;
+                function vIndexAt(i) { return idxAttr ? idxAttr.getX(i) : i; }
+                var vertexMap = {};
+                var vertices = [];
+                var localToCannon = new Array(vcount);
+                for (var i = 0; i < vcount; i++) {
+                    var vi = vIndexAt(i);
+                    var key = posAttr.getX(vi).toFixed(5) + ',' + posAttr.getY(vi).toFixed(5) + ',' + posAttr.getZ(vi).toFixed(5);
+                    if (!(key in vertexMap)) {
+                        vertexMap[key] = vertices.length;
+                        vertices.push(new CANNON.Vec3(posAttr.getX(vi), posAttr.getY(vi), posAttr.getZ(vi)));
+                    }
+                    localToCannon[i] = vertexMap[key];
+                }
+                var faces = [];
+                for (var t = 0; t < vcount / 3; t++) {
+                    faces.push([localToCannon[t * 3], localToCannon[t * 3 + 1], localToCannon[t * 3 + 2]]);
+                }
+                shape = new CANNON.ConvexPolyhedron({ vertices: vertices, faces: faces });
+            }
+
+            var body = new CANNON.Body({
+                mass: 1.3,
+                shape: shape,
+                material: dice3dState.diceMaterial,
+                position: new CANNON.Vec3(0, 2.6, 0)
+            });
+            body.linearDamping = 0.06;
+            body.angularDamping = 0.12;
+
+            var faceNormals = faceData.map(function(f) {
+                return { normal: new CANNON.Vec3(f.normal.x, f.normal.y, f.normal.z), value: f.value };
+            });
+            return { mesh: mesh, body: body, faces: faceNormals };
+        }
+
+        function addDieToScene() {
+            var die = createDice(dice3dState.sides);
+            dice3dState.dieMesh = die.mesh;
+            dice3dState.dieBody = die.body;
+            dice3dState.faces = die.faces;
+            dice3dState.scene.add(die.mesh);
+            dice3dState.world.addBody(die.body);
+        }
+
+        function removeDieFromScene() {
+            if (dice3dState.dieMesh) {
+                dice3dState.scene.remove(dice3dState.dieMesh);
+                disposeObject3D(dice3dState.dieMesh);
+                dice3dState.dieMesh = null;
+            }
+            if (dice3dState.dieBody) {
+                dice3dState.world.removeBody(dice3dState.dieBody);
+                dice3dState.dieBody = null;
+            }
+            dice3dState.faces = [];
+        }
+
+        // 初始化 3D 场景（灯光、投掷台、物理世界）
+        function initDice3dScene() {
+            var stage = document.getElementById('dice3dStage');
+            var width = stage.clientWidth || 380;
+            var height = stage.clientHeight || 300;
+
+            var canvas = document.createElement('canvas');
+            canvas.className = 'dice3d-canvas';
+            stage.appendChild(canvas);
+
+            var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(width, height, false);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 60);
+            camera.position.set(3.0, 3.8, 5.8);
+            camera.lookAt(0, 0.4, 0);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+            var keyLight = new THREE.DirectionalLight(0xfff3df, 1.0);
+            keyLight.position.set(5, 9, 5);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.set(1024, 1024);
+            keyLight.shadow.camera.near = 1; keyLight.shadow.camera.far = 30;
+            keyLight.shadow.camera.left = -5; keyLight.shadow.camera.right = 5;
+            keyLight.shadow.camera.top = 5; keyLight.shadow.camera.bottom = -5;
+            keyLight.shadow.bias = -0.0005;
+            scene.add(keyLight);
+            var fillLight = new THREE.PointLight(0xd45d79, 0.5, 18);
+            fillLight.position.set(-4, 2.5, 2);
+            scene.add(fillLight);
+
+            // 投掷台
+            var platform = new THREE.Mesh(
+                new THREE.CylinderGeometry(2.9, 3.05, 0.25, 56),
+                new THREE.MeshStandardMaterial({ color: 0x30264a, roughness: 0.85, metalness: 0.1 })
+            );
+            platform.position.y = -0.125;
+            platform.receiveShadow = true;
+            scene.add(platform);
+
+            // cannon 物理世界
+            var world = new CANNON.World({ gravity: new CANNON.Vec3(0, -20, 0) });
+            world.solver.iterations = 16;
+            var diceMaterial = new CANNON.Material('dice3d-dice');
+            var floorMaterial = new CANNON.Material('dice3d-floor');
+            world.addContactMaterial(new CANNON.ContactMaterial(diceMaterial, floorMaterial, {
+                friction: 0.4, restitution: 0.35
+            }));
+            var floor = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: floorMaterial });
+            floor.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+            world.addBody(floor);
+
+            // 隐形围挡，防止骰子滚出投掷台
+            var bumperDefs = [
+                { pos: [2.25, 0.25, 0], half: [0.1, 0.25, 1.4] },
+                { pos: [-2.25, 0.25, 0], half: [0.1, 0.25, 1.4] },
+                { pos: [0, 0.25, 2.25], half: [1.4, 0.25, 0.1] },
+                { pos: [0, 0.25, -2.25], half: [1.4, 0.25, 0.1] }
+            ];
+            bumperDefs.forEach(function(def) {
+                var bumper = new CANNON.Body({
+                    mass: 0,
+                    shape: new CANNON.Box(new CANNON.Vec3(def.half[0], def.half[1], def.half[2]))
+                });
+                bumper.position.set(def.pos[0], def.pos[1], def.pos[2]);
+                world.addBody(bumper);
+            });
+
+            dice3dState.renderer = renderer;
+            dice3dState.scene = scene;
+            dice3dState.camera = camera;
+            dice3dState.world = world;
+            dice3dState.diceMaterial = diceMaterial;
+            dice3dState.sides = 6;
+            dice3dState.rolling = false;
+            dice3dState.restTime = 0;
+
+            dice3dState.resizeHandler = function() {
+                var w = stage.clientWidth, h = stage.clientHeight;
+                if (!w || !h) return;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h, false);
+            };
+            window.addEventListener('resize', dice3dState.resizeHandler);
+        }
+
+        // 投掷骰子：重置位置姿态并施加随机角速度
+        function rollDice3d() {
+            if (dice3dState.rolling || !dice3dState.dieBody) return;
+            var body = dice3dState.dieBody;
+            dice3dState.rolling = true;
+            dice3dState.restTime = 0;
+            dice3dState.rollStart = Date.now();
+            body.position.set((Math.random() - 0.5) * 0.8, 3.6, (Math.random() - 0.5) * 0.8);
+            body.quaternion.setFromEuler(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+            body.velocity.set((Math.random() - 0.5) * 3, 0, (Math.random() - 0.5) * 3);
+            body.angularVelocity.set((Math.random() - 0.5) * 18, (Math.random() - 0.5) * 18, (Math.random() - 0.5) * 18);
+            body.wakeUp();
+            var pill = document.getElementById('dice3dResult');
+            pill.textContent = '?';
+            pill.classList.remove('pop', 'is-final');
+        }
+
+        // 结算：找出当前朝上方的面
+        function finishDice3dRoll() {
+            dice3dState.rolling = false;
+            var q = dice3dState.dieBody.quaternion;
+            var bestValue = 1, bestY = -2;
+            dice3dState.faces.forEach(function(f) {
+                var wn = new CANNON.Vec3();
+                q.vmult(f.normal, wn);
+                if (wn.y > bestY) { bestY = wn.y; bestValue = f.value; }
+            });
+            var pill = document.getElementById('dice3dResult');
+            pill.textContent = bestValue;
+            pill.classList.add('pop', 'is-final');
+        }
+
+        // 切换骰子面数：重建骰子
+        function switchDice3dSides(sides) {
+            if (dice3dState.rolling || dice3dState.sides === sides) return;
+            removeDieFromScene();
+            dice3dState.sides = sides;
+            addDieToScene();
+            var pill = document.getElementById('dice3dResult');
+            pill.textContent = '--';
+            pill.classList.remove('pop', 'is-final');
+        }
+
+        function dice3dRenderLoop() {
+            dice3dState.rafId = requestAnimationFrame(dice3dRenderLoop);
+            dice3dState.world.step(1 / 60, 1 / 60, 3);
+            if (dice3dState.dieMesh && dice3dState.dieBody) {
+                dice3dState.dieMesh.position.copy(dice3dState.dieBody.position);
+                dice3dState.dieMesh.quaternion.copy(dice3dState.dieBody.quaternion);
+            }
+            if (dice3dState.rolling) {
+                var b = dice3dState.dieBody;
+                var isSlow = b.velocity.length() < 0.35 && b.angularVelocity.length() < 0.5;
+                if (isSlow) {
+                    dice3dState.restTime += 16;
+                    if (dice3dState.restTime > 300) finishDice3dRoll();
+                } else {
+                    dice3dState.restTime = 0;
+                }
+                // 兜底：超过 8 秒仍未静止则按当前姿态结算
+                if (dice3dState.rolling && Date.now() - dice3dState.rollStart > 8000) {
+                    finishDice3dRoll();
+                }
+            }
+            dice3dState.renderer.render(dice3dState.scene, dice3dState.camera);
+        }
+
+        function showDice3dModal() {
+            if (typeof THREE === 'undefined' || typeof CANNON === 'undefined') {
+                showAlert('3D 引擎加载失败，请检查网络后重试');
+                return;
+            }
+            var modal = document.getElementById('dice3dModal');
+            modal.style.display = 'flex';
+            // 每次打开重置为 6 面
+            document.querySelectorAll('#dice3dOptions .dice3d-option').forEach(function(btn) {
+                btn.classList.toggle('active', btn.getAttribute('data-sides') === '6');
+            });
+            initDice3dScene();
+            addDieToScene();
+            dice3dRenderLoop();
+        }
+
+        function closeDice3dModal() {
+            var modal = document.getElementById('dice3dModal');
+            if (!modal || modal.style.display !== 'flex' || modal.classList.contains('modal-closing')) return;
+            modal.classList.add('modal-closing');
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+                disposeDice3dScene();
+            }, 300);
+        }
+
+        function disposeDice3dScene() {
+            if (dice3dState.rafId) cancelAnimationFrame(dice3dState.rafId);
+            dice3dState.rafId = null;
+            removeDieFromScene();
+            if (dice3dState.resizeHandler) window.removeEventListener('resize', dice3dState.resizeHandler);
+            dice3dState.resizeHandler = null;
+            if (dice3dState.renderer) {
+                dice3dState.renderer.dispose();
+                dice3dState.renderer.forceContextLoss();
+            }
+            // 重建舞台，保证下一次打开时画布全新
+            var stage = document.getElementById('dice3dStage');
+            if (stage) stage.innerHTML = '<div class="dice3d-result-pill" id="dice3dResult">--</div>';
+            dice3dState.renderer = null;
+            dice3dState.scene = null;
+            dice3dState.camera = null;
+            dice3dState.world = null;
+            dice3dState.diceMaterial = null;
+            dice3dState.sides = 6;
+            dice3dState.rolling = false;
+            dice3dState.restTime = 0;
+        }
+
+        // ==================== 3D 抛硬币（Three.js + GSAP） ====================
+        var coin3dState = {
+            renderer: null, scene: null, camera: null, coin: null,
+            rafId: null, flipping: false, timeline: null, resizeHandler: null
+        };
+
+        // 画五角星路径
+        function traceStar(ctx, cx, cy, outerRadius, innerRadius, points) {
+            ctx.beginPath();
+            for (var i = 0; i < points * 2; i++) {
+                var r = i % 2 === 0 ? outerRadius : innerRadius;
+                var a = -Math.PI / 2 + i * Math.PI / points;
+                var x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+        }
+
+        // 硬币正反面贴图：heads=五角星（正面），tails=P 字母（反面）
+        function makeCoinFaceTexture(kind) {
+            var size = 512;
+            var canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            var cx = size / 2;
+            var grad = ctx.createRadialGradient(cx, cx, 40, cx, cx, 250);
+            grad.addColorStop(0, '#fbe7a6');
+            grad.addColorStop(0.8, '#e7bf5e');
+            grad.addColorStop(1, '#c9962f');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(cx, cx, 248, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#9a6c1f';
+            ctx.lineWidth = 10;
+            ctx.beginPath(); ctx.arc(cx, cx, 222, 0, Math.PI * 2); ctx.stroke();
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.arc(cx, cx, 188, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = '#7c5413';
+            if (kind === 'heads') {
+                traceStar(ctx, cx, cx + 8, 108, 46, 5);
+                ctx.fill();
+            } else {
+                ctx.font = 'bold 170px "HarmonyOS Sans SC", Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('P', cx, cx + 12);
+            }
+            var texture = new THREE.CanvasTexture(canvas);
+            texture.anisotropy = 4;
+            return texture;
+        }
+
+        // 硬币侧边齿纹贴图
+        function makeCoinRidgeTexture() {
+            var canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 64;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#d9ac46';
+            ctx.fillRect(0, 0, 256, 64);
+            for (var x = 0; x < 256; x += 8) {
+                ctx.fillStyle = (x / 8) % 2 === 0 ? '#b9862c' : '#f3d27a';
+                ctx.fillRect(x, 0, 4, 64);
+            }
+            var texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(4, 1);
+            return texture;
+        }
+
+        function initCoin3dScene() {
+            var stage = document.getElementById('coin3dStage');
+            var width = stage.clientWidth || 380;
+            var height = stage.clientHeight || 300;
+
+            var canvas = document.createElement('canvas');
+            canvas.className = 'coin3d-canvas';
+            stage.appendChild(canvas);
+
+            var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(width, height, false);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 60);
+            camera.position.set(0, 4.0, 5.0);
+            camera.lookAt(0, 0.7, 0);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+            var keyLight = new THREE.DirectionalLight(0xfff3df, 1.15);
+            keyLight.position.set(4, 8, 5);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.set(1024, 1024);
+            keyLight.shadow.camera.near = 1; keyLight.shadow.camera.far = 25;
+            keyLight.shadow.camera.left = -5; keyLight.shadow.camera.right = 5;
+            keyLight.shadow.camera.top = 5; keyLight.shadow.camera.bottom = -5;
+            keyLight.shadow.bias = -0.0005;
+            scene.add(keyLight);
+            var rimLight = new THREE.PointLight(0xd45d79, 0.55, 16);
+            rimLight.position.set(-3.5, 2, -2.5);
+            scene.add(rimLight);
+
+            // 软阴影承接面
+            var shadowPlane = new THREE.Mesh(
+                new THREE.CircleGeometry(1.8, 48),
+                new THREE.ShadowMaterial({ opacity: 0.35 })
+            );
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.y = 0;
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
+
+            // 硬币：圆柱（侧边、正面、反面三种材质）
+            var radius = 1.2, depth = 0.24;
+            var sideMaterial = new THREE.MeshStandardMaterial({
+                map: makeCoinRidgeTexture(),
+                color: 0xffd878,
+                metalness: 0.85,
+                roughness: 0.35
+            });
+            var headsMaterial = new THREE.MeshStandardMaterial({
+                map: makeCoinFaceTexture('heads'),
+                metalness: 0.7,
+                roughness: 0.28
+            });
+            var tailsMaterial = new THREE.MeshStandardMaterial({
+                map: makeCoinFaceTexture('tails'),
+                metalness: 0.7,
+                roughness: 0.28
+            });
+            var coin = new THREE.Mesh(
+                new THREE.CylinderGeometry(radius, radius, depth, 80, 1, false),
+                [sideMaterial, headsMaterial, tailsMaterial]
+            );
+            coin.position.y = depth / 2;
+            coin.castShadow = true;
+            scene.add(coin);
+
+            coin3dState.renderer = renderer;
+            coin3dState.scene = scene;
+            coin3dState.camera = camera;
+            coin3dState.coin = coin;
+            coin3dState.flipping = false;
+
+            coin3dState.resizeHandler = function() {
+                var w = stage.clientWidth, h = stage.clientHeight;
+                if (!w || !h) return;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h, false);
+            };
+            window.addEventListener('resize', coin3dState.resizeHandler);
+        }
+
+        // 抛硬币：GSAP 驱动弧线 + 多周翻转，落定到预定结果
+        function flipCoin3d() {
+            if (coin3dState.flipping || !coin3dState.coin) return;
+            if (typeof gsap === 'undefined') {
+                showAlert('动画引擎加载失败，请检查网络后重试');
+                return;
+            }
+            var coin = coin3dState.coin;
+            var result = Math.random() > 0.5 ? '正面' : '反面';
+            coin3dState.flipping = true;
+
+            var pill = document.getElementById('coin3dResult');
+            pill.textContent = '?';
+            pill.classList.remove('pop', 'is-final');
+
+            // 归位
+            gsap.killTweensOf([coin.position, coin.rotation, coin.scale]);
+            gsap.set(coin.position, { x: 0, y: 0.12, z: 0 });
+            gsap.set(coin.rotation, { x: 0, y: 0, z: 0 });
+            gsap.set(coin.scale, { x: 1, y: 1, z: 1 });
+
+            var spins = 5 + Math.floor(Math.random() * 3);
+            var targetRotX = spins * Math.PI * 2 + (result === '反面' ? Math.PI : 0);
+            var drift = (Math.random() - 0.5) * 0.8;
+            var restY = 0.12;
+
+            var tl = gsap.timeline({
+                onComplete: function() {
+                    coin3dState.flipping = false;
+                    coin3dState.timeline = null;
+                    pill.textContent = result;
+                    pill.classList.add('pop', 'is-final');
+                }
+            });
+            // 上升
+            tl.to(coin.position, { y: 2.6, duration: 0.75, ease: 'power1.out' }, 0);
+            // 下落
+            tl.to(coin.position, { y: restY, duration: 1.15, ease: 'power1.in' }, 0.75);
+            // 翻转
+            tl.to(coin.rotation, { x: targetRotX, duration: 1.9, ease: 'power2.inOut' }, 0);
+            // 水平漂移
+            tl.to(coin.position, { x: drift, duration: 1.9, ease: 'sine.inOut' }, 0);
+            // 落地压扁回弹
+            tl.to(coin.scale, { x: 1.07, y: 0.88, z: 1.07, duration: 0.1, ease: 'power2.out' }, 1.9);
+            tl.to(coin.scale, { x: 1, y: 1, z: 1, duration: 0.25, ease: 'elastic.out(1, 0.4)' }, 2.0);
+            coin3dState.timeline = tl;
+        }
+
+        function coin3dRenderLoop() {
+            coin3dState.rafId = requestAnimationFrame(coin3dRenderLoop);
+            coin3dState.renderer.render(coin3dState.scene, coin3dState.camera);
+        }
+
+        function showCoin3dModal() {
+            if (typeof THREE === 'undefined') {
+                showAlert('3D 引擎加载失败，请检查网络后重试');
+                return;
+            }
+            var modal = document.getElementById('coin3dModal');
+            modal.style.display = 'flex';
+            initCoin3dScene();
+            coin3dRenderLoop();
+            // 入场：硬币轻落
+            if (typeof gsap !== 'undefined') {
+                gsap.from(coin3dState.coin.position, { y: 2.4, duration: 0.7, ease: 'bounce.out' });
+            }
+        }
+
+        function closeCoin3dModal() {
+            var modal = document.getElementById('coin3dModal');
+            if (!modal || modal.style.display !== 'flex' || modal.classList.contains('modal-closing')) return;
+            modal.classList.add('modal-closing');
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-closing');
+                disposeCoin3dScene();
+            }, 300);
+        }
+
+        function disposeCoin3dScene() {
+            if (coin3dState.rafId) cancelAnimationFrame(coin3dState.rafId);
+            coin3dState.rafId = null;
+            if (coin3dState.timeline) coin3dState.timeline.kill();
+            if (coin3dState.coin && typeof gsap !== 'undefined') {
+                gsap.killTweensOf([coin3dState.coin.position, coin3dState.coin.rotation, coin3dState.coin.scale]);
+            }
+            coin3dState.timeline = null;
+            if (coin3dState.scene) disposeObject3D(coin3dState.scene);
+            if (coin3dState.resizeHandler) window.removeEventListener('resize', coin3dState.resizeHandler);
+            coin3dState.resizeHandler = null;
+            if (coin3dState.renderer) {
+                coin3dState.renderer.dispose();
+                coin3dState.renderer.forceContextLoss();
+            }
+            var stage = document.getElementById('coin3dStage');
+            if (stage) stage.innerHTML = '<div class="coin3d-result-pill" id="coin3dResult">--</div>';
+            coin3dState.renderer = null;
+            coin3dState.scene = null;
+            coin3dState.camera = null;
+            coin3dState.coin = null;
+            coin3dState.flipping = false;
+        }
+        // ==================== 3D 骰子/硬币结束 ====================
         
         // ==================== 木鱼攒功德 ====================
         var wfCount = 0;
@@ -22003,6 +22992,65 @@
                     }
                 }
             });
+
+            // ===== 3D 骰子弹窗事件 =====
+            var dice3dModal = document.getElementById('dice3dModal');
+            var dice3dModalClose = document.getElementById('dice3dModalClose');
+            if (dice3dModalClose && !dice3dModalClose._bound) {
+                dice3dModalClose._bound = true;
+                dice3dModalClose.addEventListener('click', closeDice3dModal);
+            }
+            if (dice3dModal && !dice3dModal._bound) {
+                dice3dModal._bound = true;
+                dice3dModal.addEventListener('click', function(e) {
+                    if (e.target === dice3dModal) closeDice3dModal();
+                });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && dice3dModal.style.display === 'flex') {
+                        closeDice3dModal();
+                    }
+                });
+            }
+            var dice3dOptionBtns = document.querySelectorAll('#dice3dOptions .dice3d-option');
+            dice3dOptionBtns.forEach(function(btn) {
+                if (btn._bound) return;
+                btn._bound = true;
+                btn.addEventListener('click', function() {
+                    var sides = parseInt(btn.getAttribute('data-sides'));
+                    dice3dOptionBtns.forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    switchDice3dSides(sides);
+                });
+            });
+            var dice3dRollBtn = document.getElementById('dice3dRollBtn');
+            if (dice3dRollBtn && !dice3dRollBtn._bound) {
+                dice3dRollBtn._bound = true;
+                dice3dRollBtn.addEventListener('click', rollDice3d);
+            }
+
+            // ===== 3D 硬币弹窗事件 =====
+            var coin3dModal = document.getElementById('coin3dModal');
+            var coin3dModalClose = document.getElementById('coin3dModalClose');
+            if (coin3dModalClose && !coin3dModalClose._bound) {
+                coin3dModalClose._bound = true;
+                coin3dModalClose.addEventListener('click', closeCoin3dModal);
+            }
+            if (coin3dModal && !coin3dModal._bound) {
+                coin3dModal._bound = true;
+                coin3dModal.addEventListener('click', function(e) {
+                    if (e.target === coin3dModal) closeCoin3dModal();
+                });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && coin3dModal.style.display === 'flex') {
+                        closeCoin3dModal();
+                    }
+                });
+            }
+            var coin3dFlipBtn = document.getElementById('coin3dFlipBtn');
+            if (coin3dFlipBtn && !coin3dFlipBtn._bound) {
+                coin3dFlipBtn._bound = true;
+                coin3dFlipBtn.addEventListener('click', flipCoin3d);
+            }
         }
         
         // 初始化卡片内容
@@ -28801,6 +29849,9 @@
                  + row('passBoostClose', 'fas fa-circle-stop', '关闭等级提速')
                  + row('passBoostWait', 'fas fa-hourglass-half', '进入等级提速等待期')
                  + row('passBoostComplete', 'fas fa-list-check', '一键完成等级提速所有任务')
+                 + row('passPhaseUnlockAll', 'fas fa-route', '一键解锁阶段奖励所有等级')
+                 + row('passPhaseLockAll', 'fas fa-lock', '一键关闭阶段奖励所有等级')
+                 + row('passPhaseSetLevels', 'fas fa-pen', '自定义阶段奖励等级解锁状态')
                  + row('passResetPurchase', 'fas fa-credit-card', '重置通行证购买状态')
                  + row('passUnlockSeason', 'fas fa-unlock', '全部解禁（无视赛季时间限制）')
                  + '</div>';
@@ -28850,6 +29901,9 @@
                 case 'passBoostClose': if (p) p.devBoostClose(); break;
                 case 'passBoostWait': if (p) p.devBoostWait(); break;
                 case 'passBoostComplete': if (p) p.devBoostCompleteAll(); break;
+                case 'passPhaseUnlockAll': if (p) p.devPhaseUnlockAll(); break;
+                case 'passPhaseLockAll': if (p) p.devPhaseLockAll(); break;
+                case 'passPhaseSetLevels': if (p && p.devPhaseSetLevels) p.devPhaseSetLevels(); break;
                 case 'passResetPurchase': if (p && p.devOpenResetPurchaseModal) p.devOpenResetPurchaseModal(); break;
                 case 'passUnlockSeason': if (p) p.devToggleUnlockAll(); break;
                 case 'runScriptTest':
@@ -34537,6 +35591,20 @@
                 subtextColor: '#a5b4fc',
                 borderColor: 'rgba(99, 102, 241, 0.3)',
                 panelBg: 'rgba(30, 27, 75, 0.75)',
+                isLocked: true
+            },
+            {
+                id: 'card-style-pass-s1',
+                name: '通行证·第一赛季',
+                category: 'special',
+                gradient: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 20%, #4c1d95 40%, #6d28d9 60%, #7c3aed 80%, #f59e0b 100%)',
+                headerGradient: 'linear-gradient(90deg, #1e1b4b 0%, #4c1d95 50%, #7c3aed 100%)',
+                sidebarGradient: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)',
+                accentColor: '#a78bfa',
+                textColor: '#ede9fe',
+                subtextColor: '#c4b5fd',
+                borderColor: 'rgba(167, 139, 250, 0.35)',
+                panelBg: 'rgba(30, 27, 75, 0.8)',
                 isLocked: true
             }
         ];
