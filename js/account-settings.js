@@ -1002,8 +1002,275 @@
         }
         
         initQuickNavMenu();
+        initSettingsMobileNavDrawer();
     }
-    
+
+    // ==================== 移动端侧边栏菜单（≤768px） ====================
+    var _settingsMobileDrawerInited = false;
+
+    function initSettingsMobileNavDrawer() {
+        if (_settingsMobileDrawerInited) return;
+        var btn = document.getElementById('uiMinMobileMenuBtn');
+        var drawer = document.getElementById('uiMinDrawer');
+        var overlay = document.getElementById('uiMinDrawerOverlay');
+        var closeBtn = document.getElementById('uiMinDrawerClose');
+        if (!btn || !drawer || !overlay || !closeBtn) return;
+        _settingsMobileDrawerInited = true;
+
+        var savedOverflow = null;
+
+        function lockBodyScroll(lock) {
+            try {
+                if (lock) {
+                    savedOverflow = document.body.style.overflow;
+                    document.body.style.overflow = 'hidden';
+                } else if (savedOverflow !== null) {
+                    document.body.style.overflow = savedOverflow;
+                    savedOverflow = null;
+                }
+            } catch (e) {}
+        }
+
+        function openDrawer() {
+            // 桌面宽度下按钮本身隐藏，此处为双保险
+            if (window.innerWidth > 768) return;
+            renderSettingsMobileDrawerContent();
+            drawer.classList.add('open');
+            overlay.classList.add('open');
+            drawer.setAttribute('aria-hidden', 'false');
+            btn.setAttribute('aria-expanded', 'true');
+            lockBodyScroll(true);
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove('open');
+            overlay.classList.remove('open');
+            drawer.setAttribute('aria-hidden', 'true');
+            btn.setAttribute('aria-expanded', 'false');
+            lockBodyScroll(false);
+        }
+
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (drawer.classList.contains('open')) closeDrawer();
+            else openDrawer();
+        });
+        closeBtn.addEventListener('click', closeDrawer);
+        overlay.addEventListener('click', closeDrawer);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
+        });
+        // 旋转屏幕或拉宽窗口回到桌面布局时自动收起
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768 && drawer.classList.contains('open')) closeDrawer();
+        });
+        window.closeMobileNavDrawer = closeDrawer;
+    }
+
+    // 根据顶部导航栏实时 DOM 渲染侧边栏内容（每次打开时重新生成，
+    // 自动适配 active 状态与后续变更）
+    function renderSettingsMobileDrawerContent() {
+        var navBox = document.getElementById('uiMinDrawerNav');
+        var actionBox = document.getElementById('uiMinDrawerActions');
+        var userBox = document.getElementById('uiMinDrawerUser');
+        if (!navBox) return;
+        navBox.innerHTML = '';
+        if (actionBox) actionBox.innerHTML = '';
+        if (userBox) userBox.innerHTML = '';
+
+        var drawerVersion = document.getElementById('uiMinDrawerVersion');
+        var topVersion = document.getElementById('uiMinVersion');
+        if (drawerVersion && topVersion) drawerVersion.textContent = topVersion.textContent || '';
+
+        function createRow(iconClass, text, opts) {
+            opts = opts || {};
+            var row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'ui-min-drawer-item';
+            if (opts.active) row.classList.add('active');
+            var icon = document.createElement('i');
+            icon.className = iconClass || 'fas fa-circle';
+            var label = document.createElement('span');
+            label.className = 'ui-min-drawer-label';
+            label.textContent = text || '';
+            row.appendChild(icon);
+            row.appendChild(label);
+            if (opts.chev) {
+                var chev = document.createElement('i');
+                chev.className = 'fas fa-chevron-down ui-min-drawer-chev';
+                row.appendChild(chev);
+            }
+            return row;
+        }
+
+        function createSectionTitle(text) {
+            var t = document.createElement('div');
+            t.className = 'ui-min-drawer-section-title';
+            t.textContent = text;
+            return t;
+        }
+
+        function createDivider() {
+            var d = document.createElement('div');
+            d.className = 'ui-min-drawer-divider';
+            return d;
+        }
+
+        // 代理触发顶部导航栏真实元素的点击事件，随后收起侧边栏
+        function proxyClick(realEl) {
+            return function(e) {
+                e.stopPropagation();
+                try {
+                    if (realEl && typeof realEl.click === 'function') realEl.click();
+                } catch (err) {}
+                closeMobileNavDrawerSafe();
+            };
+        }
+
+        function closeMobileNavDrawerSafe() {
+            if (window.closeMobileNavDrawer) window.closeMobileNavDrawer();
+        }
+
+        // 1) 主导航条目（含多级菜单，多级菜单渲染为手风琴）
+        var centerNav = document.querySelector('#uiMinTopnav .ui-min-topnav-center');
+        if (centerNav) {
+            Array.prototype.forEach.call(centerNav.children, function(child) {
+                if (child.classList.contains('ui-min-dropdown-menu')) {
+                    var group = document.createElement('div');
+                    group.className = 'ui-min-drawer-group';
+
+                    var realHeader = child.querySelector('.ui-min-nav-item');
+                    var headerIcon = realHeader ? realHeader.querySelector('i') : null;
+                    var headerLabel = realHeader ? realHeader.querySelector('span') : null;
+                    var subItems = child.querySelectorAll('.ui-min-dropdown-item');
+
+                    var hasActiveSub = false;
+                    for (var s = 0; s < subItems.length; s++) {
+                        if (subItems[s].classList.contains('active')) hasActiveSub = true;
+                    }
+
+                    var headerRow = createRow(
+                        headerIcon ? headerIcon.className : 'fas fa-folder',
+                        headerLabel ? headerLabel.textContent : '',
+                        {
+                            active: !!(realHeader && realHeader.classList.contains('active')),
+                            chev: true
+                        }
+                    );
+                    headerRow.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        group.classList.toggle('open');
+                    });
+                    group.appendChild(headerRow);
+
+                    var sub = document.createElement('div');
+                    sub.className = 'ui-min-drawer-sub';
+                    Array.prototype.forEach.call(subItems, function(realSub) {
+                        var subIcon = realSub.querySelector('i');
+                        var subLabel = realSub.querySelector('span');
+                        var subRow = createRow(
+                            subIcon ? subIcon.className : 'fas fa-circle',
+                            subLabel ? subLabel.textContent : '',
+                            { active: realSub.classList.contains('active') }
+                        );
+                        subRow.addEventListener('click', proxyClick(realSub));
+                        sub.appendChild(subRow);
+                    });
+                    group.appendChild(sub);
+
+                    // 当前所在分组默认展开
+                    if ((realHeader && realHeader.classList.contains('active')) || hasActiveSub) {
+                        group.classList.add('open');
+                    }
+                    navBox.appendChild(group);
+                } else if (child.classList.contains('ui-min-nav-item')) {
+                    var iconEl = child.querySelector('i');
+                    var labelEl = child.querySelector('span');
+                    var row = createRow(
+                        iconEl ? iconEl.className : 'fas fa-circle',
+                        labelEl ? labelEl.textContent : '',
+                        { active: child.classList.contains('active') }
+                    );
+                    row.addEventListener('click', proxyClick(child));
+                    navBox.appendChild(row);
+                }
+            });
+        }
+
+        // 2) 快捷功能：返回到启动器 + 搜索设置
+        if (actionBox) {
+            actionBox.appendChild(createDivider());
+            actionBox.appendChild(createSectionTitle('快捷功能'));
+
+            var homeRow = createRow('fas fa-rocket', '返回到启动器', {});
+            homeRow.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeMobileNavDrawerSafe();
+                // 保留游戏中心会话，直接回到启动器主界面
+                window.location.href = '../index.html';
+            });
+            actionBox.appendChild(homeRow);
+
+            var searchBtn = document.getElementById('settingsSearchBtn');
+            if (searchBtn) {
+                var searchRow = createRow('fas fa-search', '搜索设置', {});
+                searchRow.addEventListener('click', proxyClick(searchBtn));
+                actionBox.appendChild(searchRow);
+            }
+        }
+
+        // 3) 用户信息卡片 + 账号操作（退回至登录页 / 退出登录）
+        if (userBox) {
+            var userArea = document.getElementById('uiMinUserArea');
+            if (userArea) {
+                userBox.appendChild(createDivider());
+                userBox.appendChild(createSectionTitle('账号'));
+
+                var card = document.createElement('div');
+                card.className = 'ui-min-drawer-user-card';
+                var realAvatar = userArea.querySelector('.ui-min-user-avatar');
+                if (realAvatar) {
+                    var avatarClone = realAvatar.cloneNode(true);
+                    var clonedBadge = avatarClone.querySelector('.ui-min-level-badge');
+                    if (clonedBadge) clonedBadge.removeAttribute('id');
+                    card.appendChild(avatarClone);
+                }
+                var meta = document.createElement('div');
+                meta.className = 'ui-min-drawer-user-meta';
+                var nameEl = document.getElementById('uiMinUsername');
+                var idEl = document.getElementById('uiMinUserId');
+                var name = document.createElement('div');
+                name.className = 'ui-min-drawer-user-name';
+                name.textContent = (nameEl && nameEl.textContent) || '未登录';
+                var idLine = document.createElement('div');
+                idLine.className = 'ui-min-drawer-user-id';
+                idLine.textContent = (idEl && idEl.textContent) || 'ID: ---';
+                meta.appendChild(name);
+                meta.appendChild(idLine);
+                card.appendChild(meta);
+                userBox.appendChild(card);
+
+                var userDropdown = document.getElementById('uiMinUserDropdown');
+                if (userDropdown) {
+                    Array.prototype.forEach.call(
+                        userDropdown.querySelectorAll('.ui-min-dropdown-item[data-action]'),
+                        function(realAction) {
+                            var aIcon = realAction.querySelector('i');
+                            var aLabel = realAction.querySelector('span');
+                            var uRow = createRow(
+                                aIcon ? aIcon.className : 'fas fa-circle',
+                                aLabel ? aLabel.textContent : '',
+                                {}
+                            );
+                            uRow.addEventListener('click', proxyClick(realAction));
+                            userBox.appendChild(uRow);
+                        }
+                    );
+                }
+            }
+        }
+    }
+
     function initQuickNavMenu() {
         var quickNavBtn = document.getElementById('quickNavBtn');
         var quickNavDropdown = document.getElementById('quickNavDropdown');
@@ -9550,47 +9817,61 @@
         }
     }
     
-    // 外部链接确认弹窗
+    // 外部链接确认弹窗（启动器统一弹窗样式）
     function showLeaveConfirmModal(url) {
         var existingModal = document.getElementById('leaveConfirmModal');
         if (existingModal) {
             existingModal.remove();
         }
-        
+
         var modal = document.createElement('div');
         modal.id = 'leaveConfirmModal';
         modal.className = 'custom-alert';
-        
-        modal.innerHTML = `
-            <div class="alert-content" style="max-width: 500px;">
-                <div class="alert-header">
-                    <h2>即将离开PRE Launcher</h2>
-                </div>
-                <div class="about-content" style="text-align: left;">
-                    <p style="margin: 15px 0;">您即将离开PRE Launcher，请注意您的账号和财产安全。</p>
-                    <p style="margin: 15px 0;"><strong>跳转地址：</strong><span style="color: #666; word-break: break-all;">${url}</span></p>
-                </div>
-                <div class="modal-buttons">
-                    <button id="leaveConfirmCancel" class="alert-confirm">取消</button>
-                    <button id="leaveConfirmOk" class="alert-confirm" style="background-color: #d45d79;">确认跳转</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
+
+        modal.innerHTML =
+            '<div class="ext-leave-card">' +
+                '<div class="ext-leave-header">' +
+                    '<h3><i class="fas fa-arrow-up-right-from-square"></i>即将离开 PRE Launcher</h3>' +
+                    '<button type="button" class="ext-leave-close" id="leaveConfirmClose" title="关闭" aria-label="关闭"><i class="fas fa-times"></i></button>' +
+                '</div>' +
+                '<p class="ext-leave-subtitle">您即将离开 PRE Launcher，请注意您的账号和财产安全。</p>' +
+                '<div class="ext-leave-url">' +
+                    '<i class="fas fa-link"></i>' +
+                    '<span class="ext-leave-url-label">跳转地址</span>' +
+                    '<span class="ext-leave-url-text" id="leaveConfirmUrlText"></span>' +
+                '</div>' +
+                '<p class="ext-leave-tip"><i class="fas fa-shield-halved"></i>请确认跳转地址可信，谨防账号与财产损失</p>' +
+                '<div class="ext-leave-buttons">' +
+                    '<button type="button" class="ext-leave-btn ext-leave-cancel" id="leaveConfirmCancel">取消</button>' +
+                    '<button type="button" class="ext-leave-btn ext-leave-ok" id="leaveConfirmOk"><i class="fas fa-arrow-up-right-from-square"></i>确认跳转</button>' +
+                '</div>' +
+            '</div>';
+
+        // 以文本节点写入 URL，避免特殊字符破坏 HTML
+        modal.querySelector('#leaveConfirmUrlText').textContent = url;
+
         var cancelBtn = modal.querySelector('#leaveConfirmCancel');
+        var closeBtn = modal.querySelector('#leaveConfirmClose');
         var okBtn = modal.querySelector('#leaveConfirmOk');
-        
+
         if (cancelBtn) {
             cancelBtn.addEventListener('click', closeLeaveConfirmModal);
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeLeaveConfirmModal);
         }
         if (okBtn) {
             okBtn.addEventListener('click', function() {
                 confirmLeave(url);
             });
         }
-        
+        // 点击遮罩空白处关闭
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeLeaveConfirmModal();
+        });
+
+        document.body.appendChild(modal);
+
         modal.style.display = 'flex';
         setTimeout(function() {
             modal.classList.add('show');

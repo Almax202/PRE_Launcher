@@ -416,6 +416,8 @@ function markEventAnnouncementAsViewed(id) {
     if (viewedIds.indexOf(id) === -1) {
         viewedIds.push(id);
         localStorage.setItem(EVENT_STORAGE_KEYS.VIEWED_EVENT_ANNOUNCEMENT_IDS, JSON.stringify(viewedIds));
+        // 即时通知顶部导航气泡刷新（避免轮询延迟）
+        notifyUnreadStateChanged();
     }
 }
 
@@ -437,6 +439,61 @@ function markAllEventAnnouncementsAsRead() {
     if (typeof showAlert === 'function') {
         showAlert('所有活动公告已标记为已读');
     }
+    // 即时通知顶部导航气泡刷新
+    notifyUnreadStateChanged();
+}
+
+// ==================== 未读状态变更通知（顶部导航气泡即时刷新） ====================
+// 所有已读/未读状态变化（邮件、开发者公告、活动公告、活动中心）统一派发该事件，
+// 气泡控制器监听后立即重绘，无需等待轮询；轮询仅作为兜底。
+function notifyUnreadStateChanged() {
+    try {
+        document.dispatchEvent(new Event('prel:unread-changed'));
+    } catch (e) {
+        var evt = document.createEvent('Event');
+        evt.initEvent('prel:unread-changed', true, false);
+        document.dispatchEvent(evt);
+    }
+}
+
+// ==================== 活动中心已读状态管理（顶部导航「有新活动未读」气泡用） ====================
+var VIEWED_EVENT_CENTER_KEY = 'viewed_event_center_ids';
+
+function getViewedEventCenterIds() {
+    try {
+        var stored = localStorage.getItem(VIEWED_EVENT_CENTER_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function markEventCenterIdsViewed(ids) {
+    var viewed = getViewedEventCenterIds();
+    var changed = false;
+    (ids || []).forEach(function(id) {
+        if (viewed.indexOf(id) === -1) {
+            viewed.push(id);
+            changed = true;
+        }
+    });
+    if (changed) {
+        localStorage.setItem(VIEWED_EVENT_CENTER_KEY, JSON.stringify(viewed));
+    }
+    return changed;
+}
+
+// 是否存在未查看的活动（未结束/进行中/未开始且未查看；Dev 全部解禁时赛季活动视为进行中）
+function hasUnviewedCenterEvents() {
+    if (typeof eventCenterData === 'undefined' || !eventCenterData.events) return false;
+    var viewed = getViewedEventCenterIds();
+    var devUnlockActive = (window.pass && typeof window.pass.isDevUnlockAll === 'function' && window.pass.isDevUnlockAll());
+    return eventCenterData.events.some(function(evt) {
+        if (viewed.indexOf(evt.id) !== -1) return false;
+        var state = (evt.startTime || evt.endTime) ? getEventTimeState(evt.startTime, evt.endTime) : 'active';
+        if (devUnlockActive && evt.id === SEASON_PASS_EVENT.eventId) state = 'active';
+        return state !== 'ended';
+    });
 }
 
 // ==================== 活动公告模态框 ====================
@@ -1673,9 +1730,9 @@ function getExpRequiredForLevelStatic(level) {
     }
     var MAX_LEVEL = 60;
     if (level >= MAX_LEVEL) return 0;
-    if (level >= 50) return 100 + (level + 5) * 80;   // 50级+：100 + (等级+5) × 80
-    if (level >= 20) return 80 + (level + 2) * 50;     // 20-49级：80 + (等级+2) × 50
-    return 50 + (level + 1) * 30;                      // 1-19级：50 + (等级+1) × 30
+    if (level >= 50) return 2000 + (level + 5) * 80;   // 50级+：2000 + (等级+5) × 80
+    if (level >= 20) return 1500 + (level + 5) * 60;   // 20-49级：1500 + (等级+5) × 60
+    return 1000 + (level + 3) * 50;                     // 1-19级：1000 + (等级+3) × 50
 }
 
 function showEventCenterModal() {
@@ -1697,6 +1754,14 @@ function showEventCenterModal() {
     var stateChanged = applyTimedEventStates();
     if (applyMigratedEvents() || stateChanged) {
         renderEventCenterList();
+    }
+
+    // 打开活动中心即视为已查看当前所有非已结束活动，立即刷新顶部导航气泡
+    var viewableIds = eventCenterData.events.filter(function(e) {
+        return (e.startTime || e.endTime) ? getEventTimeState(e.startTime, e.endTime) !== 'ended' : true;
+    }).map(function(e) { return e.id; });
+    if (markEventCenterIdsViewed(viewableIds)) {
+        notifyUnreadStateChanged();
     }
 
     modal.style.display = 'flex';

@@ -135,18 +135,18 @@ function formatPreCoin(amount) {
 // ==================== PRE Coin 每日奖励配置 ====================
 // 每日签到根据连续签到天数给出的硬币奖励
 var PRECOIN_DAILY_CHECKIN_REWARDS = {
-    // 1-6天：每天 20
-    tier1: { minDays: 1, maxDays: 6, coin: 20 },
-    // 7-14天：每天 50
-    tier2: { minDays: 7, maxDays: 14, coin: 50 },
-    // 15天及以上：每天 80
-    tier3: { minDays: 15, maxDays: 99999, coin: 80 }
+    // 1-6天：每天 30
+    tier1: { minDays: 1, maxDays: 6, coin: 30 },
+    // 7-14天：每天 60
+    tier2: { minDays: 7, maxDays: 14, coin: 60 },
+    // 15天及以上：每天 90
+    tier3: { minDays: 15, maxDays: 99999, coin: 90 }
 };
 
 // 阶段突破模式（60级后）下的每日签到硬币奖励：升级所需经验值巨大，硬币奖励同步提升
 var PRECOIN_DAILY_CHECKIN_REWARDS_STAGE = {
-    // 1-6天：每天 80
-    tier1: { minDays: 1, maxDays: 6, coin: 80 },
+    // 1-6天：每天 100
+    tier1: { minDays: 1, maxDays: 6, coin: 100 },
     // 7-14天：每天 120
     tier2: { minDays: 7, maxDays: 14, coin: 120 },
     // 15天及以上：每天 150

@@ -363,7 +363,7 @@ var PASS_PHASE_REWARDS = [
         level: 120,
         position: 'right',
         name: '3D 动态背景「赛季顶点」',
-        icon: 'fas fa-mountain-sun',
+        icon: 'fas fa-mountain',
         color: '#f59e0b',
         reward: { type: 'background', id: 'pass-bg-s1-120' }
     }
@@ -2318,6 +2318,9 @@ function openPassUI() {
     document.body.insertAdjacentHTML('beforeend', _buildPassHTML());
     _passUI.overlay = document.getElementById('passOverlay');
     _passUI.content = _passUI.overlay.querySelector('.pass-container');
+    // 构建的 overlay 默认为 display:none，首次创建时必须立即显示，
+    // 否则仅播放透明度过场而窗口不可见，需再次点击（走已存在分支）才出现
+    _passUI.overlay.style.display = 'flex';
     _passUI._particleRunning = true;
 
     _initPassParticles();
@@ -3790,18 +3793,23 @@ function _renderPassPhaseRewards() {
         var qtyText = (node.reward.type === 'item' && node.reward.qty && node.reward.qty > 1)
             ? ' × ' + node.reward.qty : '';
 
+        // 仅仓库物品类奖励可点击查看详情（名片样式/3D 背景除外）
+        var canViewDetail = node.reward.type === 'item';
+
         html += '<div class="' + nodeCls + '" style="left:' + leftPct + '%;">';
         // 竖线连接线（top/bottom 节点连接到横线；left/right 节点本身在横线上）
         if (node.position === 'top') html += '<div class="pass-phase-connector pass-phase-connector-down"></div>';
         if (node.position === 'bottom') html += '<div class="pass-phase-connector pass-phase-connector-up"></div>';
         // 节点圆点
         html += '<div class="pass-phase-dot"><i class="' + node.icon + '"></i></div>';
-        // 奖励卡片
-        html += '<div class="pass-phase-card">';
+        // 奖励卡片（物品类奖励卡片可点击查看物品详情）
+        html += '<div class="pass-phase-card' + (canViewDetail ? ' pass-phase-card-clickable' : '') + '"' +
+            (canViewDetail ? ' data-phase-detail="' + node.reward.id + '" title="点击查看物品详情"' : '') + '>';
         html +=   '<div class="pass-phase-level-tag">' + node.level + ' 级</div>';
         html +=   '<div class="pass-phase-reward-icon" style="color:' + node.color + ';"><i class="' + node.icon + '"></i></div>';
         html +=   '<div class="pass-phase-reward-name">' + node.name + qtyText + '</div>';
         html +=   '<button class="pass-btn ' + btnCls + ' pass-phase-claim-btn" data-phase-level="' + node.level + '" ' + btnDisabled + '>' + btnText + '</button>';
+        if (canViewDetail) html += '<div class="pass-phase-detail-hint"><i class="fas fa-info-circle"></i> 查看详情</div>';
         html += '</div>';
         html += '</div>';
     });
@@ -3814,10 +3822,28 @@ function _renderPassPhaseRewards() {
 
     // 绑定领取
     container.querySelectorAll('.pass-phase-claim-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            // 阻止冒泡到卡片，避免点领取时同时弹出物品详情
+            e.stopPropagation();
             var lv = parseInt(this.getAttribute('data-phase-level'), 10);
             if (passClaimPhaseReward(lv)) {
                 renderPassUI();
+            }
+        });
+    });
+
+    // 绑定物品详情查看（名片样式/背景卡片无此属性，不响应）
+    container.querySelectorAll('.pass-phase-card-clickable').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+            // 点击领取按钮不弹详情
+            if (e.target.closest('.pass-phase-claim-btn')) return;
+            var itemId = this.getAttribute('data-phase-detail');
+            if (itemId && typeof showWarehouseItemDetail === 'function') {
+                // previewOnly：未持有时也可查看，且不显示「使用该物品」按钮
+                showWarehouseItemDetail(itemId, { previewOnly: true });
+                // 通行证遮罩 z-index 为 999999，需将详情弹窗提至其之上（toast 为 1000001 仍最高）
+                var detailModal = document.getElementById('warehouseItemDetailModal');
+                if (detailModal) detailModal.style.zIndex = '1000000';
             }
         });
     });
@@ -5204,6 +5230,23 @@ function _injectPassCSS() {
 }
 .pass-phase-claim-btn { width: 100%; font-size: 11px; padding: 5px 0; }
 .pass-phase-node-locked .pass-phase-card { opacity: 0.7; }
+/* 可点击查看详情的物品卡片 */
+.pass-phase-card-clickable { cursor: pointer; transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+.pass-phase-node-top .pass-phase-card-clickable:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.55); border-color: rgba(196, 181, 253, 0.8); }
+.pass-phase-node-bottom .pass-phase-card-clickable:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.55); border-color: rgba(196, 181, 253, 0.8); }
+.pass-phase-node-left .pass-phase-card-clickable:hover,
+.pass-phase-node-right .pass-phase-card-clickable:hover { transform: translateY(calc(-50% - 2px)); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.55); border-color: rgba(196, 181, 253, 0.8); }
+.pass-phase-detail-hint {
+    margin-top: 5px;
+    font-size: 10px;
+    color: #a78bfa;
+    opacity: 0.75;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+.pass-phase-card-clickable:hover .pass-phase-detail-hint { opacity: 1; }
 .pass-phase-locked {
     text-align: center;
     padding: 60px 20px;

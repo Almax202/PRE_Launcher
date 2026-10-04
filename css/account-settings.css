@@ -7711,8 +7711,8 @@ body.ui-minimalist.dark-mode .settings-card {
 /* 响应式 */
 @media (max-width: 768px) {
     .ui-min-topnav {
-        padding: 0 16px;
-        height: 60px;
+        padding: 0 12px;
+        height: 52px;
     }
     
     .ui-min-brand-version {
@@ -7748,7 +7748,7 @@ body.ui-minimalist.dark-mode .settings-card {
     }
     
     body.ui-minimalist .settings-container {
-        padding-top: 60px;
+        padding-top: 52px;
     }
     
     body.ui-minimalist .settings-content {

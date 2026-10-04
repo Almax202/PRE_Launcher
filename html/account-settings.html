@@ -77,6 +77,10 @@
             <button class="ui-min-action-btn" id="uiMinBackBtn" title="返回登录页">
                 <i class="fas fa-arrow-left"></i>
             </button>
+            <button class="ui-min-mobile-menu-btn" id="uiMinMobileMenuBtn" type="button" aria-label="打开菜单" aria-controls="uiMinDrawer" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+                <span>菜单</span>
+            </button>
         </div>
         <div class="ui-min-topnav-center">
             <div class="ui-min-dropdown-menu" data-menu="account">
@@ -196,6 +200,31 @@
             </div>
         </div>
     </nav>
+
+    <!-- 移动端侧边栏菜单（≤768px 时通过左上角"菜单"按钮呼出） -->
+    <div class="ui-min-drawer-overlay" id="uiMinDrawerOverlay"></div>
+    <aside class="ui-min-drawer" id="uiMinDrawer" aria-hidden="true">
+        <div class="ui-min-drawer-header">
+            <div class="ui-min-drawer-brand">
+                <div class="ui-min-logo">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="ui-min-brand">
+                    <span class="ui-min-brand-name">PRE Launcher</span>
+                    <span class="ui-min-brand-version" id="uiMinDrawerVersion">系统设置</span>
+                </div>
+            </div>
+            <button class="ui-min-drawer-close" id="uiMinDrawerClose" type="button" aria-label="关闭菜单">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="ui-min-drawer-body">
+            <nav class="ui-min-drawer-nav" id="uiMinDrawerNav" aria-label="移动端导航菜单"></nav>
+            <div class="ui-min-drawer-actions" id="uiMinDrawerActions"></div>
+            <div class="ui-min-drawer-user" id="uiMinDrawerUser"></div>
+        </div>
+    </aside>
+
     <div class="settings-container">
         <div class="settings-sidebar">
             <div class="sidebar-header">
