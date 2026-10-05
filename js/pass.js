@@ -315,13 +315,16 @@ function buildSeasonTasks() {
 }
 
 // ==================== 阶段奖励（购买通行证本体或组合包后解锁） ====================
-// 节点沿一条超长横线分布：左侧 0 级为初始奖励，横线之上为 30 / 80 级，横线之下为 50 / 100 级，最右侧 120 级为终点奖励
-// position: 'left' 横线左端点 | 'right' 横线右端点 | 'top' 横线上方 | 'bottom' 横线下方
+// 节点沿一条超长横线分布：全部奖励卡片（含 0 级初始奖励与 120 级终点奖励）统一位于横线之上，
+// 由竖线连接到横线上的圆点
+// position: 保留字段，当前统一为 'top'（横线之上）
 // reward.type: 'item' 仓库物品 | 'cardStyle' 用户名片样式 | 'background' 3D 动态背景
+// 轨道两端内缩量（px）：= 卡片半宽，保证 0 级 / 120 级卡片居中时不超出轨道
+var PASS_PHASE_TRACK_INSET = 72;
 var PASS_PHASE_REWARDS = [
     {
         level: 0,
-        position: 'left',
+        position: 'top',
         name: '经验值补给卡 Ⅲ',
         icon: 'fas fa-asterisk',
         color: '#f39c12',
@@ -337,7 +340,7 @@ var PASS_PHASE_REWARDS = [
     },
     {
         level: 50,
-        position: 'bottom',
+        position: 'top',
         name: '经验值补给卡 Ⅳ',
         icon: 'fas fa-sun',
         color: '#e74c3c',
@@ -353,7 +356,7 @@ var PASS_PHASE_REWARDS = [
     },
     {
         level: 100,
-        position: 'bottom',
+        position: 'top',
         name: 'PRE Coin 补给包 Ⅳ',
         icon: 'fas fa-box-open',
         color: '#e74c3c',
@@ -361,7 +364,7 @@ var PASS_PHASE_REWARDS = [
     },
     {
         level: 120,
-        position: 'right',
+        position: 'top',
         name: '3D 动态背景「赛季顶点」',
         icon: 'fas fa-mountain',
         color: '#f59e0b',
@@ -998,6 +1001,22 @@ function _getPassWeekly12OpenWeeks() {
     var elapsed = now - start;
     var weeks = Math.floor(elapsed / PASS_WEEKLY12_WEEK_MS) + 1;
     return Math.max(1, Math.min(PASS_WEEKLY12_TOTAL_WEEKS, weeks));
+}
+
+// 每周事项下一周次开放时间（与 _getPassWeekly12OpenWeeks 同源，均基于赛季起始 + 7 天周期；
+// 12 周全部开放后返回 null）
+function _getPassWeekly12NextOpenTime() {
+    var openWeeks = _getPassWeekly12OpenWeeks();
+    if (openWeeks >= PASS_WEEKLY12_TOTAL_WEEKS) return null;
+    return new Date(PASS_CONFIG.startTime).getTime() + openWeeks * PASS_WEEKLY12_WEEK_MS;
+}
+
+// 距下一周次开放剩余天数（向上取整，范围 1~7；12 周全部开放后为 0）
+function _getPassWeekly12DaysUntilNext() {
+    var next = _getPassWeekly12NextOpenTime();
+    if (next === null) return 0;
+    var days = Math.ceil((next - Date.now()) / (24 * 3600 * 1000));
+    return Math.max(1, Math.min(7, days));
 }
 
 // 确保每周事项数据已初始化
@@ -3556,9 +3575,15 @@ function _renderPassWeekly12Tasks(data) {
     if (header) {
         if (seasonLocked) {
             header.innerHTML = '';
+        } else if (_isWeekly12DevUnlocked()) {
+            // Dev 解禁态：12 周全部开放，无真实刷新倒计时
+            header.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-code"></i> 开发者调试：12 周每周事项已全部开放</div>';
+        } else if (openWeeks >= PASS_WEEKLY12_TOTAL_WEEKS) {
+            // 12 周已按真实时间全部开放
+            header.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-circle-check"></i> 12 周每周事项已全部开放</div>';
         } else {
-            var daysUntilNext = (8 - new Date().getDay()) % 7;
-            if (daysUntilNext === 0) daysUntilNext = 7;
+            // 倒计时与周次开放判定同源：归零之时即新周按钮出现之时
+            var daysUntilNext = _getPassWeekly12DaysUntilNext();
             header.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-hourglass-half"></i> 距下一次更新每周事项将在 ' + daysUntilNext + ' 天后</div>';
         }
     }
@@ -3768,18 +3793,18 @@ function _renderPassPhaseRewards() {
     var html = '<div class="pass-phase-timeline-wrap">';
     html += '<div class="pass-phase-timeline" id="passPhaseTimeline">';
 
-    // 按 position 分组：left / top / bottom / right
+    // 全部节点为统一的「横线上方」样式
     PASS_PHASE_REWARDS.forEach(function(node) {
         var isClaimed = !!claimed[node.level];
         var reachable = _isPassPhaseLevelReachable(node.level);
         var canClaim = reachable && !isClaimed;
 
-        // 节点位置：left 0% → right 100%，其余按等级在 0~120 间线性分布
-        var leftPct = (node.level / 120) * 100;
-        if (node.position === 'left') leftPct = 0;
-        if (node.position === 'right') leftPct = 100;
+        // 节点位置：按等级在内缩轨道（两端各留半张卡片宽）上线性分布，0 级 / 120 级卡片不溢出
+        var posRatio = node.level / 120;
+        var leftStyle = 'calc(' + PASS_PHASE_TRACK_INSET + 'px + ' + posRatio +
+            ' * (100% - ' + (PASS_PHASE_TRACK_INSET * 2) + 'px))';
 
-        var nodeCls = 'pass-phase-node pass-phase-node-' + node.position;
+        var nodeCls = 'pass-phase-node pass-phase-node-top';
         if (isClaimed) nodeCls += ' pass-phase-node-claimed';
         else if (reachable) nodeCls += ' pass-phase-node-reachable';
         else nodeCls += ' pass-phase-node-locked';
@@ -3796,10 +3821,9 @@ function _renderPassPhaseRewards() {
         // 仅仓库物品类奖励可点击查看详情（名片样式/3D 背景除外）
         var canViewDetail = node.reward.type === 'item';
 
-        html += '<div class="' + nodeCls + '" style="left:' + leftPct + '%;">';
-        // 竖线连接线（top/bottom 节点连接到横线；left/right 节点本身在横线上）
-        if (node.position === 'top') html += '<div class="pass-phase-connector pass-phase-connector-down"></div>';
-        if (node.position === 'bottom') html += '<div class="pass-phase-connector pass-phase-connector-up"></div>';
+        html += '<div class="' + nodeCls + '" style="left:' + leftStyle + ';">';
+        // 竖线连接线：自圆点向上连接至横线上方的奖励卡片
+        html += '<div class="pass-phase-connector pass-phase-connector-down"></div>';
         // 节点圆点
         html += '<div class="pass-phase-dot"><i class="' + node.icon + '"></i></div>';
         // 奖励卡片（物品类奖励卡片可点击查看物品详情）
@@ -5148,31 +5172,28 @@ function _injectPassCSS() {
 .pass-phase-timeline-wrap::-webkit-scrollbar { height: 0; }
 .pass-phase-timeline {
     position: relative;
-    min-height: 340px;
+    min-height: 280px;
     min-width: 860px;
 }
 .pass-phase-line {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
+    left: 72px;
+    right: 72px;
+    top: 232px;
     height: 5px;
     background: linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 100%);
     border-radius: 3px;
-    transform: translateY(-50%);
     box-shadow: 0 0 10px rgba(120, 80, 255, 0.3);
 }
 .pass-phase-node {
     position: absolute;
-    top: 50%;
+    top: 232px;
     transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     z-index: 2;
 }
-.pass-phase-node-left { top: 50%; left: 0; transform: translate(0, -50%); }
-.pass-phase-node-right { top: 50%; right: 0; transform: translate(0, -50%); }
 .pass-phase-dot {
     width: 32px; height: 32px;
     border-radius: 50%;
@@ -5193,7 +5214,6 @@ function _injectPassCSS() {
     transform: translateX(-50%);
 }
 .pass-phase-connector-down { top: -64px; height: 64px; }
-.pass-phase-connector-up { bottom: -64px; height: 64px; }
 .pass-phase-card {
     position: absolute;
     width: 144px;
@@ -5205,10 +5225,8 @@ function _injectPassCSS() {
     box-shadow: 0 4px 16px rgba(0,0,0,0.4);
     backdrop-filter: blur(6px);
 }
+/* 全部奖励卡片统一位于横线之上、相对圆点水平居中 */
 .pass-phase-node-top .pass-phase-card { bottom: 80px; transform: translateX(-50%); left: 50%; }
-.pass-phase-node-bottom .pass-phase-card { top: 80px; transform: translateX(-50%); left: 50%; }
-.pass-phase-node-left .pass-phase-card { left: 48px; top: 50%; transform: translateY(-50%); }
-.pass-phase-node-right .pass-phase-card { right: 48px; top: 50%; transform: translateY(-50%); }
 .pass-phase-level-tag {
     display: inline-block;
     font-size: 11px;
@@ -5232,10 +5250,7 @@ function _injectPassCSS() {
 .pass-phase-node-locked .pass-phase-card { opacity: 0.7; }
 /* 可点击查看详情的物品卡片 */
 .pass-phase-card-clickable { cursor: pointer; transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
-.pass-phase-node-top .pass-phase-card-clickable:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.55); border-color: rgba(196, 181, 253, 0.8); }
-.pass-phase-node-bottom .pass-phase-card-clickable:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.55); border-color: rgba(196, 181, 253, 0.8); }
-.pass-phase-node-left .pass-phase-card-clickable:hover,
-.pass-phase-node-right .pass-phase-card-clickable:hover { transform: translateY(calc(-50% - 2px)); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.55); border-color: rgba(196, 181, 253, 0.8); }
+.pass-phase-card-clickable:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.55); border-color: rgba(196, 181, 253, 0.8); }
 .pass-phase-detail-hint {
     margin-top: 5px;
     font-size: 10px;

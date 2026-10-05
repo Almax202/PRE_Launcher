@@ -217,6 +217,17 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.3.5 (c4)",
+            date: "2026-10-05",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 修复通行证「每周事项」进入新的一周后，第二周按钮未及时显示、倒计时标签却提前重新计数的问题：倒计时原按自然周一计算，与按赛季起始每 7 天开放一周的按钮判定不同源，现统一为同一周期，倒计时归零即新周开放；同时优化「阶段奖励」样式，全部等级奖励卡片（含 0 级与 120 级）统一置于时间轴横线之上，由竖线与横线上的圆点连接，端点卡片不再溢出",
+            ]
+        },
+        {
             version: "RC 3.0.3.5 (c3)",
             date: "2026-10-04",
             tag: "important",

@@ -79,11 +79,37 @@ var mailSystem = {
     
     markAsRead: function(mailId) {
         var mails = this.getMails();
+        var noticeToClaim = null;
         mails.forEach(function(m) {
             if (m.id === mailId) {
+                // 通知类邮件：首次阅读即视为领取（无可领取内容也要置位）
+                if (m.mailType === 'notice' && !m.isClaimed) {
+                    m.isClaimed = true;
+                    noticeToClaim = m;
+                }
                 m.isRead = true;
             }
         });
+
+        // 通知类邮件阅读后写入领取记录（rewards 为空数组，以 mailType 标识）
+        if (noticeToClaim) {
+            var history = this.getMailHistory();
+            // 幂等保护：同封邮件已有记录时不重复写入
+            var alreadyRecorded = history.some(function(h) { return h.id === noticeToClaim.id; });
+            if (!alreadyRecorded) {
+                history.unshift({
+                    id: noticeToClaim.id,
+                    title: noticeToClaim.title,
+                    sender: noticeToClaim.sender,
+                    content: noticeToClaim.content || '',
+                    mailType: 'notice',
+                    rewards: [],
+                    claimTime: Date.now()
+                });
+                this.saveMailHistory(history);
+            }
+        }
+
         this.saveMails(mails);
         this.updateMailNotification();
     },
@@ -92,6 +118,8 @@ var mailSystem = {
         var mails = this.getMails();
         var mail = mails.find(function(m) { return m.id === mailId; });
         if (!mail || mail.isClaimed) return false;
+        // 通知类邮件无附件，不适用奖励领取流程（应走 markAsRead）
+        if (mail.mailType === 'notice') return false;
         
         // 发放对象二次校验：若邮件要求注册时间早于指定时间点，
         // 即使邮件已存在于邮箱中，也不允许不符合条件的账户领取。
@@ -989,6 +1017,21 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 24,
+            date: "2026-10-05",
+            mails: [
+                {
+                    id: 'pass_weekly12_hotfix_notice_20261005',
+                    title: '通行证每周事项热更新补丁',
+                    sender: 'PRE Launcher',
+                    mailType: 'notice',
+                    content: '亲爱的用户，您好！\n\n我们已于今日（2026-10-05）通过热更新补丁修复了通行证中的两处问题：\n\n1.「每周事项」进入新的一周后，倒计时标签按自然周一重新计数，与新周按钮按赛季起始每 7 天开放的判定不同步，导致第二周按钮未能及时出现；现已将两者统一为同一时间周期——倒计时归零之时，即新一周按钮开放之时。\n2.「阶段奖励」时间轴布局优化：所有等级的奖励卡片（含 0 级与 120 级）现统一置于时间轴横线之上，由竖线与横线上的圆点连接，端点卡片不再溢出。\n\n本邮件仅作通知用途，不含任何附件，点击本邮件即视为已读，无需领取；邮件有效期截止至 2026-10-12 23:59:59 (UTC+8)，过期后将自动移除。\n\n感谢您的理解与支持，祝您在第一赛季中游戏愉快！',
+                    startTime: "2026-10-05 09:50:00",
+                    endTime: "2026-10-12 23:59:59"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {
@@ -1027,6 +1070,7 @@ var mailSystem = {
                     if (mailTemplate.sender !== undefined && existingMail.sender !== mailTemplate.sender) needsUpdate = true;
                     if (mailTemplate.content !== undefined && existingMail.content !== mailTemplate.content) needsUpdate = true;
                     if (mailTemplate.attachments !== undefined && JSON.stringify(existingMail.attachments) !== JSON.stringify(mailTemplate.attachments)) needsUpdate = true;
+                    if ((mailTemplate.mailType || 'reward') !== (existingMail.mailType || 'reward')) needsUpdate = true;
                     if (endTime !== undefined && existingMail.expireTime !== endTime) needsUpdate = true;
                     if (mailTemplate.requireRegisteredBefore !== undefined && existingMail.requireRegisteredBefore !== mailTemplate.requireRegisteredBefore) needsUpdate = true;
                     
@@ -1043,6 +1087,7 @@ var mailSystem = {
                         sender: mailTemplate.sender,
                         content: mailTemplate.content,
                         attachments: mailTemplate.attachments,
+                        mailType: mailTemplate.mailType || 'reward',
                         sendTime: startTime,
                         expireTime: endTime,
                         isRead: false,
@@ -1078,6 +1123,7 @@ var mailSystem = {
         if (mailTemplate.sender !== undefined) mail.sender = mailTemplate.sender;
         if (mailTemplate.content !== undefined) mail.content = mailTemplate.content;
         if (mailTemplate.attachments !== undefined) mail.attachments = mailTemplate.attachments;
+        if (mailTemplate.mailType !== undefined) mail.mailType = mailTemplate.mailType;
         
         if (mailTemplate.startTime !== undefined) {
             var startTime = typeof mailTemplate.startTime === 'string' 
@@ -1096,6 +1142,25 @@ var mailSystem = {
         // 同步发放对象注册时间门槛，便于领取时二次校验
         if (mailTemplate.requireRegisteredBefore !== undefined) {
             mail.requireRegisteredBefore = mailTemplate.requireRegisteredBefore;
+        }
+        
+        // 回填：通知类邮件若在本次规则生效前已读但未记录领取，补登为已领取并写入领取记录
+        if (mail.mailType === 'notice' && mail.isRead && !mail.isClaimed) {
+            mail.isClaimed = true;
+            var history = this.getMailHistory();
+            var alreadyRecorded = history.some(function(h) { return h.id === mail.id; });
+            if (!alreadyRecorded) {
+                history.unshift({
+                    id: mail.id,
+                    title: mail.title,
+                    sender: mail.sender,
+                    content: mail.content || '',
+                    mailType: 'notice',
+                    rewards: [],
+                    claimTime: Date.now()
+                });
+                this.saveMailHistory(history);
+            }
         }
         
         this.saveMails(mails);
@@ -1300,10 +1365,14 @@ function updateMailHistoryCapBadge() {
     badge.textContent = '可保留' + mailSystem.MAX_HISTORY + '条领取记录，超过上限的记录将会被删除（已保留' + count + '条）';
 }
 
+// 是否为「通知类」邮件（无附件，点击即已读，阅读同时视为领取并写入领取记录）
+function _isNoticeMail(mail) {
+    return !!(mail && mail.mailType === 'notice');
+}
+
 function renderMailList() {
     var mailList = document.getElementById('mailList');
     if (!mailList) return;
-
     updateMailCountBadge();
 
     var mails = mailSystem.getMails();
@@ -1329,10 +1398,18 @@ function renderMailList() {
     mails.forEach(function(mail) {
         var isUnread = !mail.isRead;
         var isClaimed = mail.isClaimed;
+        var isNotice = _isNoticeMail(mail);
         var isExpired = mail.expireTime && mail.expireTime < Date.now();
         
         var timeStr = formatMailTime(mail.sendTime);
         var preview = mail.content ? mail.content.substring(0, 50) + (mail.content.length > 50 ? '...' : '') : '';
+        
+        // 通知类邮件读后状态文本为「已读」，奖励类邮件领取后为「已领取」
+        var statusTextHtml = '';
+        if (isClaimed || (isNotice && mail.isRead)) {
+            statusTextHtml = '<div style="margin-top: 8px; font-size: 12px; color: #52c41a;">' +
+                (isNotice ? '已读' : '已领取') + '</div>';
+        }
         
         html += `
             <div class="mail-item ${isUnread ? 'unread' : ''} ${isExpired ? 'expired' : ''}" data-mail-id="${mail.id}">
@@ -1342,7 +1419,7 @@ function renderMailList() {
                 </div>
                 <div class="mail-item-title">${escapeHtml(mail.title)}</div>
                 <div class="mail-item-preview">${escapeHtml(preview)}</div>
-                ${isClaimed ? '<div style="margin-top: 8px; font-size: 12px; color: #52c41a;">已领取</div>' : ''}
+                ${statusTextHtml}
                 ${isExpired ? '<div style="margin-top: 8px; font-size: 12px; color: #999;">已过期</div>' : ''}
             </div>
         `;
@@ -1424,6 +1501,8 @@ function selectMail(mailId) {
     
     // 添加过期提醒tag
     if (mail.expireTime) {
+        // 通知类邮件无附件，提醒文案为「请及时查看」而非「请及时领取」
+        var promptActionText = _isNoticeMail(mail) ? '请及时查看' : '请及时领取';
         var now = new Date();
         var expireDate = new Date(mail.expireTime);
         var diffMs = expireDate - now;
@@ -1446,12 +1525,12 @@ function selectMail(mailId) {
                 var remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
                 var remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
                 if (remainingHours <= 0 && remainingMinutes <= 0) {
-                    expireTag.textContent = '剩余不足 1 分钟过期，请及时领取';
+                    expireTag.textContent = '剩余不足 1 分钟过期，' + promptActionText;
                 } else {
-                    expireTag.innerHTML = '剩余<span class="expire-days">' + remainingHours + '</span>小时<span class="expire-days">' + remainingMinutes + '</span>分钟过期，请及时领取';
+                    expireTag.innerHTML = '剩余<span class="expire-days">' + remainingHours + '</span>小时<span class="expire-days">' + remainingMinutes + '</span>分钟过期，' + promptActionText;
                 }
             } else {
-                expireTag.innerHTML = '剩余<span class="expire-days">' + remainingDays + '</span>天过期，请及时领取';
+                expireTag.innerHTML = '剩余<span class="expire-days">' + remainingDays + '</span>天过期，' + promptActionText;
             }
             
             var timeItem = document.getElementById('mailDetailTime');
@@ -1637,7 +1716,12 @@ function selectMail(mailId) {
     
     var isExpired = mail.expireTime && mail.expireTime < Date.now();
     
-    if (mail.isClaimed) {
+    var isNotice = _isNoticeMail(mail);
+    if (isNotice) {
+        // 通知类邮件无附件：按钮统一为「已读」，未读时可点击标记，读后禁用
+        claimBtn.disabled = !!mail.isRead;
+        claimBtn.innerHTML = '<i class="fas fa-envelope-open"></i><span>已读</span>';
+    } else if (mail.isClaimed) {
         claimBtn.disabled = true;
         claimBtn.innerHTML = '<i class="fas fa-check"></i><span>已领取</span>';
     } else if (isExpired) {
@@ -1648,7 +1732,8 @@ function selectMail(mailId) {
         claimBtn.innerHTML = '<i class="fas fa-gift"></i><span>领取</span>';
     }
     
-    if (mail.isClaimed || isExpired) {
+    // 通知类邮件已读即可删除；奖励类邮件须已领取（或已过期）
+    if (mail.isClaimed || isExpired || (isNotice && mail.isRead)) {
         deleteBtn.disabled = false;
     } else {
         deleteBtn.disabled = true;
@@ -1676,6 +1761,20 @@ function claimSelectedMail() {
     
     if (!mail) {
         showAlert('邮件不存在');
+        return;
+    }
+    
+    if (_isNoticeMail(mail)) {
+        // 通知类邮件：无附件，阅读即标记已读并视为领取（写入领取记录），无需二次确认
+        if (mail.isRead) {
+            showAlert('该邮件已读');
+            return;
+        }
+        mailSystem.markAsRead(currentMailId);
+        showAlert('已读，并已记入领取记录');
+        selectMail(currentMailId);
+        renderMailList();
+        updateClaimAllButton();
         return;
     }
     
@@ -1716,7 +1815,13 @@ function deleteSelectedMail() {
     }
     
     var isExpired = mail.expireTime && mail.expireTime < Date.now();
-    if (!mail.isClaimed && !isExpired) {
+    var isNotice = _isNoticeMail(mail);
+    if (isNotice) {
+        if (!mail.isRead && !isExpired) {
+            showAlert('未读的邮件不能删除');
+            return;
+        }
+    } else if (!mail.isClaimed && !isExpired) {
         showAlert('未领取的邮件不能删除');
         return;
     }
@@ -1736,8 +1841,9 @@ function updateClaimAllButton() {
     
     var mails = mailSystem.getMails();
     var now = Date.now();
+    // 通知类邮件无附件、不参与一键领取，仅统计未领取的奖励类邮件
     var hasUnclaimed = mails.some(function(m) {
-        return !m.isClaimed && (!m.expireTime || m.expireTime > now);
+        return !_isNoticeMail(m) && !m.isClaimed && (!m.expireTime || m.expireTime > now);
     });
     
     claimAllBtn.disabled = !hasUnclaimed;
@@ -1746,8 +1852,9 @@ function updateClaimAllButton() {
 function claimAllMails() {
     var mails = mailSystem.getMails();
     var now = Date.now();
+    // 通知类邮件不参与一键领取
     var unclaimedMails = mails.filter(function(m) {
-        return !m.isClaimed && (!m.expireTime || m.expireTime > now);
+        return !_isNoticeMail(m) && !m.isClaimed && (!m.expireTime || m.expireTime > now);
     });
     
     if (unclaimedMails.length === 0) {
@@ -2189,7 +2296,10 @@ function renderMailHistoryList() {
         } else {
             var rewardsDiv = document.createElement('div');
             rewardsDiv.className = 'mail-history-item-rewards';
-            rewardsDiv.textContent = '领取内容：无';
+            // 通知类邮件无附件：阅读即视为领取
+            rewardsDiv.textContent = item.mailType === 'notice'
+                ? '领取内容：无附件（通知类邮件，阅读即视为领取）'
+                : '领取内容：无';
             bodyDiv.appendChild(rewardsDiv);
         }
         
