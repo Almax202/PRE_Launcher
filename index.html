@@ -9,6 +9,38 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>LauncherLogin</title>
+    <script>
+    /* 清理已下线的「在线更新」Service Worker 残留：
+       旧 SW 对所有导航请求返回缓存的根 index.html，会使 /html/ 下
+       页面（如系统设置）以 index 文档套壳加载、相对路径资源全部 404。
+       新的根目录 sw.js（kill switch）负责自愈，这里做双保险：
+       一旦本脚本能运行，立即注销旧 SW 并清除遗留缓存。 */
+    (function () {
+        try {
+            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                navigator.serviceWorker.getRegistrations().then(function (regs) {
+                    regs.forEach(function (reg) {
+                        try {
+                            var worker = reg.active || reg.waiting || reg.installing;
+                            var scriptUrl = worker && worker.scriptURL || '';
+                            // 仅注销旧在线更新机制遗留在根目录的 sw.js，避免误伤同域其他应用
+                            if (/\/sw\.js(\?|$)/i.test(scriptUrl)) {
+                                reg.unregister();
+                            }
+                        } catch (e) {}
+                    });
+                }).catch(function () {});
+            }
+            if (window.caches && caches.keys) {
+                caches.keys().then(function (keys) {
+                    keys.forEach(function (key) {
+                        if (key.indexOf('prelauncher') === 0) caches.delete(key);
+                    });
+                }).catch(function () {});
+            }
+        } catch (e) {}
+    })();
+    </script>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="./css/denglu.css?v=2.6" as="style">
@@ -7408,14 +7440,6 @@
                                             <div class="input-hint">
                                                 请输入字符数量大于等于三，小于等于十以内的用户名
                                             </div>
-                                            <div class="input-hint">
-                                                点击下列按钮可随机生成用户名
-                                            </div>
-                                            <div class="random-username-buttons">
-                                                <button type="button" class="random-username-btn" id="inlineRandomUsernameBtn">随机名称</button>
-                                                <button type="button" class="random-username-btn" id="inlineMysteryUsernameBtn">神秘名称</button>
-                                                <button type="button" class="random-username-btn" id="inlineLastNightUsernameBtn">昨夜圆车</button>
-                                            </div>
                                             <div class="input-group">
                                                 <i class="fas fa-lock"></i>
                                                 <input type="password" id="inlineRegPassword" placeholder="请输入新密码">
@@ -7501,7 +7525,7 @@
                         <div class="bottom-bar-section">
                             <div class="bottom-bar-section-title">
                                 <i class="fas fa-shield-alt"></i>
-                                <span>版权信息</span>
+                                <span>版权及版本信息</span>
                             </div>
                             <div class="bottom-bar-copyright">
                                 <div class="copyright-text">© 2014-2026 PREAlmax. All rights reserved.</div>
@@ -7520,6 +7544,9 @@
                                     <span class="version-value" id="bottomBarUpdateDate">--</span>
                                 </div>
                             </div>
+                            <button type="button" class="bottom-bar-check-btn" id="bottomBarCheckUpdate">
+                                <i class="fas fa-rotate"></i>检查更新
+                            </button>
                         </div>
 
                         <!-- 中间：技术栈信息 -->
@@ -9599,19 +9626,45 @@
     </div>
 
     <div id="silentUpdateModal" class="custom-alert">
-        <div class="alert-content silent-update-content">
-            <div class="alert-icon">
-                <i class="fas fa-download"></i>
+        <div class="silent-update-card">
+            <div class="silent-update-header">
+                <h3><i class="fas fa-download"></i><span id="silentUpdateModalTitle">检测到最新版本</span></h3>
+                <button type="button" class="silent-update-close" id="silentUpdateClose" title="关闭" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <h3>检测到最新版本</h3>
-            <p class="alert-message">已自动完成静默更新，您可以前往版本更新记录内查看详细的更新公告</p>
-            <div class="version-info">
-                <span>当前版本：</span>
-                <span id="silentUpdateVersion" class="version-number"></span>
+            <p class="silent-update-subtitle" id="silentUpdateSubtitle">已自动完成静默更新，您可以前往版本更新记录内查看详细的更新公告</p>
+            <div class="silent-update-loading" id="silentUpdateLoading">
+                <i class="fas fa-circle-notch fa-spin" id="silentUpdateLoadingIcon"></i>
+                <span id="silentUpdateLoadingText">正在检测中...</span>
             </div>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="silentUpdateGoToVersion">跳转到版本更新</button>
-                <button class="alert-confirm" id="silentUpdateConfirm">确定</button>
+            <div class="silent-update-body" id="silentUpdateBody">
+                <div class="silent-update-info">
+                    <div class="silent-update-info-block">
+                        <span class="silent-update-info-label" id="silentUpdateVersionLabel">当前版本</span>
+                        <span id="silentUpdateVersion" class="silent-update-info-version"></span>
+                    </div>
+                    <div class="silent-update-info-block silent-update-mail-block">
+                        <div class="silent-update-mail-text">
+                            <span class="silent-update-info-label">最新邮件</span>
+                            <span id="silentUpdateMailStatus" class="silent-update-mail-status">暂无新邮件</span>
+                        </div>
+                        <button type="button" class="silent-update-mail-open" id="silentUpdateOpenMail" style="display: none;">
+                            <i class="fas fa-envelope-open-text"></i>打开邮件箱
+                        </button>
+                    </div>
+                    <p class="silent-update-tip"><i class="fas fa-shield-halved"></i>更新已自动完成，无需手动操作</p>
+                </div>
+                <div class="silent-update-actions">
+                    <div class="silent-update-nav-buttons">
+                        <button type="button" class="silent-update-btn silent-update-btn-nav" id="silentUpdateGoToVersion"><i class="fas fa-history"></i>进入版本更新记录</button>
+                        <button type="button" class="silent-update-btn silent-update-btn-nav" id="silentUpdateGoToAnnouncement"><i class="fas fa-newspaper"></i>进入开发者公告</button>
+                    </div>
+                    <div class="silent-update-main-buttons">
+                        <button type="button" class="silent-update-btn silent-update-btn-cancel" id="silentUpdateCancel">取消</button>
+                        <button type="button" class="silent-update-btn silent-update-btn-confirm" id="silentUpdateConfirm">确定</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -9711,14 +9764,6 @@
                         </div>
                         <div class="input-hint">
                             请输入字符数量大于等于三，小于等于十以内的用户名
-                        </div>
-                        <div class="input-hint">
-                            点击下列按钮可随机生成用户名
-                        </div>
-                        <div class="random-username-buttons">
-                            <button type="button" class="random-username-btn" id="randomUsernameBtn">随机名称</button>
-                            <button type="button" class="random-username-btn" id="mysteryUsernameBtn">神秘名称</button>
-                            <button type="button" class="random-username-btn" id="lastNightUsernameBtn">昨夜圆车</button>
                         </div>
                         <div class="input-group">
                             <i class="fas fa-lock"></i>
@@ -10073,19 +10118,194 @@
             }
         }
         
-        function showSilentUpdateModal() {
-            const modal = document.getElementById('silentUpdateModal');
+        // 手动检查更新时：确认按钮点击后是否需要立即刷新页面
+        var manualUpdatePendingReload = false;
+
+        // 将弹窗内容区重置为默认（更新后自动弹出）状态
+        function resetSilentUpdateModalUI() {
+            manualUpdatePendingReload = false;
+            var titleEl = document.getElementById('silentUpdateModalTitle');
+            var subtitleEl = document.getElementById('silentUpdateSubtitle');
+            var confirmBtn = document.getElementById('silentUpdateConfirm');
+            var loadingEl = document.getElementById('silentUpdateLoading');
+            var bodyEl = document.getElementById('silentUpdateBody');
+            if (titleEl) titleEl.textContent = '检测到最新版本';
+            if (subtitleEl) {
+                subtitleEl.textContent = '已自动完成静默更新，您可以前往版本更新记录内查看详细的更新公告';
+                subtitleEl.style.display = '';
+            }
+            if (confirmBtn) confirmBtn.textContent = '确定';
+            var loadingEl = document.getElementById('silentUpdateLoading');
+            var loadingIcon = document.getElementById('silentUpdateLoadingIcon');
+            var loadingText = document.getElementById('silentUpdateLoadingText');
+            if (loadingEl) {
+                loadingEl.classList.remove('error');
+                loadingEl.style.display = 'none';
+            }
+            if (loadingIcon) {
+                loadingIcon.className = 'fas fa-circle-notch fa-spin';
+            }
+            if (loadingText) loadingText.textContent = '正在检测中...';
+            if (bodyEl) bodyEl.style.display = '';
+        }
+
+        // 填充弹窗左侧信息：当前版本 + 最新邮件
+        function populateSilentUpdateInfo() {
             const versionElement = document.getElementById('silentUpdateVersion');
-            
+            const versionLabel = document.getElementById('silentUpdateVersionLabel');
+            if (versionLabel) versionLabel.textContent = '当前版本';
             if (versionElement && typeof getVersion === 'function') {
                 versionElement.textContent = getVersion('login');
             }
-            
+
+            // 最新邮件条目：统计未读邮件数量，控制「打开邮件箱」按钮显隐
+            // 注意：本弹窗可能在 DOMContentLoaded 早期弹出，早于 initMailSystem，
+            // 新邮件模板可能尚未写入 localStorage，需先同步再统计（applyMailUpdates 幂等）
+            var mailStatusElement = document.getElementById('silentUpdateMailStatus');
+            var mailOpenButton = document.getElementById('silentUpdateOpenMail');
+            var unreadMailCount = 0;
+            try {
+                if (typeof mailSystem !== 'undefined' && mailSystem && typeof mailSystem.getMails === 'function') {
+                    if (typeof mailSystem.applyMailUpdates === 'function') {
+                        mailSystem.applyMailUpdates();
+                    }
+                    if (typeof mailSystem.removeExpiredMails === 'function') {
+                        mailSystem.removeExpiredMails();
+                    }
+                    unreadMailCount = mailSystem.getMails().filter(function(m) { return !m.isRead; }).length;
+                }
+            } catch (e) {
+                unreadMailCount = 0;
+            }
+            if (mailStatusElement) {
+                if (unreadMailCount > 0) {
+                    mailStatusElement.textContent = '当前有 ' + unreadMailCount + ' 封新邮件';
+                    mailStatusElement.classList.add('has-mail');
+                } else {
+                    mailStatusElement.textContent = '暂无新邮件';
+                    mailStatusElement.classList.remove('has-mail');
+                }
+            }
+            if (mailOpenButton) {
+                mailOpenButton.style.display = unreadMailCount > 0 ? 'inline-flex' : 'none';
+            }
+        }
+
+        function showSilentUpdateModal() {
+            const modal = document.getElementById('silentUpdateModal');
+            resetSilentUpdateModalUI();
+            populateSilentUpdateInfo();
+
             if (modal) {
                 modal.style.display = 'flex';
                 setTimeout(function() {
                     modal.classList.add('show');
                 }, 10);
+            }
+        }
+
+        // 后台拉取远端 versionManager.js（绕过缓存），解析远端登录页版本号
+        // 检测过程不刷新页面，新代码由浏览器在后台重新请求
+        function fetchRemoteLoginVersion() {
+            return fetch('./js/versionManager.js?check=' + Date.now(), { cache: 'no-store' })
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    return resp.text();
+                })
+                .then(function(source) {
+                    var match = source.match(/login\s*:\s*["']([^"']+)["']/);
+                    return match ? match[1] : null;
+                });
+        }
+
+        // 手动「检查更新」：加载态 → 后台比对远端版本 → 结果态
+        function startManualUpdateCheck() {
+            var modal = document.getElementById('silentUpdateModal');
+            if (!modal) return;
+            manualUpdatePendingReload = false;
+
+            var titleEl = document.getElementById('silentUpdateModalTitle');
+            var subtitleEl = document.getElementById('silentUpdateSubtitle');
+            var loadingEl = document.getElementById('silentUpdateLoading');
+            var bodyEl = document.getElementById('silentUpdateBody');
+            var confirmBtn = document.getElementById('silentUpdateConfirm');
+
+            if (titleEl) titleEl.textContent = '检查更新';
+            if (subtitleEl) subtitleEl.style.display = 'none';
+            if (loadingEl) loadingEl.style.display = 'flex';
+            if (bodyEl) bodyEl.style.display = 'none';
+            if (confirmBtn) confirmBtn.textContent = '确定';
+
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+
+            var currentVersion = (typeof getVersion === 'function') ? getVersion('login') : '';
+
+            // 网络未连接：不再转圈等待，直接在检测区内显示 ❌ + 失败提示
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                showManualCheckError();
+                return;
+            }
+
+            // 保证加载动画至少展示 500ms，避免结果闪烁
+            var minDelay = new Promise(function(resolve) { setTimeout(resolve, 500); });
+
+            Promise.all([fetchRemoteLoginVersion(), minDelay]).then(function(results) {
+                var remoteVersion = results[0];
+                showManualCheckResult(remoteVersion && remoteVersion !== currentVersion, remoteVersion);
+            }).catch(function() {
+                showManualCheckError();
+            });
+        }
+
+        // 手动检测失败（离线/网络异常）：检测区内显示 ❌ + 提示，不展示主体内容，
+        // 仅保留右上角关闭按钮
+        function showManualCheckError() {
+            var loadingEl = document.getElementById('silentUpdateLoading');
+            var loadingIcon = document.getElementById('silentUpdateLoadingIcon');
+            var loadingText = document.getElementById('silentUpdateLoadingText');
+            var bodyEl = document.getElementById('silentUpdateBody');
+            if (loadingEl) {
+                loadingEl.classList.add('error');
+                loadingEl.style.display = 'flex';
+            }
+            if (loadingIcon) loadingIcon.className = 'fas fa-xmark';
+            if (loadingText) loadingText.textContent = '版本检测失败，请检查网络设置';
+            if (bodyEl) bodyEl.style.display = 'none';
+            manualUpdatePendingReload = false;
+        }
+
+        // 手动检测结果态：hasUpdate=true 有新版本；false 已是最新（失败走 showManualCheckError）
+        function showManualCheckResult(hasUpdate, remoteVersion) {
+            var titleEl = document.getElementById('silentUpdateModalTitle');
+            var subtitleEl = document.getElementById('silentUpdateSubtitle');
+            var loadingEl = document.getElementById('silentUpdateLoading');
+            var bodyEl = document.getElementById('silentUpdateBody');
+            var confirmBtn = document.getElementById('silentUpdateConfirm');
+
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (bodyEl) bodyEl.style.display = '';
+            if (subtitleEl) subtitleEl.style.display = '';
+
+            populateSilentUpdateInfo();
+
+            if (hasUpdate) {
+                if (titleEl) titleEl.textContent = '已检测到最新版本';
+                if (subtitleEl) subtitleEl.textContent = '检测到新版本，点击「立即更新」即可完成更新（页面将自动刷新）';
+                if (confirmBtn) confirmBtn.textContent = '立即更新';
+                // 版本条目改为「最新版本」并显示远端最新版本号
+                var versionLabel = document.getElementById('silentUpdateVersionLabel');
+                var versionElement = document.getElementById('silentUpdateVersion');
+                if (versionLabel) versionLabel.textContent = '最新版本';
+                if (versionElement && remoteVersion) versionElement.textContent = remoteVersion;
+                manualUpdatePendingReload = true;
+            } else {
+                if (titleEl) titleEl.textContent = '当前已是最新版本';
+                if (subtitleEl) subtitleEl.textContent = '当前已是最新版本，无需更新';
+                if (confirmBtn) confirmBtn.textContent = '确定';
+                manualUpdatePendingReload = false;
             }
         }
         
@@ -10841,31 +11061,68 @@
         });
         
         document.getElementById('silentUpdateConfirm').addEventListener('click', function() {
+            // 手动检测到新版本后，按钮为「立即更新」：重新加载页面以加载后台同步的新代码
+            if (manualUpdatePendingReload) {
+                location.reload();
+                return;
+            }
             closeSilentUpdateModal();
         });
-        
+
+        var bottomBarCheckUpdateBtn = document.getElementById('bottomBarCheckUpdate');
+        if (bottomBarCheckUpdateBtn) {
+            bottomBarCheckUpdateBtn.addEventListener('click', startManualUpdateCheck);
+        }
+
+        document.getElementById('silentUpdateCancel').addEventListener('click', function() {
+            closeSilentUpdateModal();
+        });
+
+        document.getElementById('silentUpdateClose').addEventListener('click', function() {
+            closeSilentUpdateModal();
+        });
+
         document.getElementById('silentUpdateGoToVersion').addEventListener('click', function() {
             closeSilentUpdateModal();
             setTimeout(function() {
                 var versionHistoryModal = document.getElementById('versionHistoryModal');
                 if (versionHistoryModal) {
                     versionHistoryModal.style.display = 'flex';
-                    
+
                     updateLastViewedVersionDate();
                     updateVersionNotificationDot();
-                    
+
                     setTimeout(function() {
                         versionHistoryModal.classList.add('show');
-                        
+
                         var featureUpdateNav = document.getElementById('featureUpdateNav');
                         if (featureUpdateNav) {
                             featureUpdateNav.click();
                         }
-                        
+
                         setTimeout(function() {
                             scrollToCurrentVersion();
                         }, 300);
                     }, 10);
+                }
+            }, 350);
+        });
+
+        document.getElementById('silentUpdateGoToAnnouncement').addEventListener('click', function() {
+            closeSilentUpdateModal();
+            setTimeout(function() {
+                var announcementBtn = document.getElementById('sidebarAnnouncement');
+                if (announcementBtn) {
+                    announcementBtn.click();
+                }
+            }, 350);
+        });
+
+        document.getElementById('silentUpdateOpenMail').addEventListener('click', function() {
+            closeSilentUpdateModal();
+            setTimeout(function() {
+                if (typeof showMailModal === 'function') {
+                    showMailModal();
                 }
             }, 350);
         });
@@ -27286,7 +27543,15 @@
         function handleRegister() {
             var registerAgreement = document.getElementById('registerAgreement');
             if (!registerAgreement.checked) {
-                showAlert('请先勾选"我已阅读《用户协议》及其《隐私政策》"');
+                // 未勾选协议：不再直接弹错误提示，改为确认弹窗询问是否同意条款
+                if (typeof showConfirmModal === 'function') {
+                    showConfirmModal('您还未同意我们的条款，是否确认同意后再进行注册？', function() {
+                        registerAgreement.checked = true;
+                        handleRegister();
+                    });
+                } else {
+                    showAlert('请先勾选"我已阅读《用户协议》及其《隐私政策》"');
+                }
                 return;
             }
             
@@ -29036,64 +29301,33 @@
             }
             
             // 随机用户名按钮
-            var randomBtn = document.getElementById('inlineRandomUsernameBtn');
-            if (randomBtn) {
-                randomBtn.addEventListener('click', function() {
-                    var names = ['星辰大海', '风之子', '暗夜玫瑰', '银色子弹', '幽灵骑士', '火焰凤凰'];
-                    var name = names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 1000);
-                    var input = document.getElementById('inlineRegUsername');
-                    if (input) {
-                        input.value = name;
-                        input.dispatchEvent(new Event('input'));
-                    }
-                });
-            }
-            
-            var mysteryBtn = document.getElementById('inlineMysteryUsernameBtn');
-            if (mysteryBtn) {
-                mysteryBtn.addEventListener('click', function() {
-                    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                    var name = '';
-                    for (var i = 0; i < 6; i++) {
-                        name += chars.charAt(Math.floor(Math.random() * chars.length));
-                    }
-                    var input = document.getElementById('inlineRegUsername');
-                    if (input) {
-                        input.value = name;
-                        input.dispatchEvent(new Event('input'));
-                    }
-                });
-            }
-            
-            var lastNightBtn = document.getElementById('inlineLastNightUsernameBtn');
-            if (lastNightBtn) {
-                lastNightBtn.addEventListener('click', function() {
-                    var input = document.getElementById('inlineRegUsername');
-                    if (input) {
-                        input.value = '昨夜圆车';
-                        input.dispatchEvent(new Event('input'));
-                    }
-                });
-            }
-            
-            // 切换密码可见性（仅针对内联注册面板）
-            var inlinePanel = document.querySelector('.register-form-wrapper.register-panel');
-            if (inlinePanel) {
-                inlinePanel.querySelectorAll('.toggle-password').forEach(function(btn) {
+            // 切换密码可见性（内联注册面板与全局注册面板）
+            function bindTogglePasswordEvents(container) {
+                container.querySelectorAll('.toggle-password').forEach(function(btn) {
                     btn.addEventListener('click', function() {
                         var targetId = this.getAttribute('data-target');
                         var input = document.getElementById(targetId);
+                        var icon = this.querySelector('i');
                         if (input) {
                             if (input.type === 'password') {
                                 input.type = 'text';
-                                this.querySelector('i').className = 'fas fa-eye-slash';
+                                if (icon) icon.className = 'fas fa-eye-slash';
                             } else {
                                 input.type = 'password';
-                                this.querySelector('i').className = 'fas fa-eye';
+                                if (icon) icon.className = 'fas fa-eye';
                             }
                         }
                     });
                 });
+            }
+
+            var inlinePanel = document.querySelector('.register-form-wrapper.register-panel');
+            if (inlinePanel) {
+                bindTogglePasswordEvents(inlinePanel);
+            }
+            var globalRegPanel = document.getElementById('registerContent');
+            if (globalRegPanel) {
+                bindTogglePasswordEvents(globalRegPanel);
             }
             
             // 步骤1 -> 步骤2
@@ -29180,7 +29414,18 @@
                         document.getElementById('inlineRegCaptcha').value = '';
                         return;
                     }
-                    if (!agreement.checked) { showAlert('请先阅读并同意用户协议和隐私政策'); return; }
+                    if (!agreement.checked) {
+                        // 未勾选协议：不再直接弹错误提示，改为确认弹窗询问是否同意条款
+                        if (typeof showConfirmModal === 'function') {
+                            showConfirmModal('您还未同意我们的条款，是否确认同意后再进行注册？', function() {
+                                agreement.checked = true;
+                                showInlineRegisterConfirmModal();
+                            });
+                        } else {
+                            showAlert('请先阅读并同意用户协议和隐私政策');
+                        }
+                        return;
+                    }
                     
                     // 显示确认弹窗
                     showInlineRegisterConfirmModal();
@@ -29407,95 +29652,6 @@
             } else if (strengthLevel === 3) {
                 strengthText.textContent = '密码强度：强';
             }
-        });
-        
-        // 随机生成用户名
-        document.getElementById('randomUsernameBtn').addEventListener('click', function() {
-            // 使用wordlist.js中的词库
-            var adjectives = window.wordList.randomAdjectives;
-            var nouns = window.wordList.randomNouns;
-            
-            // 随机组合形容词和名词
-            var randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-            var randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-            var username = randomAdj + randomNoun;
-            
-            // 确保用户名长度在3-10个字符之间
-            while (username.length < 3 || username.length > 10) {
-                randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-                randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-                username = randomAdj + randomNoun;
-            }
-            
-            // 填入用户名输入框
-            var usernameInput = document.getElementById('regUsername');
-            usernameInput.value = username;
-            
-            // 触发input事件，更新用户名状态
-            var inputEvent = new Event('input', { bubbles: true });
-            usernameInput.dispatchEvent(inputEvent);
-        });
-        
-        // 神秘名称生成
-        document.getElementById('mysteryUsernameBtn').addEventListener('click', function() {
-            // 使用wordlist.js中的词库
-            var mysteryAdjectives = window.wordList.mysteryAdjectives;
-            var mysteryNouns = window.wordList.mysteryNouns;
-            
-            // 如果神秘词库为空，使用默认词库
-            var adjectives = mysteryAdjectives.length > 0 ? mysteryAdjectives : window.wordList.defaultAdjectives;
-            var nouns = mysteryNouns.length > 0 ? mysteryNouns : window.wordList.defaultNouns;
-            
-            // 随机组合形容词和名词
-            var randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-            var randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-            var username = randomAdj + randomNoun;
-            
-            // 确保用户名长度在3-10个字符之间
-            while (username.length < 3 || username.length > 10) {
-                randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-                randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-                username = randomAdj + randomNoun;
-            }
-            
-            // 填入用户名输入框
-            var usernameInput = document.getElementById('regUsername');
-            usernameInput.value = username;
-            
-            // 触发input事件，更新用户名状态
-            var inputEvent = new Event('input', { bubbles: true });
-            usernameInput.dispatchEvent(inputEvent);
-        });
-        
-        // 昨夜圆车名称生成
-        document.getElementById('lastNightUsernameBtn').addEventListener('click', function() {
-            // 使用wordlist.js中的词库
-            var lastNightAdjectives = window.wordList.lastNightAdjectives;
-            var lastNightNouns = window.wordList.lastNightNouns;
-            
-            // 如果昨夜圆车词库为空，使用浪漫风格默认词库
-            var adjectives = lastNightAdjectives.length > 0 ? lastNightAdjectives : window.wordList.romanticAdjectives;
-            var nouns = lastNightNouns.length > 0 ? lastNightNouns : window.wordList.romanticNouns;
-            
-            // 随机组合形容词和名词
-            var randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-            var randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-            var username = randomAdj + randomNoun;
-            
-            // 确保用户名长度在3-10个字符之间
-            while (username.length < 3 || username.length > 10) {
-                randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-                randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-                username = randomAdj + randomNoun;
-            }
-            
-            // 填入用户名输入框
-            var usernameInput = document.getElementById('regUsername');
-            usernameInput.value = username;
-            
-            // 触发input事件，更新用户名状态
-            var inputEvent = new Event('input', { bubbles: true });
-            usernameInput.dispatchEvent(inputEvent);
         });
         
         // 更新注册步骤指示器

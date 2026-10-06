@@ -803,8 +803,433 @@ body.page-transition-in {
     overflow: hidden;
 }
 
-.silent-update-content {
-    max-width: 550px;
+/* ========== 静默更新提示弹窗（启动器统一弹窗样式，左信息右按钮布局） ========== */
+.silent-update-card {
+    width: 640px;
+    max-width: 92vw;
+    background: #fff;
+    border-radius: 20px;
+    padding: 26px 30px 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+    transform: scale(0.92) translateY(12px);
+    transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
+    position: relative;
+}
+
+.custom-alert.show .silent-update-card {
+    transform: scale(1) translateY(0);
+}
+
+.silent-update-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.silent-update-header h3 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.silent-update-header h3 i {
+    color: #667eea;
+    font-size: 18px;
+}
+
+.silent-update-close {
+    border: none;
+    background: #f0f0f0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 15px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.silent-update-close:hover {
+    background: #e2e2e2;
+    color: #333;
+    transform: rotate(90deg);
+}
+
+.silent-update-subtitle {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #999;
+    line-height: 1.6;
+}
+
+/* 手动检查更新加载态（默认隐藏，检测中显示，替换主体内容区） */
+.silent-update-loading {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 34px 0 30px;
+}
+
+.silent-update-loading i {
+    font-size: 38px;
+    color: #667eea;
+}
+
+/* 失败变体：红色 ❌ 图标，无旋转 */
+.silent-update-loading.error {
+    padding: 40px 0 36px;
+}
+
+.silent-update-loading.error i {
+    font-size: 46px;
+    color: #e74c3c;
+}
+
+.silent-update-loading.error span {
+    color: #666;
+}
+
+.silent-update-loading span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+}
+
+.silent-update-body {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.silent-update-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.silent-update-info-block {
+    background: #f5f6f7;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.silent-update-info-label {
+    font-size: 12px;
+    color: #999;
+}
+
+.silent-update-info-version {
+    font-size: 17px;
+    font-weight: 700;
+    color: #d45d79;
+}
+
+/* 最新邮件条目 */
+.silent-update-mail-block {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.silent-update-mail-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.silent-update-mail-status {
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+}
+
+.silent-update-mail-status.has-mail {
+    color: #d45d79;
+}
+
+.silent-update-mail-open {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-radius: 9px;
+    border: 1.5px solid rgba(102, 126, 234, 0.28);
+    background: rgba(102, 126, 234, 0.08);
+    color: #667eea;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.silent-update-mail-open:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+    transform: translateY(-1px);
+}
+
+.silent-update-tip {
+    margin: auto 0 0;
+    font-size: 12px;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.silent-update-tip i {
+    color: #667eea;
+}
+
+.silent-update-actions {
+    flex: 0 0 236px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.silent-update-nav-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.silent-update-btn {
+    width: 100%;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.silent-update-btn-nav {
+    background: rgba(102, 126, 234, 0.08);
+    color: #667eea;
+    border: 1.5px solid rgba(102, 126, 234, 0.28);
+}
+
+.silent-update-btn-nav:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+    transform: translateY(-1px);
+}
+
+.silent-update-main-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.silent-update-main-buttons .silent-update-btn {
+    flex: 1;
+}
+
+.silent-update-btn-cancel {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.silent-update-btn-cancel:hover {
+    background: #e2e2e2;
+    color: #333;
+}
+
+.silent-update-btn-confirm {
+    background: linear-gradient(135deg, #e67e8a, #d45d79);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(212, 93, 121, 0.3);
+}
+
+.silent-update-btn-confirm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(212, 93, 121, 0.4);
+}
+
+/* 深色主题 */
+body.dark-mode .silent-update-card {
+    background: #23232a;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .silent-update-header h3 {
+    color: #e8e8e8;
+}
+
+body.dark-mode .silent-update-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: #bbb;
+}
+
+body.dark-mode .silent-update-close:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+body.dark-mode .silent-update-subtitle {
+    color: #888;
+}
+
+body.dark-mode .silent-update-loading span {
+    color: #aaa;
+}
+
+body.dark-mode .silent-update-info-block {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode .silent-update-info-label {
+    color: #888;
+}
+
+body.dark-mode .silent-update-info-version {
+    color: #e67e8a;
+}
+
+body.dark-mode .silent-update-mail-status {
+    color: #888;
+}
+
+body.dark-mode .silent-update-mail-status.has-mail {
+    color: #e67e8a;
+}
+
+body.dark-mode .silent-update-mail-open {
+    background: rgba(102, 126, 234, 0.14);
+    border-color: rgba(102, 126, 234, 0.4);
+    color: #8fa0f0;
+}
+
+body.dark-mode .silent-update-mail-open:hover {
+    background: rgba(102, 126, 234, 0.22);
+}
+
+body.dark-mode .silent-update-tip {
+    color: #777;
+}
+
+body.dark-mode .silent-update-btn-nav {
+    background: rgba(102, 126, 234, 0.14);
+    border-color: rgba(102, 126, 234, 0.4);
+    color: #8fa0f0;
+}
+
+body.dark-mode .silent-update-btn-nav:hover {
+    background: rgba(102, 126, 234, 0.22);
+}
+
+body.dark-mode .silent-update-btn-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #bbb;
+}
+
+body.dark-mode .silent-update-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+/* 透明主题（毛玻璃） */
+body.transparent-mode .silent-update-card {
+    background: rgba(30, 30, 40, 0.55);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+body.transparent-mode .silent-update-header h3 {
+    color: #fff;
+}
+
+body.transparent-mode .silent-update-subtitle {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+body.transparent-mode .silent-update-loading span {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.transparent-mode .silent-update-close {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body.transparent-mode .silent-update-info-block {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.transparent-mode .silent-update-info-label {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+body.transparent-mode .silent-update-mail-status {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+body.transparent-mode .silent-update-mail-status.has-mail {
+    color: #f0a3ae;
+}
+
+body.transparent-mode .silent-update-mail-open {
+    background: rgba(102, 126, 234, 0.22);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #cdd5ff;
+}
+
+body.transparent-mode .silent-update-tip {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.transparent-mode .silent-update-btn-nav {
+    background: rgba(102, 126, 234, 0.22);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #cdd5ff;
+}
+
+body.transparent-mode .silent-update-btn-cancel {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* 移动端适配：左右布局改为上下堆叠 */
+@media (max-width: 600px) {
+    .silent-update-card {
+        padding: 22px 20px 24px;
+    }
+
+    .silent-update-body {
+        flex-direction: column;
+    }
+
+    .silent-update-actions {
+        flex: none;
+        width: 100%;
+    }
 }
 
 .version-info {
@@ -2105,6 +2530,31 @@ body.dark-mode #userCardSettingsPanel .empty-state {
     .agreement-section input[type="checkbox"] {
         align-self: flex-start;
         margin-top: 2px;
+    }
+}
+
+/* 移动端复选框可点击区域：手机端点击文字/复选框均可正常切换 */
+@media (max-width: 768px) {
+    .agreement-section {
+        gap: 12px;
+        padding: 14px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .agreement-section input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .agreement-section label {
+        cursor: pointer;
+        flex: 1;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
 }
 
@@ -29787,6 +30237,34 @@ body.login-page-mode .bottom-bar-version-item .version-label {
 body.login-page-mode .bottom-bar-version-item .version-value {
     color: rgba(255, 255, 255, 0.85);
     font-weight: 500;
+}
+
+body.login-page-mode .bottom-bar-check-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 9px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+body.login-page-mode .bottom-bar-check-btn:hover {
+    background: rgba(212, 93, 121, 0.22);
+    border-color: rgba(212, 93, 121, 0.6);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+body.login-page-mode .bottom-bar-check-btn i {
+    color: #e67e8a;
 }
 
 body.login-page-mode .bottom-bar-frameworks,

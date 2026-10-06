@@ -8,6 +8,38 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>系统设置 - PRE的游戏启动器</title>
+    <script>
+    /* 清理已下线的「在线更新」Service Worker 残留：
+       旧 SW 对所有导航请求返回缓存的根 index.html，会使本页等 /html/
+       下页面以 index 文档套壳加载、相对路径资源（../css、../js）全部
+       404，页面样式完全错乱。新的根目录 sw.js（kill switch）负责自愈，
+       这里做双保险：一旦本脚本能运行，立即注销旧 SW 并清除遗留缓存。 */
+    (function () {
+        try {
+            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                navigator.serviceWorker.getRegistrations().then(function (regs) {
+                    regs.forEach(function (reg) {
+                        try {
+                            var worker = reg.active || reg.waiting || reg.installing;
+                            var scriptUrl = worker && worker.scriptURL || '';
+                            // 仅注销旧在线更新机制遗留在根目录的 sw.js，避免误伤同域其他应用
+                            if (/\/sw\.js(\?|$)/i.test(scriptUrl)) {
+                                reg.unregister();
+                            }
+                        } catch (e) {}
+                    });
+                }).catch(function () {});
+            }
+            if (window.caches && caches.keys) {
+                caches.keys().then(function (keys) {
+                    keys.forEach(function (key) {
+                        if (key.indexOf('prelauncher') === 0) caches.delete(key);
+                    });
+                }).catch(function () {});
+            }
+        } catch (e) {}
+    })();
+    </script>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="../css/account-settings.css" as="style">
