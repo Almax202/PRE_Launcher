@@ -21,8 +21,8 @@ var PASS_CONFIG = {
     bundleDiscountPrice: 10368,  // 组合包优惠价（未购买本体时的实付价格）
     exFreePrecoin: 50,           // EX 溢出：免费每级奖励 PRE Coin
     exPremiumPrecoin: 100,       // EX 溢出：付费每级额外奖励 PRE Coin（+免费=150）
-    startTime: '2026-10-01T00:00:00Z',   // 赛季起始时间 (UTC) = 2026-10-01 08:00 (UTC+8)
-    endTime: '2026-12-31T09:00:00Z'      // 赛季结束时间 (UTC) = 2026-12-31 17:00 (UTC+8)
+    startTime: '2026-09-30T20:00:00Z',   // 赛季起始时间 (UTC) = 2026-10-01 04:00 (UTC+8)
+    endTime: '2026-12-30T20:00:00Z'      // 赛季结束时间 (UTC) = 2026-12-31 04:00 (UTC+8)
 };
 
 // ==================== 奖励表生成 ====================
@@ -132,6 +132,7 @@ var PASS_WEEKLY_TASK_POOL = [
 
 // ==================== 每周事项（12 周 × 8 个任务，3-8 经验） ====================
 // 周次开放规则：自 PASS_CONFIG.startTime 起每 7 天开放 1 周，总计 12 周
+// （扩充时刻随赛季起始时间固定在 UTC+8 凌晨 4 点，即新一周第一天的凌晨 4 点扩充）
 // 任务类型 key 与 _wireTaskHooks / dailyTaskMarkProgress 的 taskKey 保持一致
 //   checkin / minigame / gacha / warehouse / treasure / mail / shop / coin / boost
 // 每周任务列表按顺序固定，每周 8 个，通行证经验值范围 3~8
@@ -395,11 +396,6 @@ function getPassData() {
 }
 
 function createDefaultPassData() {
-    var today = new Date();
-    var weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay() + 1); // 周一为起点
-    weekStart.setHours(0, 0, 0, 0);
-
     return {
         version: PASS_DATA_VERSION,
         seasonId: PASS_CONFIG.seasonId,
@@ -436,8 +432,25 @@ function savePassData(data) {
 }
 
 // ==================== 任务刷新逻辑 ====================
+// 刷新时间统一规则：日常每日凌晨 4 点（UTC+8）刷新，周常每周一凌晨 4 点（UTC+8）刷新
+// UTC+8 时区下、以凌晨 4 点为一天起点的日期键（4 点前仍算前一天）
+function _passUtc8DayKey() {
+    var d = new Date(Date.now() - 4 * 3600 * 1000);
+    var utc8 = new Date(d.getTime() + 8 * 3600 * 1000);
+    return utc8.toISOString().slice(0, 10);
+}
+
+// 当前所处一周的起点时间戳：周一凌晨 4 点（UTC+8）
+function _passUtc8WeekStart() {
+    var d = new Date(Date.now() - 4 * 3600 * 1000); // 4 点前仍算前一天（上周日）
+    var utc8 = new Date(d.getTime() + 8 * 3600 * 1000);
+    var day = utc8.getUTCDay(); // 0=周日
+    var diff = day === 0 ? 6 : day - 1;
+    return new Date(Date.UTC(utc8.getUTCFullYear(), utc8.getUTCMonth(), utc8.getUTCDate() - diff, 4, 0, 0) - 8 * 3600 * 1000);
+}
+
 function refreshDailyTasks(data) {
-    var today = new Date().toISOString().slice(0, 10);
+    var today = _passUtc8DayKey();
     if (data.lastDailyRefresh === today) return data;
     data.lastDailyRefresh = today;
     // 从池子里随机抽 5 个
@@ -453,10 +466,7 @@ function refreshDailyTasks(data) {
 }
 
 function refreshWeeklyTasks(data) {
-    var today = new Date();
-    var weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay() + 1);
-    weekStart.setHours(0, 0, 0, 0);
+    var weekStart = _passUtc8WeekStart();
 
     if (data.lastWeeklyRefresh && new Date(data.lastWeeklyRefresh) >= weekStart) return data;
     data.lastWeeklyRefresh = weekStart.toISOString();
@@ -865,6 +875,10 @@ var _passDevUnlockAll = false;
 // session 级，优先级高于「全部解禁」，不写入存档，刷新/重登后还原
 var _passDevForceLocked = false;
 
+// Dev 休赛期开关：开启后视作赛季已结束并进入休赛期（与「关闭通行证进行状态」互斥，开启后屏蔽后者）
+// session 级，不写入存档，刷新/重登后还原；真实赛季结束时也会自动进入休赛期
+var _passDevOffSeason = false;
+
 // Dev 每周事项「一键启用所有周任务」开关：开启后第 1~12 周按钮全部显示并可完成/领取
 // session 级（与 _passDevUnlockAll 一致，不写入存档，刷新/重登后还原真实时间推进）
 var _passDevWeekly12UnlockAll = false;
@@ -909,6 +923,8 @@ function _getPassBoostDaysUntilOpen() {
 
 // 赛季状态：'not_started'（未开始）| 'active'（进行中）| 'ended'（已结束）
 function _getPassSeasonState() {
+    // 休赛期（Dev 强制 或 真实赛季结束）最高优先：视为已结束
+    if (_passDevOffSeason) return 'ended';
     // Dev「关闭通行证进行状态」最高优先：强制视为未开启
     if (_passDevForceLocked) return 'not_started';
     // Dev「全部解禁」开启时，展示层视为赛季进行中（实际赛季时间不改变，关闭后还原）
@@ -917,6 +933,14 @@ function _getPassSeasonState() {
     if (now < new Date(PASS_CONFIG.startTime).getTime()) return 'not_started';
     if (now >= new Date(PASS_CONFIG.endTime).getTime()) return 'ended';
     return 'active';
+}
+
+// 是否进入休赛期：Dev 强制开启，或真实赛季已结束（全部解禁 / 强制未开启时不触发）
+function _isPassOffSeason() {
+    if (_passDevForceLocked) return false; // 强制未开启优先，不进入休赛期
+    if (_passDevUnlockAll) return false;   // 全部解禁视为进行中
+    if (_passDevOffSeason) return true;
+    return Date.now() >= new Date(PASS_CONFIG.endTime).getTime();
 }
 
 // 赛季是否处于锁定状态（未开始 或 已结束）
@@ -939,6 +963,14 @@ function _fmtSeasonCountdown(msLeft) {
         hours: Math.floor((totalSec % 86400) / 3600),
         minutes: Math.floor((totalSec % 3600) / 60)
     };
+}
+
+// UTC+8 时间格式化（赛季时间统一展示用）
+function _fmtPassUTC8(iso) {
+    var d = new Date(new Date(iso).getTime() + 8 * 3600 * 1000);
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate())
+         + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
 }
 
 // 赛季未开启卡片（结构与样式复用等级提速等待卡片 pass-boost-wait）
@@ -985,6 +1017,23 @@ function passDevToggleForceLocked() {
             : '已恢复通行证进行状态：按赛季真实时间判定' });
     }
     // 同步活动中心/活动公告的赛季状态展示（强制未开始 / 还原）
+    if (typeof applyTimedEventStates === 'function') {
+        applyTimedEventStates();
+        if (typeof refreshOpenEventModals === 'function') refreshOpenEventModals();
+    }
+    renderPassUI();
+}
+
+// Dev：切换「进入休赛期 / 关闭休赛期」（开启后视作赛季已结束，与「关闭通行证进行状态」互斥）
+function passDevToggleOffSeason() {
+    _passDevOffSeason = !_passDevOffSeason;
+    // 进入休赛期时自动关闭「关闭通行证进行状态」，避免状态冲突
+    if (_passDevOffSeason && _passDevForceLocked) _passDevForceLocked = false;
+    if (typeof showToast === 'function') {
+        showToast({ type: 'info', title: '通行证 Dev', message: _passDevOffSeason
+            ? '已进入休赛期：通行证内容隐藏，仅显示休赛期提示'
+            : '已关闭休赛期：恢复赛季真实时间判定' });
+    }
     if (typeof applyTimedEventStates === 'function') {
         applyTimedEventStates();
         if (typeof refreshOpenEventModals === 'function') refreshOpenEventModals();
@@ -1920,6 +1969,12 @@ function _buildPassHTML() {
                     <div class="pass-title-cn">${cfg.name}</div>
                     <div class="pass-title-en">${cfg.nameEn}</div>
                 </div>
+                <button class="pass-announcement-btn" id="passAnnouncementBtn" type="button" title="通行证公告">
+                    <i class="fas fa-bullhorn"></i> 公告
+                </button>
+                <button class="pass-season-switch-btn" id="passSeasonSwitchBtn" type="button" title="切换赛季通行证">
+                    <i class="fas fa-shuffle"></i> 切换
+                </button>
                 <div class="pass-badge pass-badge-live" id="passSeasonBadge">
                     <i class="fas fa-circle"></i> 进行中
                 </div>
@@ -1927,13 +1982,13 @@ function _buildPassHTML() {
                     <div class="pass-season-time-item">
                         <i class="fas fa-play"></i>
                         <span class="pass-season-time-label">起始</span>
-                        <span class="pass-season-time-value" id="passStartTime">2026-09-21 19:00</span>
+                        <span class="pass-season-time-value" id="passStartTime">2026-10-01 04:00</span>
                     </div>
                     <i class="fas fa-ellipsis pass-season-time-sep"></i>
                     <div class="pass-season-time-item">
                         <i class="fas fa-flag-checkered"></i>
                         <span class="pass-season-time-label">结束</span>
-                        <span class="pass-season-time-value" id="passEndTime">2026-12-21 17:00</span>
+                        <span class="pass-season-time-value" id="passEndTime">2026-12-31 04:00</span>
                     </div>
                     <i class="fas fa-ellipsis pass-season-time-sep"></i>
                     <div class="pass-season-time-item pass-season-days-left" id="passSeasonDaysLeft">
@@ -1944,101 +1999,10 @@ function _buildPassHTML() {
                 </div>
             </div>
             <div class="pass-header-right">
-                <button class="pass-close-btn" id="passCloseBtn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- ===== Hero 进度条 ===== -->
-        <div class="pass-hero">
-            <div class="pass-hero-left">
-                <div class="pass-level-ring" id="passLevelRing">
-                    <svg class="pass-ring-svg" viewBox="0 0 120 120">
-                        <circle class="pass-ring-bg" cx="60" cy="60" r="54"></circle>
-                        <circle class="pass-ring-fg" cx="60" cy="60" r="54" id="passRingFg"></circle>
-                    </svg>
-                    <div class="pass-level-text">
-                        <div class="pass-level-num" id="passLevelNum">0</div>
-                        <div class="pass-level-label">等级</div>
-                    </div>
-                </div>
-                <div class="pass-exp-block">
-                    <div class="pass-exp-label">经验值</div>
-                    <div class="pass-exp-bar">
-                        <div class="pass-exp-fill" id="passExpFill"></div>
-                        <div class="pass-exp-glow"></div>
-                    </div>
-                    <div class="pass-exp-text" id="passExpText">0 / 10</div>
-                    <div class="pass-ex-info" id="passExInfo" style="display:none;">
-                        <i class="fas fa-infinity"></i> EX 溢出：<span id="passExVal">0</span> 级（每 10 经验 +1 级，无上限）
-                        <button class="pass-btn pass-btn-mini" id="passBtnClaimEx"><i class="fas fa-gift"></i> 一键领取</button>
-                    </div>
-                </div>
-            </div>
-            <div class="pass-hero-right">
-                <div class="pass-hero-stats">
-                    <div class="pass-stat">
-                        <div class="pass-stat-num" id="passStatPrecoin" style="color:#ffd93d;">0</div>
-                        <div class="pass-stat-label"><i class="fas fa-coins"></i> PRE Coin</div>
-                    </div>
-                    <div class="pass-stat">
-                        <div class="pass-stat-num" id="passStatCap">120</div>
-                        <div class="pass-stat-label">等级上限</div>
-                    </div>
-                    <div class="pass-stat">
-                        <div class="pass-stat-num" id="passStatPremium">免费</div>
-                        <div class="pass-stat-label">当前档位</div>
-                    </div>
-                    <div class="pass-season-locked-msg">⛔ 赛季未开始 ⛔</div>
-                </div>
-                <div class="pass-buy-panel">
-                    <div class="pass-buy-row">
-                        <button class="pass-btn pass-btn-primary" id="passBtnBuyLevel"><i class="fas fa-arrow-up"></i> 购买等级</button>
-                        <button class="pass-btn pass-btn-premium-ghost" id="passBtnBuyPremium" style="display:none;"><i class="fas fa-gem"></i> 解锁付费通行证</button>
-                    </div>
-                    <div class="pass-buy-hint">每级 <b>300</b> PRE Coin · 付费通行证 <b>6480</b> PRE Coin</div>
-                    <div class="pass-season-locked-msg">⛔ 赛季未开始 ⛔</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== Tabs ===== -->
-        <div class="pass-tabs">
-            <div class="pass-tab active" data-tab="rewards" id="passTabRewards">
-                <i class="fas fa-trophy"></i> 赛季通行证
-            </div>
-            <div class="pass-tab" data-tab="tasks" id="passTabTasks">
-                <i class="fas fa-list-check"></i> 通行证任务
-                <span class="pass-tab-dot" id="passTaskDot" style="display:none;"></span>
-            </div>
-            <div class="pass-tab" data-tab="weekly12" id="passTabWeekly12">
-                <i class="fas fa-calendar-check"></i> 每周事项
-                <span class="pass-tab-dot" id="passWeekly12Dot" style="display:none;"></span>
-            </div>
-            <div class="pass-tab" data-tab="phase" id="passTabPhase">
-                <i class="fas fa-route"></i> 阶段奖励
-            </div>
-            <div class="pass-tab" data-tab="boost" id="passTabBoost" style="display:none;">
-                <i class="fas fa-gauge-high"></i> 等级提速
-                <span class="pass-tab-dot" id="passBoostDot" style="display:none;"></span>
-            </div>
-            <!-- 子标签：点击「通行证任务」后从其右侧滑出（不占用单独一行） -->
-            <div class="pass-subtabs-inline" id="passSubtabsInline">
-                <div class="pass-subtab active" data-sub="daily"><i class="fas fa-sun"></i> 日常</div>
-                <div class="pass-subtab" data-sub="weekly"><i class="fas fa-calendar-week"></i> 周常</div>
-                <div class="pass-subtab" data-sub="season"><i class="fas fa-mountain"></i> 赛季</div>
-            </div>
-            <!-- 每周事项周次选择：点击「每周事项」后从其右侧滑出（不占用单独一行） -->
-            <div class="pass-subtabs-inline pass-weekly12-subtabs-inline" id="passWeekly12SubtabsInline"></div>
-            <!-- 右侧工具组：滚动提示 + 刷新倒计时（任务页）+ 全部领取 + 开发者调试多级菜单（不占用内容区高度） -->
-            <div class="pass-tabs-right">
-                <div class="pass-reward-scroll-hint" id="passScrollHint"><i class="fas fa-arrows-left-right"></i> 左右滑动查看更多等级奖励</div>
-                <div class="pass-refresh-hint" id="passRefreshHint" style="display:none;"><i class="fas fa-clock"></i> <span id="passRefreshHintText"></span></div>
-                <button class="pass-btn pass-btn-primary" id="passBtnClaimAll"><i class="fas fa-gifts"></i> 全部领取</button>
+                <!-- 开发者调试按钮（圆形图标按钮），位于右上角关闭按钮左侧 -->
                 <div class="pass-dev-menu" id="passDevMenu" style="display:none;">
-                    <button class="pass-btn pass-btn-dev" id="passDevMenuBtn" type="button">
-                        <i class="fas fa-code"></i> 开发者调试 <i class="fas fa-chevron-down pass-dev-menu-caret"></i>
+                    <button class="pass-btn pass-btn-dev pass-btn-dev-round" id="passDevMenuBtn" type="button" title="开发者调试">
+                        <i class="fas fa-code"></i>
                     </button>
                     <div class="pass-dev-dropdown" id="passDevDropdown">
                         <div class="pass-dev-dropdown-title"><i class="fas fa-screwdriver-wrench"></i> 通行证调试功能</div>
@@ -2127,8 +2091,107 @@ function _buildPassHTML() {
                             <span class="pass-dev-item-label">关闭通行证进行状态（将通行证恢复至未开启状态）</span>
                             <i class="fas fa-circle-check pass-dev-item-state"></i>
                         </button>
+                        <button class="pass-dev-item pass-dev-item-toggle" type="button" data-dev-action="offSeason">
+                            <i class="fas fa-moon pass-dev-item-icon"></i>
+                            <span class="pass-dev-item-label">进入休赛期 / 关闭休赛期</span>
+                            <i class="fas fa-circle-check pass-dev-item-state"></i>
+                        </button>
                     </div>
                 </div>
+                <button class="pass-close-btn" id="passCloseBtn" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== Hero 进度条 ===== -->
+        <div class="pass-hero">
+            <div class="pass-hero-left">
+                <div class="pass-level-ring" id="passLevelRing">
+                    <svg class="pass-ring-svg" viewBox="0 0 120 120">
+                        <circle class="pass-ring-bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="pass-ring-fg" cx="60" cy="60" r="54" id="passRingFg"></circle>
+                    </svg>
+                    <div class="pass-level-text">
+                        <div class="pass-level-num" id="passLevelNum">0</div>
+                        <div class="pass-level-label">等级</div>
+                    </div>
+                </div>
+                <div class="pass-exp-block">
+                    <div class="pass-exp-label">经验值</div>
+                    <div class="pass-exp-bar">
+                        <div class="pass-exp-fill" id="passExpFill"></div>
+                        <div class="pass-exp-glow"></div>
+                    </div>
+                    <div class="pass-exp-text" id="passExpText">0 / 10</div>
+                    <div class="pass-ex-info" id="passExInfo" style="display:none;">
+                        <i class="fas fa-infinity"></i> EX 溢出：<span id="passExVal">0</span> 级（每 10 经验 +1 级，无上限）
+                        <button class="pass-btn pass-btn-mini" id="passBtnClaimEx"><i class="fas fa-gift"></i> 一键领取</button>
+                    </div>
+                </div>
+            </div>
+            <div class="pass-hero-right">
+                <div class="pass-hero-stats">
+                    <div class="pass-stat">
+                        <div class="pass-stat-num" id="passStatPrecoin" style="color:#ffd93d;">0</div>
+                        <div class="pass-stat-label"><i class="fas fa-coins"></i> PRE Coin</div>
+                    </div>
+                    <div class="pass-stat">
+                        <div class="pass-stat-num" id="passStatCap">120</div>
+                        <div class="pass-stat-label">等级上限</div>
+                    </div>
+                    <div class="pass-stat">
+                        <div class="pass-stat-num" id="passStatPremium">免费</div>
+                        <div class="pass-stat-label">当前档位</div>
+                    </div>
+                    <div class="pass-season-locked-msg">⛔ 赛季未开始 ⛔</div>
+                </div>
+                <div class="pass-buy-panel">
+                    <div class="pass-buy-row">
+                        <button class="pass-btn pass-btn-primary" id="passBtnBuyLevel"><i class="fas fa-arrow-up"></i> 购买等级</button>
+                        <button class="pass-btn pass-btn-premium-ghost" id="passBtnBuyPremium" style="display:none;"><i class="fas fa-gem"></i> 解锁付费通行证</button>
+                    </div>
+                    <div class="pass-buy-hint">每级 <b>300</b> PRE Coin · 付费通行证 <b>6480</b> PRE Coin</div>
+                    <div class="pass-season-locked-msg">⛔ 赛季未开始 ⛔</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Tabs ===== -->
+        <div class="pass-tabs">
+            <div class="pass-tab active" data-tab="rewards" id="passTabRewards">
+                <i class="fas fa-trophy"></i> 赛季通行证
+            </div>
+            <div class="pass-tab" data-tab="tasks" id="passTabTasks">
+                <i class="fas fa-list-check"></i> 通行证任务
+                <span class="pass-tab-dot" id="passTaskDot" style="display:none;"></span>
+            </div>
+            <div class="pass-tab" data-tab="weekly12" id="passTabWeekly12">
+                <i class="fas fa-calendar-check"></i> 每周事项
+                <span class="pass-tab-dot" id="passWeekly12Dot" style="display:none;"></span>
+            </div>
+            <div class="pass-tab" data-tab="phase" id="passTabPhase">
+                <i class="fas fa-route"></i> 阶段奖励
+            </div>
+            <div class="pass-tab" data-tab="boost" id="passTabBoost" style="display:none;">
+                <i class="fas fa-gauge-high"></i> 等级提速
+                <span class="pass-tab-dot" id="passBoostDot" style="display:none;"></span>
+            </div>
+            <!-- 子标签：点击「通行证任务」后从其右侧滑出（不占用单独一行） -->
+            <div class="pass-subtabs-inline" id="passSubtabsInline">
+                <div class="pass-subtab active" data-sub="daily"><i class="fas fa-sun"></i> 日常</div>
+                <div class="pass-subtab" data-sub="weekly"><i class="fas fa-calendar-week"></i> 周常</div>
+                <div class="pass-subtab" data-sub="season"><i class="fas fa-mountain"></i> 赛季</div>
+            </div>
+            <!-- 每周事项周次选择：点击「每周事项」后从其右侧滑出（不占用单独一行） -->
+            <div class="pass-subtabs-inline pass-weekly12-subtabs-inline" id="passWeekly12SubtabsInline"></div>
+            <!-- 每周事项更新倒计时：随「每周事项」标签一同滑出，显示在 Tab 栏内 -->
+            <div class="pass-weekly12-countdown-intab" id="passWeekly12CountdownTab" style="display:none;"></div>
+            <!-- 右侧工具组：滚动提示 + 刷新倒计时（任务页）+ 全部领取（不占用内容区高度） -->
+            <div class="pass-tabs-right">
+                <div class="pass-reward-scroll-hint" id="passScrollHint"><i class="fas fa-arrows-left-right"></i> 左右滑动查看更多等级奖励</div>
+                <div class="pass-refresh-hint" id="passRefreshHint" style="display:none;"><i class="fas fa-clock"></i> <span id="passRefreshHintText"></span></div>
+                <button class="pass-btn pass-btn-primary" id="passBtnClaimAll"><i class="fas fa-gifts"></i> 全部领取</button>
             </div>
         </div>
 
@@ -2144,7 +2207,6 @@ function _buildPassHTML() {
             </div>
             <!-- 每周事项视图 -->
             <div class="pass-view pass-view-hidden" id="passViewWeekly12">
-                <div class="pass-weekly12-header" id="passWeekly12Header"></div>
                 <div class="pass-tasks-list" id="passWeekly12TasksList"></div>
             </div>
             <!-- 等级提速视图 -->
@@ -2161,6 +2223,14 @@ function _buildPassHTML() {
         <!-- ===== Footer hint ===== -->
         <div class="pass-footer-hint">
             <span> 第一赛季通行证「初始化」 ————  Season 1 PRE Pass「Initialize」</span>
+        </div>
+
+        <!-- ===== 休赛期居中提示（仅休赛期显示） ===== -->
+        <div class="pass-offseason-msg" id="passOffseasonMsg" style="display:none;">
+            <div class="pass-boost-wait-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div class="pass-boost-wait-title">赛季已结束</div>
+            <div class="pass-boost-wait-desc">当前为休赛期，下一赛季正在筹备中</div>
+            <div class="pass-boost-wait-note">开启时间以及更多详情请等待后续活动公告以获取更多内容</div>
         </div>
     </div>
 
@@ -2298,6 +2368,35 @@ function _buildPassHTML() {
             <div class="pass-modal-footer">
                 <button class="pass-btn pass-btn-disabled" id="passDevResetPurchaseCancel">取消</button>
                 <button class="pass-btn pass-btn-danger" id="passDevResetPurchaseOk"><i class="fas fa-check"></i> 确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 更换赛季通行证弹窗 ===== -->
+    <div class="pass-modal-overlay" id="passSeasonSwitchModal" style="display:none;">
+        <div class="pass-modal-box pass-modal-box-season">
+            <div class="pass-modal-title">更换赛季通行证</div>
+            <div class="pass-modal-subtitle">选择要查看的赛季通行证，点击对应赛季卡片即可切换</div>
+            <div class="pass-season-grid" id="passSeasonGrid"></div>
+        </div>
+    </div>
+
+    <!-- ===== 通行证公告弹窗 ===== -->
+    <div class="pass-modal-overlay" id="passAnnouncementModal" style="display:none;">
+        <div class="pass-modal-box pass-modal-box-announcement">
+            <div class="pass-ann-head">
+                <div class="pass-ann-head-text">
+                    <div class="pass-modal-title">通行证公告</div>
+                    <div class="pass-modal-subtitle">了解赛季通行证的最新动态与规则说明</div>
+                </div>
+                <button class="pass-ann-close" id="passAnnouncementClose" type="button" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="pass-ann-layout">
+                <div class="pass-ann-list" id="passAnnList"></div>
+                <div class="pass-ann-divider"></div>
+                <div class="pass-ann-content" id="passAnnContent"></div>
             </div>
         </div>
     </div>
@@ -2612,11 +2711,33 @@ function _bindPassEvents() {
     });
 
     // 点击遮罩关闭所有弹窗
-    ['passBuyLevelModal', 'passBuyLevelConfirmModal', 'passBuyPremiumModal', 'passPurchaseSelectModal', 'passBuyBundleModal'].forEach(function(id) {
+    ['passBuyLevelModal', 'passBuyLevelConfirmModal', 'passBuyPremiumModal', 'passPurchaseSelectModal', 'passBuyBundleModal', 'passSeasonSwitchModal', 'passAnnouncementModal'].forEach(function(id) {
         var m = document.getElementById(id);
         if (m) m.addEventListener('click', function(e) {
             if (e.target === this) this.style.display = 'none';
         });
+    });
+
+    // 更换赛季通行证：切换按钮 + 赛季卡片点击
+    var seasonSwitchBtn = document.getElementById('passSeasonSwitchBtn');
+    if (seasonSwitchBtn) seasonSwitchBtn.addEventListener('click', _openPassSeasonSwitchModal);
+
+    // 通行证公告：公告按钮 + 右上角关闭按钮 + 左侧公告列表点击
+    var annBtn = document.getElementById('passAnnouncementBtn');
+    if (annBtn) annBtn.addEventListener('click', _openPassAnnouncementModal);
+    var annCloseBtn = document.getElementById('passAnnouncementClose');
+    if (annCloseBtn) annCloseBtn.addEventListener('click', _closePassAnnouncementModal);
+    var annList = document.getElementById('passAnnList');
+    if (annList) annList.addEventListener('click', function(e) {
+        var item = e.target.closest('.pass-ann-item[data-ann-id]');
+        if (!item) return;
+        _selectPassAnnouncement(item.getAttribute('data-ann-id'));
+    });
+    var seasonGrid = document.getElementById('passSeasonGrid');
+    if (seasonGrid) seasonGrid.addEventListener('click', function(e) {
+        var card = e.target.closest('.pass-season-card[data-season-idx]');
+        if (!card) return;
+        _switchPassSeason(parseInt(card.getAttribute('data-season-idx'), 10));
     });
 
     // EX 奖励
@@ -2689,6 +2810,8 @@ function _bindPassEvents() {
         passDevDropdown.addEventListener('click', function(e) {
             var item = e.target.closest('.pass-dev-item');
             if (!item) return;
+            // 被屏蔽的条目（如休赛期下的「关闭通行证进行状态」）不可点击
+            if (item.disabled || item.classList.contains('pass-dev-item-disabled')) return;
             var action = item.getAttribute('data-dev-action');
             var acted = true;
             if (action === 'unlockLevels') passDevUnlockAllLevels();
@@ -2699,6 +2822,7 @@ function _bindPassEvents() {
             else if (action === 'resetPurchase') _openPassDevResetPurchaseModal();
             else if (action === 'unlockSeason') _togglePassDevUnlock();
             else if (action === 'forceLock') passDevToggleForceLocked();
+            else if (action === 'offSeason') passDevToggleOffSeason();
             else if (action === 'enableWeekly12All') passDevWeekly12EnableAll();
             else if (action === 'completeWeekly12All') passDevWeekly12CompleteAll();
             else if (action === 'disableWeekly12All') passDevWeekly12DisableAll();
@@ -2770,6 +2894,197 @@ function _openBuyLevelModal() {
 
 function _closeBuyLevelModal() {
     document.getElementById('passBuyLevelModal').style.display = 'none';
+}
+
+// ==================== 更换赛季通行证弹窗 ====================
+
+// 赛季卡片数据：仅第一赛季开放，后续赛季在 seasons 中追加即可
+function _getPassSeasonCardList() {
+    return [
+        {
+            available: true,
+            id: PASS_CONFIG.seasonId,
+            name: PASS_CONFIG.name,
+            nameEn: PASS_CONFIG.nameEn,
+            startTime: PASS_CONFIG.startTime,
+            endTime: PASS_CONFIG.endTime,
+            // 主题色（卡片背景渐变，与通行证主题一致）
+            theme: 'linear-gradient(135deg, rgba(255,107,157,0.22) 0%, rgba(106,90,205,0.30) 55%, rgba(30,20,50,0.65) 100%)',
+            themeAccent: '#ff6b9d'
+        },
+        {
+            available: false,   // 未开放赛季：卡片中央仅显示「敬请期待」
+            name: '敬请期待',
+            theme: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+            themeAccent: 'rgba(255,255,255,0.35)'
+        }
+    ];
+}
+
+function _openPassSeasonSwitchModal() {
+    _renderPassSeasonSwitchModal();
+    document.getElementById('passSeasonSwitchModal').style.display = 'flex';
+}
+
+function _closePassSeasonSwitchModal() {
+    document.getElementById('passSeasonSwitchModal').style.display = 'none';
+}
+
+function _renderPassSeasonSwitchModal() {
+    var grid = document.getElementById('passSeasonGrid');
+    if (!grid) return;
+    var seasons = _getPassSeasonCardList();
+    var curState = _getPassSeasonState();
+    var stateLabel = curState === 'active' ? '进行中' : (curState === 'ended' ? '已结束' : '未开始');
+    var stateCls = curState === 'active' ? 'pass-badge-live' : (curState === 'ended' ? 'pass-badge-ended' : 'pass-badge-wait');
+    var html = '';
+    seasons.forEach(function(s, idx) {
+        if (!s.available) {
+            // 未开放赛季：仅显示「敬请期待」
+            html += '<div class="pass-season-card pass-season-card-locked" style="background:' + s.theme + ';">' +
+                        '<div class="pass-season-card-coming">敬请期待</div>' +
+                    '</div>';
+            return;
+        }
+        var isCurrent = true; // 当前仅一个赛季，第一赛季即当前赛季
+        html += '<div class="pass-season-card' + (isCurrent ? ' pass-season-card-current' : '') + '" data-season-idx="' + idx + '" style="background:' + s.theme + ';">' +
+                    '<div class="pass-season-card-times">' +
+                        '<div class="pass-season-card-time"><i class="fas fa-play"></i> 起始 ' + _fmtPassUTC8(s.startTime) + ' (UTC+8)</div>' +
+                        '<div class="pass-season-card-time"><i class="fas fa-flag-checkered"></i> 结束 ' + _fmtPassUTC8(s.endTime) + ' (UTC+8)</div>' +
+                    '</div>' +
+                    '<div class="pass-season-card-deco" style="color:' + s.themeAccent + ';"><i class="fas fa-crown"></i></div>' +
+                    '<div class="pass-season-card-bottom">' +
+                        '<div class="pass-season-card-namegroup">' +
+                            '<div class="pass-season-card-name">' + s.name + '</div>' +
+                            '<div class="pass-season-card-nameen">' + s.nameEn + '</div>' +
+                        '</div>' +
+                        '<div class="pass-badge ' + stateCls + ' pass-season-card-state"><i class="fas fa-circle"></i> ' + stateLabel + '</div>' +
+                    '</div>' +
+                '</div>';
+    });
+    grid.innerHTML = html;
+}
+
+// 切换赛季：当前仅开放第一赛季，其余赛季提示未开放
+function _switchPassSeason(idx) {
+    var seasons = _getPassSeasonCardList();
+    var s = seasons[idx];
+    if (!s) return;
+    if (!s.available) {
+        if (typeof showToast === 'function') {
+            showToast({ type: 'info', title: '赛季通行证', message: '该赛季尚未开放，敬请期待' });
+        }
+        return;
+    }
+    // 已是当前赛季：仅提示并关闭弹窗
+    _closePassSeasonSwitchModal();
+    if (typeof showToast === 'function') {
+        showToast({ type: 'success', title: '赛季通行证', message: '当前已是「' + s.name + '」' });
+    }
+    renderPassUI();
+}
+
+// ==================== 通行证公告弹窗 ====================
+// 公告内容统一存放于 event.js 的「通行证公告数据」模块（window.passAnnouncementData）
+var _passAnnCurrentId = null;
+
+function _getPassAnnouncementData() {
+    return (typeof window !== 'undefined' && window.passAnnouncementData) ? window.passAnnouncementData : {};
+}
+
+function _getPassAnnouncementList() {
+    var data = _getPassAnnouncementData();
+    return (data && data.announcements) ? data.announcements : [];
+}
+
+function _openPassAnnouncementModal() {
+    _renderPassAnnouncementList();
+    document.getElementById('passAnnouncementModal').style.display = 'flex';
+}
+
+function _closePassAnnouncementModal() {
+    document.getElementById('passAnnouncementModal').style.display = 'none';
+}
+
+// 渲染左侧公告选择列表：按分类分组（系统公告 / 规则说明），默认选中第一条
+function _renderPassAnnouncementList() {
+    var list = document.getElementById('passAnnList');
+    if (!list) return;
+    var anns = _getPassAnnouncementList();
+    if (!anns.length) {
+        list.innerHTML = '<div class="pass-ann-empty">暂无公告</div>';
+        var emptyContent = document.getElementById('passAnnContent');
+        if (emptyContent) emptyContent.innerHTML = '<div class="pass-ann-empty">暂无公告内容</div>';
+        return;
+    }
+    if (!_passAnnCurrentId || !anns.some(function(a) { return a.id === _passAnnCurrentId; })) {
+        _passAnnCurrentId = anns[0].id;
+    }
+    // 按分类分组：保持 announcements 数组顺序；未在 categories 中登记的分类兜底为「其他公告」
+    var data = _getPassAnnouncementData();
+    var cats = (data && data.categories) ? data.categories : [];
+    var grouped = {};
+    anns.forEach(function(a) {
+        var c = a.category || '_other';
+        if (!grouped[c]) grouped[c] = [];
+        grouped[c].push(a);
+    });
+    var html = '';
+    var done = {};
+    cats.forEach(function(c) {
+        if (!grouped[c.id] || !grouped[c.id].length) return;
+        done[c.id] = true;
+        html += '<div class="pass-ann-cat"><i class="fas ' + (c.icon || 'fa-folder') + '"></i> ' + c.name + '</div>';
+        html += _buildPassAnnItemsHTML(grouped[c.id]);
+    });
+    Object.keys(grouped).forEach(function(cid) {
+        if (done[cid]) return;
+        html += '<div class="pass-ann-cat"><i class="fas fa-folder"></i> 其他公告</div>';
+        html += _buildPassAnnItemsHTML(grouped[cid]);
+    });
+    list.innerHTML = html;
+    _renderPassAnnouncementContent();
+}
+
+// 构建某一分类下的公告块状按钮 HTML
+function _buildPassAnnItemsHTML(arr) {
+    var html = '';
+    arr.forEach(function(a) {
+        html += '<button class="pass-ann-item' + (a.id === _passAnnCurrentId ? ' pass-ann-item-active' : '') + '" data-ann-id="' + a.id + '" type="button">' +
+                    '<span class="pass-ann-item-title">' + a.title + '</span>' +
+                    '<span class="pass-ann-item-date"><i class="far fa-clock"></i> ' + a.date + '</span>' +
+                '</button>';
+    });
+    return html;
+}
+
+// 渲染右侧公告内容区（标题 h2 字号大于正文）
+function _renderPassAnnouncementContent() {
+    var box = document.getElementById('passAnnContent');
+    if (!box) return;
+    var cur = null;
+    _getPassAnnouncementList().forEach(function(a) {
+        if (a.id === _passAnnCurrentId) cur = a;
+    });
+    if (!cur) {
+        box.innerHTML = '<div class="pass-ann-empty">请选择左侧公告查看详情</div>';
+        return;
+    }
+    box.innerHTML = cur.content;
+    box.scrollTop = 0;
+}
+
+// 切换选中的公告
+function _selectPassAnnouncement(id) {
+    if (_passAnnCurrentId === id) return;
+    _passAnnCurrentId = id;
+    var list = document.getElementById('passAnnList');
+    if (list) {
+        list.querySelectorAll('.pass-ann-item').forEach(function(btn) {
+            btn.classList.toggle('pass-ann-item-active', btn.getAttribute('data-ann-id') === id);
+        });
+    }
+    _renderPassAnnouncementContent();
 }
 
 function _updateBuyLevelCost() {
@@ -2953,6 +3268,10 @@ function _switchPassTab(tab) {
     // 周次子标签：点击「每周事项」后从其右侧从左到右滑出；离开每周事项页即收起
     var weekly12SubtabsInline = document.getElementById('passWeekly12SubtabsInline');
     if (weekly12SubtabsInline) weekly12SubtabsInline.classList.toggle('pass-subtabs-inline-active', tab === 'weekly12');
+    // Tab 栏内每周事项倒计时：离开每周事项页即收起（内容为空时同样保持隐藏）
+    var weekly12Countdown = document.getElementById('passWeekly12CountdownTab');
+    if (weekly12Countdown) weekly12Countdown.style.display =
+        (tab === 'weekly12' && weekly12Countdown.innerHTML.trim()) ? 'inline-flex' : 'none';
     if (tab === 'tasks') {
         _switchPassSubTab(_passUI.activeSubTab);
     } else if (tab === 'weekly12') {
@@ -3050,15 +3369,8 @@ function renderPassUI() {
     var startEl = document.getElementById('passStartTime');
     var endEl = document.getElementById('passEndTime');
     if (startEl && endEl) {
-        // UTC+8 显示
-        var fmtUTC8 = function(iso) {
-            var d = new Date(new Date(iso).getTime() + 8 * 3600 * 1000);
-            var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
-            return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate())
-                 + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
-        };
-        startEl.textContent = fmtUTC8(PASS_CONFIG.startTime) + ' UTC+8';
-        endEl.textContent = fmtUTC8(PASS_CONFIG.endTime) + ' UTC+8';
+        startEl.textContent = _fmtPassUTC8(PASS_CONFIG.startTime) + ' UTC+8';
+        endEl.textContent = _fmtPassUTC8(PASS_CONFIG.endTime) + ' UTC+8';
     }
 
     // 赛季剩余天数标签（未开始/已结束显示状态文案）
@@ -3178,14 +3490,35 @@ function renderPassUI() {
         var stateIcon = devUnlockItem.querySelector('.pass-dev-item-state');
         if (stateIcon) stateIcon.title = unlockOn ? '当前已开启' : '当前已关闭';
     }
-    // 同步「关闭通行证进行状态」toggle
+    // 同步「关闭通行证进行状态」toggle（休赛期开启时该功能被屏蔽，不可点击）
     var forceLockItem = document.querySelector('#passDevDropdown [data-dev-action="forceLock"]');
     if (forceLockItem) {
+        var offSeasonActive = _isPassOffSeason();
         forceLockItem.classList.toggle('pass-dev-item-on', _passDevForceLocked);
+        forceLockItem.classList.toggle('pass-dev-item-disabled', offSeasonActive);
+        forceLockItem.disabled = offSeasonActive;
+        forceLockItem.style.opacity = offSeasonActive ? '0.45' : '';
+        forceLockItem.style.cursor = offSeasonActive ? 'not-allowed' : '';
         var forceLockIcon = forceLockItem.querySelector('.pass-dev-item-state');
-        if (forceLockIcon) forceLockIcon.title = _passDevForceLocked ? '当前已开启' : '当前已关闭';
+        if (forceLockIcon) forceLockIcon.title = offSeasonActive ? '休赛期开启时该功能不可用' : (_passDevForceLocked ? '当前已开启' : '当前已关闭');
     }
-    // 同步每周事项「一键启用所有周任务」toggle：全部解禁或单独启用时为开启态（强制未开启时不显示）
+    // 同步「进入休赛期 / 关闭休赛期」toggle
+    var offSeasonItem = document.querySelector('#passDevDropdown [data-dev-action="offSeason"]');
+    if (offSeasonItem) {
+        offSeasonItem.classList.toggle('pass-dev-item-on', _passDevOffSeason);
+        var offSeasonIcon = offSeasonItem.querySelector('.pass-dev-item-state');
+        if (offSeasonIcon) offSeasonIcon.title = _passDevOffSeason ? '当前已开启' : '当前已关闭';
+    }
+    var devMenuBtn = document.getElementById('passDevMenuBtn');
+    if (devMenuBtn) devMenuBtn.classList.toggle('pass-btn-dev-active', _passDevUnlockAll);
+    if (!devOn && devMenuEl) devMenuEl.classList.remove('pass-dev-menu-open');
+
+    // 休赛期：隐藏全部内容，仅保留关闭 / 开发者调试按钮与底部条骨架，居中显示休赛期提示
+    var containerEl = document.querySelector('.pass-container');
+    var offSeasonMsg = document.getElementById('passOffseasonMsg');
+    var isOffSeason = _isPassOffSeason();
+    if (containerEl) containerEl.classList.toggle('pass-offseason', isOffSeason);
+    if (offSeasonMsg) offSeasonMsg.style.display = isOffSeason ? '' : 'none';
     var wk12EnableItem = document.querySelector('#passDevDropdown [data-dev-action="enableWeekly12All"]');
     if (wk12EnableItem) {
         var wk12EnableOn = _isWeekly12DevUnlocked() && !_passDevForceLocked;
@@ -3450,16 +3783,28 @@ function _renderPassTasks(data) {
     if (refreshHintEl) refreshHintEl.style.display = seasonLocked ? 'none' : '';
     if (hintText && !seasonLocked) {
         if (sub === 'daily') {
-            // 日常按 UTC 日期刷新（与 refreshDailyTasks 的刷新键一致），下次刷新为下一个 UTC 零点
-            var nextUtcMidnight = new Date();
-            nextUtcMidnight.setUTCHours(24, 0, 0, 0);
-            var dailyDays = Math.max(1, Math.ceil((nextUtcMidnight.getTime() - Date.now()) / 86400000));
-            hintText.textContent = '距离下一次日常刷新还剩 ' + dailyDays + ' 天';
+            // 日常按 UTC+8 每日凌晨 4 点刷新（与 refreshDailyTasks 的刷新键一致）
+            var dNow8 = Date.now() + 8 * 3600 * 1000;
+            var d8 = new Date(dNow8);
+            var nextDaily = Date.UTC(d8.getUTCFullYear(), d8.getUTCMonth(), d8.getUTCDate(), 4, 0, 0);
+            if (nextDaily <= dNow8) nextDaily += 24 * 3600 * 1000;
+            var dcd = _fmtSeasonCountdown(nextDaily - dNow8);
+            hintText.textContent = '下次日常刷新将在 ' + dcd.days + ' 天 ' + dcd.hours + ' 时 ' + dcd.minutes + ' 分后';
         } else if (sub === 'weekly') {
-            // 周常以周一为起点刷新，计算距下一个周一的天数
-            var weeklyDays = (8 - new Date().getDay()) % 7;
-            if (weeklyDays === 0) weeklyDays = 7;
-            hintText.textContent = '距离下一次周常刷新还剩 ' + weeklyDays + ' 天';
+            // 周常按 UTC+8 每周一凌晨 4 点刷新，计算距下一个刷新点的精确时长
+            var wNow8 = Date.now() + 8 * 3600 * 1000;
+            var w8 = new Date(wNow8);
+            var wd = w8.getUTCDay(); // 0=周日
+            var addDays;
+            if (wd === 1) {
+                var mon4 = Date.UTC(w8.getUTCFullYear(), w8.getUTCMonth(), w8.getUTCDate(), 4, 0, 0);
+                addDays = (wNow8 < mon4) ? 0 : 7;
+            } else {
+                addDays = (8 - wd) % 7;
+            }
+            var nextWeekly = Date.UTC(w8.getUTCFullYear(), w8.getUTCMonth(), w8.getUTCDate() + addDays, 4, 0, 0);
+            var wcd = _fmtSeasonCountdown(nextWeekly - wNow8);
+            hintText.textContent = '下次周常刷新将在 ' + wcd.days + ' 天 ' + wcd.hours + ' 时 ' + wcd.minutes + ' 分后';
         } else {
             var seasonMs = new Date(PASS_CONFIG.endTime).getTime() - Date.now();
             var seasonCd = _fmtSeasonCountdown(seasonMs);
@@ -3563,7 +3908,8 @@ function _renderPassTasks(data) {
 // ==================== 每周事项渲染 ====================
 function _renderPassWeekly12Tasks(data) {
     var list = document.getElementById('passWeekly12TasksList');
-    var header = document.getElementById('passWeekly12Header');
+    // 倒计时标签已移入顶部 Tab 栏（随「每周事项」标签滑出）
+    var countdownTab = document.getElementById('passWeekly12CountdownTab');
     if (!list) return;
 
     var seasonLocked = _isPassSeasonLocked();
@@ -3571,20 +3917,25 @@ function _renderPassWeekly12Tasks(data) {
     var week = _passUI.activeWeek12;
     var openWeeks = _getPassWeekly12OpenWeeks();
 
-    // 倒计时头部
-    if (header) {
+    // Tab 栏内倒计时：仅在每周事项页且赛季进行中展示
+    if (countdownTab) {
         if (seasonLocked) {
-            header.innerHTML = '';
-        } else if (_isWeekly12DevUnlocked()) {
-            // Dev 解禁态：12 周全部开放，无真实刷新倒计时
-            header.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-code"></i> 开发者调试：12 周每周事项已全部开放</div>';
-        } else if (openWeeks >= PASS_WEEKLY12_TOTAL_WEEKS) {
-            // 12 周已按真实时间全部开放
-            header.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-circle-check"></i> 12 周每周事项已全部开放</div>';
+            countdownTab.innerHTML = '';
+            countdownTab.style.display = 'none';
         } else {
-            // 倒计时与周次开放判定同源：归零之时即新周按钮出现之时
-            var daysUntilNext = _getPassWeekly12DaysUntilNext();
-            header.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-hourglass-half"></i> 距下一次更新每周事项将在 ' + daysUntilNext + ' 天后</div>';
+            if (_isWeekly12DevUnlocked()) {
+                // Dev 解禁态：12 周全部开放，无真实刷新倒计时
+                countdownTab.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-code"></i> 开发者调试：12 周每周事项已全部开放</div>';
+            } else if (openWeeks >= PASS_WEEKLY12_TOTAL_WEEKS) {
+                // 12 周已按真实时间全部开放
+                countdownTab.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-circle-check"></i> 12 周每周事项已全部开放</div>';
+            } else {
+                // 倒计时与周次开放判定同源：归零之时即新周按钮出现之时
+                var nextOpen = _getPassWeekly12NextOpenTime();
+                var wcd = (nextOpen === null) ? { days: 0, hours: 0, minutes: 0 } : _fmtSeasonCountdown(nextOpen - Date.now());
+                countdownTab.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-hourglass-half"></i> 下次扩充将在 ' + wcd.days + ' 天 ' + wcd.hours + ' 时 ' + wcd.minutes + ' 分后</div>';
+            }
+            countdownTab.style.display = (_passUI.activeTab === 'weekly12') ? 'inline-flex' : 'none';
         }
     }
 
@@ -3779,6 +4130,14 @@ function _renderPassPhaseRewards() {
     var data = getPassData();
     var claimed = data.phaseRewardsClaimed || {};
 
+    // 当前通行证等级：进度填充与「当前进度」标记的唯一数据源
+    // 等级超过 120（EX 等级）后位置钳制在时间轴末端，文案仍显示真实等级
+    var phaseProg = passGetProgress();
+    var phasePosLevel = Math.max(0, Math.min(120, phaseProg.level));
+    var phaseProgressRatio = phasePosLevel / 120;
+    var phaseProgressLeft = 'calc(' + PASS_PHASE_TRACK_INSET + 'px + ' + phaseProgressRatio +
+        ' * (100% - ' + (PASS_PHASE_TRACK_INSET * 2) + 'px))';
+
     // 未购买通行证本体 / 组合包：显示「尚未购买通行证」提示（与每周事项/通行证任务未开启卡片同款样式）
     if (!_isPassPhaseUnlocked()) {
         container.innerHTML = _buildPassLockedCard({
@@ -3838,7 +4197,15 @@ function _renderPassPhaseRewards() {
         html += '</div>';
     });
 
+    // 底层灰色轨道 + 当前等级之前的绿色进度填充（带流光/辉光动态效果）
     html += '<div class="pass-phase-line"></div>';
+    html += '<div class="pass-phase-line-fill" style="width:calc(' + phaseProgressRatio +
+        ' * (100% - ' + (PASS_PHASE_TRACK_INSET * 2) + 'px));"></div>';
+    // 当前进度标记：随等级在时间轴下方移动（末端发光圆点 + 等级胶囊）
+    html += '<div class="pass-phase-progress" style="left:' + phaseProgressLeft + ';">' +
+                '<div class="pass-phase-progress-knob"></div>' +
+                '<div class="pass-phase-progress-label">当前进度 <b>' + phaseProg.displayLevel + '</b> 级</div>' +
+            '</div>';
     html += '</div>';
     html += '</div>';
 
@@ -4091,6 +4458,9 @@ function _injectPassCSS() {
     flex-shrink: 0;
     padding-bottom: 18px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
+    /* 建立层叠上下文并置于内容区之上，确保右上角开发者调试下拉菜单不被内容区遮挡、可正常点击 */
+    position: relative;
+    z-index: 20;
 }
 .pass-header-left {
     display: flex; align-items: center; gap: 18px;
@@ -4168,14 +4538,16 @@ function _injectPassCSS() {
 .pass-season-days-left .pass-season-time-value { color: #f8b500; }
 
 .pass-header-right { display: flex; align-items: center; gap: 12px; }
+/* 关闭按钮：圆形 */
 .pass-close-btn {
-    width: 42px; height: 42px; border-radius: 10px;
+    width: 42px; height: 42px; border-radius: 50%;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.1);
     color: rgba(255,255,255,0.7);
     cursor: pointer; font-size: 18px;
     transition: all 0.2s;
     display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
 }
 .pass-close-btn:hover {
     background: rgba(255,107,157,0.2);
@@ -4325,6 +4697,15 @@ function _injectPassCSS() {
 .pass-btn-dev:hover { background: rgba(255,159,67,0.22); border-color: #ffa94d; }
 .pass-btn-dev-active { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.5); color: #4ade80; }
 .pass-btn-dev-active:hover { background: rgba(74,222,128,0.25); border-color: #4ade80; }
+/* 开发者调试按钮（圆形图标版，位于右上角关闭按钮左侧） */
+.pass-btn-dev.pass-btn-dev-round {
+    width: 42px; height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 17px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
 
 /* ===== 开发者调试多级菜单 ===== */
 .pass-dev-menu { position: relative; }
@@ -4769,10 +5150,11 @@ function _injectPassCSS() {
     visibility: hidden;
     pointer-events: none;
 }
-/* 每周事项头部（倒计时标签行） */
-.pass-weekly12-header {
-    display: flex; align-items: center; justify-content: flex-end;
-    margin-bottom: 14px;
+/* 距下一次更新倒计时标签（位于顶部 Tab 栏内，随周次子标签一同滑出） */
+.pass-weekly12-countdown-intab {
+    margin-left: 6px;
+    align-self: center;
+    animation: pass-subtabs-slide-out 0.32s cubic-bezier(0.32, 0.72, 0.24, 1);
 }
 /* 距下一次更新倒计时标签 */
 .pass-weekly12-countdown {
@@ -4884,6 +5266,41 @@ function _injectPassCSS() {
     flex-shrink: 0;
 }
 
+/* ===== 休赛期：隐藏全部内容，仅保留关闭 / 开发者调试按钮与底部条骨架 ===== */
+.pass-offseason .pass-header-left,
+.pass-offseason .pass-hero,
+.pass-offseason .pass-tabs,
+.pass-offseason .pass-content-scroll {
+    display: none !important;
+}
+/* 左侧标题隐藏后 space-between 失效，改为右对齐，保证右上角按钮组位置不变 */
+.pass-offseason .pass-header { justify-content: flex-end; }
+/* 休赛期底部条不再显示赛季信息（保留边框与高度占位） */
+.pass-offseason .pass-footer-hint > span {
+    visibility: hidden;
+}
+/* 休赛期居中提示卡片：绝对居中于容器，复用 pass-boost-wait 视觉 */
+.pass-offseason-msg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(560px, 86%);
+    text-align: center;
+    padding: 44px 32px;
+    border-radius: 18px;
+    background: linear-gradient(160deg, rgba(255,159,67,0.1), rgba(120,72,200,0.12));
+    border: 1px solid rgba(255,159,67,0.35);
+    box-shadow: 0 0 50px rgba(255,159,67,0.08) inset;
+    z-index: 5;
+    animation: pass-offseason-in 0.4s cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+@keyframes pass-offseason-in {
+    from { opacity: 0; transform: translate(-50%, -46%); }
+    to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+.pass-offseason .pass-container { position: relative; }
+
 /* ===== Modal 弹窗 ===== */
 .pass-modal-overlay {
     position: absolute; inset: 0;
@@ -4920,6 +5337,284 @@ function _injectPassCSS() {
     border-top: 1px solid rgba(255,255,255,0.08);
 }
 .pass-modal-footer .pass-btn { padding: 10px 24px; font-size: 14px; }
+
+/* ===== 更换赛季通行证 ===== */
+/* 左上角「切换」按钮（进行中徽章左侧，与徽章同风格的胶囊小按钮） */
+.pass-season-switch-btn {
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,107,157,0.12); color: #ff9dc0;
+    border: 1px solid rgba(255,107,157,0.35);
+    cursor: pointer; transition: all 0.2s;
+    flex-shrink: 0;
+}
+.pass-season-switch-btn:hover {
+    background: rgba(255,107,157,0.25); color: #fff;
+    border-color: #ff6b9d;
+}
+/* 更换赛季弹窗：宽且长的宽版弹窗 */
+.pass-modal-box-season {
+    width: 94%; max-width: 980px;
+    max-height: 84vh;
+    display: flex; flex-direction: column;
+}
+.pass-modal-box-season .pass-modal-body { overflow-y: auto; }
+.pass-season-grid {
+    margin-top: 16px;
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    overflow-y: auto;
+    padding-bottom: 6px;
+}
+/* 赛季块状卡片：矩形大块，主题背景 + 左上时间 + 左下标题 + 右下状态 */
+.pass-season-card {
+    position: relative;
+    height: 216px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0.24, 1), border-color 0.25s, box-shadow 0.25s;
+}
+.pass-season-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,107,157,0.55);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.45), 0 0 24px rgba(255,107,157,0.18);
+}
+.pass-season-card-current {
+    border-color: rgba(255,107,157,0.6);
+    box-shadow: 0 0 0 1px rgba(255,107,157,0.35), 0 0 30px rgba(255,107,157,0.12) inset;
+}
+/* 左上角起止时间标签 */
+.pass-season-card-times {
+    position: absolute; left: 16px; top: 14px;
+    display: flex; flex-direction: column; gap: 6px;
+    z-index: 2;
+}
+.pass-season-card-time {
+    font-size: 11.5px; color: rgba(255,255,255,0.75);
+    background: rgba(10,6,20,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 4px 10px; border-radius: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    width: fit-content;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.pass-season-card-time i { font-size: 9px; opacity: 0.8; }
+/* 背景空白区装饰：主题色大图标（弱化居中偏右） */
+.pass-season-card-deco {
+    position: absolute; right: 26px; top: 50%;
+    transform: translateY(-58%);
+    font-size: 88px; opacity: 0.16;
+    z-index: 1;
+    pointer-events: none;
+    text-shadow: 0 0 40px currentColor;
+}
+/* 底部信息行：左下标题组 + 右下状态徽章 */
+.pass-season-card-bottom {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, rgba(10,6,20,0) 0%, rgba(10,6,20,0.72) 60%);
+    z-index: 2;
+}
+.pass-season-card-namegroup { min-width: 0; }
+.pass-season-card-name {
+    font-size: 17px; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pass-season-card-nameen {
+    font-size: 11px; color: rgba(255,255,255,0.5);
+    margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pass-season-card-state { flex-shrink: 0; }
+/* 未开放赛季卡片：中央仅显示「敬请期待」 */
+.pass-season-card-locked { cursor: default; }
+.pass-season-card-locked:hover { transform: none; border-color: rgba(255,255,255,0.1); box-shadow: none; }
+.pass-season-card-coming {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; letter-spacing: 6px;
+    color: rgba(255,255,255,0.45);
+    z-index: 2;
+}
+@media (max-width: 768px) {
+    .pass-season-grid { grid-template-columns: 1fr; }
+    .pass-season-card { height: 180px; }
+}
+
+/* ===== 通行证公告 ===== */
+/* 左上角「公告」按钮（「切换」按钮左侧，同风格胶囊小按钮，金色系区分） */
+.pass-announcement-btn {
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(248,181,0,0.12); color: #f8c74a;
+    border: 1px solid rgba(248,181,0,0.35);
+    cursor: pointer; transition: all 0.2s;
+    flex-shrink: 0;
+}
+.pass-announcement-btn:hover {
+    background: rgba(248,181,0,0.25); color: #fff;
+    border-color: #f8b500;
+}
+/* 公告弹窗：宽且长的长版弹窗（高度较低、宽度更长） */
+.pass-modal-box-announcement {
+    width: 94%; max-width: 1240px;
+    height: 70vh;
+    display: flex; flex-direction: column;
+}
+/* 弹窗头部：左侧标题组 + 右上角关闭按钮 */
+.pass-ann-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px;
+    flex-shrink: 0;
+}
+.pass-ann-head .pass-modal-subtitle { margin-bottom: 0; }
+.pass-ann-close {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    cursor: pointer; font-size: 15px;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.pass-ann-close:hover {
+    background: rgba(255,107,157,0.2);
+    border-color: #ff6b9d; color: #fff;
+    transform: rotate(90deg);
+}
+/* 双栏布局：左 1/4 公告选择区 + 竖线格挡 + 右 3/4 公告内容区 */
+.pass-ann-layout {
+    flex: 1; min-height: 0;
+    margin-top: 16px;
+    display: flex; align-items: stretch;
+}
+/* 左侧：公告选择区，长方形块状按钮竖向排版 */
+.pass-ann-list {
+    flex: 0 0 25%;
+    min-width: 0;
+    display: flex; flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+/* 左侧分类小标题（系统公告 / 规则说明） */
+.pass-ann-cat {
+    font-size: 11px; font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 1px;
+    padding: 2px 2px 0;
+    display: inline-flex; align-items: center; gap: 6px;
+    user-select: none;
+}
+.pass-ann-cat:not(:first-child) { margin-top: 8px; }
+.pass-ann-cat i { font-size: 10px; color: rgba(255,107,157,0.7); }
+.pass-ann-item {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    padding: 9px 13px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.85);
+    cursor: pointer; text-align: left;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    font-family: inherit;
+}
+.pass-ann-item:hover {
+    background: rgba(255,107,157,0.1);
+    border-color: rgba(255,107,157,0.4);
+}
+.pass-ann-item-active {
+    background: rgba(255,107,157,0.16);
+    border-color: rgba(255,107,157,0.55);
+    box-shadow: 0 0 18px rgba(255,107,157,0.12) inset;
+}
+.pass-ann-item-title {
+    font-size: 12.5px; font-weight: 600; line-height: 1.4;
+    color: rgba(255,255,255,0.85);
+}
+.pass-ann-item-active .pass-ann-item-title { color: #ff9dc0; }
+.pass-ann-item-date {
+    font-size: 10.5px; color: rgba(255,255,255,0.4);
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.pass-ann-item-date i { font-size: 9px; }
+/* 中间：竖线格挡 */
+.pass-ann-divider {
+    flex: 0 0 1px;
+    background: rgba(255,255,255,0.12);
+    margin: 0 22px;
+    border-radius: 1px;
+}
+/* 右侧：公告内容区 */
+.pass-ann-content {
+    flex: 1; min-width: 0;
+    overflow-y: auto;
+    padding-right: 8px;
+    font-size: 13.5px; line-height: 1.8;
+    color: rgba(255,255,255,0.8);
+}
+/* 公告正文标题：字号比正文大一些 */
+.pass-ann-content h2 {
+    font-size: 22px; font-weight: 700; line-height: 1.4;
+    color: #fff;
+    margin: 0 0 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,107,157,0.25);
+}
+.pass-ann-content h3 {
+    font-size: 16.5px; font-weight: 600;
+    color: #ff9dc0;
+    margin: 20px 0 8px;
+}
+.pass-ann-content p { margin: 0 0 10px; }
+.pass-ann-content ul { margin: 0 0 12px; padding-left: 20px; }
+.pass-ann-content li { margin-bottom: 6px; }
+.pass-ann-content strong { color: #f8b500; }
+.pass-ann-empty {
+    padding: 24px 12px;
+    text-align: center;
+    font-size: 12.5px; color: rgba(255,255,255,0.4);
+}
+/* 弹窗内自定义滚动条：与通行证主题一致的细滚动条（左侧列表 / 右侧内容共用） */
+.pass-ann-list::-webkit-scrollbar,
+.pass-ann-content::-webkit-scrollbar { width: 6px; }
+.pass-ann-list::-webkit-scrollbar-track,
+.pass-ann-content::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.03);
+    border-radius: 3px;
+}
+.pass-ann-list::-webkit-scrollbar-thumb,
+.pass-ann-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ff6b9d, #6a5acd);
+    border-radius: 3px;
+}
+.pass-ann-list::-webkit-scrollbar-thumb:hover,
+.pass-ann-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff87b3, #7d6edd);
+}
+/* Firefox：细滚动条 + 主题色滑块 */
+.pass-ann-list, .pass-ann-content {
+    scrollbar-width: thin;
+    scrollbar-color: #ff6b9d rgba(255,255,255,0.03);
+}
+@media (max-width: 768px) {
+    /* 移动端：双栏改上下堆叠，竖线改横线 */
+    .pass-modal-box-announcement { height: 76vh; }
+    .pass-ann-layout { flex-direction: column; }
+    .pass-ann-list { flex: 0 0 auto; max-height: 30%; }
+    .pass-ann-divider { flex: 0 0 1px; margin: 14px 0; }
+    .pass-ann-content h2 { font-size: 19px; }
+    .pass-ann-content h3 { font-size: 15px; }
+}
 
 /* ===== 奖励结算弹窗（宽版，领取/购买后统一展示获得物品） ===== */
 .pass-modal-box-rewards {
@@ -5172,7 +5867,7 @@ function _injectPassCSS() {
 .pass-phase-timeline-wrap::-webkit-scrollbar { height: 0; }
 .pass-phase-timeline {
     position: relative;
-    min-height: 280px;
+    min-height: 300px;
     min-width: 860px;
 }
 .pass-phase-line {
@@ -5184,6 +5879,84 @@ function _injectPassCSS() {
     background: linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 100%);
     border-radius: 3px;
     box-shadow: 0 0 10px rgba(120, 80, 255, 0.3);
+}
+/* 当前等级之前的绿色进度填充：流光扫过 + 辉光呼吸 */
+.pass-phase-line-fill {
+    position: absolute;
+    left: 72px;
+    top: 232px;
+    height: 5px;
+    min-width: 0;
+    border-radius: 3px;
+    z-index: 1;
+    background: linear-gradient(90deg, #059669 0%, #10b981 40%, #6ee7b7 55%, #10b981 70%, #059669 100%);
+    background-size: 220% 100%;
+    animation: pass-phase-fill-shimmer 2.6s linear infinite,
+               pass-phase-fill-glow 1.8s ease-in-out infinite;
+    transition: width 0.55s cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+@keyframes pass-phase-fill-shimmer {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: -220% 50%; }
+}
+@keyframes pass-phase-fill-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.45); }
+    50%      { box-shadow: 0 0 16px rgba(52, 211, 153, 0.85); }
+}
+/* 当前进度标记：末端发光圆点骑在轨道上，等级胶囊位于时间轴下方，随等级左右移动 */
+.pass-phase-progress {
+    position: absolute;
+    top: 232px;
+    transform: translateX(-50%);
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    animation: pass-phase-progress-in 0.5s cubic-bezier(0.32, 0.72, 0.24, 1);
+    transition: left 0.55s cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+@keyframes pass-phase-progress-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.pass-phase-progress-knob {
+    width: 18px;
+    height: 18px;
+    margin-top: -9px; /* 与轨道（top:232px）垂直居中对齐 */
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #a7f3d0 0%, #34d399 45%, #059669 100%);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    animation: pass-phase-knob-pulse 1.7s ease-out infinite;
+}
+@keyframes pass-phase-knob-pulse {
+    0%   { box-shadow: 0 0 10px rgba(52, 211, 153, 0.8), 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    70%  { box-shadow: 0 0 16px rgba(52, 211, 153, 0.9), 0 0 0 9px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 10px rgba(52, 211, 153, 0.8), 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+.pass-phase-progress-label {
+    position: relative;
+    margin-top: 10px;
+    padding: 3px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ecfdf5;
+    white-space: nowrap;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: 1px solid rgba(110, 231, 183, 0.75);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
+}
+.pass-phase-progress-label b { font-weight: 800; color: #ffffff; margin: 0 2px; }
+.pass-phase-progress-label::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-width: 0;
+    border-bottom-color: #10b981;
 }
 .pass-phase-node {
     position: absolute;
@@ -5321,6 +6094,8 @@ function _injectPassCSS() {
     .pass-tabs { flex-wrap: wrap; }
     .pass-tabs-right { padding-right: 0; }
     .pass-subtabs-inline { width: 100%; margin-left: 0; flex-wrap: wrap; }
+    /* 每周事项倒计时：窄屏换行至下一行左对齐，避免与右侧工具组挤压 */
+    .pass-weekly12-countdown-intab { width: 100%; margin-left: 0; padding-bottom: 8px; }
     /* 每周事项周次子标签：固定窗口不换行，窄屏下缩小按钮与间距 */
     .pass-weekly12-subtabs-inline { flex-wrap: nowrap; gap: 5px; }
     .pass-weekly12-subtabs-inline .pass-subtab { padding: 7px 10px; font-size: 12px; }

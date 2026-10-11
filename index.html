@@ -53,16 +53,16 @@
     <script src="./js/versionHistory.js?v=3.0.2.6" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
     <script src="./js/warehouse.js?v=3.7" defer></script>
-    <script src="./js/pass.js?v=2.9" defer></script>
-    <script src="./js/dailytasks.js" defer></script>
-    <script src="./js/shop.js?v=2.3" defer></script>
+    <script src="./js/pass.js?v=3.9" defer></script>
+    <script src="./js/dailytasks.js?v=1.1" defer></script>
+    <script src="./js/shop.js?v=2.4" defer></script>
     <script src="./js/premail.js?v=2.0" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
     <script src="./js/lang.js" defer></script>
     <script src="./js/announcement.js?v=3.0.2.6" defer></script>
-    <script src="./js/event.js?v=1.2" defer></script>
+    <script src="./js/event.js?v=1.7" defer></script>
     <script src="./js/identity_ego.js" defer></script>
     <script src="./js/account-settings.js?v=1.3" defer></script>
     <script src="./js/soundtrack.js?v=1.0" defer></script>
@@ -12343,9 +12343,15 @@
                                             <i class="fas fa-calendar-check"></i>
                                         </div>
                                         <div class="checkin-title">
-                                            <h2>每日签到</h2>
+                                            <div class="checkin-title-row">
+                                                <h2>每日签到</h2>
+                                                <span class="checkin-refresh-tag" id="checkinRefreshTag" title="每日签到将于 UTC+8 每日 04:00:00 刷新">还剩 -- 小时 -- 分刷新</span>
+                                            </div>
                                             <p>连续签到获得更多奖励</p>
                                         </div>
+                                        <button class="checkin-btn dev-custom-checkin" id="devCustomCheckinBtn" style="display: none;" title="开发者模式：自定义签到天数">
+                                            <i class="fas fa-code"></i> 自定义签到天数
+                                        </button>
                                         <button class="dev-adjust-btn" id="devCheckinBtn" style="display: none;" title="开发者模式：调整签到天数">
                                             <i class="fas fa-code"></i>
                                             <span>调整签到天数 (Dev)</span>
@@ -12390,11 +12396,10 @@
                                         <i class="fas fa-info-circle"></i>
                                         <span id="dailyExpHint">连续签到7天后每天获得400 EXP + 60 PRE，15天后每天550 EXP + 90 PRE（断签将重置为250 EXP + 30 PRE）</span>
                                     </div>
-                                    <button class="checkin-btn" id="checkinBtn">立即签到</button>
-                                    <button class="checkin-btn dev-custom-checkin" id="devCustomCheckinBtn" style="display: none;" title="开发者模式：自定义签到天数">
-                                        <i class="fas fa-code"></i> 自定义签到天数
-                                    </button>
-                                    <div class="checkin-message" id="checkinMessage"></div>
+                                    <div class="checkin-action">
+                                        <button class="checkin-btn" id="checkinBtn">立即签到</button>
+                                        <div class="checkin-message" id="checkinMessage"></div>
+                                    </div>
                                 </div>
                                 
                                 <!-- 日历签到统计卡片 -->
@@ -14135,6 +14140,48 @@
                 .checkin-header .dev-adjust-btn {
                     margin-left: auto;
                 }
+
+                /* 标题右侧的刷新倒计时标签（每日 UTC+8 04:00:00 刷新） */
+                .checkin-title-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                }
+
+                .checkin-refresh-tag {
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #0099cc;
+                    background: rgba(79, 172, 254, 0.12);
+                    border: 1px solid rgba(79, 172, 254, 0.35);
+                    border-radius: 999px;
+                    white-space: nowrap;
+                }
+
+                /* 头部内的自定义签到天数按钮：与调整签到天数 (Dev) 一致的紧凑样式 */
+                .checkin-header .dev-custom-checkin {
+                    margin-left: 0;
+                    padding: 6px 12px;
+                    font-size: 12px;
+                    border-radius: 8px;
+                    box-shadow: none;
+                }
+
+                .checkin-header .dev-custom-checkin:hover {
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                }
+
+                /* 底部操作区：立即签到居中，提示文本位于其下方 */
+                .checkin-action {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin-top: 20px;
+                }
                 
                 .checkin-status {
                     display: flex;
@@ -15295,8 +15342,8 @@
                     background: white;
                     border-radius: 16px;
                     padding: 24px 26px;
-                    width: 94%;
-                    max-width: 980px;
+                    width: 96%;
+                    max-width: 1180px;
                     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
                 }
                 
@@ -15333,213 +15380,234 @@
                     color: #666;
                 }
                 
-                .milestone-list {
-                    list-style: none;
-                    padding: 0;
-                    margin: 0;
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 12px;
-                    align-items: stretch;
+                /* ===== 签到里程碑：长横向时间轴（结构与通行证「阶段奖励」时间轴一致） ===== */
+                .ms-timeline-wrap {
+                    position: relative;
+                    width: 100%;
+                    box-sizing: border-box;
+                    padding: 14px 10px 8px;
+                    overflow-x: auto; /* 唯一横向滚动宿主：轨道过长时在此横向滚动查看 */
+                    overflow-y: hidden;
+                    -webkit-overflow-scrolling: touch;
+                    scrollbar-width: thin;
+                    scrollbar-color: #c6cbdc #f0f1f5;
                 }
+                .ms-timeline-wrap::-webkit-scrollbar { height: 8px; }
+                .ms-timeline-wrap::-webkit-scrollbar-track { background: #f0f1f5; border-radius: 4px; }
+                .ms-timeline-wrap::-webkit-scrollbar-thumb { background: #c6cbdc; border-radius: 4px; }
+                .ms-timeline-wrap::-webkit-scrollbar-thumb:hover { background: #aab0c6; }
 
-                .milestone-item {
+                .ms-timeline {
+                    position: relative;
+                    height: 340px;
+                    /* 轨道总宽由 JS 按节点数与最小间距写入 inline width，超出弹窗宽度即触发横向滚动 */
+                }
+                .ms-line {
+                    position: absolute;
+                    left: 88px;
+                    right: 88px;
+                    top: 314px;
+                    height: 5px;
+                    border-radius: 3px;
+                    background: linear-gradient(90deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.40) 50%, rgba(102,126,234,0.15) 100%);
+                    box-shadow: 0 0 10px rgba(102, 126, 234, 0.25);
+                    z-index: 1;
+                }
+                /* 当前进度之前的绿色进度填充：流光扫过 + 辉光呼吸（与通行证阶段奖励时间轴一致） */
+                .ms-line-fill {
+                    position: absolute;
+                    left: 88px;
+                    top: 314px;
+                    height: 5px;
+                    min-width: 0;
+                    border-radius: 3px;
+                    z-index: 1;
+                    background: linear-gradient(90deg, #059669 0%, #10b981 40%, #6ee7b7 55%, #10b981 70%, #059669 100%);
+                    background-size: 220% 100%;
+                    animation: ms-fill-shimmer 2.6s linear infinite,
+                               ms-fill-glow 1.8s ease-in-out infinite;
+                    transition: width 0.55s cubic-bezier(0.32, 0.72, 0.24, 1);
+                }
+                @keyframes ms-fill-shimmer {
+                    0%   { background-position: 0% 50%; }
+                    100% { background-position: -220% 50%; }
+                }
+                @keyframes ms-fill-glow {
+                    0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.45); }
+                    50%      { box-shadow: 0 0 16px rgba(52, 211, 153, 0.85); }
+                }
+                .ms-node {
+                    position: absolute;
+                    top: 314px;
+                    transform: translate(-50%, -50%);
                     display: flex;
                     flex-direction: column;
-                    align-items: flex-start;
-                    padding: 12px 14px;
-                    border-radius: 12px;
-                    background: #f8f9fa;
-                    border: 2px solid #f0f0f0;
-                    transition: transform 0.2s, box-shadow 0.2s;
-                    position: relative;
-                    box-sizing: border-box;
-                    /* 所有卡片固定为同一高度：3 行布局按视口自适应，保证弹窗不出现滚动条 */
-                    height: min(198px, calc((100vh - 202px) / 3));
-                    overflow: hidden;
-                }
-                
-                .milestone-item:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-                }
-                
-                /* 可领取：粉色高亮 + 脉动边框 + 可点击 */
-                .milestone-item.claimable {
-                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.06) 0%, rgba(230, 126, 138, 0.06) 100%);
-                    border: 2px solid #d45d79;
-                    cursor: pointer;
-                    box-shadow: 0 0 0 0 rgba(212, 93, 121, 0.45);
-                    animation: milestoneClaimPulse 1.8s ease-in-out infinite;
-                }
-
-                .milestone-item.claimable:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 20px rgba(212, 93, 121, 0.22);
-                    animation: none;
-                }
-
-                .milestone-item.claimable .milestone-status {
-                    color: #d45d79;
-                    font-weight: 700;
-                }
-
-                @keyframes milestoneClaimPulse {
-                    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 93, 121, 0.35); }
-                    50% { box-shadow: 0 0 0 5px rgba(212, 93, 121, 0.08); }
-                }
-
-                .milestone-claim-btn {
-                    position: absolute;
-                    left: 14px;
-                    right: 14px;
-                    bottom: 10px;
-                    width: auto;
-                    box-sizing: border-box;
-                    text-align: center;
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: #fff;
-                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
-                    border-radius: 8px;
-                    padding: 5px 0;
-                    letter-spacing: 1px;
-                    white-space: nowrap;
-                }
-
-                /* 可领取态：奖励区底部给悬浮按钮预留空间，内容不被遮挡 */
-                .milestone-item.claimable .milestone-reward {
-                    padding-bottom: 34px;
-                }
-
-                /* 已领取：紫色渐变 */
-                .milestone-item.claimed {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border-color: transparent;
-                }
-
-                .milestone-item.claimed .milestone-reward {
-                    color: white;
-                }
-
-                .milestone-item.claimed .milestone-days {
-                    color: rgba(255, 255, 255, 0.85);
-                }
-
-                .milestone-item.claimed .milestone-status {
-                    color: rgba(255, 255, 255, 0.9);
-                }
-                
-                .milestone-item-top {
-                    display: flex;
                     align-items: center;
-                    gap: 10px;
-                    width: 100%;
-                    margin-bottom: 6px;
-                    flex-shrink: 0;
+                    z-index: 2;
                 }
-                
-                .milestone-icon {
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 10px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                .ms-dot {
+                    width: 34px;
+                    height: 34px;
+                    box-sizing: border-box;
+                    border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    color: white;
-                    font-size: 16px;
-                    flex-shrink: 0;
-                }
-                
-                .milestone-item.claimed .milestone-icon {
-                    background: rgba(255, 255, 255, 0.25);
-                }
-                
-                .milestone-info {
-                    flex: 1;
-                    min-width: 0;
-                }
-                
-                .milestone-name {
-                    font-weight: 600;
                     font-size: 14px;
-                    color: #333;
-                    margin-bottom: 3px;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    color: #fff;
+                    background: linear-gradient(135deg, #7c88e8, #6a5acd);
+                    border: 2px solid #fff;
+                    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.45);
+                    z-index: 3;
                 }
-                
-                .milestone-item.achieved .milestone-name {
-                    color: white;
+                .ms-connector {
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    top: -78px;
+                    width: 2px;
+                    height: 78px;
+                    background: linear-gradient(180deg, rgba(102,126,234,0.75), rgba(102,126,234,0.2));
                 }
-                
-                .milestone-days {
-                    font-size: 12px;
-                    color: #999;
-                    line-height: 1.3;
+                .ms-card {
+                    position: absolute;
+                    left: 50%;
+                    bottom: 88px;
+                    transform: translateX(-50%);
+                    width: 150px;
+                    box-sizing: border-box;
+                    background: #fff;
+                    border: 1px solid #e7e9f2;
+                    border-radius: 12px;
+                    padding: 9px 10px 10px;
+                    text-align: center;
+                    box-shadow: 0 4px 14px rgba(70, 75, 120, 0.1);
+                    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
                 }
-                
-                .milestone-reward {
+                /* 天数角标 */
+                .ms-days-tag {
+                    display: inline-block;
+                    font-size: 11px;
                     font-weight: 700;
-                    font-size: 14px;
-                    color: #667eea;
+                    color: #5b6bc4;
+                    background: rgba(102, 126, 234, 0.12);
+                    padding: 1px 8px;
+                    border-radius: 8px;
+                    margin-bottom: 5px;
+                }
+                .ms-reward-icon {
+                    width: 34px;
+                    height: 34px;
+                    margin: 0 auto 4px;
+                    border-radius: 9px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: #fff;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 15px;
+                }
+                .ms-reward-name {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #333;
+                    line-height: 1.3;
+                    margin-bottom: 6px;
+                    white-space: nowrap;
+                }
+                .ms-reward-list {
                     display: flex;
                     flex-direction: column;
+                    align-items: center;
                     gap: 3px;
-                    flex: 1 1 auto;
-                    min-height: 0;
-                    width: 100%;
-                    overflow: hidden;
+                    margin-bottom: 7px;
                 }
-                .milestone-exp {
-                    font-size: 14px;
-                    flex-shrink: 0;
-                }
-                .milestone-coin {
+                .ms-rwd {
                     display: inline-flex;
                     align-items: center;
                     gap: 4px;
-                    font-size: 12px;
-                    color: #e67e22;
-                    background: rgba(230, 126, 34, 0.1);
-                    padding: 2px 8px;
-                    border-radius: 10px;
-                    width: fit-content;
-                    flex-shrink: 0;
-                }
-                .milestone-coin i { font-size: 10px; }
-
-                .milestone-extra {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 4px;
-                    font-size: 12px;
-                    padding: 2px 8px;
-                    border-radius: 10px;
-                    width: fit-content;
-                    flex-shrink: 0;
-                }
-                .milestone-extra i { font-size: 10px; }
-                .milestone-extra.card {
-                    color: #0f766e;
-                    background: rgba(22, 160, 133, 0.1);
-                }
-                .milestone-extra.medal {
-                    color: #8e44ad;
-                    background: rgba(155, 89, 182, 0.1);
-                }
-
-                .milestone-status {
-                    position: absolute;
-                    top: 12px;
-                    right: 14px;
+                    max-width: 100%;
                     font-size: 11px;
-                    color: #999;
+                    font-weight: 600;
+                    padding: 2px 8px;
+                    border-radius: 9px;
+                    white-space: nowrap;
+                }
+                .ms-rwd i { font-size: 10px; }
+                .ms-rwd-exp { color: #5b6bc4; background: rgba(102, 126, 234, 0.1); }
+                .ms-rwd-coin { color: #e67e22; background: rgba(230, 126, 34, 0.1); }
+                .ms-rwd-extra.card { color: #0f766e; background: rgba(22, 160, 133, 0.1); }
+                .ms-rwd-extra.medal { color: #8e44ad; background: rgba(155, 89, 182, 0.1); }
+
+                .ms-claim-btn {
+                    width: 100%;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 5px 0;
+                    font-size: 11px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    box-sizing: border-box;
+                }
+                .ms-claim-btn i { font-size: 10px; }
+                .ms-claim-btn-disabled {
+                    background: #f0f1f5;
+                    color: #9aa0af;
+                    cursor: not-allowed;
+                }
+                .ms-claim-btn-primary {
+                    color: #fff;
+                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                    box-shadow: 0 3px 10px rgba(212, 93, 121, 0.35);
+                }
+                .ms-claim-btn-primary:hover { box-shadow: 0 5px 14px rgba(212, 93, 121, 0.45); }
+
+                /* 已领取：圆点变绿，卡片保持统一样式（与通行证阶段奖励一致） */
+                .ms-node-claimed .ms-dot {
+                    background: linear-gradient(135deg, #34c77b, #1fa05c);
+                    box-shadow: 0 2px 10px rgba(31, 160, 92, 0.4);
+                }
+                /* 可领取：粉色圆点脉动 + 卡片高亮可点击 */
+                .ms-node-claimable .ms-dot {
+                    background: linear-gradient(135deg, #e86a8c, #d45d79);
+                    animation: msDotPulse 1.8s ease-in-out infinite;
+                }
+                .ms-node-claimable .ms-card {
+                    border-color: #f0b3c2;
+                    background: linear-gradient(180deg, #fff 0%, #fff7f9 100%);
+                    cursor: pointer;
+                }
+                /* hover 时保留 translateX(-50%) 居中位移，避免卡片向左跳动 */
+                .ms-node-claimable .ms-card:hover {
+                    transform: translateX(-50%) translateY(-3px);
+                    border-color: #d45d79;
+                    box-shadow: 0 10px 24px rgba(212, 93, 121, 0.22);
+                }
+                @keyframes msDotPulse {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 93, 121, 0.45), 0 2px 10px rgba(212, 93, 121, 0.4); }
+                    50% { box-shadow: 0 0 0 8px rgba(212, 93, 121, 0.08), 0 2px 10px rgba(212, 93, 121, 0.4); }
+                }
+                /* 未达成：圆点与图标灰化、卡片半透明 */
+                .ms-node-locked .ms-dot {
+                    background: linear-gradient(135deg, #c3c8d4, #a6adbf);
+                    box-shadow: 0 2px 8px rgba(120, 128, 150, 0.3);
+                }
+                .ms-node-locked .ms-card { opacity: 0.72; }
+                .ms-node-locked .ms-reward-icon {
+                    background: linear-gradient(135deg, #b7bccb, #9aa1b5);
+                }
+
+                /* 底部横向滚动提示 */
+                .milestone-footer-scroll {
+                    display: none;
+                    align-items: center;
+                    gap: 5px;
+                    font-size: 12px;
+                    color: #9aa0b5;
                     font-weight: 500;
                 }
+                .milestone-footer-scroll i { font-size: 11px; }
 
                 .milestone-modal-footer {
                     display: flex;
@@ -15626,59 +15694,55 @@
                     color: #ccc;
                 }
                 
-                body.dark-mode .milestone-item {
-                    background: #333;
-                    border-color: #444;
+                /* ===== 签到里程碑时间轴：暗色模式 ===== */
+                body.dark-mode .ms-timeline-wrap { scrollbar-color: #4a4a5c #2c2c38; }
+                body.dark-mode .ms-timeline-wrap::-webkit-scrollbar-track { background: #2c2c38; }
+                body.dark-mode .ms-timeline-wrap::-webkit-scrollbar-thumb { background: #4a4a5c; }
+                body.dark-mode .ms-timeline-wrap::-webkit-scrollbar-thumb:hover { background: #5a5a6e; }
+                body.dark-mode .ms-line {
+                    background: linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(196,181,253,0.35) 50%, rgba(255,255,255,0.12) 100%);
+                    box-shadow: 0 0 10px rgba(124, 58, 237, 0.35);
                 }
-                
-                body.dark-mode .milestone-name {
-                    color: #eee;
+                body.dark-mode .ms-dot {
+                    border-color: #2a2a2a;
                 }
-                
-                body.dark-mode .milestone-days {
-                    color: #888;
+                body.dark-mode .ms-connector {
+                    background: linear-gradient(180deg, rgba(167,139,250,0.75), rgba(124,58,237,0.2));
                 }
-                
-                body.dark-mode .milestone-reward {
-                    color: #90caf9;
+                body.dark-mode .ms-card {
+                    background: #2b2b36;
+                    border-color: #3d3d4d;
+                    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
                 }
-                body.dark-mode .milestone-coin {
-                    color: #ffb74d;
-                    background: rgba(230, 126, 34, 0.18);
+                body.dark-mode .ms-days-tag {
+                    color: #aab4f5;
+                    background: rgba(140,150,240,0.16);
                 }
-                body.dark-mode .milestone-extra.card {
-                    color: #4fd1c5;
-                    background: rgba(22, 160, 133, 0.2);
+                body.dark-mode .ms-reward-name { color: #ececf1; }
+                body.dark-mode .ms-rwd-exp { color: #90caf9; background: rgba(102,126,234,0.18); }
+                body.dark-mode .ms-rwd-coin { color: #ffb74d; background: rgba(230,126,34,0.18); }
+                body.dark-mode .ms-rwd-extra.card { color: #4fd1c5; background: rgba(22,160,133,0.2); }
+                body.dark-mode .ms-rwd-extra.medal { color: #ce93d8; background: rgba(155,89,182,0.22); }
+                body.dark-mode .ms-claim-btn-disabled {
+                    background: #3a3a47;
+                    color: #8a8fa0;
                 }
-                body.dark-mode .milestone-extra.medal {
-                    color: #ce93d8;
-                    background: rgba(155, 89, 182, 0.22);
+                body.dark-mode .ms-node-claimable .ms-card {
+                    border-color: #a04a63;
+                    background: linear-gradient(180deg, #2b2b36 0%, #352833 100%);
                 }
-
-                body.dark-mode .milestone-status {
-                    color: #888;
+                body.dark-mode .ms-node-claimable .ms-card:hover { border-color: #d45d79; }
+                body.dark-mode .ms-node-locked .ms-dot {
+                    background: linear-gradient(135deg, #4a4f5e, #3a3f4c);
+                    box-shadow: none;
                 }
-
+                body.dark-mode .ms-node-locked .ms-reward-icon {
+                    background: linear-gradient(135deg, #555a68, #444955);
+                }
                 body.dark-mode .milestone-modal-footer {
                     border-top-color: #3a3a3a;
                 }
-
-                body.dark-mode .milestone-item.claimable {
-                    background: linear-gradient(135deg, rgba(212, 93, 121, 0.16) 0%, rgba(230, 126, 138, 0.14) 100%);
-                    border-color: #d45d79;
-                }
-
-                body.dark-mode .milestone-item.claimable .milestone-status {
-                    color: #ff8fab;
-                }
-
-                body.dark-mode .milestone-item.claimed {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                }
-
-                body.dark-mode .milestone-item:hover {
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                }
+                body.dark-mode .milestone-footer-scroll { color: #7e8497; }
                 
                 .level-progress-section {
                     background: #f8f9fa;
@@ -15810,6 +15874,8 @@
                     padding: 14px;
                     display: flex;
                     align-items: center;
+                    justify-content: center;
+                    text-align: center;
                     gap: 10px;
                     border: 1px solid #f0f0f0;
                 }
@@ -15881,6 +15947,8 @@
                     margin-bottom: 18px;
                     display: flex;
                     align-items: center;
+                    justify-content: center;
+                    text-align: center;
                     gap: 8px;
                     font-size: 13px;
                     color: #8d6e00;
@@ -16798,6 +16866,24 @@
                         flex-shrink: 0;
                     }
 
+                    .checkin-header > .dev-custom-checkin {
+                        margin-left: 0;
+                        font-size: 11px;
+                        padding: 4px 8px;
+                        height: 28px;
+                        order: 19;
+                        flex-shrink: 0;
+                    }
+
+                    .checkin-header > .checkin-title .checkin-title-row {
+                        gap: 6px;
+                    }
+
+                    .checkin-header > .checkin-title .checkin-refresh-tag {
+                        font-size: 10px;
+                        padding: 2px 8px;
+                    }
+
                     .checkin-status {
                         gap: 20px;
                         margin-bottom: 14px;
@@ -16878,51 +16964,18 @@
                         gap: 20px;
                     }
 
-                    .milestone-list {
-                        grid-template-columns: 1fr;
-                        gap: 10px;
-                    }
-
-                    /* 手机端单列 7 行无法一屏展示，保留弹窗内滚动作为兜底，卡片仍固定高度 */
+                    /* 里程碑时间轴：手机端保持横向长轨道，仅收紧弹窗边距 */
                     .milestone-modal {
-                        padding: 18px;
+                        padding: 16px;
                         max-height: 92vh;
                         overflow-y: auto;
                     }
 
-                    .milestone-item {
-                        height: 150px;
+                    .ms-timeline-wrap {
+                        padding: 10px 4px 6px;
                     }
                 }
 
-                /* 里程碑弹窗：中窄屏降为两列（4 行），高度按视口固定，弹窗不滚动 */
-                @media (min-width: 769px) and (max-width: 1000px) {
-                    .milestone-list {
-                        grid-template-columns: repeat(2, 1fr);
-                    }
-
-                    .milestone-item {
-                        height: min(180px, calc((100vh - 212px) / 4));
-                    }
-                }
-
-                /* 桌面端矮视口：压缩卡片内边距，保证 3 行卡片始终完整放入且无滚动条 */
-                @media (min-width: 1001px) and (max-height: 800px) {
-                    .milestone-item {
-                        padding: 10px 12px;
-                    }
-
-                    .milestone-icon {
-                        width: 32px;
-                        height: 32px;
-                        font-size: 14px;
-                    }
-
-                    .milestone-item-top {
-                        margin-bottom: 4px;
-                    }
-                }
-                
                 /* 平板端布局 */
                 @media (min-width: 769px) and (max-width: 1024px) {
                     .content-area {
@@ -24069,18 +24122,53 @@
                         '</div>' +
                         '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
                     '</div>' +
-                    '<ul class="milestone-list"></ul>' +
+                    '<div class="ms-timeline-wrap" id="milestoneTimelineWrap">' +
+                        '<div class="ms-timeline" id="milestoneTimeline"></div>' +
+                    '</div>' +
                     '<div class="milestone-modal-footer">' +
                         '<span class="milestone-footer-streak">累计签到：<strong id="milestoneFooterStreak">0</strong> 天</span>' +
                         '<span class="milestone-footer-hint" id="milestoneFooterHint"></span>' +
+                        '<span class="milestone-footer-scroll" id="milestoneFooterScroll"><i class="fas fa-arrows-left-right"></i> 左右滑动查看更多里程碑</span>' +
                     '</div>' +
                 '</div>';
 
             document.body.appendChild(overlay);
 
-            var listEl = overlay.querySelector('.milestone-list');
+            var wrapEl = overlay.querySelector('#milestoneTimelineWrap');
+            var timelineEl = overlay.querySelector('#milestoneTimeline');
             var streakEl = overlay.querySelector('#milestoneFooterStreak');
             var hintEl = overlay.querySelector('#milestoneFooterHint');
+            var scrollHintEl = overlay.querySelector('#milestoneFooterScroll');
+
+            // 时间轴布局常量（与 .ms-* 样式中的轨道内缩/节点间距保持一致）
+            var MS_TRACK_INSET = 88;   // 轨道两端内缩（首尾节点中心距边缘）
+            var MS_NODE_MIN_GAP = 196; // 相邻节点中心最小间距（大于卡片宽度，避免重叠）
+
+            // 计算各里程碑节点在长轨道上的位置：
+            // 优先按累计签到天数比例分布（与通行证阶段奖励时间轴同思路），
+            // 比例间距不足卡片宽度时强制拉开最小间距，轨道总宽随之增长（超出部分横向滚动查看）
+            function computeMilestonePositions(config) {
+                var maxDays = config[config.length - 1].days;
+                var trackWidth = MS_TRACK_INSET * 2 + (config.length - 1) * MS_NODE_MIN_GAP;
+                var positions = [];
+                for (var iter = 0; iter < 12; iter++) {
+                    positions = [];
+                    var prev = null;
+                    for (var i = 0; i < config.length; i++) {
+                        var p = MS_TRACK_INSET + (config[i].days / maxDays) * (trackWidth - MS_TRACK_INSET * 2);
+                        if (prev !== null) p = Math.max(p, prev + MS_NODE_MIN_GAP);
+                        positions.push(p);
+                        prev = p;
+                    }
+                    var nextWidth = positions[positions.length - 1] + MS_TRACK_INSET;
+                    if (Math.abs(nextWidth - trackWidth) < 0.5) {
+                        trackWidth = nextWidth;
+                        break;
+                    }
+                    trackWidth = nextWidth;
+                }
+                return { positions: positions, trackWidth: trackWidth };
+            }
             // 当前查看的里程碑阶段（默认为当前生效阶段）
             var milestoneMode = getCurrentMilestoneMode();
 
@@ -24103,56 +24191,95 @@
                     ? (Array.isArray(stats.stageClaimedMilestones) ? stats.stageClaimedMilestones : [])
                     : (Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : []);
 
-                var itemsHTML = '';
                 var totalDays = stats.total || 0;
-                getMilestoneConfig(milestoneMode).forEach(function(m) {
+                var config = getMilestoneConfig(milestoneMode);
+                var posInfo = computeMilestonePositions(config);
+                timelineEl.style.width = posInfo.trackWidth + 'px';
+
+                var nodesHTML = '';
+                config.forEach(function(m, idx) {
                     var isClaimed = claimed.indexOf(m.days) !== -1;
                     var reached = totalDays >= m.days;
                     var state = isClaimed ? 'claimed' : (reached ? 'claimable' : 'locked');
-                    var statusText, daysText;
-                    if (isClaimed) {
-                        statusText = '✓ 已领取';
-                        daysText = '已达成 ' + m.days + ' 天';
-                    } else if (reached) {
-                        statusText = '可领取';
-                        daysText = '已达成 ' + m.days + ' 天';
-                    } else {
-                        statusText = (totalDays > 0 ? '还差 ' + (m.days - totalDays) + ' 天' : '未达成');
-                        daysText = '需累计签到 ' + m.days + ' 天';
+
+                    // 奖励内容：经验值 / PRE 硬币 / 额外仓库道具
+                    var rewardRowsHtml = '<div class="ms-rwd ms-rwd-exp"><i class="fas fa-star"></i> ' + m.expText + '</div>';
+                    if (m.coin > 0) {
+                        rewardRowsHtml += '<div class="ms-rwd ms-rwd-coin"><i class="fas fa-coins"></i> +' + m.coin + ' PRE</div>';
                     }
-                    var coinRewardHtml = m.coin > 0 ? '<div class="milestone-coin"><i class="fas fa-coins"></i> +' + m.coin + ' PRE</div>' : '';
-                    var extraRewardsHtml = (m.extraRewards && m.extraRewards.length) ? m.extraRewards.map(function(r) {
-                        return '<div class="milestone-extra ' + r.cls + '"><i class="' + r.icon + '"></i> ' + r.text + '</div>';
-                    }).join('') : '';
-                    var claimBtnHtml = state === 'claimable' ? '<div class="milestone-claim-btn"><i class="fas fa-gift"></i> 点击领取</div>' : '';
-                    itemsHTML += '<li class="milestone-item ' + state + '"' + (state === 'claimable' ? ' data-days="' + m.days + '" title="点击领取该里程碑奖励"' : '') + '>' +
-                        '<span class="milestone-status">' + statusText + '</span>' +
-                        '<div class="milestone-item-top">' +
-                            '<div class="milestone-icon"><i class="fas fa-' + m.icon + '"></i></div>' +
-                            '<div class="milestone-info">' +
-                                '<div class="milestone-name">' + m.name + '</div>' +
-                                '<div class="milestone-days">' + daysText + '</div>' +
-                            '</div>' +
+                    if (m.extraRewards && m.extraRewards.length) {
+                        m.extraRewards.forEach(function(r) {
+                            rewardRowsHtml += '<div class="ms-rwd ms-rwd-extra ' + r.cls + '"><i class="' + r.icon + '"></i> ' + r.text + '</div>';
+                        });
+                    }
+
+                    // 领取按钮三态：已领取 / 可领取 / 未达成（还差 N 天）
+                    var btnHtml;
+                    if (isClaimed) {
+                        btnHtml = '<button class="ms-claim-btn ms-claim-btn-disabled" type="button" disabled><i class="fas fa-check"></i> 已领取</button>';
+                    } else if (reached) {
+                        btnHtml = '<button class="ms-claim-btn ms-claim-btn-primary" type="button"><i class="fas fa-gift"></i> 点击领取</button>';
+                    } else {
+                        var btnText = totalDays > 0 ? '还差 ' + (m.days - totalDays) + ' 天' : '<i class="fas fa-lock"></i> 未达成';
+                        btnHtml = '<button class="ms-claim-btn ms-claim-btn-disabled" type="button" disabled>' + btnText + '</button>';
+                    }
+
+                    nodesHTML += '<div class="ms-node ms-node-' + state + '" style="left:' + posInfo.positions[idx] + 'px;"' +
+                            (state === 'claimable' ? ' data-days="' + m.days + '" title="点击领取该里程碑奖励"' : ' title="需累计签到 ' + m.days + ' 天"') + '>' +
+                        '<div class="ms-connector"></div>' +
+                        '<div class="ms-dot"><i class="fas fa-' + m.icon + '"></i></div>' +
+                        '<div class="ms-card">' +
+                            '<div class="ms-days-tag">' + m.days + ' 天</div>' +
+                            '<div class="ms-reward-icon"><i class="fas fa-' + m.icon + '"></i></div>' +
+                            '<div class="ms-reward-name">' + m.name + '</div>' +
+                            '<div class="ms-reward-list">' + rewardRowsHtml + '</div>' +
+                            btnHtml +
                         '</div>' +
-                        '<div class="milestone-reward">' +
-                            '<div class="milestone-exp">' + m.expText + '</div>' +
-                            coinRewardHtml +
-                            extraRewardsHtml +
-                        '</div>' +
-                        claimBtnHtml +
-                    '</li>';
+                    '</div>';
                 });
-                listEl.innerHTML = itemsHTML;
+                // 轨道横线置于节点之后（z-index 低于节点圆点）
+                nodesHTML += '<div class="ms-line"></div>';
+                // 绿色进度填充：从轨道起点延伸至当前累计签到天数对应的位置
+                var maxDays = config[config.length - 1].days;
+                var fillEndPos;
+                if (totalDays <= 0) {
+                    fillEndPos = MS_TRACK_INSET;
+                } else if (totalDays >= maxDays) {
+                    fillEndPos = posInfo.positions[posInfo.positions.length - 1];
+                } else if (totalDays <= config[0].days) {
+                    fillEndPos = MS_TRACK_INSET + (totalDays / config[0].days) * (posInfo.positions[0] - MS_TRACK_INSET);
+                } else {
+                    for (var fi = 0; fi < config.length - 1; fi++) {
+                        if (totalDays >= config[fi].days && totalDays <= config[fi + 1].days) {
+                            var fr = (totalDays - config[fi].days) / (config[fi + 1].days - config[fi].days);
+                            fillEndPos = posInfo.positions[fi] + fr * (posInfo.positions[fi + 1] - posInfo.positions[fi]);
+                            break;
+                        }
+                    }
+                    if (fillEndPos === undefined) fillEndPos = MS_TRACK_INSET;
+                }
+                var fillWidth = Math.max(0, fillEndPos - MS_TRACK_INSET);
+                nodesHTML += '<div class="ms-line-fill" style="width:' + fillWidth + 'px;"></div>';
+                timelineEl.innerHTML = nodesHTML;
                 streakEl.textContent = totalDays;
                 var claimableCount = getClaimableMilestoneDays(user, milestoneMode).length;
                 hintEl.textContent = claimableCount > 0 ? '🎁 有 ' + claimableCount + ' 个奖励可领取' : '';
                 hintEl.style.display = claimableCount > 0 ? 'inline' : 'none';
+
+                // 内容超出弹窗宽度时显示横向滚动提示
+                updateScrollHint();
 
                 // 同步阶段切换按钮的选中态
                 var modeBtns = overlay.querySelectorAll('.milestone-mode-btn');
                 for (var bi = 0; bi < modeBtns.length; bi++) {
                     modeBtns[bi].classList.toggle('active', modeBtns[bi].getAttribute('data-mode') === milestoneMode);
                 }
+            }
+
+            // 横向滚动提示：仅在时间轴确实超出可视宽度时展示
+            function updateScrollHint() {
+                var overflow = wrapEl.scrollWidth > wrapEl.clientWidth + 2;
+                scrollHintEl.style.display = overflow ? 'inline-flex' : 'none';
             }
 
             // 阶段切换按钮：标准阶段 / 阶段突破
@@ -24170,10 +24297,10 @@
                 })(modeBtns[mb]);
             }
 
-            // 点击可领取的里程碑
-            listEl.addEventListener('click', function(e) {
-                var li = e.target.closest ? e.target.closest('.milestone-item.claimable') : null;
-                if (!li || !listEl.contains(li)) return;
+            // 点击可领取的里程碑节点（卡片或领取按钮均可触发）
+            timelineEl.addEventListener('click', function(e) {
+                var li = e.target.closest ? e.target.closest('.ms-node-claimable') : null;
+                if (!li || !timelineEl.contains(li)) return;
                 var days = parseInt(li.getAttribute('data-days'), 10);
 
                 var data = loadCurrentUser();
@@ -24210,14 +24337,26 @@
                 render();
             });
 
-            var closeBtn = overlay.querySelector('.milestone-close');
-            closeBtn.addEventListener('click', function() {
-                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-            });
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) {
-                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            // 纵向滚轮在时间轴可横向滚动时转为横向滚动（与通行证阶段奖励时间轴一致）
+            wrapEl.addEventListener('wheel', function(e) {
+                if (this.scrollWidth > this.clientWidth + 2 && e.deltaY) {
+                    e.preventDefault();
+                    this.scrollLeft += e.deltaY;
                 }
+            }, { passive: false });
+
+            // 窗口尺寸变化时刷新横向滚动提示
+            window.addEventListener('resize', updateScrollHint);
+
+            function closeOverlay() {
+                window.removeEventListener('resize', updateScrollHint);
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }
+
+            var closeBtn = overlay.querySelector('.milestone-close');
+            closeBtn.addEventListener('click', closeOverlay);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeOverlay();
             });
 
             render();
@@ -24257,8 +24396,8 @@
                 }
             } catch (e) { seasonTimeText = ''; }
 
-            // 已签到标记
-            var todayStr = today.toDateString();
+            // 已签到标记（以凌晨 4 点为签到日分界）
+            var todayStr = getCheckinDayStr();
             var checkedToday = !!(user && user.userProfile && user.userProfile.checkinStats && user.userProfile.checkinStats.lastCheckin === todayStr);
 
             var cardHtml = function(iconBg, icon, title, value, sub, extraCls, tagsHtml) {
@@ -24492,6 +24631,28 @@
         }
         
         // 加载签到数据
+        // 更新「还剩 XX 小时 XX 分刷新」标签：每日签到将于 UTC+8 每日 04:00:00 刷新
+        function updateCheckinRefreshCountdown() {
+            var tag = document.getElementById('checkinRefreshTag');
+            if (!tag) return;
+            var now8 = Date.now() + 8 * 3600000; // UTC+8 墙钟时间轴（与刷新边界一致，时区无关）
+            var d8 = new Date(now8);
+            var target = Date.UTC(d8.getUTCFullYear(), d8.getUTCMonth(), d8.getUTCDate(), 4, 0, 0);
+            if (target <= now8) target += 24 * 3600000;
+            var ms = target - now8;
+            var hours = Math.floor(ms / 3600000);
+            var minutes = Math.floor((ms % 3600000) / 60000);
+            tag.textContent = '还剩 ' + hours + ' 小时 ' + minutes + ' 分刷新';
+        }
+
+        // 倒计时标签每 30 秒自动刷新（全局仅启动一次）
+        var _checkinRefreshTimerStarted = false;
+        function ensureCheckinRefreshTimer() {
+            if (_checkinRefreshTimerStarted) return;
+            _checkinRefreshTimerStarted = true;
+            setInterval(updateCheckinRefreshCountdown, 30 * 1000);
+        }
+
         function loadCheckinData() {
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
@@ -24531,15 +24692,15 @@
             // 更新奖励预览
             updateRewardPreview(user);
             
-            // 检查今日是否已签到
-            var today = new Date().toDateString();
+            // 检查今日是否已签到（以凌晨 4 点为签到日分界）
+            var today = getCheckinDayStr();
             if (user.userProfile && user.userProfile.checkinStats && user.userProfile.checkinStats.lastCheckin === today) {
                 if (checkinBtn) {
                     checkinBtn.textContent = '今日已签到';
                     checkinBtn.disabled = true;
                 }
                 if (checkinMessage) {
-                    checkinMessage.textContent = '明天再来签到吧！';
+                    checkinMessage.textContent = '明天再来签到吧！每日签到将于 UTC+8 每日 04:00:00 刷新';
                 }
             } else {
                 if (checkinBtn) {
@@ -24552,9 +24713,13 @@
                 }
             }
             
+            // 更新刷新倒计时标签
+            updateCheckinRefreshCountdown();
+            ensureCheckinRefreshTimer();
+
             showDevButtons();
         }
-        
+
         // 签到流程中命中满级时，阶段突破提示延迟到签到结果弹窗关闭后再弹出
         var _checkinStagePromptPending = false;
 
@@ -25033,18 +25198,24 @@
         }
         
         // 执行签到
+        // 每日签到刷新时间统一为每日凌晨 4 点：4 点前签到仍算前一天（前一个签到日）
+        function getCheckinDayStr(d) {
+            d = d || new Date();
+            return new Date(d.getTime() - 4 * 3600 * 1000).toDateString();
+        }
+
         function performCheckin() {
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             var userIndex = users.findIndex(function(u) {
                 return u.username === currentUser.username;
             });
-            
+
             if (userIndex === -1) return;
-            
+
             var user = users[userIndex];
             var today = new Date();
-            var todayStr = today.toDateString();
+            var todayStr = getCheckinDayStr(today);
             
             // 检查今日是否已签到
             if (user.userProfile && user.userProfile.checkinStats && user.userProfile.checkinStats.lastCheckin === todayStr) {
@@ -25061,10 +25232,9 @@
             // 初始化经验值数据
             initUserExpData(user);
             
-            // 检查是否连续签到
+            // 检查是否连续签到（以凌晨 4 点为签到日分界：前一个签到日 = 当前签到日往前 1 天）
             var lastCheckinDate = user.userProfile.checkinStats.lastCheckin ? new Date(user.userProfile.checkinStats.lastCheckin) : null;
-            var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
+            var yesterday = new Date(today.getTime() - 24 * 3600 * 1000 - 4 * 3600 * 1000);
             var wasContinuous = lastCheckinDate && lastCheckinDate.toDateString() === yesterday.toDateString();
             
             if (wasContinuous) {
@@ -26116,7 +26286,7 @@
                 if (!user.userProfile.checkinStats) user.userProfile.checkinStats = {};
                 user.userProfile.checkinStats.streak = s;
                 user.userProfile.checkinStats.total = t;
-                user.userProfile.checkinStats.lastCheckin = new Date().toDateString();
+                user.userProfile.checkinStats.lastCheckin = getCheckinDayStr();
 
                 user.gameData.level = newLevel;
                 user.gameData.totalExp = totalExp;
@@ -26388,10 +26558,10 @@
                 // 里程碑按累计签到天数制终身仅领取一次，清除本月签到时不清空领取记录
                 // total 减去本月天数
                 user.userProfile.checkinStats.total = Math.max(0, (user.userProfile.checkinStats.total || 0) - count);
-                // lastCheckin 改为清除前最后一个非本月日期
+                // lastCheckin 改为清除前最后一个非本月日期（取该条历史记录的签到日字符串）
                 var lastHistory = user.userProfile.checkinStats.history;
                 user.userProfile.checkinStats.lastCheckin = lastHistory.length > 0
-                    ? new Date(lastHistory[lastHistory.length - 1].timestamp).toDateString()
+                    ? lastHistory[lastHistory.length - 1].date
                     : null;
                 // 重置月度限额
                 var monthKey = year + '-' + ('0' + (month + 1)).slice(-2);

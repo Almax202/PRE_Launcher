@@ -662,24 +662,26 @@ function getShopStorageKey() {
     return 'shop_' + username;
 }
 
+// 刷新时间统一规则（UTC+8）：每日限购每日凌晨 4 点刷新，每周限购每周一凌晨 4 点刷新，每月限购每月 1 日凌晨 4 点刷新
+// 各日期 key 以凌晨 4 点为边界：时间戳回退 4 小时后 +8h 取 UTC+8 墙钟（纯时间戳换算，时区无关；4 点前仍算前一周期）
 function _shopGetTodayKey() {
     var now = new Date();
-    var utc8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    var utc8 = new Date(now.getTime() - 4 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000);
     return utc8.toISOString().substring(0, 10);
 }
 
-// 本周一（UTC+8）日期 key，用于每周限购重置
+// 本周周一（UTC+8，周一凌晨 4 点为一周起点）日期 key，用于每周限购重置
 function _shopGetWeekKey() {
-    var now8 = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
+    var now8 = new Date(new Date().getTime() - 4 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000);
     var day = now8.getUTCDay(); // 0=周日
     var diff = day === 0 ? 6 : day - 1;
     var monday = new Date(now8.getTime() - diff * 24 * 60 * 60 * 1000);
     return monday.toISOString().substring(0, 10);
 }
 
-// 本月（UTC+8）年月 key，用于每月限购重置
+// 本月（UTC+8，1 日凌晨 4 点为一月起点）年月 key，用于每月限购重置
 function _shopGetMonthKey() {
-    var now8 = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
+    var now8 = new Date(new Date().getTime() - 4 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000);
     return now8.toISOString().substring(0, 7); // YYYY-MM
 }
 
@@ -1161,10 +1163,11 @@ function _shopFormatPromoTime(ts) {
 }
 
 // ==================== 库存刷新倒计时 ====================
-// 下次库存刷新时间戳：每日 00:00（UTC+8）重置每日限购库存（周一同时重置每周限购）
+// 下次库存刷新时间戳：每日 04:00（UTC+8）重置每日限购库存（周一 04:00 同时重置每周限购，1 日 04:00 重置每月限购）
 function _shopGetNextStockResetTs() {
     var now8 = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
-    var next = Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate() + 1, 0, 0, 0);
+    var next = Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate(), 4, 0, 0);
+    if (next <= now8.getTime()) next += 24 * 60 * 60 * 1000;
     return next - 8 * 60 * 60 * 1000; // 转回真实 UTC 时间戳
 }
 
@@ -1433,7 +1436,7 @@ function renderShopUI() {
 
         // 库存刷新倒计时 tag（PRE Coin 余额左侧）
         var stockRefreshHtml = '<span class="shop-stock-refresh-tag" id="shopStockRefreshTag"' +
-            ' title="每日 00:00（UTC+8）刷新所有每日限购库存；每周一 00:00 额外重置每周限购；每月 1 号 00:00 重置每月限购">' +
+            ' title="每日 04:00（UTC+8）刷新所有每日限购库存；每周一 04:00 额外重置每周限购；每月 1 号 04:00 重置每月限购">' +
             '<i class="fas fa-hourglass-half"></i> 距离下次刷新库存时间剩余：<b class="shop-refresh-countdown">--:--:--</b></span>';
 
         statsEl.innerHTML =

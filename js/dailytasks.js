@@ -1,6 +1,6 @@
 // ==================== 每日/每周任务系统 ====================
-// 每日任务：每天重置（UTC+8 00:00:00），每天随机 8 个（模板池 ≥50）
-// 每周任务：每周一重置（UTC+8 00:00:00），每周随机 16 个（模板池 ≥50）
+// 每日任务：每日凌晨 4 点重置（UTC+8），每天随机 8 个（模板池 ≥50）
+// 每周任务：每周一凌晨 4 点重置（UTC+8），每周随机 16 个（模板池 ≥50）
 // 存储：按账户隔离  key = dailytask_<username>
 // 入口：顶部导航栏「每日任务」→ 全屏弹窗（样式自包含，不依赖仓库先打开）
 
@@ -167,16 +167,17 @@ var WEEKLY_TASK_TEMPLATES = [
 
 // ==================== 辅助工具 ====================
 function _dtGetNow() { return new Date(); }
+// 刷新时间统一规则：日常每日凌晨 4 点（UTC+8），周常每周一凌晨 4 点（UTC+8）
+// 日期键以凌晨 4 点为一天起点：时间戳回退 4 小时后 +8h 得到 UTC+8 墙钟，取其 UTC 日期（4 点前仍算前一天）
+// 注：直接基于绝对时间戳换算（不经过 getTimezoneOffset），与设备时区无关
 function _dtUtc8DayKey(d) {
     d = d || _dtGetNow();
-    var utc = d.getTime() + d.getTimezoneOffset() * 60000;
-    var utc8 = new Date(utc + 8 * 3600000);
+    var utc8 = new Date(d.getTime() - 4 * 3600000 + 8 * 3600000);
     return utc8.toISOString().slice(0, 10);
 }
 function _dtGetMondayKey(d) {
     d = d || _dtGetNow();
-    var utc = d.getTime() + d.getTimezoneOffset() * 60000;
-    var utc8 = new Date(utc + 8 * 3600000);
+    var utc8 = new Date(d.getTime() - 4 * 3600000 + 8 * 3600000); // 周一凌晨 4 点为一周起点，4 点前仍算上周
     var day = utc8.getUTCDay(); // 0=周日
     var diff = day === 0 ? 6 : day - 1;
     var monday = new Date(utc8);
@@ -799,10 +800,10 @@ function showDailyTaskModal() {
 // ==================== 刷新倒计时 ====================
 function _dtUtc8Now() {
     var now = new Date();
-    return new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 8 * 3600000);
+    return new Date(now.getTime() + 8 * 3600000); // UTC+8 墙钟时间轴（绝对时间戳 +8h，与时区无关）
 }
 
-// 距离下次刷新的文案（日常=下个 UTC+8 零点；周常=下个周一 UTC+8 零点）
+// 距离下次刷新的文案（日常=下个 UTC+8 凌晨 4 点；周常=下个周一 UTC+8 凌晨 4 点）
 function _dtRefreshCountdownText() {
     var data = getDailyTaskData();
     var isWeekly = data.activeTab === 'weekly';
@@ -810,10 +811,20 @@ function _dtRefreshCountdownText() {
     var target;
     if (isWeekly) {
         var day = now8.getUTCDay(); // 0=周日
-        var addDays = day === 1 ? 7 : ((8 - day) % 7);
-        target = new Date(Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate() + addDays, 0, 0, 0));
+        var addDays;
+        if (day === 1) {
+            // 周一凌晨 4 点前仍属上周，下一个刷新点为当天 4 点
+            var today4 = Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate(), 4, 0, 0);
+            addDays = (now8.getTime() < today4) ? 0 : 7;
+        } else {
+            addDays = (8 - day) % 7;
+        }
+        target = new Date(Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate() + addDays, 4, 0, 0));
     } else {
-        target = new Date(Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate() + 1, 0, 0, 0));
+        target = new Date(Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate(), 4, 0, 0));
+        if (now8.getTime() >= target.getTime()) {
+            target = new Date(Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate() + 1, 4, 0, 0));
+        }
     }
     var ms = target.getTime() - now8.getTime();
     if (ms < 0) ms = 0;
@@ -948,7 +959,7 @@ function renderDailyTasksUI() {
 
     // footer
     var footerTip = data.activeTab === 'weekly'
-        ? '每周任务将于 UTC+8 每周一 00:00:00 重置，单个任务奖励 PRE 硬币 20-100'
-        : '每日任务将于 UTC+8 每日 00:00:00 重置，单个任务奖励 PRE 硬币上限 100';
+        ? '每周任务将于 UTC+8 每周一 04:00:00 重置，单个任务奖励 PRE 硬币 20-100'
+        : '每日任务将于 UTC+8 每日 04:00:00 重置，单个任务奖励 PRE 硬币上限 100';
     document.getElementById('dtFooter').innerHTML = '<i class="fas fa-info-circle"></i> ' + footerTip;
 }
