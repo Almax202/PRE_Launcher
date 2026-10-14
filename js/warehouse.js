@@ -31,30 +31,37 @@ var WAREHOUSE_ITEMS = {
     exp_boost_small: {
         name: '经验值加成卡 Ⅰ', icon: 'fas fa-gauge', color: '#3498db',
         category: 'consumable', rarity: 'common', showSource: true,
-        desc: '使用后30分钟内，经验获取提升5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。',
+        desc: '使用后30分钟内，经验获取提升5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。',
         flavorText: '一张微微泛着蓝色光芒的卡片，握在手中时，仿佛连时间的流速都变得更有价值。\n——是谁研发出的这张卡片呢？也许这是一个新的开始。',
         source: '活动奖励 / 商店兑换', usable: true, _boostType: 'small', _boostPercent: 5
     },
     exp_boost_mid: {
         name: '经验值加成卡 Ⅱ', icon: 'fas fa-chart-line', color: '#9b59b6',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '使用后30分钟内，经验获取提升15%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。',
+        desc: '使用后30分钟内，经验获取提升15%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。',
         flavorText: '一张微微泛着紫色光芒的卡片，激活它的人会感到思维前所未有地敏捷。\n——或许这张卡片内含的可能性远比你想象的更多。',
         source: '活动奖励 / 商店兑换', usable: true, _boostType: 'mid', _boostPercent: 15
     },
     exp_boost_large: {
         name: '经验值加成卡 Ⅲ', icon: 'fas fa-rocket', color: '#f39c12',
         category: 'consumable', rarity: 'epic', showSource: true,
-        desc: '使用后30分钟内，经验获取提升30%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。',
+        desc: '使用后30分钟内，经验获取提升30%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。',
         flavorText: '一张微微泛着黄色光芒的卡片，仿佛下一秒就要升空 \n——所谓效率的极限，本来就是用来被突破的。',
         source: '特殊活动奖励', usable: true, _boostType: 'large', _boostPercent: 30
     },
     exp_boost_premium: {
         name: '经验值加成卡 Ⅳ', icon: 'fas fa-fire', color: '#c0392b',
         category: 'consumable', rarity: 'legendary', showSource: true,
-        desc: '使用后30分钟内，经验获取提升50%（可与不同类型加成卡叠加，同类型不可叠加，最多同时4张）。当 I+II+III+Ⅳ 中任意四张同时激活时，叠加可达 +100%。',
+        desc: '使用后30分钟内，经验获取提升50%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +125%。',
         flavorText: '一张微微泛着红色光芒的卡片，炽红烈焰沿卡缘燃起，连空气都被蒸腾出涟漪 \n——这是经验加成的极致形态，令人难以直视。',
         source: '高级活动奖励 / 商店兑换', usable: true, _boostType: 'premium', _boostPercent: 50
+    },
+    exp_boost_5: {
+        name: '经验值加成卡 V', icon: 'fas fa-bolt', color: '#ff2d55',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用后30分钟内，经验获取提升75%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +125%。仅在阶段突破·极限模式（121级后）可用。',
+        flavorText: '一道撕裂天穹的猩红闪电，将经验加成的极限推向了又一个顶峰 \n——当雷霆落下，所有的天花板都不过是一地碎片。',
+        source: '阶段突破·极限里程碑奖励（暂不上架商店）', usable: true, _boostType: 'extreme', _boostPercent: 75, _requireExtreme: true
     },
     gacha_single: {
         name: '单次抽卡卷', icon: 'fas fa-ticket-simple', color: '#2ecc71',
@@ -111,6 +118,13 @@ var WAREHOUSE_ITEMS = {
         desc: '使用后获得2000点经验值，将立即对账户等级生效。',
         flavorText: '传说中最炽热的一枚红色星辰，只为真正准备好迎接蜕变的人闪耀。\n——当光芒积蓄到极致，蜕变便会在不经意间发生。',
         source: '高级活动奖励 / 商店兑换', usable: true, _expGain: 2000
+    },
+    exp_supply_5: {
+        name: '经验值补给卡 V', icon: 'fas fa-meteor', color: '#ff2d55',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用后获得3000点经验值，将立即对账户等级生效。仅在阶段突破·极限模式（121级后）可用。',
+        flavorText: '一颗从极限深处坠落的猩红陨星，其蕴含的经验密度已超越常理极限 \n——它只向那些敢于踏入极限领域的人展露真容。',
+        source: '阶段突破·极限里程碑奖励（暂不上架商店）', usable: true, _expGain: 3000, _requireExtreme: true
     },
     precoin_supply_1: {
         name: 'PRE Coin 补给包 Ⅰ', icon: 'fas fa-coins', color: '#3498db',
@@ -191,6 +205,20 @@ var WAREHOUSE_ITEMS = {
         desc: '购买第一赛季「初始化」通行证组合包即刻获得的限定纪念徽章，可展示在您的用户名片个人荣勋中。',
         flavorText: '「初始化」——一切伟大航程的起点，都被铭刻在这枚徽章之中。\n——第一赛季的序章由你开启，而传说才刚刚开始。',
         source: '购买第一赛季「初始化」通行证组合包', usable: false
+    },
+    untiring_medal: {
+        name: '不懈者勋章', icon: 'fas fa-fire', color: '#e74c3c',
+        category: 'badge', rarity: 'legendary', showSource: true,
+        desc: '授予阶段突破模式下累计签到满 365 天用户的至高荣誉勋章，镌刻着跨越 120 级的不懈坚持。',
+        flavorText: '当 60 级的天花板被你亲手打破，又用整整一年把它踩在脚下——这枚勋章，是你给自己的回答。\n——所谓极限，不过是留给不够坚持的人的借口。',
+        source: '签到里程碑 · 阶段突破 · 累计签到 365 天', usable: false
+    },
+    breakthrough_medal: {
+        name: '突破者勋章', icon: 'fas fa-meteor', color: '#ff2d55',
+        category: 'badge', rarity: 'legendary', showSource: true,
+        desc: '授予阶段突破·极限模式下累计签到满 365 天用户的终极荣誉勋章，见证你突破 200 级极限的传奇征程。',
+        flavorText: '一百二十级只是序章，两百级才是终章——你把所有人眼中的不可能，活成了自己的日常。\n——真正的突破，永远不是抵达终点，而是敢于向终点再迈一步。',
+        source: '签到里程碑 · 阶段突破·极限 · 累计签到 365 天', usable: false
     }
 };
 
@@ -485,11 +513,11 @@ function getWarehouseExpBuffs() {
     return _cleanExpBuffs(data);
 }
 
-// 激活经验加成（支持多类型叠加，同类型刷新时长，最多 4 张同时生效）
-// boostType: 'small' | 'mid' | 'large' | 'premium'，percent: 5/15/30/50
+// 激活经验加成（支持多类型叠加，同类型刷新时长，最多 5 张同时生效）
+// boostType: 'small' | 'mid' | 'large' | 'premium' | 'extreme'，percent: 5/15/30/50/75
 // 返回值：{ ok: bool, reason: string|null }
 //   ok=true  → 成功激活（新增或刷新时长）
-//   ok=false → 失败（同类型已生效 or 已达上限 4 张）
+//   ok=false → 失败（同类型已生效 or 已达上限 5 张）
 function activateWarehouseExpBuff(boostType, percent) {
     var data = getWarehouseData();
     var buffs = _cleanExpBuffs(data);
@@ -508,8 +536,8 @@ function activateWarehouseExpBuff(boostType, percent) {
         saveWarehouseData(data);
         return { ok: true, refreshed: true };
     }
-    if (buffs.length >= 4) {
-        return { ok: false, reason: '已同时激活 4 张不同类型加成卡，无法继续叠加' };
+    if (buffs.length >= 5) {
+        return { ok: false, reason: '已同时激活 5 张不同类型加成卡，无法继续叠加' };
     }
     buffs.push({ type: boostType, percent: percent, multiplier: 1 + percent / 100, expiresAt: expiresAt });
     data.expBuffs = buffs;
@@ -1017,6 +1045,36 @@ function useWarehouseItem(itemId, timedUid) {
         return true;
     }
 
+    // 极限限定道具等级检查：经验值加成卡 V / 经验值补给卡 V 仅在阶段突破·极限模式（121级后）可用
+    if (item._requireExtreme) {
+        var _extOk = false;
+        try {
+            if (typeof isStageExtremeActive === 'function' && isStageExtremeActive()) {
+                _extOk = true;
+            } else {
+                // fallback：直接读取用户等级
+                var _cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                var _users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                for (var _ui = 0; _ui < _users.length; _ui++) {
+                    if (_users[_ui].username === _cu.username) {
+                        var _lv = (_users[_ui].gameData && _users[_ui].gameData.level) || 0;
+                        var _prof = _users[_ui].userProfile || {};
+                        if (_lv >= 121 && _prof.stageExtreme === true) { _extOk = true; }
+                        break;
+                    }
+                }
+            }
+        } catch (e) {}
+        if (!_extOk) {
+            if (typeof showToastInfo === 'function') {
+                showToastInfo('账户等级未达标，暂不可使用该加成卡/补给卡');
+            } else if (typeof showToast === 'function') {
+                showToast({ type: 'warning', title: '等级未达标', message: '账户等级未达标，暂不可使用该加成卡/补给卡' });
+            }
+            return false;
+        }
+    }
+
     // 批量使用弹窗：持有数量 > 1 且非加成卡（同类型不可叠加，批量无意义）、非幸运币（一次性布尔标记，批量浪费）、非兑换卡时弹出
     var ownedQty = timedEntry ? timedEntry.qty : normalEntry.qty;
     if (ownedQty > 1 && !item._exchangeCard && !item._boostType && itemId !== 'luck_coin') {
@@ -1503,6 +1561,13 @@ function _getExchangeCardCandidates() {
         list.push(wid);
     });
     var rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
+    // 追加未上架商店但可用自选兑换卡兑换的物品（阶段突破·极限限定道具）
+    ['exp_boost_5', 'exp_supply_5'].forEach(function(extraId) {
+        if (WAREHOUSE_ITEMS[extraId] && !seen[extraId]) {
+            seen[extraId] = true;
+            list.push(extraId);
+        }
+    });
     list.sort(function(a, b) {
         var ia = WAREHOUSE_ITEMS[a], ib = WAREHOUSE_ITEMS[b];
         var ra = rarityOrder[ia.rarity] !== undefined ? rarityOrder[ia.rarity] : 4;

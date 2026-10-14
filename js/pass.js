@@ -590,6 +590,8 @@ function passBuyPremium() {
     }
     data.isPremium = true;
     savePassData(data);
+    // 通知已打开的用户名片等界面局部刷新购买状态
+    try { window.dispatchEvent(new CustomEvent('passPurchaseUpdated')); } catch (e) {}
     return { kind: 'premium' };
 }
 
@@ -629,6 +631,8 @@ function passBuyBundle() {
     _passCollectItem(items, 'precoin_supply_4', 1);
     warehouseAddItem('season1_badge', 1, '通行证组合包奖励', true);
     _passCollectItem(items, 'season1_badge', 1);
+    // 通知已打开的用户名片等界面局部刷新购买状态
+    try { window.dispatchEvent(new CustomEvent('passPurchaseUpdated')); } catch (e) {}
     return { kind: 'bundle', items: items, bonusLevels: 10, alreadyPremium: wasPremium };
 }
 
@@ -2173,6 +2177,9 @@ function _buildPassHTML() {
             <div class="pass-tab" data-tab="phase" id="passTabPhase">
                 <i class="fas fa-route"></i> 阶段奖励
             </div>
+            <div class="pass-tab pass-tab-gold" data-tab="progress" id="passTabProgress">
+                <i class="fas fa-chart-pie"></i> 赛季完成度
+            </div>
             <div class="pass-tab" data-tab="boost" id="passTabBoost" style="display:none;">
                 <i class="fas fa-gauge-high"></i> 等级提速
                 <span class="pass-tab-dot" id="passBoostDot" style="display:none;"></span>
@@ -2217,6 +2224,10 @@ function _buildPassHTML() {
             <!-- 阶段奖励视图 -->
             <div class="pass-view pass-view-hidden" id="passViewPhase">
                 <div id="passPhaseContent"></div>
+            </div>
+            <!-- 赛季完成度视图 -->
+            <div class="pass-view pass-view-hidden" id="passViewProgress">
+                <div class="pass-progress-view" id="passProgressContent"></div>
             </div>
         </div>
 
@@ -2378,6 +2389,22 @@ function _buildPassHTML() {
             <div class="pass-modal-title">更换赛季通行证</div>
             <div class="pass-modal-subtitle">选择要查看的赛季通行证，点击对应赛季卡片即可切换</div>
             <div class="pass-season-grid" id="passSeasonGrid"></div>
+        </div>
+    </div>
+
+    <!-- ===== 赛季完成度弹窗（从赛季切换卡片右上角标签打开） ===== -->
+    <div class="pass-modal-overlay" id="passSeasonProgressModal" style="display:none;">
+        <div class="pass-modal-box pass-modal-box-season-progress">
+            <div class="pass-ann-head">
+                <div class="pass-ann-head-text">
+                    <div class="pass-modal-title" id="passSeasonProgressTitle">赛季完成度</div>
+                    <div class="pass-modal-subtitle">查看该赛季的通行证完成度概览</div>
+                </div>
+                <button class="pass-ann-close" id="passSeasonProgressClose" type="button" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="pass-season-progress-body" id="passSeasonProgressBody"></div>
         </div>
     </div>
 
@@ -2600,6 +2627,7 @@ function _bindPassEvents() {
     document.getElementById('passTabTasks').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('tasks'); });
     document.getElementById('passTabWeekly12').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('weekly12'); });
     document.getElementById('passTabPhase').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('phase'); });
+    document.getElementById('passTabProgress').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('progress'); });
     document.getElementById('passTabBoost').addEventListener('click', function() { if (_passUI._closeDevMenu) _passUI._closeDevMenu(); _switchPassTab('boost'); });
 
     // 子 tab（日常/周常/赛季）
@@ -2670,6 +2698,7 @@ function _bindPassEvents() {
         _openBuyPremiumModal();
     });
     document.getElementById('passSelectBundle').addEventListener('click', function() {
+        if (this.classList.contains('pass-select-owned')) return;
         _closePurchaseSelectModal();
         _openBuyBundleModal();
     });
@@ -2711,7 +2740,7 @@ function _bindPassEvents() {
     });
 
     // 点击遮罩关闭所有弹窗
-    ['passBuyLevelModal', 'passBuyLevelConfirmModal', 'passBuyPremiumModal', 'passPurchaseSelectModal', 'passBuyBundleModal', 'passSeasonSwitchModal', 'passAnnouncementModal'].forEach(function(id) {
+    ['passBuyLevelModal', 'passBuyLevelConfirmModal', 'passBuyPremiumModal', 'passPurchaseSelectModal', 'passBuyBundleModal', 'passSeasonSwitchModal', 'passAnnouncementModal', 'passSeasonProgressModal'].forEach(function(id) {
         var m = document.getElementById(id);
         if (m) m.addEventListener('click', function(e) {
             if (e.target === this) this.style.display = 'none';
@@ -2735,10 +2764,22 @@ function _bindPassEvents() {
     });
     var seasonGrid = document.getElementById('passSeasonGrid');
     if (seasonGrid) seasonGrid.addEventListener('click', function(e) {
+        // 右上角完成度标签：优先拦截，不触发卡片切换
+        var completionBtn = e.target.closest('[data-season-completion]');
+        if (completionBtn) {
+            e.stopPropagation();
+            var idx = parseInt(completionBtn.getAttribute('data-season-completion'), 10);
+            _openPassSeasonProgressModal(idx);
+            return;
+        }
         var card = e.target.closest('.pass-season-card[data-season-idx]');
         if (!card) return;
         _switchPassSeason(parseInt(card.getAttribute('data-season-idx'), 10));
     });
+
+    // 赛季完成度弹窗关闭按钮
+    var seasonProgressClose = document.getElementById('passSeasonProgressClose');
+    if (seasonProgressClose) seasonProgressClose.addEventListener('click', _closePassSeasonProgressModal);
 
     // EX 奖励
     document.getElementById('passBtnClaimEx').addEventListener('click', function() {
@@ -2937,17 +2978,31 @@ function _renderPassSeasonSwitchModal() {
     var curState = _getPassSeasonState();
     var stateLabel = curState === 'active' ? '进行中' : (curState === 'ended' ? '已结束' : '未开始');
     var stateCls = curState === 'active' ? 'pass-badge-live' : (curState === 'ended' ? 'pass-badge-ended' : 'pass-badge-wait');
+    // 当前赛季完成度百分比（用于卡片右上角标签）
+    var completionPct = _passBuildProgressStats().overallPct;
     var html = '';
     seasons.forEach(function(s, idx) {
         if (!s.available) {
-            // 未开放赛季：仅显示「敬请期待」
+            // 未开放赛季：左上角「Coming Soon」标签 + 左下角「敬请期待」文本
             html += '<div class="pass-season-card pass-season-card-locked" style="background:' + s.theme + ';">' +
-                        '<div class="pass-season-card-coming">敬请期待</div>' +
+                        '<div class="pass-season-card-times">' +
+                            '<div class="pass-season-card-time"><i class="fas fa-hourglass-half"></i> Coming Soon</div>' +
+                        '</div>' +
+                        '<div class="pass-season-card-deco" style="color:' + s.themeAccent + ';"><i class="fas fa-crown"></i></div>' +
+                        '<div class="pass-season-card-bottom">' +
+                            '<div class="pass-season-card-namegroup">' +
+                                '<div class="pass-season-card-name pass-season-card-name-locked">敬请期待</div>' +
+                            '</div>' +
+                        '</div>' +
                     '</div>';
             return;
         }
         var isCurrent = true; // 当前仅一个赛季，第一赛季即当前赛季
         html += '<div class="pass-season-card' + (isCurrent ? ' pass-season-card-current' : '') + '" data-season-idx="' + idx + '" style="background:' + s.theme + ';">' +
+                    // 右上角金色完成度标签（点击查看详情）
+                    '<div class="pass-season-card-completion" data-season-completion="' + idx + '">' +
+                        '<i class="fas fa-chart-pie"></i> 完成度 ' + completionPct + '%' +
+                    '</div>' +
                     '<div class="pass-season-card-times">' +
                         '<div class="pass-season-card-time"><i class="fas fa-play"></i> 起始 ' + _fmtPassUTC8(s.startTime) + ' (UTC+8)</div>' +
                         '<div class="pass-season-card-time"><i class="fas fa-flag-checkered"></i> 结束 ' + _fmtPassUTC8(s.endTime) + ' (UTC+8)</div>' +
@@ -2982,6 +3037,110 @@ function _switchPassSeason(idx) {
         showToast({ type: 'success', title: '赛季通行证', message: '当前已是「' + s.name + '」' });
     }
     renderPassUI();
+}
+
+// ==================== 赛季完成度弹窗（从赛季切换卡片打开） ====================
+function _openPassSeasonProgressModal(idx) {
+    var seasons = _getPassSeasonCardList();
+    var s = seasons[idx] || seasons[0];
+    // 标题使用对应赛季名称
+    var titleEl = document.getElementById('passSeasonProgressTitle');
+    if (titleEl) titleEl.textContent = s.name + ' · 赛季完成度';
+    // 渲染完成度视图到弹窗 body（使用 _passBuildProgressStats 与主视图同源数据）
+    var body = document.getElementById('passSeasonProgressBody');
+    if (body) body.innerHTML = _passBuildProgressViewHTML();
+    document.getElementById('passSeasonProgressModal').style.display = 'flex';
+}
+
+function _closePassSeasonProgressModal() {
+    document.getElementById('passSeasonProgressModal').style.display = 'none';
+}
+
+// 基于 _passBuildProgressStats 生成完整的赛季完成度 HTML（与主视图内容一致）
+// 该函数不直接操作 DOM，返回 HTML 字符串，方便弹窗和主视图共用
+function _passBuildProgressViewHTML() {
+    var stats = _passBuildProgressStats();
+    var overallPct = stats.overallPct;
+    var overall = stats.overall;
+    var boostActive = stats.boostActive;
+    var dims = stats.dims;
+    var C = 2 * Math.PI * 76;
+
+    var html = '';
+    html += '<div class="pass-progress-main">';
+    html += '<div class="pp-ring">';
+    html += '<svg viewBox="0 0 180 180">';
+    html += '<defs><linearGradient id="ppRingGrad2" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#ffe08a"/><stop offset="45%" stop-color="#ffb347"/><stop offset="100%" stop-color="#ff9d2e"/>' +
+        '</linearGradient></defs>';
+    html += '<circle class="pp-ring-track" cx="90" cy="90" r="76"/>';
+    html += '<circle class="pp-ring-fill" id="ppRingFillModal" cx="90" cy="90" r="76" stroke="url(#ppRingGrad2)" transform="rotate(-90 90 90)" style="stroke-dasharray:' + C + ';stroke-dashoffset:' + C + ';" stroke-linecap="round"/>';
+    html += '</svg>';
+    html += '<div class="pp-ring-center">' +
+        '<div class="pp-ring-pct"><span id="ppRingPctModal">0</span><i>%</i></div>' +
+        '<div class="pp-ring-label">赛季完成度</div>' +
+    '</div>';
+    html += '<div class="pp-ring-complete" id="ppRingCompleteModal"><i class="fas fa-trophy"></i> 全部完成</div>';
+    html += '</div>';
+    html += '<div class="pp-stem"></div>';
+    html += '<div class="pp-items" id="ppItemsModal">';
+    dims.forEach(function(d) {
+        if (d.disabled) {
+            html += _passProgressDisabledItemHTML(d.icon, d.title, d.detail);
+        } else {
+            html += _passProgressItemHTML(d.icon, d.color, d.title, d.detail, d.pct);
+        }
+    });
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="pass-progress-note"><i class="fas fa-circle-info"></i> 总进度为已计入维度的平均值；每周事项仅计入已开放周次，新周次开放后自动纳入计算。' +
+        (!boostActive ? ' 等级提速暂未开启，不计入总进度。' : '') +
+    '</div>';
+
+    // 写入容器后由调用方触发动画；这里返回 HTML 字符串
+    // 动画绑定通过 MutationObserver + 定时器延迟触发
+    setTimeout(function() {
+        var ringFill = document.getElementById('ppRingFillModal');
+        if (ringFill) {
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    ringFill.style.strokeDashoffset = C * (1 - overall);
+                });
+            });
+        }
+        var pctEl = document.getElementById('ppRingPctModal');
+        var completeBadge = document.getElementById('ppRingCompleteModal');
+        if (completeBadge) completeBadge.style.display = 'none';
+        if (pctEl) {
+            var cur = 0;
+            var step = Math.max(1, Math.round(overallPct / 36));
+            var timer = setInterval(function() {
+                cur = Math.min(overallPct, cur + step);
+                pctEl.textContent = cur;
+                if (cur >= overallPct) {
+                    clearInterval(timer);
+                    if (cur >= 100 && completeBadge) {
+                        completeBadge.style.display = 'flex';
+                        completeBadge.classList.add('pp-ring-complete-show');
+                    }
+                }
+            }, 26);
+        }
+        // 纵向连接线定位
+        var itemsBox = document.getElementById('ppItemsModal');
+        if (itemsBox) {
+            var firstItem = itemsBox.querySelector('.pp-item');
+            var lastItem = itemsBox.querySelector('.pp-item:last-child');
+            if (firstItem && lastItem) {
+                var busTop = firstItem.offsetTop + firstItem.offsetHeight / 2;
+                var busBottom = itemsBox.offsetHeight - (lastItem.offsetTop + lastItem.offsetHeight / 2);
+                itemsBox.style.setProperty('--bus-top', busTop + 'px');
+                itemsBox.style.setProperty('--bus-bottom', busBottom + 'px');
+            }
+        }
+    }, 30);
+
+    return html;
 }
 
 // ==================== 通行证公告弹窗 ====================
@@ -3168,23 +3327,30 @@ function _closeBuyPremiumModal() {
 // ==================== 购买方式选择弹窗控制 ====================
 function _openPurchaseSelectModal() {
     var data = getPassData();
-    // 本体卡片：已拥有时置灰并标注
+    // 本体卡片：已拥有时置灰并标注「已购买」
     var bodyCard = document.getElementById('passSelectBody');
     var bodyPrice = document.getElementById('passSelectBodyPrice');
     if (data.isPremium) {
         bodyCard.classList.add('pass-select-owned');
-        bodyPrice.innerHTML = '<span class="pass-select-owned-tag">已拥有</span>';
+        bodyPrice.innerHTML = '<span class="pass-select-owned-tag">已购买</span>';
     } else {
         bodyCard.classList.remove('pass-select-owned');
         bodyPrice.innerHTML = '<span class="pass-select-price-num">' + PASS_CONFIG.premiumCost + '</span> <i class="fas fa-coins"></i>';
     }
-    // 组合包卡片：未购买本体时展示 8 折优惠价（划线原价），已购买本体按原价
+    // 组合包卡片：已购组合包→置灰「已购买」；仅购本体→按原价可继续购买；都未购→8 折优惠价
+    var bundleCard = document.getElementById('passSelectBundle');
     var bundleTag = document.getElementById('passSelectBundleTag');
     var bundlePrice = document.getElementById('passSelectBundlePrice');
-    if (data.isPremium) {
+    if (data.hasBundle) {
+        bundleCard.classList.add('pass-select-owned');
+        if (bundleTag) bundleTag.style.display = 'none';
+        bundlePrice.innerHTML = '<span class="pass-select-owned-tag">已购买</span>';
+    } else if (data.isPremium) {
+        bundleCard.classList.remove('pass-select-owned');
         if (bundleTag) bundleTag.style.display = 'none';
         bundlePrice.innerHTML = '<span class="pass-select-price-num">' + PASS_CONFIG.bundlePrice + '</span> <i class="fas fa-coins"></i>';
     } else {
+        bundleCard.classList.remove('pass-select-owned');
         if (bundleTag) bundleTag.style.display = '';
         bundlePrice.innerHTML = '<span class="pass-price-original">' + PASS_CONFIG.bundlePrice + '</span>' +
             '<span class="pass-select-price-num">' + _getBundlePrice() + '</span> <i class="fas fa-coins"></i>';
@@ -3250,15 +3416,17 @@ function _switchPassTab(tab) {
     document.getElementById('passTabTasks').classList.toggle('active', tab === 'tasks');
     document.getElementById('passTabWeekly12').classList.toggle('active', tab === 'weekly12');
     document.getElementById('passTabPhase').classList.toggle('active', tab === 'phase');
+    document.getElementById('passTabProgress').classList.toggle('active', tab === 'progress');
     document.getElementById('passTabBoost').classList.toggle('active', tab === 'boost');
     document.getElementById('passViewRewards').classList.toggle('pass-view-hidden', tab !== 'rewards');
     document.getElementById('passViewTasks').classList.toggle('pass-view-hidden', tab !== 'tasks');
     document.getElementById('passViewWeekly12').classList.toggle('pass-view-hidden', tab !== 'weekly12');
     document.getElementById('passViewPhase').classList.toggle('pass-view-hidden', tab !== 'phase');
+    document.getElementById('passViewProgress').classList.toggle('pass-view-hidden', tab !== 'progress');
     document.getElementById('passViewBoost').classList.toggle('pass-view-hidden', tab !== 'boost');
     // 滚动提示仅奖励页显示
     var scrollHint = document.getElementById('passScrollHint');
-    if (scrollHint) scrollHint.style.display = (tab === 'tasks' || tab === 'weekly12' || tab === 'boost' || tab === 'phase') ? 'none' : '';
+    if (scrollHint) scrollHint.style.display = (tab === 'tasks' || tab === 'weekly12' || tab === 'boost' || tab === 'phase' || tab === 'progress') ? 'none' : '';
     // 刷新倒计时标签仅任务页显示（每周事项使用独立倒计时标签）
     var refreshHint = document.getElementById('passRefreshHint');
     if (refreshHint) refreshHint.style.display = tab === 'tasks' ? '' : 'none';
@@ -3279,6 +3447,8 @@ function _switchPassTab(tab) {
         _switchPassWeekly12Week(_passUI.activeWeek12);
     } else if (tab === 'phase') {
         _renderPassPhaseRewards();
+    } else if (tab === 'progress') {
+        _renderPassProgressView();
     } else if (tab === 'boost') {
         _renderPassBoostTasks();
     }
@@ -4108,6 +4278,225 @@ function _renderPassBoostTasks() {
     });
 }
 
+// ==================== 赛季完成度视图 ====================
+// 左侧总进度圆环 + 右侧四项分维度完成度（等级 / 任务 / 每周事项 / 阶段奖励），
+// 各条目通过金色连接线（水平主干 + 纵向总线 + 分支线）与总进度圆环相连
+
+// 计算某组任务的累计进度比：按任务 id 匹配定义，sum(min(progress, target)) / sum(target)
+// 返回 { ratio 进度比, done 已累计进度, total 目标总和, finished 进度达标任务数, count 任务数 }
+function _passProgressRatioOf(pool, arr) {
+    var done = 0, total = 0, finished = 0, count = 0;
+    (arr || []).forEach(function(entry) {
+        var def = null;
+        for (var i = 0; i < pool.length; i++) {
+            if (pool[i].id === entry.id) { def = pool[i]; break; }
+        }
+        if (!def) return;
+        total += def.target;
+        var p = Math.min(def.target, entry.progress || 0);
+        done += p;
+        count++;
+        if (p >= def.target) finished++;
+    });
+    return { ratio: total > 0 ? done / total : 0, done: done, total: total, finished: finished, count: count };
+}
+
+// 单个完成度条目 HTML（连接线由 .pp-item::before 绘制，不占用布局空间）
+function _passProgressItemHTML(icon, color, title, detail, pct) {
+    return '<div class="pp-item">' +
+        '<div class="pp-item-icon" style="color:' + color + ';border-color:' + color + '40;background:' + color + '1a;"><i class="' + icon + '"></i></div>' +
+        '<div class="pp-item-info">' +
+            '<div class="pp-item-title">' + title + '</div>' +
+            '<div class="pp-item-detail">' + detail + '</div>' +
+            '<div class="pp-item-bar"><div class="pp-item-bar-fill" style="width:' + pct + '%;"></div></div>' +
+        '</div>' +
+        '<div class="pp-item-pct">' + pct + '<i>%</i></div>' +
+    '</div>';
+}
+
+// 禁用态完成度条目（灰色图标、0%、无进度条填充，用于等级提速未开启时）
+function _passProgressDisabledItemHTML(icon, title, detail) {
+    return '<div class="pp-item pp-item-disabled">' +
+        '<div class="pp-item-icon" style="color:rgba(255,255,255,0.35);border-color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.03);"><i class="' + icon + '"></i></div>' +
+        '<div class="pp-item-info">' +
+            '<div class="pp-item-title">' + title + '</div>' +
+            '<div class="pp-item-detail">' + detail + '</div>' +
+            '<div class="pp-item-bar"><div class="pp-item-bar-fill" style="width:0%;"></div></div>' +
+        '</div>' +
+        '<div class="pp-item-pct pp-item-pct-disabled">0<i>%</i></div>' +
+    '</div>';
+}
+
+// 构建赛季完成度统计数据（返回各维度 + 总进度 + 是否计入总进度）
+// 供通行证视图和赛季切换弹窗共用
+function _passBuildProgressStats() {
+    var data = getPassData();
+    ensureSeasonTasks(data);
+    ensureWeekly12Tasks(data);
+
+    // 1) 通行证等级总进度
+    var cap = PASS_CONFIG.levelCap;
+    var expPer = PASS_CONFIG.expPerLevel;
+    var levelRatio = Math.min(1, (data.level * expPer + (data.level >= cap ? 0 : (data.exp || 0))) / (cap * expPer));
+    var levelPct = Math.floor(levelRatio * 100);
+    var levelDetail = Math.min(data.level, cap) + ' / ' + cap + ' 级';
+    if (data.level >= cap) levelDetail += ' · 已达满级';
+
+    // 2) 通行证任务总进度（仅赛季任务）
+    var sR = _passProgressRatioOf(buildSeasonTasks(), data.seasonTasks);
+    var taskRatio = sR.ratio;
+    var taskPct = Math.floor(taskRatio * 100);
+    var taskDetail = '已完成 ' + sR.finished + ' / ' + sR.count + ' 个赛季任务';
+
+    // 3) 每周事项十二周总进度
+    var openWeeks = _getPassWeekly12OpenWeeks();
+    var w12Done = 0, w12Total = 0, w12Finished = 0, w12Count = 0;
+    for (var wk = 1; wk <= openWeeks; wk++) {
+        var r = _passProgressRatioOf(PASS_WEEKLY12_TASK_POOLS[wk - 1] || [], (data.weekly12Tasks && data.weekly12Tasks[wk]) || []);
+        w12Done += r.done; w12Total += r.total; w12Finished += r.finished; w12Count += r.count;
+    }
+    var w12Ratio = w12Total > 0 ? w12Done / w12Total : 0;
+    var w12Pct = Math.floor(w12Ratio * 100);
+    var w12Detail = '已开放 ' + openWeeks + ' / ' + PASS_WEEKLY12_TOTAL_WEEKS + ' 周 · 已完成 ' + w12Finished + ' / ' + w12Count + ' 个任务';
+
+    // 4) 阶段奖励领取完成度
+    var claimedMap = data.phaseRewardsClaimed || {};
+    var phaseClaimed = 0;
+    PASS_PHASE_REWARDS.forEach(function(n) { if (claimedMap[n.level]) phaseClaimed++; });
+    var phaseRatio = PASS_PHASE_REWARDS.length ? phaseClaimed / PASS_PHASE_REWARDS.length : 0;
+    var phasePct = Math.floor(phaseRatio * 100);
+    var phaseDetail = '已领取 ' + phaseClaimed + ' / ' + PASS_PHASE_REWARDS.length + ' 个阶段奖励';
+    if (!_isPassPhaseUnlocked()) phaseDetail += ' · 购买付费通行证后解锁';
+
+    // 5) 等级提速完成度
+    ensureBoostTasks(data);
+    var boostActive = _getPassBoostState() === 'active';
+    var boostRatio = 0, boostPct = 0, boostDetail = '';
+    if (boostActive) {
+        var bR = _passProgressRatioOf(PASS_BOOST_TASK_POOL, data.boostTasks);
+        boostRatio = bR.ratio;
+        boostPct = Math.floor(boostRatio * 100);
+        boostDetail = '已完成 ' + bR.finished + ' / ' + bR.count + ' 个提速任务';
+    } else {
+        boostRatio = 0; boostPct = 0;
+        boostDetail = '等级提速暂未开启，当前不计入总进度';
+    }
+
+    // 总进度
+    var includedSum = levelRatio + taskRatio + w12Ratio + phaseRatio + (boostActive ? boostRatio : 0);
+    var includedCount = boostActive ? 5 : 4;
+    var overall = includedSum / includedCount;
+    var overallPct = Math.round(overall * 100);
+
+    return {
+        overall: overall,
+        overallPct: overallPct,
+        boostActive: boostActive,
+        dims: [
+            { icon: 'fas fa-level-up-alt', color: '#ff6b9d', title: '通行证等级总进度', detail: levelDetail, pct: levelPct, ratio: levelRatio },
+            { icon: 'fas fa-list-check',     color: '#6a5acd', title: '通行证任务总进度',       detail: taskDetail,  pct: taskPct,  ratio: taskRatio },
+            { icon: 'fas fa-calendar-check', color: '#4a9eff', title: '每周事项十二周总进度',   detail: w12Detail,   pct: w12Pct,   ratio: w12Ratio },
+            { icon: 'fas fa-gift',           color: '#f59e0b', title: '阶段奖励领取完成度',     detail: phaseDetail, pct: phasePct, ratio: phaseRatio },
+            boostActive
+                ? { icon: 'fas fa-gauge-high', color: '#10b981', title: '等级提速完成度',      detail: boostDetail, pct: boostPct, ratio: boostRatio, disabled: false }
+                : { icon: 'fas fa-gauge-high', color: '#10b981', title: '等级提速完成度',      detail: boostDetail, pct: 0,         ratio: 0,         disabled: true }
+        ]
+    };
+}
+
+// 渲染赛季完成度视图
+function _renderPassProgressView() {
+    var container = document.getElementById('passProgressContent');
+    if (!container) return;
+
+    var stats = _passBuildProgressStats();
+    var overallPct = stats.overallPct;
+    var overall = stats.overall;
+    var boostActive = stats.boostActive;
+    var dims = stats.dims;
+
+    // 圆环周长（r = 76）
+    var C = 2 * Math.PI * 76;
+
+    var html = '';
+    html += '<div class="pass-progress-main">';
+    // 左侧：总进度圆环（金色渐变描边，中心显示百分比），下方带「全部完成」标签
+    html += '<div class="pp-ring">';
+    html += '<svg viewBox="0 0 180 180">';
+    html += '<defs><linearGradient id="ppRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#ffe08a"/><stop offset="45%" stop-color="#ffb347"/><stop offset="100%" stop-color="#ff9d2e"/>' +
+        '</linearGradient></defs>';
+    html += '<circle class="pp-ring-track" cx="90" cy="90" r="76"/>';
+    html += '<circle class="pp-ring-fill" id="ppRingFill" cx="90" cy="90" r="76" stroke="url(#ppRingGrad)" transform="rotate(-90 90 90)" style="stroke-dasharray:' + C + ';stroke-dashoffset:' + C + ';" stroke-linecap="round"/>';
+    html += '</svg>';
+    html += '<div class="pp-ring-center">' +
+        '<div class="pp-ring-pct"><span id="ppRingPct">0</span><i>%</i></div>' +
+        '<div class="pp-ring-label">赛季完成度</div>' +
+    '</div>';
+    // 100% 时显示的金色标签
+    html += '<div class="pp-ring-complete" id="ppRingComplete"><i class="fas fa-trophy"></i> 全部完成</div>';
+    html += '</div>';
+    // 中间：圆环 → 纵向总线的水平主干线
+    html += '<div class="pp-stem"></div>';
+    // 右侧：五项完成度条目（2 列 grid，纵向总线 + 分支连接线由 CSS 伪元素绘制）
+    html += '<div class="pp-items" id="ppItems">';
+    dims.forEach(function(d) {
+        if (d.disabled) {
+            html += _passProgressDisabledItemHTML(d.icon, d.title, d.detail);
+        } else {
+            html += _passProgressItemHTML(d.icon, d.color, d.title, d.detail, d.pct);
+        }
+    });
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="pass-progress-note"><i class="fas fa-circle-info"></i> 总进度为已计入维度的平均值；每周事项仅计入已开放周次，新周次开放后自动纳入计算。' +
+        (!boostActive ? ' 等级提速暂未开启，不计入总进度。' : '') +
+    '</div>';
+    container.innerHTML = html;
+
+    // 圆环描边动画（stroke-dashoffset 过渡，双 rAF 确保初始状态已渲染）
+    var ringFill = document.getElementById('ppRingFill');
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            if (ringFill) ringFill.style.strokeDashoffset = C * (1 - overall);
+        });
+    });
+
+    // 中心百分比数字滚动 + 100% 时显示金色「全部完成」标签
+    var pctEl = document.getElementById('ppRingPct');
+    var completeBadge = document.getElementById('ppRingComplete');
+    if (completeBadge) completeBadge.style.display = 'none'; // 默认隐藏，完成后显示
+    if (pctEl) {
+        var cur = 0;
+        var step = Math.max(1, Math.round(overallPct / 36));
+        var timer = setInterval(function() {
+            cur = Math.min(overallPct, cur + step);
+            pctEl.textContent = cur;
+            if (cur >= overallPct) {
+                clearInterval(timer);
+                // 最终值为 100 时显示全部完成标签
+                if (cur >= 100 && completeBadge) {
+                    completeBadge.style.display = 'flex';
+                    completeBadge.classList.add('pp-ring-complete-show');
+                }
+            }
+        }, 26);
+    }
+
+    // 量取首/末条目中心，定位纵向连接总线（--bus-top / --bus-bottom）
+    var itemsBox = document.getElementById('ppItems');
+    if (itemsBox) {
+        var firstItem = itemsBox.querySelector('.pp-item');
+        var lastItem = itemsBox.querySelector('.pp-item:last-child');
+        if (firstItem && lastItem) {
+            var busTop = firstItem.offsetTop + firstItem.offsetHeight / 2;
+            var busBottom = itemsBox.offsetHeight - (lastItem.offsetTop + lastItem.offsetHeight / 2);
+            itemsBox.style.setProperty('--bus-top', busTop + 'px');
+            itemsBox.style.setProperty('--bus-bottom', busBottom + 'px');
+        }
+    }
+}
+
 // ==================== 阶段奖励核心逻辑 ====================
 // 阶段奖励是否已解锁（购买通行证本体或组合包）
 function _isPassPhaseUnlocked() {
@@ -4865,15 +5254,151 @@ function _injectPassCSS() {
 }
 .pass-tab:hover { color: rgba(255,255,255,0.8); }
 .pass-tab.active { color: #fff; }
-.pass-tab.active::after {
+/* 标签横线：默认从中间缩为 0，激活时向左右两侧延伸展开（从中间往两边的动效） */
+.pass-tab::after {
     content: ''; position: absolute; bottom: -1px; left: 12px; right: 12px; height: 2px;
     background: linear-gradient(90deg, #ff6b9d, #6a5acd);
     border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pass-tab.active::after { transform: scaleX(1); }
+/* 「赛季完成度」标签：金色渐变横线 + 金色辉光，区别于其他标签 */
+.pass-tab-gold::after,
+.pass-tab-gold.active::after {
+    background: linear-gradient(90deg, #ffe08a, #ffb347, #ff9d2e);
+    box-shadow: 0 0 10px rgba(255, 179, 71, 0.55);
 }
 .pass-tab-dot {
     width: 8px; height: 8px; border-radius: 50%;
     background: #ef4444; animation: pass-pulse 1.5s infinite;
 }
+
+/* ===== 赛季完成度视图 ===== */
+.pass-progress-view { max-width: 1120px; margin: 0 auto; padding: 26px 22px 18px; }
+.pass-progress-main {
+    display: flex; align-items: center; gap: 24px;
+    padding: 34px 40px 48px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    overflow: visible;
+}
+/* 左侧：圆环 + 下方完成标签（纵向堆叠，居中对齐） */
+.pp-ring-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; gap: 10px; }
+.pp-ring { position: relative; width: 190px; height: 190px; flex-shrink: 0; }
+.pp-ring::before {
+    content: ''; position: absolute; inset: 18px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,179,71,0.18), transparent 70%);
+    filter: blur(6px);
+}
+.pp-ring svg { width: 100%; height: 100%; display: block; position: relative; }
+.pp-ring-track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 10; }
+.pp-ring-fill {
+    fill: none; stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.55));
+}
+.pp-ring-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; pointer-events: none;
+}
+.pp-ring-pct { font-size: 34px; font-weight: 800; color: #ffd97e; line-height: 1; text-shadow: 0 0 14px rgba(255,179,71,0.45); }
+.pp-ring-pct i { font-style: normal; font-size: 16px; font-weight: 700; margin-left: 2px; color: rgba(255,217,126,0.8); }
+.pp-ring-label { font-size: 12px; color: rgba(255,255,255,0.55); letter-spacing: 2px; }
+/* 全部完成金色标签（圆环下方，默认隐藏） */
+.pp-ring-complete {
+    position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%) translateY(-6px);
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 18px;
+    font-size: 12.5px; font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #ffd86b, #ffb347, #ff9d2e);
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(255, 179, 71, 0.55), 0 0 24px rgba(255, 179, 71, 0.3);
+    white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 2;
+}
+.pp-ring-complete i { font-size: 12px; }
+.pp-ring-complete-show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    animation: ppCompleteGlow 2.4s ease-in-out infinite;
+}
+@keyframes ppCompleteGlow {
+    0%, 100% { box-shadow: 0 4px 16px rgba(255, 179, 71, 0.55), 0 0 24px rgba(255, 179, 71, 0.3); }
+    50% { box-shadow: 0 4px 16px rgba(255, 179, 71, 0.75), 0 0 36px rgba(255, 179, 71, 0.5); }
+}
+/* 中间：主干连接线（圆环 → 右侧纵向总线） */
+.pp-stem {
+    width: 40px; height: 2px; flex-shrink: 0;
+    background: linear-gradient(90deg, rgba(255,179,71,0.75), rgba(255,179,71,0.45));
+}
+/* 右侧：完成度条目列表 —— 2 列 grid，左侧留 padding 给连接线 */
+.pp-items {
+    position: relative;
+    flex: 1; min-width: 0;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 24px;
+    padding-left: 40px;
+}
+/* 纵向总线：位于左侧 padding 区域，覆盖首/末条目中心之间 */
+.pp-items::before {
+    content: ''; position: absolute; left: 0; top: var(--bus-top, 32px); bottom: var(--bus-bottom, 32px);
+    width: 2px; border-radius: 2px;
+    background: linear-gradient(180deg, rgba(255,179,71,0.15), rgba(255,179,71,0.5), rgba(255,179,71,0.15));
+}
+/* 分支连接线：纵向总线 → 各条目（横向线，从 padding 边界延伸到条目左边缘） */
+.pp-item {
+    position: relative;
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    transition: border-color 0.2s, background 0.2s;
+}
+/* 条目左侧的横向分支线（从容器 padding-left 边界 → 条目左边缘） */
+.pp-item::before {
+    content: ''; position: absolute; left: -40px; top: 50%;
+    width: 40px; height: 2px;
+    background: linear-gradient(90deg, rgba(255,179,71,0.5), rgba(255,179,71,0.85));
+}
+/* 最后一行如果只有一个条目（奇数条目总数），让它跨越两列居中（视觉平衡） */
+.pp-item:nth-child(odd):last-child { grid-column: 1 / -1; }
+.pp-item:hover { border-color: rgba(255,179,71,0.35); background: rgba(255,255,255,0.045); }
+.pp-item-icon {
+    width: 42px; height: 42px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; border-radius: 12px;
+    border: 1px solid;
+}
+.pp-item-info { flex: 1; min-width: 0; }
+.pp-item-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.92); }
+.pp-item-detail { font-size: 11.5px; color: rgba(255,255,255,0.5); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-item-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); margin-top: 8px; overflow: hidden; }
+.pp-item-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, #ff6b9d, #6a5acd);
+    box-shadow: 0 0 8px rgba(255,107,157,0.35);
+    transform-origin: left center;
+    animation: ppBarGrow 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ppBarGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.pp-item-pct { font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0; min-width: 52px; text-align: right; }
+.pp-item-pct i { font-style: normal; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); margin-left: 1px; }
+/* 禁用态条目（等级提速未开启时） */
+.pp-item-disabled { opacity: 0.55; }
+.pp-item-disabled .pp-item-title { color: rgba(255,255,255,0.6); }
+.pp-item-disabled .pp-item-detail { color: rgba(255,255,255,0.38); font-style: italic; }
+.pp-item-disabled .pp-item-bar-fill { background: rgba(255,255,255,0.08); box-shadow: none; animation: none; }
+.pp-item-pct-disabled { color: rgba(255,255,255,0.4) !important; }
+.pass-progress-note { margin-top: 14px; text-align: center; font-size: 11.5px; color: rgba(255,255,255,0.4); }
+.pass-progress-note i { margin-right: 5px; color: rgba(255,179,71,0.7); }
 
 /* ===== Content ===== */
 .pass-content-scroll {
@@ -5375,12 +5900,12 @@ function _injectPassCSS() {
     border: 1px solid rgba(255,255,255,0.1);
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0.24, 1), border-color 0.25s, box-shadow 0.25s;
+    transition: border-color 0.25s, box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pass-season-card:hover {
-    transform: translateY(-4px);
+    transform: none;
     border-color: rgba(255,107,157,0.55);
-    box-shadow: 0 14px 40px rgba(0,0,0,0.45), 0 0 24px rgba(255,107,157,0.18);
+    box-shadow: 0 0 0 1px rgba(255,107,157,0.25), 0 0 32px rgba(255,107,157,0.35), 0 0 60px rgba(106,90,205,0.22);
 }
 .pass-season-card-current {
     border-color: rgba(255,107,157,0.6);
@@ -5432,15 +5957,52 @@ function _injectPassCSS() {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pass-season-card-state { flex-shrink: 0; }
-/* 未开放赛季卡片：中央仅显示「敬请期待」 */
+/* 未开放赛季卡片：不再居中显示「敬请期待」，改为左下角显示 */
 .pass-season-card-locked { cursor: default; }
 .pass-season-card-locked:hover { transform: none; border-color: rgba(255,255,255,0.1); box-shadow: none; }
-.pass-season-card-coming {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; font-weight: 700; letter-spacing: 6px;
-    color: rgba(255,255,255,0.45);
-    z-index: 2;
+.pass-season-card-locked .pass-season-card-time { color: rgba(255,255,255,0.55); }
+.pass-season-card-name-locked {
+    font-size: 18px; font-weight: 700; letter-spacing: 8px;
+    color: rgba(255,255,255,0.5);
+}
+/* 赛季卡片右上角完成度标签（金色渐变，可点击） */
+.pass-season-card-completion {
+    position: absolute; top: 14px; right: 14px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    font-size: 11.5px; font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #ffd86b, #ffb347, #ff9d2e);
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(255, 179, 71, 0.55), 0 0 14px rgba(255, 179, 71, 0.25);
+    cursor: pointer;
+    z-index: 3;
+    transition: transform 0.2s, box-shadow 0.2s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.pass-season-card-completion i { font-size: 10px; }
+.pass-season-card-completion:hover {
+    transform: scale(1.06);
+    box-shadow: 0 3px 14px rgba(255, 179, 71, 0.7), 0 0 22px rgba(255, 179, 71, 0.4);
+}
+/* 赛季完成度弹窗（与公告弹窗共用 .pass-ann-head + .pass-ann-close） */
+.pass-modal-box-season-progress {
+    width: 94%; max-width: 1180px;
+    max-height: 82vh;
+    display: flex; flex-direction: column;
+}
+.pass-season-progress-body {
+    flex: 1; min-height: 0;
+    overflow-y: auto;
+    padding: 4px 2px 8px;
+}
+/* 弹窗内 body 的滚动条保持项目通用粉色渐变 */
+.pass-season-progress-body::-webkit-scrollbar { width: 6px; }
+.pass-season-progress-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 4px; }
+.pass-season-progress-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ff6b9d, #6a5acd);
+    border-radius: 4px;
 }
 @media (max-width: 768px) {
     .pass-season-grid { grid-template-columns: 1fr; }
@@ -6104,6 +6666,15 @@ function _injectPassCSS() {
     .pass-boost-wait { padding: 32px 18px; margin: 12px auto; }
     .pass-boost-wait-icon { width: 60px; height: 60px; font-size: 24px; }
     .pass-refresh-hint { width: 100%; justify-content: center; }
+    /* 赛季完成度：窄屏纵向堆叠，恢复单列，隐藏连接线 */
+    .pass-progress-view { padding: 18px 12px 12px; }
+    .pass-progress-main { flex-direction: column; gap: 24px; padding: 22px 14px; }
+    .pp-stem { display: none; }
+    .pp-items { grid-template-columns: 1fr; padding-left: 0; width: 100%; gap: 12px; }
+    .pp-items::before, .pp-item::before { display: none; }
+    .pp-ring { width: 160px; height: 160px; }
+    .pp-ring-pct { font-size: 28px; }
+    .pp-ring-complete { font-size: 11px; padding: 6px 14px; top: calc(100% + 8px); }
     .pass-buylevel-control { flex-wrap: wrap; }
     .pass-premium-items { grid-template-columns: 1fr; }
 }

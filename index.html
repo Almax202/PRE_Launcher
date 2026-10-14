@@ -53,7 +53,7 @@
     <script src="./js/versionHistory.js?v=3.0.2.6" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
     <script src="./js/warehouse.js?v=3.7" defer></script>
-    <script src="./js/pass.js?v=3.9" defer></script>
+    <script src="./js/pass.js?v=3.12" defer></script>
     <script src="./js/dailytasks.js?v=1.1" defer></script>
     <script src="./js/shop.js?v=2.4" defer></script>
     <script src="./js/premail.js?v=2.0" defer></script>
@@ -62,12 +62,12 @@
     <script src="./js/privacypolicy.js" defer></script>
     <script src="./js/lang.js" defer></script>
     <script src="./js/announcement.js?v=3.0.2.6" defer></script>
-    <script src="./js/event.js?v=1.7" defer></script>
+    <script src="./js/event.js?v=1.8" defer></script>
     <script src="./js/identity_ego.js" defer></script>
     <script src="./js/account-settings.js?v=1.3" defer></script>
     <script src="./js/soundtrack.js?v=1.0" defer></script>
     <script src="./js/homeNav.js" defer></script>
-    
+
     <script>
         window.addEventListener('error', function(e) {
             console.error('页面错误:', e.message, '在', e.filename, '第', e.lineno, '行');
@@ -7960,35 +7960,6 @@
         </div>
     </div>
 
-    <!-- 游戏成就详情弹窗 -->
-    <div id="gameAchievementModal" class="treasure-modal" style="display: none;">
-        <div class="treasure-modal-content game-achievement-modal-content">
-            <button class="treasure-modal-close" id="gameAchievementClose">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="game-achievement-modal-header">
-                <div class="game-achievement-modal-icon" id="gameAchievementModalIcon">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <div class="game-achievement-modal-info">
-                    <h2 id="gameAchievementModalName">游戏名称</h2>
-                    <div class="game-achievement-modal-stats">
-                        <span class="game-achievement-modal-progress" id="gameAchievementModalProgress">0/10</span>
-                        <span class="game-achievement-modal-percent" id="gameAchievementModalPercent">0%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="game-achievement-modal-progress-bar-container">
-                <div class="game-achievement-modal-progress-bar">
-                    <div class="game-achievement-modal-progress-fill" id="gameAchievementModalFill" style="width: 0%;"></div>
-                </div>
-            </div>
-            <div class="game-achievement-modal-body" id="gameAchievementModalBody">
-                <!-- 成就列表由JS动态生成 -->
-            </div>
-        </div>
-    </div>
-
     <div id="customAlert" class="custom-confirm-modal" style="display: none;">
         <div class="confirm-content">
             <div class="confirm-header">
@@ -15034,6 +15005,25 @@
                     box-shadow: 0 6px 16px rgba(192, 57, 43, 0.15);
                 }
 
+                /* 阶段突破·极限：亮红色警告渐变 */
+                .stage-breakthrough-badge.extreme {
+                    color: #fff;
+                    background: linear-gradient(135deg, #ff2d55 0%, #ff6b6b 50%, #ffa502 100%);
+                    border: 1px solid rgba(255, 45, 85, 0.5);
+                    box-shadow: 0 2px 10px rgba(255, 45, 85, 0.35);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+                }
+                .stage-breakthrough-entry.extreme-entry {
+                    background: linear-gradient(135deg, #fff0f3 0%, #ffd0d8 100%);
+                    border: 1px solid rgba(255, 45, 85, 0.3);
+                }
+                .stage-breakthrough-entry.extreme-entry:hover {
+                    box-shadow: 0 6px 16px rgba(255, 45, 85, 0.25);
+                }
+                .stage-breakthrough-entry.extreme-entry .sbe-icon {
+                    color: #ff2d55;
+                }
+
                 .stage-breakthrough-entry .sbe-icon {
                     width: 36px;
                     height: 36px;
@@ -15343,7 +15333,7 @@
                     border-radius: 16px;
                     padding: 24px 26px;
                     width: 96%;
-                    max-width: 1180px;
+                    max-width: 1340px;
                     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
                 }
                 
@@ -15399,14 +15389,14 @@
 
                 .ms-timeline {
                     position: relative;
-                    height: 340px;
+                    height: 400px;
                     /* 轨道总宽由 JS 按节点数与最小间距写入 inline width，超出弹窗宽度即触发横向滚动 */
                 }
                 .ms-line {
                     position: absolute;
                     left: 88px;
                     right: 88px;
-                    top: 314px;
+                    top: 360px;
                     height: 5px;
                     border-radius: 3px;
                     background: linear-gradient(90deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.40) 50%, rgba(102,126,234,0.15) 100%);
@@ -15417,7 +15407,7 @@
                 .ms-line-fill {
                     position: absolute;
                     left: 88px;
-                    top: 314px;
+                    top: 360px;
                     height: 5px;
                     min-width: 0;
                     border-radius: 3px;
@@ -15436,9 +15426,75 @@
                     0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.45); }
                     50%      { box-shadow: 0 0 16px rgba(52, 211, 153, 0.85); }
                 }
+
+                /* 时间轴进度条三态颜色 */
+                /* 标准阶段：绿色（默认，已在 .ms-line-fill 中设定） */
+
+                /* 阶段突破：橙红渐变 */
+                .ms-timeline-stage .ms-line-fill {
+                    background: linear-gradient(90deg, #c0392b 0%, #e67e22 40%, #f0c050 55%, #e67e22 70%, #c0392b 100%);
+                    background-size: 220% 100%;
+                    animation: ms-fill-shimmer 2.6s linear infinite,
+                               ms-fill-glow-stage 1.8s ease-in-out infinite;
+                }
+                @keyframes ms-fill-glow-stage {
+                    0%, 100% { box-shadow: 0 0 8px rgba(230, 126, 34, 0.45); }
+                    50%      { box-shadow: 0 0 16px rgba(255, 165, 80, 0.85); }
+                }
+                .ms-timeline-stage .ms-line {
+                    background: linear-gradient(90deg, rgba(230,126,34,0.15) 0%, rgba(192,57,43,0.40) 50%, rgba(230,126,34,0.15) 100%);
+                    box-shadow: 0 0 10px rgba(230, 126, 34, 0.25);
+                }
+                .ms-timeline-stage .ms-dot {
+                    background: linear-gradient(135deg, #e67e22, #c0392b);
+                    box-shadow: 0 2px 10px rgba(230, 126, 34, 0.45);
+                }
+                .ms-timeline-stage .ms-connector {
+                    background: linear-gradient(180deg, rgba(230,126,34,0.75), rgba(192,57,43,0.2));
+                }
+                .ms-timeline-stage .ms-reward-icon {
+                    background: linear-gradient(135deg, #e67e22 0%, #c0392b 100%);
+                }
+                .ms-timeline-stage .ms-days-tag {
+                    color: #c0392b;
+                    background: rgba(230, 126, 34, 0.12);
+                }
+
+                /* 阶段突破·极限：亮红色渐变 */
+                .ms-timeline-extreme .ms-line-fill {
+                    background: linear-gradient(90deg, #ff2d55 0%, #ff6b6b 40%, #ffa502 55%, #ff6b6b 70%, #ff2d55 100%);
+                    background-size: 220% 100%;
+                    animation: ms-fill-shimmer 2.6s linear infinite,
+                               ms-fill-glow-extreme 1.8s ease-in-out infinite;
+                }
+                @keyframes ms-fill-glow-extreme {
+                    0%, 100% { box-shadow: 0 0 10px rgba(255, 45, 85, 0.5); }
+                    50%      { box-shadow: 0 0 20px rgba(255, 107, 107, 0.95); }
+                }
+                .ms-timeline-extreme .ms-line {
+                    background: linear-gradient(90deg, rgba(255,45,85,0.15) 0%, rgba(255,107,107,0.40) 50%, rgba(255,45,85,0.15) 100%);
+                    box-shadow: 0 0 12px rgba(255, 45, 85, 0.3);
+                }
+                .ms-timeline-extreme .ms-dot {
+                    background: linear-gradient(135deg, #ff2d55, #ff6b6b);
+                    box-shadow: 0 2px 10px rgba(255, 45, 85, 0.5);
+                }
+                .ms-timeline-extreme .ms-connector {
+                    background: linear-gradient(180deg, rgba(255,45,85,0.75), rgba(255,107,107,0.2));
+                }
+                .ms-timeline-extreme .ms-reward-icon {
+                    background: linear-gradient(135deg, #ff2d55 0%, #ff6b6b 100%);
+                }
+                .ms-timeline-extreme .ms-days-tag {
+                    color: #ff2d55;
+                    background: rgba(255, 45, 85, 0.12);
+                }
+                .ms-timeline-extreme .ms-node-claimed .ms-dot {
+                    background: linear-gradient(135deg, #34c77b, #1fa05c);
+                }
                 .ms-node {
                     position: absolute;
-                    top: 314px;
+                    top: 360px;
                     transform: translate(-50%, -50%);
                     display: flex;
                     flex-direction: column;
@@ -15474,7 +15530,7 @@
                     left: 50%;
                     bottom: 88px;
                     transform: translateX(-50%);
-                    width: 150px;
+                    width: 180px;
                     box-sizing: border-box;
                     background: #fff;
                     border: 1px solid #e7e9f2;
@@ -15743,6 +15799,20 @@
                     border-top-color: #3a3a3a;
                 }
                 body.dark-mode .milestone-footer-scroll { color: #7e8497; }
+                /* 暗黑模式：阶段突破时间轴颜色 */
+                body.dark-mode .ms-timeline-stage .ms-line {
+                    background: linear-gradient(90deg, rgba(230,126,34,0.12) 0%, rgba(192,57,43,0.35) 50%, rgba(230,126,34,0.12) 100%);
+                }
+                body.dark-mode .ms-timeline-stage .ms-dot {
+                    border-color: #2a2a2a;
+                }
+                /* 暗黑模式：极限时间轴颜色 */
+                body.dark-mode .ms-timeline-extreme .ms-line {
+                    background: linear-gradient(90deg, rgba(255,45,85,0.12) 0%, rgba(255,107,107,0.35) 50%, rgba(255,45,85,0.12) 100%);
+                }
+                body.dark-mode .ms-timeline-extreme .ms-dot {
+                    border-color: #2a2a2a;
+                }
                 
                 .level-progress-section {
                     background: #f8f9fa;
@@ -23575,12 +23645,6 @@
                 badgeDetailClose.addEventListener('click', closeBadgeDetailModal);
             }
             
-            // 游戏成就弹窗关闭按钮
-            var gameAchievementClose = document.getElementById('gameAchievementClose');
-            if (gameAchievementClose) {
-                gameAchievementClose.addEventListener('click', closeGameAchievementModal);
-            }
-            
             // 显示/隐藏未解锁徽章开关
             var showLockedToggle = document.getElementById('showLockedBadgesToggle');
             if (showLockedToggle) {
@@ -23647,31 +23711,8 @@
                 });
             }
             
-            var gameAchievementModal = document.getElementById('gameAchievementModal');
-            if (gameAchievementModal) {
-                gameAchievementModal.addEventListener('click', function(e) {
-                    if (e.target === gameAchievementModal) {
-                        closeGameAchievementModal();
-                    }
-                });
-            }
         }
-        
-        // 关闭游戏成就弹窗
-        function closeGameAchievementModal() {
-            var modal = document.getElementById('gameAchievementModal');
-            if (!modal) return;
-            
-            if (modal.classList.contains('modal-closing')) return;
-            
-            modal.classList.add('modal-closing');
-            
-            setTimeout(function() {
-                modal.style.display = 'none';
-                modal.classList.remove('modal-closing');
-            }, 300);
-        }
-        
+
         // 更新运势卡片内容
         function updateFortuneCardContent() {
             var fortuneData = getTodayFortune();
@@ -24119,6 +24160,7 @@
                         '<div class="milestone-mode-switch">' +
                             '<button class="milestone-mode-btn active" data-mode="standard" type="button">标准阶段</button>' +
                             '<button class="milestone-mode-btn" data-mode="stage" type="button"' + (isStageBreakthroughActive() ? '' : ' disabled title="开启阶段突破模式后解锁"') + '>阶段突破</button>' +
+                            '<button class="milestone-mode-btn" data-mode="extreme" type="button"' + (isStageExtremeActive() ? '' : ' disabled title="开启阶段突破·极限模式后解锁"') + '>阶段突破·极限</button>' +
                         '</div>' +
                         '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
                     '</div>' +
@@ -24142,7 +24184,7 @@
 
             // 时间轴布局常量（与 .ms-* 样式中的轨道内缩/节点间距保持一致）
             var MS_TRACK_INSET = 88;   // 轨道两端内缩（首尾节点中心距边缘）
-            var MS_NODE_MIN_GAP = 196; // 相邻节点中心最小间距（大于卡片宽度，避免重叠）
+            var MS_NODE_MIN_GAP = 226; // 相邻节点中心最小间距（大于卡片宽度，避免重叠）
 
             // 计算各里程碑节点在长轨道上的位置：
             // 优先按累计签到天数比例分布（与通行证阶段奖励时间轴同思路），
@@ -24187,14 +24229,16 @@
                 if (!user) return;
                 var stats = (user.userProfile && user.userProfile.checkinStats) || {};
                 var streak = stats.streak || 0;
-                var claimed = (milestoneMode === 'stage')
-                    ? (Array.isArray(stats.stageClaimedMilestones) ? stats.stageClaimedMilestones : [])
-                    : (Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : []);
+                var claimedKey = (milestoneMode === 'extreme') ? 'extremeClaimedMilestones'
+                    : (milestoneMode === 'stage') ? 'stageClaimedMilestones' : 'claimedMilestones';
+                var claimed = Array.isArray(stats[claimedKey]) ? stats[claimedKey] : [];
 
                 var totalDays = stats.total || 0;
                 var config = getMilestoneConfig(milestoneMode);
                 var posInfo = computeMilestonePositions(config);
                 timelineEl.style.width = posInfo.trackWidth + 'px';
+                // 时间轴模式 class（控制进度条颜色：标准绿/阶段突破橙红/极限亮红）
+                timelineEl.className = 'ms-timeline ms-timeline-' + milestoneMode;
 
                 var nodesHTML = '';
                 config.forEach(function(m, idx) {
@@ -24288,8 +24332,9 @@
                 (function(btn) {
                     btn.addEventListener('click', function() {
                         var m = btn.getAttribute('data-mode');
-                        // 未开启阶段突破模式时不可切换到阶段突破视图
+                        // 未开启对应模式时不可切换
                         if (m === 'stage' && !isStageBreakthroughActive()) return;
+                        if (m === 'extreme' && !isStageExtremeActive()) return;
                         if (m === milestoneMode) return;
                         milestoneMode = m;
                         render();
@@ -24420,7 +24465,8 @@
                 'fas fa-star',
                 '成长经验值',
                 '+' + dailyExp + ' EXP',
-                isStageBreakthroughActive() ? '阶段突破模式 · 随连续签到天数提升' : '连续签到 7/15 天后提升（断签重置为 250 EXP）'
+                isStageExtremeActive() ? '阶段突破·极限模式 · 随连续签到天数提升'
+                    : (isStageBreakthroughActive() ? '阶段突破模式 · 随连续签到天数提升' : '连续签到 7/15 天后提升（断签重置为 250 EXP）')
             );
 
             // PRE 硬币
@@ -24779,6 +24825,18 @@
                     }
                 }
             }
+            // 阶段突破·极限：达到120级且未开启极限时自动提示（仅一次）
+            if (level >= STAGE_MAX_LEVEL && isStageBreakthroughActive() && !isStageExtremeActive()) {
+                if (!_checkinStagePromptPending) {
+                    var sbRec2 = getCurrentUserRecord();
+                    if (sbRec2.user && !(sbRec2.user.userProfile && sbRec2.user.userProfile.stageExtremePrompted)) {
+                        if (!sbRec2.user.userProfile) sbRec2.user.userProfile = {};
+                        sbRec2.user.userProfile.stageExtremePrompted = true;
+                        persistUsers(sbRec2.users);
+                        openStageExtremeModal();
+                    }
+                }
+            }
         }
 
         // 更新成长等级卡片中的「经验倍率」条目
@@ -24858,6 +24916,7 @@
             if (existing) existing.parentNode.removeChild(existing);
 
             var stageMode = isStageBreakthroughActive();
+            var extremeMode = isStageExtremeActive();
             var maxLv = MAX_LEVEL;
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
@@ -24881,7 +24940,7 @@
             var curNeed = getExpRequiredForLevel(curLevel);
 
             // 图表尺寸与坐标换算
-            var W = 860, H = 380, padL = 70, padR = 30, padT = 30, padB = 50;
+            var W = 960, H = 480, padL = 70, padR = 30, padT = 30, padB = 50;
             var plotW = W - padL - padR, plotH = H - padT - padB;
             var n = points.length;
             function xAt(i) { return padL + (i / (n - 1)) * plotW; }
@@ -24914,7 +24973,8 @@
             xTickHtml += '<text x="' + xAt(n - 1) + '" y="' + (H - padB + 18) + '" text-anchor="middle" font-size="11" fill="#999">Lv.' + points[n - 1].level + '</text>';
 
             // 分档边界竖线标注
-            var tiers = stageMode ? [20, 50, 60, 90, 110] : [20, 50];
+            var tiers = extremeMode ? [121, 150, 170, 190]
+                : (stageMode ? [20, 50, 60, 90, 110] : [20, 50]);
             var tierHtml = '';
             tiers.forEach(function(t) {
                 if (t >= maxLv) return;
@@ -24932,18 +24992,21 @@
                     '<text x="' + cx + '" y="' + (cy - 12) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#667eea">当前 Lv.' + curLevel + '</text>';
             }
 
-            var formulaText = stageMode
+            var formulaText = extremeMode
+                ? 'Lv.121-149：7000+(等级+12)×200 ｜ Lv.150-169：8000+(等级+13)×230 ｜ Lv.170-189：9000+(等级+14)×270 ｜ Lv.190-200：10000+(等级+15)×300（200 级为满级，此后不再获得等级经验）'
+                : (stageMode
                 ? 'Lv.1-19：1000+(等级+3)×50 ｜ Lv.20-49：1500+(等级+5)×60 ｜ Lv.50-59：2000+(等级+5)×80 ｜ Lv.60-89：3000+(等级+8)×100 ｜ Lv.90-109：4000+(等级+8)×120 ｜ Lv.110-120：5000+(等级+10)×150'
-                : 'Lv.1-19：1000+(等级+3)×50 ｜ Lv.20-49：1500+(等级+5)×60 ｜ Lv.50-59：2000+(等级+5)×80';
+                : 'Lv.1-19：1000+(等级+3)×50 ｜ Lv.20-49：1500+(等级+5)×60 ｜ Lv.50-59：2000+(等级+5)×80');
 
             var overlay = document.createElement('div');
             overlay.id = 'growthCurveOverlay';
             overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:25000;display:flex;align-items:center;justify-content:center;animation:gcFadeIn 0.2s ease;';
             overlay.innerHTML =
-                '<div style="background:#fff;border-radius:20px;width:940px;max-width:94vw;max-height:90vh;overflow-y:auto;padding:28px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:gcPop 0.25s cubic-bezier(0.34,1.4,0.64,1);">' +
+                '<div style="background:#fff;border-radius:20px;width:1080px;max-width:94vw;max-height:94vh;overflow-y:auto;padding:28px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:gcPop 0.25s cubic-bezier(0.34,1.4,0.64,1);">' +
                     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
                         '<h3 style="margin:0;font-size:20px;color:#333;"><i class="fas fa-chart-line" style="color:#667eea;margin-right:8px;"></i>成长曲线' +
-                        (stageMode ? '<span style="margin-left:10px;font-size:12px;font-weight:normal;color:#fff;background:linear-gradient(135deg,#f093fb,#f5576c);padding:3px 10px;border-radius:10px;vertical-align:middle;">阶段突破模式</span>' : '') +
+                        (extremeMode ? '<span style="margin-left:10px;font-size:12px;font-weight:normal;color:#fff;background:linear-gradient(135deg,#ff2d55,#ff6b6b);padding:3px 10px;border-radius:10px;vertical-align:middle;">阶段突破 · 极限</span>'
+                            : (stageMode ? '<span style="margin-left:10px;font-size:12px;font-weight:normal;color:#fff;background:linear-gradient(135deg,#f093fb,#f5576c);padding:3px 10px;border-radius:10px;vertical-align:middle;">阶段突破模式</span>' : '')) +
                         '</h3>' +
                         '<button id="growthCurveClose" style="border:none;background:#f0f0f0;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px;color:#666;"><i class="fas fa-times"></i></button>' +
                     '</div>' +
@@ -25078,11 +25141,12 @@
             }
 
             if (streakBonusEl) {
-                // 阶段突破模式下每日基础经验值 750/1000/1500、基础硬币 100/120/150
+                // 阶段突破·极限模式：每日基础经验值 1300/1600/2000、硬币与阶段突破一致 100/120/150
+                var extremeMode = isStageExtremeActive();
                 var stageMode = isStageBreakthroughActive();
-                var baseExpText = stageMode ? 750 : 250;
-                var exp7Text = stageMode ? 1000 : 400;
-                var exp15Text = stageMode ? 1500 : 550;
+                var baseExpText = extremeMode ? 1300 : (stageMode ? 750 : 250);
+                var exp7Text = extremeMode ? 1600 : (stageMode ? 1000 : 400);
+                var exp15Text = extremeMode ? 2000 : (stageMode ? 1500 : 550);
                 var baseCoinText = stageMode ? 100 : 30;
                 var coin7Text = stageMode ? 120 : 60;
                 var coin15Text = stageMode ? 150 : 90;
@@ -25506,10 +25570,17 @@
                     if (_checkinStagePromptPending) {
                         _checkinStagePromptPending = false;
                         var sbRec = getCurrentUserRecord();
-                        if (sbRec.user && !(sbRec.user.userProfile && sbRec.user.userProfile.stageBreakthroughPrompted)) {
+                        if (sbRec.user) {
+                            if (!sbRec.user.userProfile) sbRec.user.userProfile = {};
                             var lv = (sbRec.user.gameData && sbRec.user.gameData.level) || 0;
-                            if (lv >= 60 && !isStageBreakthroughActive()) {
-                                if (!sbRec.user.userProfile) sbRec.user.userProfile = {};
+                            // 阶段突破·极限优先判定
+                            if (lv >= STAGE_MAX_LEVEL && isStageBreakthroughActive() && !isStageExtremeActive()
+                                && !sbRec.user.userProfile.stageExtremePrompted) {
+                                sbRec.user.userProfile.stageExtremePrompted = true;
+                                persistUsers(sbRec.users);
+                                openStageExtremeModal();
+                            } else if (lv >= 60 && !isStageBreakthroughActive()
+                                && !sbRec.user.userProfile.stageBreakthroughPrompted) {
                                 sbRec.user.userProfile.stageBreakthroughPrompted = true;
                                 persistUsers(sbRec.users);
                                 openStageBreakthroughModal();
@@ -25532,38 +25603,56 @@
         
         // ========== 经验值/等级系统 ==========
         var MAX_LEVEL = 60;
-        var STAGE_MAX_LEVEL = 120;   // 阶段突破模式下的等级上限
+        var STAGE_MAX_LEVEL = 120;     // 阶段突破模式下的等级上限
+        var EXTREME_MAX_LEVEL = 200;   // 阶段突破·极限模式下的等级上限
 
         // 阶段突破状态缓存（避免公式循环内反复读取 localStorage）
         var _stageBreakthroughFlag = false;
+        var _stageExtremeFlag = false;
 
         // 从当前登录用户读取阶段突破状态，并同步等级上限
         function refreshStageBreakthroughFlag() {
             _stageBreakthroughFlag = false;
+            _stageExtremeFlag = false;
             try {
                 var cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
                 if (cu && cu.username) {
                     var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
                     for (var i = 0; i < users.length; i++) {
                         if (users[i].username === cu.username) {
-                            _stageBreakthroughFlag = !!(users[i].userProfile && users[i].userProfile.stageBreakthrough === true);
+                            var prof = users[i].userProfile || {};
+                            _stageBreakthroughFlag = prof.stageBreakthrough === true;
+                            _stageExtremeFlag = prof.stageExtreme === true;
                             break;
                         }
                     }
                 }
             } catch (e) {}
-            MAX_LEVEL = _stageBreakthroughFlag ? STAGE_MAX_LEVEL : 60;
+            if (_stageExtremeFlag) MAX_LEVEL = EXTREME_MAX_LEVEL;
+            else if (_stageBreakthroughFlag) MAX_LEVEL = STAGE_MAX_LEVEL;
+            else MAX_LEVEL = 60;
         }
 
-        // 是否处于阶段突破模式
+        // 是否处于阶段突破模式（极限模式也返回 true，因为极限是阶段突破的进阶）
         function isStageBreakthroughActive() {
             return _stageBreakthroughFlag;
+        }
+
+        // 是否处于阶段突破·极限模式
+        function isStageExtremeActive() {
+            return _stageExtremeFlag;
         }
 
         refreshStageBreakthroughFlag();
 
         function getExpRequiredForLevel(level) {
             if (level >= MAX_LEVEL) return 0;
+            if (isStageExtremeActive()) {
+                if (level >= 190) return 10000 + (level + 15) * 300;  // 极限190-200级：10000 + (等级+15) × 300
+                if (level >= 170) return 9000 + (level + 14) * 270;   // 极限170-189级：9000 + (等级+14) × 270
+                if (level >= 150) return 8000 + (level + 13) * 230;   // 极限150-169级：8000 + (等级+13) × 230
+                if (level >= 121) return 7000 + (level + 12) * 200;   // 极限121-149级：7000 + (等级+12) × 200
+            }
             if (isStageBreakthroughActive()) {
                 if (level >= 110) return 5000 + (level + 10) * 150;  // 突破110-120级：5000 + (等级+10) × 150
                 if (level >= 90) return 4000 + (level + 8) * 120;    // 突破90-109级：4000 + (等级+8) × 120
@@ -25619,6 +25708,12 @@
         }
         
         function getCheckinExpReward(streak) {
+            // 阶段突破·极限模式（120级后）：经验值进一步大幅提升，PRE Coin 与阶段突破模式保持一致
+            if (isStageExtremeActive()) {
+                if (streak >= 15) return 2000;  // 连签15天起：每日 2000 EXP
+                if (streak >= 7) return 1600;   // 连签7天起：每日 1600 EXP
+                return 1300;                     // 1-6天：每日 1300 EXP
+            }
             // 阶段突破模式（60级后）：公式更新后升级所需经验值巨大，基础签到经验值同步大幅提升
             if (isStageBreakthroughActive()) {
                 if (streak >= 15) return 1500;  // 连签15天起：每日 1500 EXP
@@ -25670,11 +25765,17 @@
         }
 
         // 关闭阶段突破（开发者入口）：上限恢复60级、公式还原，溢出经验不清空
+        // 注意：若处于极限模式，必须先关闭极限模式才能关闭阶段突破
         function disableStageBreakthrough() {
+            if (isStageExtremeActive()) {
+                showAlert('请先关闭「阶段突破·极限」模式，再关闭阶段突破模式');
+                return;
+            }
             var rec = getCurrentUserRecord();
             if (!rec.user) return;
             if (!rec.user.userProfile) rec.user.userProfile = {};
             rec.user.userProfile.stageBreakthrough = false;
+            rec.user.userProfile.stageExtreme = false;
             persistUsers(rec.users);
             refreshStageBreakthroughFlag();
             // 按原公式与60级上限重算（超出60级的溢出经验值保留在当前等级内）
@@ -25685,20 +25786,95 @@
             showAlert('阶段突破模式已关闭，等级上限恢复为 60 级（溢出的经验值已保留）');
         }
 
+        // 开启阶段突破·极限：等级上限提升至200级，新经验值公式立即启用（需先处于阶段突破且达到120级）
+        function enableStageExtreme() {
+            var rec = getCurrentUserRecord();
+            if (!rec.user) return;
+            if (!rec.user.userProfile) rec.user.userProfile = {};
+            initUserExpData(rec.user);
+            if (!isStageBreakthroughActive()) {
+                showAlert('请先开启阶段突破模式');
+                return;
+            }
+            if ((rec.user.gameData.level || 1) < STAGE_MAX_LEVEL) {
+                showAlert('达到 ' + STAGE_MAX_LEVEL + ' 级满级后才可开启阶段突破·极限模式');
+                return;
+            }
+            rec.user.userProfile.stageExtreme = true;
+            persistUsers(rec.users);
+            refreshStageBreakthroughFlag();
+            // 按新公式与新上限重算等级/经验（溢出经验值保留）
+            initUserExpData(rec.user);
+            addExpToUser(rec.user, 0);
+            persistUsers(rec.users);
+            loadCheckinData();
+            showAlert('阶段突破·极限模式已开启！等级上限提升至 ' + EXTREME_MAX_LEVEL + ' 级');
+        }
+
+        // 关闭阶段突破·极限（开发者入口）：上限恢复120级、公式还原为阶段突破，溢出经验不清空
+        function disableStageExtreme() {
+            var rec = getCurrentUserRecord();
+            if (!rec.user) return;
+            if (!rec.user.userProfile) rec.user.userProfile = {};
+            rec.user.userProfile.stageExtreme = false;
+            persistUsers(rec.users);
+            refreshStageBreakthroughFlag();
+            // 按阶段突破公式与120级上限重算（超出120级的溢出经验值保留在当前等级内）
+            initUserExpData(rec.user);
+            addExpToUser(rec.user, 0);
+            persistUsers(rec.users);
+            loadCheckinData();
+            showAlert('阶段突破·极限模式已关闭，等级上限恢复为 ' + STAGE_MAX_LEVEL + ' 级（溢出的经验值已保留）');
+        }
+
         // 同步等级卡片上的阶段突破相关 UI（标签/条目/最高等级/开发者关闭按钮）
         function updateStageBreakthroughUI(user) {
+            var extreme = isStageExtremeActive();
             var active = isStageBreakthroughActive();
             var badge = document.getElementById('stageBreakthroughBadge');
-            if (badge) badge.style.display = active ? 'inline-flex' : 'none';
+            if (badge) {
+                badge.style.display = active ? 'inline-flex' : 'none';
+                if (extreme) {
+                    badge.classList.add('extreme');
+                    badge.innerHTML = '<i class="fas fa-fire"></i> 阶段突破 · 极限';
+                } else {
+                    badge.classList.remove('extreme');
+                    badge.innerHTML = '<i class="fas fa-level-up-alt"></i> 阶段突破';
+                }
+            }
             var entry = document.getElementById('stageBreakthroughEntry');
             if (entry) {
                 var level = (user && user.gameData && user.gameData.level) || 0;
-                entry.style.display = (!active && level >= 60) ? 'flex' : 'none';
+                var titleEl = entry.querySelector('.sbe-title');
+                var descEl = entry.querySelector('.sbe-desc');
+                if (extreme) {
+                    entry.style.display = 'none';
+                } else if (active) {
+                    // 阶段突破中且达到120级，显示极限突破入口
+                    if (level >= STAGE_MAX_LEVEL) {
+                        entry.style.display = 'flex';
+                        entry.classList.add('extreme-entry');
+                        if (titleEl) titleEl.textContent = '阶段突破 · 极限';
+                        if (descEl) descEl.textContent = '已达 ' + STAGE_MAX_LEVEL + ' 级满级，点击开启 ' + EXTREME_MAX_LEVEL + ' 级极限模式';
+                    } else {
+                        entry.style.display = 'none';
+                    }
+                } else {
+                    entry.classList.remove('extreme-entry');
+                    entry.style.display = (level >= 60) ? 'flex' : 'none';
+                    if (titleEl) titleEl.textContent = '阶段突破';
+                    if (descEl) descEl.textContent = '已达 60 级满级，点击开启 120 级突破模式';
+                }
             }
             var maxStat = document.getElementById('maxLevelStat');
             if (maxStat) maxStat.textContent = MAX_LEVEL;
             var devClose = document.getElementById('devStageCloseBtn');
-            if (devClose) devClose.style.display = (active && isDevModeEnabled()) ? 'inline-flex' : 'none';
+            if (devClose) {
+                devClose.style.display = (active && isDevModeEnabled()) ? 'inline-flex' : 'none';
+                var label = devClose.querySelector('span');
+                if (label) label.textContent = extreme ? '关闭阶段·极限 (Dev)' : '关闭阶段 (Dev)';
+                devClose.title = extreme ? '开发者模式：关闭阶段突破·极限模式' : '开发者模式：关闭阶段突破模式';
+            }
         }
 
         // 通用阶段突破弹窗（淡红色主题）
@@ -25745,8 +25921,13 @@
             document.addEventListener('keydown', onKeydown);
         }
 
-        // 一级弹窗：阶段突破介绍与确认
+        // 一级弹窗：阶段突破介绍与确认（根据当前等级/模式分发到阶段突破或极限）
         function openStageBreakthroughModal() {
+            if (isStageBreakthroughActive()) {
+                // 已在阶段突破中，进入极限突破流程
+                openStageExtremeModal();
+                return;
+            }
             openStageModal({
                 title: '阶段突破',
                 body:
@@ -25768,14 +25949,48 @@
             });
         }
 
-        // 开发者关闭确认弹窗
-        function openDevStageCloseModal() {
+        // 阶段突破·极限一级弹窗（亮红色警告主题）
+        function openStageExtremeModal() {
             openStageModal({
-                title: '关闭阶段（dev）',
-                icon: 'fas fa-code',
-                body: '<p>是否要关闭阶段突破模式？在此之前溢出的经验值数量不会被清空</p>',
-                onConfirm: disableStageBreakthrough
+                title: '阶段突破 · 极限',
+                danger: true,
+                icon: 'fas fa-fire',
+                body:
+                    '<p>您已达到 120 级满级状态，是否要开启「阶段突破·极限」模式将等级上限提升至 ' + EXTREME_MAX_LEVEL + ' 级？</p>' +
+                    '<p>开启后将启用更为苛刻的经验值公式，升级所需经验将大幅增加，同时每日签到经验值也会进一步提升。</p>' +
+                    '<p class="stage-warning">注意：开启「阶段突破·极限」模式后等级上限将进入 ' + EXTREME_MAX_LEVEL + ' 级，达到 121 级后将无法回退到 120 级以下</p>',
+                onConfirm: openStageExtremeFinalModal
             });
+        }
+
+        // 阶段突破·极限二次确认
+        function openStageExtremeFinalModal() {
+            openStageModal({
+                title: '二次确认',
+                danger: true,
+                icon: 'fas fa-exclamation-triangle',
+                body: '<p class="stage-danger">确定要进入「阶段突破·极限」模式吗？这是您最后一次的选择机会</p>',
+                onConfirm: enableStageExtreme
+            });
+        }
+
+        // 开发者关闭确认弹窗（根据当前模式分发：极限→关闭极限；阶段→关闭阶段）
+        function openDevStageCloseModal() {
+            if (isStageExtremeActive()) {
+                openStageModal({
+                    title: '关闭阶段·极限（dev）',
+                    icon: 'fas fa-code',
+                    body: '<p>是否要关闭「阶段突破·极限」模式？在此之前溢出的经验值数量不会被清空，关闭后等级上限恢复为 ' + STAGE_MAX_LEVEL + ' 级</p>',
+                    onConfirm: disableStageExtreme
+                });
+            } else {
+                openStageModal({
+                    title: '关闭阶段（dev）',
+                    icon: 'fas fa-code',
+                    body: '<p>是否要关闭阶段突破模式？在此之前溢出的经验值数量不会被清空</p>',
+                    onConfirm: disableStageBreakthrough
+                });
+            }
         }
         
         // ========== 签到里程碑（统一配置，手动点击领取） ==========
@@ -25820,19 +26035,87 @@
             },
             { days: 365, name: '累计签到365天', icon: 'crown',  expText: '+10000 EXP', exp: 10000, coin: 3000,
                 extraRewards: [
-                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×1', cls: 'card' }
+                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×1', cls: 'card' },
+                    { icon: 'fas fa-fire', text: '不懈者勋章 ×1', cls: 'medal' }
                 ],
-                items: [{ itemId: 'exchange_card', qty: 1 }]
+                items: [{ itemId: 'exchange_card', qty: 1 }, { itemId: 'untiring_medal', qty: 1 }]
             }
         ];
 
-        // 按阶段获取里程碑配置（mode: 'standard' 标准阶段 | 'stage' 阶段突破）
+        // 阶段突破·极限里程碑（120级后独立配置）：领取记录独立，按累计签到天数判定，终身仅可领取一次
+        var EXTREME_CHECKIN_MILESTONES = [
+            { days: 7,   name: '累计签到7天',   icon: 'gift',   expText: '+2000 EXP',  exp: 2000,  coin: 500,
+                extraRewards: [
+                    { icon: 'fas fa-bolt', text: '经验值补给卡 Ⅳ ×1', cls: 'card' },
+                    { icon: 'fas fa-rocket', text: '经验值加成卡 Ⅳ ×1', cls: 'card' }
+                ],
+                items: [{ itemId: 'exp_supply_4', qty: 1 }, { itemId: 'exp_boost_premium', qty: 1 }]
+            },
+            { days: 15,  name: '累计签到15天',  icon: 'star',   expText: '+3000 EXP',  exp: 3000,  coin: 500,
+                extraRewards: [
+                    { icon: 'fas fa-bolt', text: '经验值补给卡 Ⅳ ×1', cls: 'card' },
+                    { icon: 'fas fa-rocket', text: '经验值加成卡 Ⅳ ×1', cls: 'card' }
+                ],
+                items: [{ itemId: 'exp_supply_4', qty: 1 }, { itemId: 'exp_boost_premium', qty: 1 }]
+            },
+            { days: 30,  name: '累计签到30天',  icon: 'trophy', expText: '+5000 EXP',  exp: 5000,  coin: 1000,
+                extraRewards: [
+                    { icon: 'fas fa-bolt', text: '经验值补给卡 Ⅳ ×1', cls: 'card' },
+                    { icon: 'fas fa-rocket', text: '经验值加成卡 Ⅳ ×1', cls: 'card' }
+                ],
+                items: [{ itemId: 'exp_supply_4', qty: 1 }, { itemId: 'exp_boost_premium', qty: 1 }]
+            },
+            { days: 60,  name: '累计签到60天',  icon: 'trophy', expText: '+5000 EXP',  exp: 5000,  coin: 1000,
+                extraRewards: [
+                    { icon: 'fas fa-bolt', text: '经验值补给卡 Ⅳ ×2', cls: 'card' },
+                    { icon: 'fas fa-rocket', text: '经验值加成卡 Ⅳ ×2', cls: 'card' }
+                ],
+                items: [{ itemId: 'exp_supply_4', qty: 2 }, { itemId: 'exp_boost_premium', qty: 2 }]
+            },
+            { days: 90,  name: '累计签到90天',  icon: 'trophy', expText: '+10000 EXP', exp: 10000, coin: 1500,
+                extraRewards: [
+                    { icon: 'fas fa-bolt', text: '经验值补给卡 Ⅳ ×2', cls: 'card' },
+                    { icon: 'fas fa-rocket', text: '经验值加成卡 Ⅳ ×2', cls: 'card' }
+                ],
+                items: [{ itemId: 'exp_supply_4', qty: 2 }, { itemId: 'exp_boost_premium', qty: 2 }]
+            },
+            { days: 180, name: '累计签到180天', icon: 'trophy', expText: '+15000 EXP', exp: 15000, coin: 2000,
+                extraRewards: [
+                    { icon: 'fas fa-bolt', text: '经验值补给卡 Ⅳ ×5', cls: 'card' },
+                    { icon: 'fas fa-rocket', text: '经验值加成卡 Ⅳ ×5', cls: 'card' },
+                    { icon: 'fas fa-coins', text: 'PRE Coin 补给包 Ⅲ ×1', cls: 'card' },
+                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×1', cls: 'card' }
+                ],
+                items: [
+                    { itemId: 'exp_supply_4', qty: 5 }, { itemId: 'exp_boost_premium', qty: 5 },
+                    { itemId: 'precoin_supply_3', qty: 1 }, { itemId: 'exchange_card', qty: 1 }
+                ]
+            },
+            { days: 365, name: '累计签到365天', icon: 'crown',  expText: '+30000 EXP', exp: 30000, coin: 3000,
+                extraRewards: [
+                    { icon: 'fas fa-bolt', text: '经验值补给卡 Ⅳ ×10', cls: 'card' },
+                    { icon: 'fas fa-rocket', text: '经验值加成卡 Ⅳ ×10', cls: 'card' },
+                    { icon: 'fas fa-coins', text: 'PRE Coin 补给包 Ⅳ ×1', cls: 'card' },
+                    { icon: 'fas fa-ticket', text: '自选物品兑换卡 ×2', cls: 'card' },
+                    { icon: 'fas fa-meteor', text: '突破者勋章 ×1', cls: 'medal' }
+                ],
+                items: [
+                    { itemId: 'exp_supply_4', qty: 10 }, { itemId: 'exp_boost_premium', qty: 10 },
+                    { itemId: 'precoin_supply_4', qty: 1 }, { itemId: 'exchange_card', qty: 2 },
+                    { itemId: 'breakthrough_medal', qty: 1 }
+                ]
+            }
+        ];
+
+        // 按阶段获取里程碑配置（mode: 'standard' 标准阶段 | 'stage' 阶段突破 | 'extreme' 阶段突破·极限）
         function getMilestoneConfig(mode) {
+            if (mode === 'extreme') return EXTREME_CHECKIN_MILESTONES;
             return mode === 'stage' ? STAGE_CHECKIN_MILESTONES : CHECKIN_MILESTONES;
         }
 
-        // 当前生效的里程碑阶段（未开启阶段突破时恒为标准阶段）
+        // 当前生效的里程碑阶段（未开启阶段突破时恒为标准阶段；极限模式优先于阶段突破）
         function getCurrentMilestoneMode() {
+            if (isStageExtremeActive()) return 'extreme';
             return isStageBreakthroughActive() ? 'stage' : 'standard';
         }
 
@@ -25842,9 +26125,9 @@
             if (!user || !user.userProfile || !user.userProfile.checkinStats) return days;
             var stats = user.userProfile.checkinStats;
             var mMode = mode || getCurrentMilestoneMode();
-            var claimed = (mMode === 'stage')
-                ? (Array.isArray(stats.stageClaimedMilestones) ? stats.stageClaimedMilestones : [])
-                : (Array.isArray(stats.claimedMilestones) ? stats.claimedMilestones : []);
+            var claimedKey = (mMode === 'extreme') ? 'extremeClaimedMilestones'
+                : (mMode === 'stage') ? 'stageClaimedMilestones' : 'claimedMilestones';
+            var claimed = Array.isArray(stats[claimedKey]) ? stats[claimedKey] : [];
             var total = stats.total || 0;
             getMilestoneConfig(mMode).forEach(function(m) {
                 if (total >= m.days && claimed.indexOf(m.days) === -1) days.push(m.days);
@@ -25857,17 +26140,20 @@
             if (user && user.userProfile && user.userProfile.checkinStats) {
                 user.userProfile.checkinStats.claimedMilestones = [];
                 user.userProfile.checkinStats.stageClaimedMilestones = [];
+                user.userProfile.checkinStats.extremeClaimedMilestones = [];
             }
         }
 
         // 手动领取指定里程碑奖励
-        // mode: 'standard' | 'stage'（缺省按当前生效阶段）
+        // mode: 'standard' | 'stage' | 'extreme'（缺省按当前生效阶段）
         // 返回 { ok:false, reason } 或 { ok:true, def, expGained, coinGained, items, leveledUp, newLevel }
         function claimCheckinMilestone(user, days, mode) {
             if (!user || !user.userProfile || !user.userProfile.checkinStats) return { ok: false, reason: '数据异常' };
             var stats = user.userProfile.checkinStats;
             var mMode = mode || getCurrentMilestoneMode();
             var isStage = mMode === 'stage';
+            var isExtreme = mMode === 'extreme';
+            var sourceLabel = isExtreme ? '阶段突破·极限里程碑' : (isStage ? '阶段突破里程碑' : '签到里程碑');
             var milestoneList = getMilestoneConfig(mMode);
             var def = null;
             for (var i = 0; i < milestoneList.length; i++) {
@@ -25875,7 +26161,7 @@
             }
             if (!def) return { ok: false, reason: '奖励不存在' };
             if ((stats.total || 0) < days) return { ok: false, reason: '尚未达成' };
-            var claimedKey = isStage ? 'stageClaimedMilestones' : 'claimedMilestones';
+            var claimedKey = isExtreme ? 'extremeClaimedMilestones' : (isStage ? 'stageClaimedMilestones' : 'claimedMilestones');
             if (!Array.isArray(stats[claimedKey])) stats[claimedKey] = [];
             if (stats[claimedKey].indexOf(days) !== -1) return { ok: false, reason: '已领取过' };
 
@@ -25897,18 +26183,19 @@
             // 2) PRE 硬币
             var coinGained = 0;
             if (def.coin > 0 && typeof addPreCoin === 'function') {
-                addPreCoin(def.coin, (isStage ? '阶段突破里程碑' : '签到里程碑') + ' · 累计签到' + days + '天');
+                addPreCoin(def.coin, sourceLabel + ' · 累计签到' + days + '天');
                 coinGained = def.coin;
             }
 
-            // 3) 特殊道具（自选物品兑换卡 + 勋章，终身仅发放一次；阶段突破使用独立的终身发放记录）
+            // 3) 特殊道具（自选物品兑换卡 + 勋章，终身仅发放一次；各阶段使用独立的终身发放记录）
             var itemsGained = [];
             if (def.items && def.items.length > 0) {
-                var itemClaimedKey = isStage ? 'stageMilestoneRewardsClaimed' : 'milestoneRewardsClaimed';
+                var itemClaimedKey = isExtreme ? 'extremeMilestoneRewardsClaimed'
+                    : (isStage ? 'stageMilestoneRewardsClaimed' : 'milestoneRewardsClaimed');
                 if (!Array.isArray(stats[itemClaimedKey])) stats[itemClaimedKey] = [];
                 if (stats[itemClaimedKey].indexOf(days) === -1 && typeof warehouseAddItem === 'function') {
                     def.items.forEach(function(it) {
-                        warehouseAddItem(it.itemId, it.qty, (isStage ? '阶段突破里程碑' : '签到里程碑') + ' · 连续签到' + days + '天');
+                        warehouseAddItem(it.itemId, it.qty, sourceLabel + ' · 连续签到' + days + '天');
                         itemsGained.push(it);
                     });
                     stats[itemClaimedKey].push(days);
@@ -30581,9 +30868,10 @@
                  + row('level', 'fas fa-sliders', '调整等级 / 经验')
                  + row('checkin', 'fas fa-calendar-check', '调整签到天数')
                  + row('customCheckin', 'fas fa-pen-to-square', '自定义签到天数');
-            // 关闭阶段突破入口：仅阶段突破进行中才出现
+            // 关闭阶段入口：阶段突破中才出现；极限模式下显示为「关闭阶段·极限」
             if (typeof isStageBreakthroughActive === 'function' && isStageBreakthroughActive()) {
-                html += row('stageClose', 'fas fa-door-closed', '关闭阶段突破模式');
+                var extremeNow = typeof isStageExtremeActive === 'function' && isStageExtremeActive();
+                html += row('stageClose', extremeNow ? 'fas fa-fire' : 'fas fa-door-closed', extremeNow ? '关闭阶段·极限模式' : '关闭阶段突破模式');
             }
             html += '</div>';
 
@@ -31919,6 +32207,79 @@
             // 初始化荣勋数据供弹窗使用
             initHonorsData(allHonors);
             
+            // ==================== 赛季通行证数据（数据源：js/pass.js） ====================
+            var seasonCardData = null;
+            try {
+                if (typeof PASS_CONFIG !== 'undefined' && typeof getPassData === 'function') {
+                    var _spData = getPassData();
+                    try {
+                        // 与通行证界面同源的刷新（仅在跨天/跨周时实际写入）
+                        if (typeof refreshDailyTasks === 'function') _spData = refreshDailyTasks(_spData);
+                        if (typeof refreshWeeklyTasks === 'function') _spData = refreshWeeklyTasks(_spData);
+                        if (typeof ensureSeasonTasks === 'function') _spData = ensureSeasonTasks(_spData);
+                    } catch (e) {}
+                    var _spState = (typeof _getPassSeasonState === 'function') ? _getPassSeasonState() : 'active';
+                    var _spProg = (typeof passGetProgress === 'function')
+                        ? passGetProgress()
+                        : { level: _spData.level || 0, displayLevel: _spData.level || 0, exp: _spData.exp || 0, expNeeded: PASS_CONFIG.expPerLevel, percent: 0, levelPercent: 0, atCap: false, exLevel: 0, exOverflow: 0 };
+                    var _spStats = (typeof _passBuildProgressStats === 'function') ? _passBuildProgressStats() : null;
+                    // 各类任务完成度
+                    var _spDaily = { finished: 0, count: 0, pct: 0 };
+                    var _spWeekly = { finished: 0, count: 0, pct: 0 };
+                    var _spSeason = { finished: 0, count: 0, pct: 0 };
+                    if (typeof _passProgressRatioOf === 'function') {
+                        var _r1 = _passProgressRatioOf(PASS_DAILY_TASK_POOL, _spData.dailyTasks);
+                        var _r2 = _passProgressRatioOf(PASS_WEEKLY_TASK_POOL, _spData.weeklyTasks);
+                        var _r3 = _passProgressRatioOf(typeof buildSeasonTasks === 'function' ? buildSeasonTasks() : [], _spData.seasonTasks);
+                        _spDaily = { finished: _r1.finished, count: _r1.count, pct: Math.floor(_r1.ratio * 100) };
+                        _spWeekly = { finished: _r2.finished, count: _r2.count, pct: Math.floor(_r2.ratio * 100) };
+                        _spSeason = { finished: _r3.finished, count: _r3.count, pct: Math.floor(_r3.ratio * 100) };
+                    }
+                    // 每周事项（仅计入已开放周次）
+                    var _spW12Open = (typeof _getPassWeekly12OpenWeeks === 'function') ? _getPassWeekly12OpenWeeks() : 0;
+                    var _spW12 = { finished: 0, count: 0, pct: 0, open: _spW12Open, total: (typeof PASS_WEEKLY12_TOTAL_WEEKS !== 'undefined' ? PASS_WEEKLY12_TOTAL_WEEKS : 12) };
+                    if (typeof _passProgressRatioOf === 'function' && typeof PASS_WEEKLY12_TASK_POOLS !== 'undefined') {
+                        var _wf = 0, _wc = 0, _wdone = 0, _wtotal = 0;
+                        for (var _wk = 1; _wk <= _spW12Open; _wk++) {
+                            var _wr = _passProgressRatioOf(PASS_WEEKLY12_TASK_POOLS[_wk - 1] || [], (_spData.weekly12Tasks && _spData.weekly12Tasks[_wk]) || []);
+                            _wf += _wr.finished; _wc += _wr.count; _wdone += _wr.done; _wtotal += _wr.total;
+                        }
+                        _spW12.finished = _wf; _spW12.count = _wc;
+                        _spW12.pct = _wtotal > 0 ? Math.floor(_wdone / _wtotal * 100) : 0;
+                    }
+                    // 赛季结束倒计时（进行中才有）
+                    var _spCountdown = null;
+                    if (_spState === 'active') {
+                        var _spLeft = new Date(PASS_CONFIG.endTime).getTime() - Date.now();
+                        _spCountdown = (typeof _fmtSeasonCountdown === 'function')
+                            ? _fmtSeasonCountdown(_spLeft)
+                            : { days: Math.floor(_spLeft / 86400000), hours: 0, minutes: 0 };
+                    }
+                    seasonCardData = {
+                        state: _spState,
+                        name: PASS_CONFIG.name,
+                        nameEn: PASS_CONFIG.nameEn,
+                        levelCap: PASS_CONFIG.levelCap,
+                        startTimeStr: (typeof _fmtPassUTC8 === 'function') ? _fmtPassUTC8(PASS_CONFIG.startTime) : PASS_CONFIG.startTime,
+                        endTimeStr: (typeof _fmtPassUTC8 === 'function') ? _fmtPassUTC8(PASS_CONFIG.endTime) : PASS_CONFIG.endTime,
+                        countdown: _spCountdown,
+                        progress: _spProg,
+                        stats: _spStats,
+                        daily: _spDaily,
+                        weekly: _spWeekly,
+                        season: _spSeason,
+                        weekly12: _spW12,
+                        isPremium: !!_spData.isPremium,
+                        hasBundle: !!_spData.hasBundle,
+                        seasonBadgeOwned: !!_spData.seasonBadgeOwned,
+                        phaseUnlocked: (typeof _isPassPhaseUnlocked === 'function') ? _isPassPhaseUnlocked() : !!(_spData.isPremium || _spData.hasBundle),
+                        phaseRewards: (typeof PASS_PHASE_REWARDS !== 'undefined') ? PASS_PHASE_REWARDS : [],
+                        phaseClaimed: _spData.phaseRewardsClaimed || {},
+                        currentLevel: _spData.level || 0
+                    };
+                }
+            } catch (e) { seasonCardData = null; }
+            
             // 模态框内容 - 改为邮件弹窗风格
             modal.innerHTML = `
                 <div class="about-fullscreen">
@@ -32159,11 +32520,11 @@
                                                         <div class="growth-info-list">
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
-                                                                <span>${isStageBreakthroughActive() ? '最高等级为 120 级（阶段突破模式已开启）' : '最高等级为 60 级'}</span>
+                                                                <span>${isStageExtremeActive() ? '最高等级为 200 级（阶段突破·极限模式已开启）' : (isStageBreakthroughActive() ? '最高等级为 120 级（阶段突破模式已开启）' : '最高等级为 60 级')}</span>
                                                             </div>
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
-                                                                <span>每日签到可获得 ${isStageBreakthroughActive() ? '750-1500' : '250-550'} 经验值</span>
+                                                                <span>每日签到可获得 ${isStageExtremeActive() ? '1300-2000' : (isStageBreakthroughActive() ? '750-1500' : '250-550')} 经验值</span>
                                                             </div>
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
@@ -32175,10 +32536,272 @@
                                                             </div>
                                                             <div class="growth-info-item">
                                                                 <i class="fas fa-check-circle"></i>
-                                                                <span>${isStageBreakthroughActive()
+                                                                <span>${isStageExtremeActive()
+                                                                    ? '极限模式下等级越高所需经验越多（分档公式：Lv.121-149 为 7000+(等级+12)×200，Lv.150-169 为 8000+(等级+13)×230，Lv.170-189 为 9000+(等级+14)×270，Lv.190-200 为 10000+(等级+15)×300；200 级为满级，此后不再获得等级经验）'
+                                                                    : (isStageBreakthroughActive()
                                                                     ? '等级越高所需经验越多（分档公式：Lv.1-19 为 1000+(等级+3)×50，Lv.20-49 为 1500+(等级+5)×60，Lv.50-59 为 2000+(等级+5)×80；阶段突破后：Lv.60-89 为 3000+(等级+8)×100，Lv.90-109 为 4000+(等级+8)×120，Lv.110-120 为 5000+(等级+10)×150）'
-                                                                    : '等级越高所需经验越多（分档公式：Lv.1-19 为 1000+(等级+3)×50，Lv.20-49 为 1500+(等级+5)×60，Lv.50+ 为 2000+(等级+5)×80）'}</span>
+                                                                    : '等级越高所需经验越多（分档公式：Lv.1-19 为 1000+(等级+3)×50，Lv.20-49 为 1500+(等级+5)×60，Lv.50+ 为 2000+(等级+5)×80）')}</span>
                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            return '';
+                                        }).join('')}
+                                    </div>`;
+                                }
+                                
+                                if (tab.id === 'season') {
+                                    if (!seasonCardData) {
+                                        return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-season">
+                                            <div class="empty-section-state">
+                                                <i class="fas fa-flag-checkered"></i>
+                                                <p>赛季数据暂时无法加载</p>
+                                            </div>
+                                        </div>`;
+                                    }
+                                    var sd = seasonCardData;
+                                    var seasonRingC = 2 * Math.PI * 30;
+                                    var seasonStateInfo = sd.state === 'active'
+                                        ? { label: '进行中', cls: 'season-badge-live' }
+                                        : (sd.state === 'ended' ? { label: '已结束', cls: 'season-badge-ended' } : { label: '未开始', cls: 'season-badge-wait' });
+                                    return `<div class="card-tab-content ${tabIdx === 0 ? 'active' : ''}" id="tab-season">
+                                        ${tabSections.map(function(sec) {
+                                            if (sec.id === 'seasonInfo') {
+                                                var sdInactive = sd.state !== 'active';
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-flag-checkered"></i> 赛季信息</h4>
+                                                        <span class="season-state-badge ${seasonStateInfo.cls}"><i class="fas fa-circle"></i> ${seasonStateInfo.label}</span>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        ${sdInactive ? `
+                                                            <div class="season-hero season-hero-inactive">
+                                                                <div class="season-hero-crown"><i class="fas fa-flag-checkered"></i></div>
+                                                                <div class="season-hero-info">
+                                                                    <div class="season-hero-name">${sd.state === 'ended' ? '本赛季已结束' : '赛季尚未开始'}</div>
+                                                                    <div class="season-hero-await">
+                                                                        <i class="fas fa-hourglass-half"></i>
+                                                                        <span>${sd.state === 'ended' ? '感谢参与，期待下赛季！' : '敬请期待新赛季开启。'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ` : `
+                                                            <div class="season-hero">
+                                                                <div class="season-hero-crown"><i class="fas fa-crown"></i></div>
+                                                                <div class="season-hero-info">
+                                                                    <div class="season-hero-name">${sd.name}</div>
+                                                                    <div class="season-hero-nameen">${sd.nameEn}</div>
+                                                                    <div class="season-hero-times">
+                                                                        <span><i class="fas fa-play"></i> 起始 ${sd.startTimeStr} (UTC+8)</span>
+                                                                        <span><i class="fas fa-flag-checkered"></i> 结束 ${sd.endTimeStr} (UTC+8)</span>
+                                                                    </div>
+                                                                </div>
+                                                                ${sd.countdown ? `
+                                                                    <div class="season-hero-countdown">
+                                                                        <div class="season-countdown-title">距赛季结束</div>
+                                                                        <div class="season-countdown-nums">
+                                                                            <span class="season-cd-num">${sd.countdown.days}</span><i>天</i>
+                                                                            <span class="season-cd-num">${sd.countdown.hours}</span><i>时</i>
+                                                                            <span class="season-cd-num">${sd.countdown.minutes}</span><i>分</i>
+                                                                        </div>
+                                                                    </div>
+                                                                ` : ''}
+                                                            </div>
+                                                        `}
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sd.state !== 'active') return '';
+                                            if (sec.id === 'levelProgress') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-level-up-alt"></i> 通行证等级进度</h4>
+                                                        ${sd.isPremium
+                                                            ? '<span class="season-premium-badge"><i class="fas fa-gem"></i> 付费通行证</span>'
+                                                            : '<span class="season-free-badge"><i class="fas fa-ticket-alt"></i> 免费通行证</span>'}
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="season-level-display">
+                                                            <div class="season-level-big"><span class="season-level-num">Lv.${sd.progress.displayLevel}</span></div>
+                                                            <div class="season-level-detail">
+                                                                <div class="season-level-exp">
+                                                                    <span class="season-exp-label">当前等级经验</span>
+                                                                    <span class="season-exp-value">${sd.progress.exp} / ${sd.progress.expNeeded} EXP</span>
+                                                                </div>
+                                                                <div class="season-level-bar"><div class="season-level-bar-fill" style="width: ${sd.progress.percent}%;"></div></div>
+                                                                <div class="season-level-cap">
+                                                                    <span>赛季等级进度</span>
+                                                                    <span>${Math.min(sd.progress.level, sd.levelCap)} / ${sd.levelCap} 级 · ${sd.progress.levelPercent}%</span>
+                                                                </div>
+                                                                <div class="season-level-bar season-cap-bar"><div class="season-level-bar-fill season-cap-fill" style="width: ${sd.progress.levelPercent}%;"></div></div>
+                                                                ${sd.progress.atCap ? `<div class="season-ex-note"><i class="fas fa-infinity"></i> 已达满级，溢出经验累积 ${sd.progress.exOverflow || 0} 点，已兑换 ${sd.progress.exLevel} 级 EX 奖励</div>` : ''}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'seasonCompletion') {
+                                                if (!sd.stats) return '';
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-chart-pie"></i> 赛季完成度</h4>
+                                                        <button class="section-action-btn" onclick="cardOpenPassView('progress')">
+                                                            <span>完整视图</span>
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="season-completion-overall">
+                                                            <div class="season-completion-ring">
+                                                                <svg viewBox="0 0 72 72">
+                                                                    <defs>
+                                                                        <linearGradient id="seasonRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                                            <stop offset="0%" stop-color="#ffe08a"/>
+                                                                            <stop offset="45%" stop-color="#ffb347"/>
+                                                                            <stop offset="100%" stop-color="#ff9d2e"/>
+                                                                        </linearGradient>
+                                                                    </defs>
+                                                                    <circle class="season-sc-track" cx="36" cy="36" r="30"/>
+                                                                    <circle class="season-sc-fill" cx="36" cy="36" r="30" transform="rotate(-90 36 36)" style="stroke-dasharray: ${seasonRingC}; stroke-dashoffset: ${seasonRingC * (1 - sd.stats.overall)};"/>
+                                                                </svg>
+                                                                <div class="season-completion-pct">${sd.stats.overallPct}<i>%</i></div>
+                                                            </div>
+                                                            <div class="season-completion-note">赛季总完成度</div>
+                                                        </div>
+                                                        <div class="season-dims-grid">
+                                                            ${sd.stats.dims.map(function(d) {
+                                                                return `<div class="season-dim-item ${d.disabled ? 'season-dim-disabled' : ''}">
+                                                                    <div class="season-dim-head">
+                                                                        <i class="${d.icon}" style="color:${d.color};"></i>
+                                                                        <span class="season-dim-title">${d.title}</span>
+                                                                        <span class="season-dim-pct">${d.pct}%</span>
+                                                                    </div>
+                                                                    <div class="season-dim-bar"><div class="season-dim-fill" style="width:${d.pct}%;background:${d.color};"></div></div>
+                                                                    <div class="season-dim-detail">${d.detail}</div>
+                                                                </div>`;
+                                                            }).join('')}
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'taskProgress') {
+                                                var seasonTaskCards = [
+                                                    { key: 'daily', name: '每日任务', icon: 'fas fa-sun', color: '#f59e0b', data: sd.daily },
+                                                    { key: 'weekly', name: '周常任务', icon: 'fas fa-calendar-week', color: '#4a9eff', data: sd.weekly },
+                                                    { key: 'season', name: '赛季任务', icon: 'fas fa-flag-checkered', color: '#ff6b9d', data: sd.season },
+                                                    { key: 'weekly12', name: '每周事项', icon: 'fas fa-calendar-check', color: '#10b981', data: sd.weekly12 }
+                                                ];
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-tasks"></i> 任务进度</h4>
+                                                        <button class="section-action-btn" onclick="cardOpenPassView('tasks')">
+                                                            <span>前往任务</span>
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="season-task-grid">
+                                                            ${seasonTaskCards.map(function(tc) {
+                                                                return `<div class="season-task-card" onclick="cardOpenPassView('${tc.key === 'weekly12' ? 'weekly12' : 'tasks'}')">
+                                                                    <div class="season-task-top">
+                                                                        <div class="season-task-icon" style="color:${tc.color};border-color:${tc.color}55;background:${tc.color}1a;"><i class="${tc.icon}"></i></div>
+                                                                        <div class="season-task-nameinfo">
+                                                                            <span class="season-task-name">${tc.name}</span>
+                                                                            <span class="season-task-count">${tc.data.finished}/${tc.data.count} 个完成</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="season-dim-bar"><div class="season-dim-fill" style="width:${tc.data.pct}%;background:${tc.color};"></div></div>
+                                                                    <div class="season-task-foot">${tc.key === 'weekly12' ? ('已开放 ' + tc.data.open + ' / ' + tc.data.total + ' 周 · ' + tc.data.pct + '%') : (tc.data.pct + '%')}</div>
+                                                                </div>`;
+                                                            }).join('')}
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'phaseRewards') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-gift"></i> 阶段奖励</h4>
+                                                        <button class="section-action-btn" onclick="cardOpenPassView('phase')">
+                                                            <span>前往领取</span>
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="season-phase-list">
+                                                            ${sd.phaseRewards.map(function(p) {
+                                                                var phClaimed = !!sd.phaseClaimed[p.level];
+                                                                var phReach = sd.currentLevel >= p.level;
+                                                                var phCls, phLabel;
+                                                                if (phClaimed) { phCls = 'claimed'; phLabel = '已领取'; }
+                                                                else if (!sd.phaseUnlocked) { phCls = 'locked'; phLabel = '需购买'; }
+                                                                else if (phReach) { phCls = 'ready'; phLabel = '可领取'; }
+                                                                else { phCls = 'locked'; phLabel = '未达成'; }
+                                                                // 仓库物品类奖励可点击查看统一物品详情（名片样式/背景无仓库条目，不响应）
+                                                                var phIsItem = p.reward && p.reward.type === 'item';
+                                                                return `<div class="season-phase-item${phIsItem ? ' season-phase-clickable' : ''}"${phIsItem ? ' onclick="cardShowPassPhaseItem(' + p.level + ')" title="' + (phIsItem ? '点击查看物品详情' : '') + '"' : ''}>
+                                                                    <div class="season-phase-icon" style="color:${p.color};border-color:${p.color}55;background:${p.color}1a;"><i class="${p.icon}"></i></div>
+                                                                    <div class="season-phase-info">
+                                                                        <span class="season-phase-name">${p.name}</span>
+                                                                        <span class="season-phase-lv">${p.level === 0 ? '初始奖励' : p.level + ' 级解锁'}</span>
+                                                                    </div>
+                                                                    <span class="season-phase-state season-phase-${phCls}">${phLabel}</span>
+                                                                </div>`;
+                                                            }).join('')}
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'purchaseStatus') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-shopping-cart"></i> 购买状态</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="season-purchase-list">
+                                                            <div class="season-purchase-item season-purchase-clickable" data-purchase="body" onclick="cardOpenPassPurchase()" title="点击查看/购买通行证">
+                                                                <i class="fas fa-ticket-alt"></i>
+                                                                <span class="season-purchase-name">通行证本体（付费奖励档）</span>
+                                                                <span class="season-purchase-state ${sd.isPremium ? 'on' : 'off'}">${sd.isPremium ? '已购买' : '未购买'}</span>
+                                                                <i class="fas fa-chevron-right season-purchase-arrow"></i>
+                                                            </div>
+                                                            <div class="season-purchase-item season-purchase-clickable" data-purchase="bundle" onclick="cardOpenPassPurchase()" title="点击查看/购买通行证组合包">
+                                                                <i class="fas fa-box-open"></i>
+                                                                <span class="season-purchase-name">通行证组合包</span>
+                                                                <span class="season-purchase-state ${sd.hasBundle ? 'on' : 'off'}">${sd.hasBundle ? '已购买' : '未购买'}</span>
+                                                                <i class="fas fa-chevron-right season-purchase-arrow"></i>
+                                                            </div>
+                                                            <div class="season-purchase-item season-purchase-clickable" data-purchase="badge" onclick="cardShowSeasonBadge()" title="点击查看徽章详情">
+                                                                <i class="fas fa-medal"></i>
+                                                                <span class="season-purchase-name">第一赛季纪念徽章</span>
+                                                                <span class="season-purchase-state ${sd.seasonBadgeOwned ? 'on' : 'off'}">${sd.seasonBadgeOwned ? '已获得' : '未获得'}</span>
+                                                                <i class="fas fa-chevron-right season-purchase-arrow"></i>
+                                                            </div>
+                                                        </div>
+                                                        ${!sd.isPremium ? '<div class="season-purchase-tip"><i class="fas fa-circle-info"></i> 购买付费通行证后可解锁全部付费档奖励与阶段奖励，详情可在通行证界面查看。</div>' : ''}
+                                                    </div>
+                                                </div>`;
+                                            }
+                                            if (sec.id === 'quickActions') {
+                                                return `<div class="card-section density-${density}">
+                                                    <div class="card-section-header">
+                                                        <h4><i class="fas fa-bolt"></i> 快捷操作</h4>
+                                                    </div>
+                                                    <div class="card-section-body">
+                                                        <div class="season-quick-grid">
+                                                            <button class="season-quick-btn" onclick="openPassUI()">
+                                                                <i class="fas fa-ticket-alt"></i><span>打开通行证</span>
+                                                            </button>
+                                                            <button class="season-quick-btn" onclick="cardOpenPassView('progress')">
+                                                                <i class="fas fa-chart-pie"></i><span>赛季完成度</span>
+                                                            </button>
+                                                            <button class="season-quick-btn" onclick="cardOpenPassView('phase')">
+                                                                <i class="fas fa-gift"></i><span>阶段奖励</span>
+                                                            </button>
+                                                            <button class="season-quick-btn season-quick-gold" onclick="cardClaimAllPassRewards()">
+                                                                <i class="fas fa-hand-sparkles"></i><span>一键领取奖励</span>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>`;
@@ -32218,7 +32841,7 @@
                                                     </div>
                                                     <div class="card-section-body">
                                                         <div class="game-achievements-grid">
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('fk')">
+                                                            <div class="game-achievement-card" data-game="fk" onclick="showGameAchievement('fk')">
                                                                 <div class="game-achievement-icon">
                                                                     <i class="fas fa-square"></i>
                                                                 </div>
@@ -32230,7 +32853,7 @@
                                                                     <span class="game-achievement-count">${fkAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('fxq')">
+                                                            <div class="game-achievement-card" data-game="fxq" onclick="showGameAchievement('fxq')">
                                                                 <div class="game-achievement-icon">
                                                                     <i class="fas fa-plane"></i>
                                                                 </div>
@@ -32242,7 +32865,7 @@
                                                                     <span class="game-achievement-count">${fxqAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('wzq')">
+                                                            <div class="game-achievement-card" data-game="wzq" onclick="showGameAchievement('wzq')">
                                                                 <div class="game-achievement-icon">
                                                                     <i class="fas fa-circle"></i>
                                                                 </div>
@@ -32254,7 +32877,7 @@
                                                                     <span class="game-achievement-count">${wzqAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('snake')">
+                                                            <div class="game-achievement-card" data-game="snake" onclick="showGameAchievement('snake')">
                                                                 <div class="game-achievement-icon">
                                                                     <i class="fas fa-signs-post"></i>
                                                                 </div>
@@ -32266,7 +32889,7 @@
                                                                     <span class="game-achievement-count">${snakeAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('memory')">
+                                                            <div class="game-achievement-card" data-game="memory" onclick="showGameAchievement('memory')">
                                                                 <div class="game-achievement-icon">
                                                                     <i class="fas fa-images"></i>
                                                                 </div>
@@ -32278,7 +32901,7 @@
                                                                     <span class="game-achievement-count">${memoryAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('color')">
+                                                            <div class="game-achievement-card" data-game="color" onclick="showGameAchievement('color')">
                                                                 <div class="game-achievement-icon">
                                                                     <i class="fas fa-palette"></i>
                                                                 </div>
@@ -32290,7 +32913,7 @@
                                                                     <span class="game-achievement-count">${colorAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('cube3d')">
+                                                            <div class="game-achievement-card" data-game="cube3d" onclick="showGameAchievement('cube3d')">
                                                                 <div class="game-achievement-icon" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6b9d 50%, #a855f7 100%);">
                                                                     <i class="fas fa-cube"></i>
                                                                 </div>
@@ -32302,7 +32925,7 @@
                                                                     <span class="game-achievement-count">${cube3dAchievements.length}/10</span>
                                                                 </div>
                                                             </div>
-                                                            <div class="game-achievement-card" onclick="showGameAchievement('dino')">
+                                                            <div class="game-achievement-card" data-game="dino" onclick="showGameAchievement('dino')">
                                                                 <div class="game-achievement-icon" style="background: linear-gradient(135deg, #f0a050 0%, #d45d79 50%, #9b6dff 100%);">
                                                                     <i class="fas fa-bone"></i>
                                                                 </div>
@@ -32313,6 +32936,13 @@
                                                                     </div>
                                                                     <span class="game-achievement-count">${dinoAchievements.length}/10</span>
                                                                 </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="game-ach-divider"></div>
+                                                        <div class="game-ach-detail-area" id="gameAchDetailArea">
+                                                            <div class="game-ach-detail-hint">
+                                                                <i class="fas fa-hand-pointer"></i>
+                                                                <span>点击上方游戏卡片，在下方查看对应成就条目</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -33080,6 +33710,103 @@
                     background: rgba(212, 93, 121, 0.05);
                     transform: translateY(-2px);
                 }
+
+                .game-achievement-card.selected {
+                    background: rgba(212, 93, 121, 0.1);
+                    box-shadow: inset 0 0 0 2px #d45d79;
+                }
+
+                /* 游戏成就条目内联展示区（与上方选择卡片区用横线分隔） */
+                .game-ach-divider {
+                    height: 1px;
+                    background: linear-gradient(90deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.12) 20%, rgba(0, 0, 0, 0.12) 80%, rgba(0, 0, 0, 0.02));
+                    margin: 16px 0;
+                }
+                .game-ach-detail-area { min-height: 52px; }
+                .game-ach-detail-hint {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 14px;
+                    border-radius: 10px;
+                    border: 1px dashed rgba(0, 0, 0, 0.12);
+                    color: #999;
+                    font-size: 13px;
+                }
+                .game-ach-detail-hint i { color: #d45d79; font-size: 14px; }
+                .game-ach-detail-head {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 12px 14px;
+                    border-radius: 12px;
+                    background: rgba(212, 93, 121, 0.07);
+                    border: 1px solid rgba(212, 93, 121, 0.2);
+                    margin-bottom: 12px;
+                }
+                .game-ach-detail-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #fff;
+                    font-size: 17px;
+                    flex-shrink: 0;
+                    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+                }
+                .game-ach-detail-summary {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                    min-width: 0;
+                    flex-shrink: 0;
+                }
+                .game-ach-detail-name {
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #333;
+                    white-space: nowrap;
+                }
+                .game-ach-detail-progress {
+                    font-size: 12px;
+                    color: #888;
+                }
+                .game-ach-detail-bar {
+                    flex: 1;
+                    min-width: 60px;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: rgba(0, 0, 0, 0.08);
+                    overflow: hidden;
+                }
+                .game-ach-detail-bar-fill {
+                    height: 100%;
+                    border-radius: 4px;
+                    background: linear-gradient(90deg, #d45d79, #e67e8a);
+                    transition: width 0.5s ease;
+                }
+
+                body.dark-mode .game-achievement-card.selected {
+                    background: rgba(212, 93, 121, 0.16);
+                    box-shadow: inset 0 0 0 2px #ff6b9d;
+                }
+                body.dark-mode .game-ach-divider {
+                    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.16) 20%, rgba(255, 255, 255, 0.16) 80%, rgba(255, 255, 255, 0.02));
+                }
+                body.dark-mode .game-ach-detail-hint {
+                    border-color: rgba(255, 255, 255, 0.14);
+                    color: #888;
+                }
+                body.dark-mode .game-ach-detail-head {
+                    background: rgba(212, 93, 121, 0.12);
+                    border-color: rgba(212, 93, 121, 0.3);
+                }
+                body.dark-mode .game-ach-detail-name { color: #eee; }
+                body.dark-mode .game-ach-detail-progress { color: #999; }
+                body.dark-mode .game-ach-detail-bar { background: rgba(255, 255, 255, 0.1); }
                 
                 .game-achievement-icon {
                     width: 48px;
@@ -33469,7 +34196,28 @@
                     .social-stat-value {
                         font-size: 22px;
                     }
-                    
+
+                    /* 赛季标签页移动端适配 */
+                    .season-dims-grid,
+                    .season-task-grid,
+                    .season-quick-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .season-hero {
+                        flex-direction: column;
+                        text-align: center;
+                    }
+                    .season-hero-info { width: 100%; }
+                    .season-hero-times { justify-content: center; }
+                    .season-hero-countdown { margin: 0 auto; }
+                    .season-level-display {
+                        flex-direction: column;
+                        text-align: center;
+                    }
+                    .season-level-exp { flex-direction: column; gap: 2px; }
+                    .season-level-cap { flex-direction: column; gap: 2px; align-items: center; }
+                    .season-completion-overall { flex-direction: column; text-align: center; }
+
                     .card-action-btn span {
                         display: none;
                     }
@@ -34767,6 +35515,632 @@
                     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
                 }
 
+                /* ==================== 赛季标签页样式 ==================== */
+                .season-state-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+                .season-state-badge i { font-size: 8px; }
+                .season-badge-live {
+                    background: rgba(46, 204, 113, 0.12);
+                    color: #27ae60;
+                    border: 1px solid rgba(46, 204, 113, 0.35);
+                }
+                .season-badge-ended {
+                    background: rgba(149, 165, 166, 0.15);
+                    color: #7f8c8d;
+                    border: 1px solid rgba(149, 165, 166, 0.4);
+                }
+                .season-badge-wait {
+                    background: rgba(243, 156, 18, 0.12);
+                    color: #e67e22;
+                    border: 1px solid rgba(243, 156, 18, 0.35);
+                }
+
+                .season-premium-badge,
+                .season-free-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+                .season-premium-badge {
+                    background: linear-gradient(135deg, rgba(255, 179, 71, 0.18), rgba(255, 107, 157, 0.18));
+                    color: #d4802a;
+                    border: 1px solid rgba(255, 179, 71, 0.45);
+                }
+                .season-free-badge {
+                    background: rgba(106, 90, 205, 0.1);
+                    color: #6a5acd;
+                    border: 1px solid rgba(106, 90, 205, 0.35);
+                }
+
+                /* 赛季信息横幅 */
+                .season-hero {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    padding: 18px;
+                    border-radius: 14px;
+                    background: linear-gradient(135deg, rgba(255, 107, 157, 0.10) 0%, rgba(106, 90, 205, 0.14) 60%, rgba(30, 20, 50, 0.06) 100%);
+                    border: 1px solid rgba(255, 107, 157, 0.28);
+                }
+                .season-hero-crown {
+                    width: 54px;
+                    height: 54px;
+                    flex-shrink: 0;
+                    border-radius: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(135deg, #ff6b9d 0%, #6a5acd 100%);
+                    color: #fff;
+                    font-size: 24px;
+                    box-shadow: 0 4px 14px rgba(255, 107, 157, 0.35);
+                }
+                .season-hero-info { flex: 1; min-width: 0; }
+                .season-hero-name {
+                    font-size: 17px;
+                    font-weight: 700;
+                    color: #333;
+                    margin-bottom: 3px;
+                }
+                .season-hero-nameen {
+                    font-size: 12px;
+                    color: #999;
+                    margin-bottom: 8px;
+                }
+                .season-hero-times {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px 16px;
+                }
+                .season-hero-times span {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    font-size: 12px;
+                    color: #666;
+                }
+                .season-hero-times i { font-size: 10px; color: #d45d79; }
+                .season-hero-countdown {
+                    flex-shrink: 0;
+                    text-align: center;
+                    padding: 10px 14px;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.75);
+                    border: 1px solid rgba(255, 107, 157, 0.25);
+                }
+                .season-countdown-title {
+                    font-size: 11px;
+                    color: #999;
+                    margin-bottom: 6px;
+                }
+                .season-countdown-nums {
+                    display: flex;
+                    align-items: baseline;
+                    justify-content: center;
+                    gap: 3px;
+                }
+                .season-cd-num {
+                    display: inline-block;
+                    min-width: 30px;
+                    padding: 3px 5px;
+                    border-radius: 6px;
+                    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+                    color: #fff;
+                    font-size: 15px;
+                    font-weight: 700;
+                    text-align: center;
+                }
+                .season-countdown-nums i {
+                    font-style: normal;
+                    font-size: 11px;
+                    color: #999;
+                    margin-right: 4px;
+                }
+
+                /* 赛季未开始/已结束时的 hero 简化版 */
+                .season-hero-inactive {
+                    justify-content: flex-start;
+                    padding: 22px;
+                }
+                .season-hero-inactive .season-hero-crown {
+                    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+                    box-shadow: 0 4px 14px rgba(127, 140, 141, 0.3);
+                }
+                .season-hero-await {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-size: 13px;
+                    color: #999;
+                    margin-top: 6px;
+                }
+                .season-hero-await i {
+                    color: #95a5a6;
+                    font-size: 14px;
+                }
+
+                /* 通行证等级进度 */
+                .season-level-display {
+                    display: flex;
+                    align-items: center;
+                    gap: 18px;
+                }
+                .season-level-big {
+                    flex-shrink: 0;
+                    padding: 12px 18px;
+                    border-radius: 14px;
+                    background: linear-gradient(135deg, #ff6b9d 0%, #6a5acd 100%);
+                    box-shadow: 0 4px 14px rgba(106, 90, 205, 0.35);
+                }
+                .season-level-num {
+                    font-size: 22px;
+                    font-weight: 800;
+                    color: #fff;
+                    white-space: nowrap;
+                }
+                .season-level-detail { flex: 1; min-width: 0; }
+                .season-level-exp {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 6px;
+                }
+                .season-exp-label { font-size: 12px; color: #999; }
+                .season-exp-value { font-size: 12px; font-weight: 600; color: #d45d79; }
+                .season-level-bar {
+                    height: 10px;
+                    border-radius: 5px;
+                    background: #f0f0f0;
+                    overflow: hidden;
+                    margin-bottom: 10px;
+                }
+                .season-level-bar-fill {
+                    height: 100%;
+                    border-radius: 5px;
+                    background: linear-gradient(90deg, #ff6b9d, #6a5acd);
+                    transition: width 0.6s ease;
+                }
+                .season-cap-bar { margin-bottom: 0; }
+                .season-cap-fill { background: linear-gradient(90deg, #ffe08a, #ffb347, #ff9d2e); }
+                .season-level-cap {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 6px;
+                }
+                .season-level-cap span { font-size: 12px; color: #999; }
+                .season-level-cap span:last-child { font-weight: 600; color: #b8860b; }
+                .season-ex-note {
+                    margin-top: 10px;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    background: rgba(255, 179, 71, 0.12);
+                    border: 1px solid rgba(255, 179, 71, 0.35);
+                    color: #d4802a;
+                    font-size: 12px;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                /* 赛季完成度 */
+                .season-completion-overall {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    padding: 12px 14px;
+                    border-radius: 14px;
+                    background: linear-gradient(135deg, rgba(255, 179, 71, 0.08), rgba(255, 107, 157, 0.08));
+                    border: 1px solid rgba(255, 179, 71, 0.25);
+                    margin-bottom: 14px;
+                }
+                .season-completion-ring {
+                    position: relative;
+                    width: 84px;
+                    height: 84px;
+                    flex-shrink: 0;
+                }
+                .season-completion-ring svg { width: 100%; height: 100%; }
+                .season-sc-track {
+                    fill: none;
+                    stroke: rgba(0, 0, 0, 0.08);
+                    stroke-width: 8;
+                }
+                .season-sc-fill {
+                    fill: none;
+                    stroke: url(#seasonRingGrad);
+                    stroke-width: 8;
+                    stroke-linecap: round;
+                    transition: stroke-dashoffset 0.8s ease;
+                }
+                .season-completion-pct {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 19px;
+                    font-weight: 800;
+                    color: #d4802a;
+                }
+                .season-completion-pct i {
+                    font-style: normal;
+                    font-size: 11px;
+                    margin-left: 1px;
+                }
+                .season-completion-note {
+                    font-size: 12.5px;
+                    color: #888;
+                    line-height: 1.6;
+                }
+                .season-dims-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                }
+                .season-dim-item {
+                    padding: 12px;
+                    border-radius: 12px;
+                    background: #fafafa;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                }
+                .season-dim-head {
+                    display: flex;
+                    align-items: center;
+                    gap: 7px;
+                    margin-bottom: 8px;
+                }
+                .season-dim-head > i { font-size: 13px; width: 16px; text-align: center; }
+                .season-dim-title {
+                    flex: 1;
+                    font-size: 12.5px;
+                    font-weight: 600;
+                    color: #444;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .season-dim-pct {
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #d45d79;
+                }
+                .season-dim-bar {
+                    height: 7px;
+                    border-radius: 4px;
+                    background: rgba(0, 0, 0, 0.07);
+                    overflow: hidden;
+                    margin-bottom: 7px;
+                }
+                .season-dim-fill {
+                    height: 100%;
+                    border-radius: 4px;
+                    transition: width 0.6s ease;
+                }
+                .season-dim-detail {
+                    font-size: 11px;
+                    color: #999;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .season-dim-disabled { opacity: 0.55; }
+                .season-dim-disabled .season-dim-pct { color: #aaa; }
+
+                /* 任务进度 */
+                .season-task-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                }
+                .season-task-card {
+                    padding: 12px;
+                    border-radius: 12px;
+                    background: #fafafa;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                    cursor: pointer;
+                    transition: all 0.25s ease;
+                }
+                .season-task-card:hover {
+                    border-color: rgba(212, 93, 121, 0.4);
+                    background: rgba(212, 93, 121, 0.04);
+                    box-shadow: 0 4px 12px rgba(212, 93, 121, 0.12);
+                }
+                .season-task-top {
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    margin-bottom: 9px;
+                }
+                .season-task-icon {
+                    width: 34px;
+                    height: 34px;
+                    flex-shrink: 0;
+                    border-radius: 9px;
+                    border: 1px solid;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                }
+                .season-task-nameinfo { min-width: 0; }
+                .season-task-name {
+                    display: block;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #444;
+                }
+                .season-task-count {
+                    display: block;
+                    font-size: 11px;
+                    color: #999;
+                    margin-top: 1px;
+                }
+                .season-task-foot {
+                    margin-top: 7px;
+                    font-size: 11px;
+                    color: #999;
+                    text-align: right;
+                }
+
+                /* 阶段奖励 */
+                .season-phase-list { display: flex; flex-direction: column; gap: 8px; }
+                .season-phase-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 10px 12px;
+                    border-radius: 12px;
+                    background: #fafafa;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                }
+                .season-phase-clickable {
+                    cursor: pointer;
+                    transition: all 0.25s ease;
+                }
+                .season-phase-clickable:hover {
+                    border-color: rgba(212, 93, 121, 0.45);
+                    background: rgba(212, 93, 121, 0.06);
+                    box-shadow: 0 3px 10px rgba(212, 93, 121, 0.12);
+                }
+                .season-phase-icon {
+                    width: 38px;
+                    height: 38px;
+                    flex-shrink: 0;
+                    border-radius: 10px;
+                    border: 1px solid;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 15px;
+                }
+                .season-phase-info { flex: 1; min-width: 0; }
+                .season-phase-name {
+                    display: block;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #444;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .season-phase-lv {
+                    display: block;
+                    font-size: 11px;
+                    color: #999;
+                    margin-top: 1px;
+                }
+                .season-phase-state {
+                    flex-shrink: 0;
+                    padding: 3px 10px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+                .season-phase-claimed {
+                    background: rgba(46, 204, 113, 0.12);
+                    color: #27ae60;
+                }
+                .season-phase-ready {
+                    background: linear-gradient(135deg, #ff6b9d, #d45d79);
+                    color: #fff;
+                    box-shadow: 0 2px 8px rgba(212, 93, 121, 0.35);
+                }
+                .season-phase-locked {
+                    background: rgba(0, 0, 0, 0.06);
+                    color: #999;
+                }
+
+                /* 购买状态 */
+                .season-purchase-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    margin-bottom: 10px;
+                }
+                .season-purchase-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 11px 14px;
+                    border-radius: 12px;
+                    background: #fafafa;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                }
+                .season-purchase-item > i {
+                    width: 18px;
+                    text-align: center;
+                    color: #6a5acd;
+                    font-size: 14px;
+                }
+                .season-purchase-name {
+                    flex: 1;
+                    font-size: 13px;
+                    color: #444;
+                }
+                .season-purchase-state {
+                    padding: 3px 10px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+                .season-purchase-state.on {
+                    background: rgba(46, 204, 113, 0.12);
+                    color: #27ae60;
+                }
+                .season-purchase-state.off {
+                    background: rgba(0, 0, 0, 0.06);
+                    color: #999;
+                }
+                .season-purchase-clickable {
+                    cursor: pointer;
+                    transition: all 0.25s ease;
+                }
+                .season-purchase-clickable:hover {
+                    border-color: rgba(106, 90, 205, 0.45);
+                    background: rgba(106, 90, 205, 0.06);
+                    box-shadow: 0 3px 10px rgba(106, 90, 205, 0.12);
+                }
+                .season-purchase-arrow {
+                    flex-shrink: 0;
+                    width: auto !important;
+                    font-size: 11px !important;
+                    color: #bbb !important;
+                    transition: transform 0.25s ease, color 0.25s ease;
+                }
+                .season-purchase-clickable:hover .season-purchase-arrow {
+                    transform: translateX(3px);
+                    color: #6a5acd !important;
+                }
+                .season-purchase-tip {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 7px;
+                    padding: 9px 12px;
+                    border-radius: 10px;
+                    background: rgba(106, 90, 205, 0.07);
+                    border: 1px dashed rgba(106, 90, 205, 0.3);
+                    color: #6a5acd;
+                    font-size: 12px;
+                    line-height: 1.6;
+                }
+                .season-purchase-tip i { margin-top: 3px; }
+
+                /* 快捷操作 */
+                .season-quick-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                }
+                .season-quick-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 7px;
+                    padding: 11px 12px;
+                    border: none;
+                    border-radius: 12px;
+                    background: linear-gradient(135deg, #ff6b9d 0%, #6a5acd 100%);
+                    color: #fff;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.25s ease;
+                    box-shadow: 0 3px 10px rgba(106, 90, 205, 0.25);
+                }
+                .season-quick-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(106, 90, 205, 0.4);
+                }
+                .season-quick-btn:active { transform: translateY(0); }
+                .season-quick-gold {
+                    background: linear-gradient(135deg, #ffb347 0%, #ff9d2e 100%);
+                    box-shadow: 0 3px 10px rgba(255, 157, 46, 0.3);
+                }
+                .season-quick-gold:hover { box-shadow: 0 6px 16px rgba(255, 157, 46, 0.45); }
+
+                /* 赛季标签页暗黑模式 */
+                body.dark-mode .season-hero {
+                    background: linear-gradient(135deg, rgba(255, 107, 157, 0.14) 0%, rgba(106, 90, 205, 0.18) 60%, rgba(30, 20, 50, 0.4) 100%);
+                    border-color: rgba(255, 107, 157, 0.3);
+                }
+                body.dark-mode .season-hero-name { color: #eee; }
+                body.dark-mode .season-hero-times span { color: #aaa; }
+                body.dark-mode .season-hero-countdown {
+                    background: rgba(255, 255, 255, 0.06);
+                    border-color: rgba(255, 107, 157, 0.3);
+                }
+                body.dark-mode .season-hero-inactive {
+                    background: linear-gradient(135deg, rgba(149, 165, 166, 0.14) 0%, rgba(127, 140, 141, 0.1) 100%);
+                    border-color: rgba(149, 165, 166, 0.3);
+                }
+                body.dark-mode .season-hero-await { color: #aaa; }
+                body.dark-mode .season-hero-await i { color: #95a5a6; }
+                body.dark-mode .season-premium-badge { color: #ffb347; }
+                body.dark-mode .season-free-badge { color: #9d94e8; }
+                body.dark-mode .season-exp-value { color: #ff8fb0; }
+                body.dark-mode .season-level-bar { background: rgba(255, 255, 255, 0.1); }
+                body.dark-mode .season-level-cap span { color: #999; }
+                body.dark-mode .season-level-cap span:last-child { color: #ffb347; }
+                body.dark-mode .season-sc-track { stroke: rgba(255, 255, 255, 0.12); }
+                body.dark-mode .season-completion-pct { color: #ffb347; }
+                body.dark-mode .season-completion-note { color: #999; }
+                body.dark-mode .season-completion-overall {
+                    background: linear-gradient(135deg, rgba(255, 179, 71, 0.1), rgba(255, 107, 157, 0.1));
+                    border-color: rgba(255, 179, 71, 0.3);
+                }
+                body.dark-mode .season-dim-item,
+                body.dark-mode .season-task-card,
+                body.dark-mode .season-phase-item,
+                body.dark-mode .season-purchase-item {
+                    background: rgba(255, 255, 255, 0.04);
+                    border-color: rgba(255, 255, 255, 0.08);
+                }
+                body.dark-mode .season-dim-title,
+                body.dark-mode .season-task-name,
+                body.dark-mode .season-phase-name,
+                body.dark-mode .season-purchase-name { color: #ddd; }
+                body.dark-mode .season-dim-detail,
+                body.dark-mode .season-task-count,
+                body.dark-mode .season-task-foot,
+                body.dark-mode .season-phase-lv { color: #888; }
+                body.dark-mode .season-dim-bar { background: rgba(255, 255, 255, 0.1); }
+                body.dark-mode .season-task-card:hover {
+                    background: rgba(212, 93, 121, 0.1);
+                    border-color: rgba(212, 93, 121, 0.45);
+                }
+                body.dark-mode .season-phase-clickable:hover {
+                    background: rgba(212, 93, 121, 0.12);
+                    border-color: rgba(212, 93, 121, 0.5);
+                }
+                body.dark-mode .season-purchase-clickable:hover {
+                    background: rgba(157, 148, 232, 0.12);
+                    border-color: rgba(157, 148, 232, 0.5);
+                }
+                body.dark-mode .season-purchase-clickable:hover .season-purchase-arrow {
+                    color: #9d94e8 !important;
+                }
+                body.dark-mode .season-phase-locked,
+                body.dark-mode .season-purchase-state.off {
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #888;
+                }
+                body.dark-mode .season-purchase-tip {
+                    background: rgba(106, 90, 205, 0.12);
+                    color: #9d94e8;
+                }
+
                 /* 签到区样式已迁移到 denglu.css */
             `;
             document.head.appendChild(style);
@@ -34822,6 +36196,120 @@
             }, 10);
         }
         
+        // 赛季标签页辅助：打开通行证并跳转到指定页签（rewards/tasks/weekly12/phase/progress/boost）
+        function cardOpenPassView(tab) {
+            if (typeof openPassUI !== 'function') {
+                if (typeof showToastInfo === 'function') showToastInfo('通行证模块暂不可用');
+                return;
+            }
+            openPassUI();
+            if (typeof _switchPassTab === 'function') {
+                try { _switchPassTab(tab); } catch (e) {}
+            }
+        }
+
+        // 赛季标签页辅助：一键领取当前已达等级的全部通行证奖励
+        function cardClaimAllPassRewards() {
+            if (typeof passClaimAllLevelRewards !== 'function' || typeof openPassUI !== 'function') {
+                if (typeof showToastInfo === 'function') showToastInfo('通行证模块暂不可用');
+                return;
+            }
+            // 奖励结算弹窗 #passRewardModal 位于通行证容器内，未构建时先打开通行证 UI 确保其存在
+            if (!document.getElementById('passRewardModal')) {
+                openPassUI();
+            }
+            passClaimAllLevelRewards();
+        }
+
+        // 赛季标签页辅助：打开通行证购买选择弹窗（两个档位的已购状态与通行证同步）
+        function cardOpenPassPurchase() {
+            if (typeof openPassUI !== 'function' || typeof _openPurchaseSelectModal !== 'function') {
+                if (typeof showToastInfo === 'function') showToastInfo('通行证模块暂不可用');
+                return;
+            }
+            // 购买弹窗位于通行证容器内，先确保通行证 UI 已构建并显示
+            openPassUI();
+            _openPurchaseSelectModal();
+        }
+
+        // 赛季标签页辅助：查看阶段奖励中的仓库物品详情（统一物品弹窗，previewOnly 未持有也可查看）
+        function cardShowPassPhaseItem(level) {
+            if (typeof PASS_PHASE_REWARDS === 'undefined' || typeof showWarehouseItemDetail !== 'function') {
+                if (typeof showToastInfo === 'function') showToastInfo('物品详情暂不可用');
+                return;
+            }
+            var node = null;
+            for (var i = 0; i < PASS_PHASE_REWARDS.length; i++) {
+                if (PASS_PHASE_REWARDS[i].level === level) { node = PASS_PHASE_REWARDS[i]; break; }
+            }
+            if (!node || !node.reward || node.reward.type !== 'item') return;
+            showWarehouseItemDetail(node.reward.id, { previewOnly: true });
+        }
+
+        // 赛季标签页辅助：查看第一赛季纪念徽章详情
+        function cardShowSeasonBadge() {
+            if (typeof showWarehouseItemDetail !== 'function') {
+                if (typeof showToastInfo === 'function') showToastInfo('物品详情暂不可用');
+                return;
+            }
+            showWarehouseItemDetail('season1_badge', { previewOnly: true });
+        }
+
+        // 通行证购买状态变化后，局部刷新已打开名片内赛季标签页（不重开名片）
+        function _refreshCardSeasonPurchaseUI() {
+            var modal = document.getElementById('userCardModal');
+            if (!modal || modal.style.display === 'none') return;
+            var pd = null;
+            try { pd = (typeof getPassData === 'function') ? getPassData() : null; } catch (e) { return; }
+            if (!pd) return;
+            var unlocked = (typeof _isPassPhaseUnlocked === 'function')
+                ? _isPassPhaseUnlocked()
+                : !!(pd.isPremium || pd.hasBundle);
+            var curLevel = 0;
+            try { curLevel = (typeof passGetProgress === 'function') ? passGetProgress().displayLevel : (pd.level || 0); } catch (e) { curLevel = pd.level || 0; }
+
+            // 购买状态三行
+            function setRow(key, owned, onText, offText) {
+                var row = modal.querySelector('.season-purchase-item[data-purchase="' + key + '"]');
+                if (!row) return;
+                var state = row.querySelector('.season-purchase-state');
+                if (!state) return;
+                state.className = 'season-purchase-state ' + (owned ? 'on' : 'off');
+                state.textContent = owned ? onText : offText;
+            }
+            setRow('body', !!pd.isPremium, '已购买', '未购买');
+            setRow('bundle', !!pd.hasBundle, '已购买', '未购买');
+            setRow('badge', !!pd.seasonBadgeOwned, '已获得', '未获得');
+            var tip = modal.querySelector('.season-purchase-tip');
+            if (tip) tip.style.display = pd.isPremium ? 'none' : '';
+
+            // 阶段奖励六行状态（顺序与 PASS_PHASE_REWARDS 一致）
+            if (typeof PASS_PHASE_REWARDS !== 'undefined') {
+                var phaseRows = modal.querySelectorAll('.season-phase-item');
+                for (var i = 0; i < phaseRows.length && i < PASS_PHASE_REWARDS.length; i++) {
+                    var node = PASS_PHASE_REWARDS[i];
+                    var stateEl = phaseRows[i].querySelector('.season-phase-state');
+                    if (!stateEl) continue;
+                    var claimed = !!(pd.phaseRewardsClaimed && pd.phaseRewardsClaimed[node.level]);
+                    var cls, label;
+                    if (claimed) { cls = 'claimed'; label = '已领取'; }
+                    else if (!unlocked) { cls = 'locked'; label = '需购买'; }
+                    else if (curLevel >= node.level) { cls = 'ready'; label = '可领取'; }
+                    else { cls = 'locked'; label = '未达成'; }
+                    stateEl.className = 'season-phase-state season-phase-' + cls;
+                    stateEl.textContent = label;
+                }
+            }
+
+            // 等级进度头部付费/免费徽章
+            var badge = modal.querySelector('.season-free-badge');
+            if (badge && pd.isPremium) {
+                badge.className = 'season-premium-badge';
+                badge.innerHTML = '<i class="fas fa-gem"></i> 付费通行证';
+            }
+        }
+        window.addEventListener('passPurchaseUpdated', _refreshCardSeasonPurchaseUI);
+
         // 关闭用户名片模态框
         function closeUserCardModal() {
             var userCardModal = document.getElementById('userCardModal');
@@ -36199,6 +37687,7 @@
                 profile: { visible: true, order: 1, name: '个人资料', icon: 'fas fa-user' },
                 growth: { visible: true, order: 2, name: '成长', icon: 'fas fa-crown' },
                 achievements: { visible: true, order: 3, name: '成就', icon: 'fas fa-trophy' },
+                season: { visible: true, order: 3.5, name: '赛季', icon: 'fas fa-flag-checkered' },
                 stats: { visible: true, order: 4, name: '统计', icon: 'fas fa-chart-bar' },
                 collection: { visible: true, order: 5, name: '收藏', icon: 'fas fa-heart' },
                 friends: { visible: true, order: 6, name: '好友', icon: 'fas fa-user-friends' }
@@ -36218,6 +37707,15 @@
                 achievements: {
                     completion: { visible: true, order: 1, name: '成就完成度', icon: 'fas fa-percentage' },
                     gameDetails: { visible: true, order: 2, name: '游戏成就详情', icon: 'fas fa-gamepad' }
+                },
+                season: {
+                    seasonInfo: { visible: true, order: 1, name: '赛季信息', icon: 'fas fa-flag-checkered' },
+                    levelProgress: { visible: true, order: 2, name: '通行证等级进度', icon: 'fas fa-level-up-alt' },
+                    seasonCompletion: { visible: true, order: 3, name: '赛季完成度', icon: 'fas fa-chart-pie' },
+                    taskProgress: { visible: true, order: 4, name: '任务进度', icon: 'fas fa-tasks' },
+                    phaseRewards: { visible: true, order: 5, name: '阶段奖励', icon: 'fas fa-gift' },
+                    purchaseStatus: { visible: true, order: 6, name: '购买状态', icon: 'fas fa-shopping-cart' },
+                    quickActions: { visible: true, order: 7, name: '快捷操作', icon: 'fas fa-bolt' }
                 },
                 stats: {
                     gameStats: { visible: true, order: 1, name: '游戏统计', icon: 'fas fa-gamepad' },
@@ -36936,6 +38434,184 @@
                 #userCardModal .game-achievement-progress-fill {
                     background: linear-gradient(90deg, ${style.accentColor}, ${style.accentColor}cc) !important;
                 }
+                /* ===== 赛季标签页跟随名片主题 ===== */
+                /* 赛季信息横幅 */
+                #userCardModal .season-hero {
+                    background: linear-gradient(135deg, ${style.accentColor}1f 0%, ${style.accentColor}0f 60%, ${style.subtextColor}14 100%) !important;
+                    border-color: ${style.accentColor}4d !important;
+                }
+                #userCardModal .season-hero-crown {
+                    background: linear-gradient(135deg, ${style.accentColor} 0%, ${style.accentColor}b3 100%) !important;
+                    box-shadow: 0 4px 14px ${style.accentColor}59 !important;
+                }
+                #userCardModal .season-hero-name { color: ${style.textColor} !important; }
+                #userCardModal .season-hero-nameen { color: ${style.subtextColor} !important; }
+                #userCardModal .season-hero-times span { color: ${style.subtextColor} !important; }
+                #userCardModal .season-hero-times i { color: ${style.accentColor} !important; }
+                #userCardModal .season-hero-countdown {
+                    background: ${style.accentColor}1a !important;
+                    border-color: ${style.accentColor}40 !important;
+                }
+                #userCardModal .season-countdown-title { color: ${style.subtextColor} !important; }
+                #userCardModal .season-cd-num {
+                    background: linear-gradient(135deg, ${style.accentColor} 0%, ${style.accentColor}cc 100%) !important;
+                }
+                #userCardModal .season-countdown-nums i { color: ${style.subtextColor} !important; }
+                /* 免费通行证徽章跟随主题强调色（付费徽章保留金色语义） */
+                #userCardModal .season-free-badge {
+                    background: ${style.accentColor}1f !important;
+                    color: ${style.accentColor} !important;
+                    border-color: ${style.accentColor}4d !important;
+                }
+                /* 通行证等级进度 */
+                #userCardModal .season-level-big {
+                    background: linear-gradient(135deg, ${style.accentColor} 0%, ${style.accentColor}b3 100%) !important;
+                    box-shadow: 0 4px 14px ${style.accentColor}59 !important;
+                }
+                #userCardModal .season-exp-value { color: ${style.accentColor} !important; }
+                #userCardModal .season-level-bar { background: ${style.subtextColor}26 !important; }
+                #userCardModal .season-level-bar-fill {
+                    background: linear-gradient(90deg, ${style.accentColor}, ${style.accentColor}b3) !important;
+                }
+                /* 赛季总等级进度条保留金色语义 */
+                #userCardModal .season-cap-fill {
+                    background: linear-gradient(90deg, #ffe08a, #ffb347, #ff9d2e) !important;
+                }
+                #userCardModal .season-level-cap span { color: ${style.subtextColor} !important; }
+                #userCardModal .season-level-cap span:last-child { color: ${style.accentColor} !important; }
+                #userCardModal .season-ex-note {
+                    background: ${style.accentColor}1a !important;
+                    border-color: ${style.accentColor}59 !important;
+                    color: ${style.textColor} !important;
+                }
+                /* 赛季完成度（圆环保留金色语义呼应通行证） */
+                #userCardModal .season-completion-overall {
+                    background: linear-gradient(135deg, ${style.accentColor}1a 0%, ${style.accentColor}0d 100%) !important;
+                    border-color: ${style.accentColor}40 !important;
+                }
+                #userCardModal .season-sc-track { stroke: ${style.subtextColor}33 !important; }
+                #userCardModal .season-completion-note { color: ${style.subtextColor} !important; }
+                /* 完成度/任务/阶段/购买方框：主题强调色淡染底 + 主题文字 */
+                #userCardModal .season-dim-item,
+                #userCardModal .season-task-card,
+                #userCardModal .season-phase-item,
+                #userCardModal .season-purchase-item {
+                    background: linear-gradient(135deg, ${style.accentColor}1a 0%, ${style.accentColor}0a 100%) !important;
+                    border-color: ${style.accentColor}33 !important;
+                }
+                #userCardModal .season-dim-title,
+                #userCardModal .season-task-name,
+                #userCardModal .season-phase-name,
+                #userCardModal .season-purchase-name {
+                    color: ${style.textColor} !important;
+                }
+                #userCardModal .season-dim-detail,
+                #userCardModal .season-task-count,
+                #userCardModal .season-task-foot,
+                #userCardModal .season-phase-lv {
+                    color: ${style.subtextColor} !important;
+                }
+                #userCardModal .season-dim-pct { color: ${style.accentColor} !important; }
+                #userCardModal .season-dim-bar { background: ${style.subtextColor}26 !important; }
+                #userCardModal .season-task-card:hover {
+                    background: linear-gradient(135deg, ${style.accentColor}2e 0%, ${style.accentColor}14 100%) !important;
+                    border-color: ${style.accentColor} !important;
+                }
+                #userCardModal .season-purchase-item > i { color: ${style.accentColor} !important; }
+                /* 阶段奖励状态：可领取跟随主题强调色，锁定/未购买用主题次级色（已领取/已购买保留绿色语义） */
+                #userCardModal .season-phase-ready {
+                    background: linear-gradient(135deg, ${style.accentColor}, ${style.accentColor}cc) !important;
+                    box-shadow: 0 2px 8px ${style.accentColor}59 !important;
+                }
+                #userCardModal .season-phase-locked,
+                #userCardModal .season-purchase-state.off {
+                    background: ${style.subtextColor}1f !important;
+                    color: ${style.subtextColor} !important;
+                }
+                /* 可点击的阶段奖励/购买状态行 hover 与右侧箭头跟随主题 */
+                #userCardModal .season-phase-clickable:hover {
+                    background: linear-gradient(135deg, ${style.accentColor}2e 0%, ${style.accentColor}14 100%) !important;
+                    border-color: ${style.accentColor} !important;
+                    box-shadow: 0 3px 10px ${style.accentColor}33 !important;
+                }
+                #userCardModal .season-purchase-clickable:hover {
+                    background: linear-gradient(135deg, ${style.accentColor}2e 0%, ${style.accentColor}14 100%) !important;
+                    border-color: ${style.accentColor} !important;
+                    box-shadow: 0 3px 10px ${style.accentColor}33 !important;
+                }
+                #userCardModal .season-purchase-arrow { color: ${style.subtextColor} !important; }
+                #userCardModal .season-purchase-clickable:hover .season-purchase-arrow {
+                    color: ${style.accentColor} !important;
+                }
+                #userCardModal .season-purchase-tip {
+                    background: ${style.accentColor}14 !important;
+                    border-color: ${style.accentColor}59 !important;
+                    color: ${style.textColor} !important;
+                }
+                #userCardModal .season-purchase-tip i { color: ${style.accentColor} !important; }
+                /* 快捷操作按钮：主题强调色渐变（一键领取保留金色语义） */
+                #userCardModal .season-quick-btn {
+                    background: linear-gradient(135deg, ${style.accentColor} 0%, ${style.accentColor}b3 100%) !important;
+                    box-shadow: 0 3px 10px ${style.accentColor}40 !important;
+                }
+                #userCardModal .season-quick-btn:hover {
+                    box-shadow: 0 6px 16px ${style.accentColor}73 !important;
+                }
+                #userCardModal .season-quick-gold {
+                    background: linear-gradient(135deg, #ffb347 0%, #ff9d2e 100%) !important;
+                    box-shadow: 0 3px 10px #ff9d2e4d !important;
+                }
+                #userCardModal .season-quick-gold:hover {
+                    box-shadow: 0 6px 16px #ff9d2e73 !important;
+                }
+                /* ===== 游戏成就条目内联展示区跟随名片主题 ===== */
+                #userCardModal .game-achievement-card.selected {
+                    background: linear-gradient(135deg, ${style.accentColor}2e 0%, ${style.accentColor}14 100%) !important;
+                    box-shadow: inset 0 0 0 2px ${style.accentColor} !important;
+                }
+                #userCardModal .game-ach-divider {
+                    background: ${style.borderColor} !important;
+                }
+                #userCardModal .game-ach-detail-hint {
+                    border-color: ${style.accentColor}4d !important;
+                    color: ${style.subtextColor} !important;
+                }
+                #userCardModal .game-ach-detail-hint i { color: ${style.accentColor} !important; }
+                #userCardModal .game-ach-detail-head {
+                    background: linear-gradient(135deg, ${style.accentColor}1a 0%, ${style.accentColor}0d 100%) !important;
+                    border-color: ${style.accentColor}40 !important;
+                }
+                #userCardModal .game-ach-detail-name { color: ${style.textColor} !important; }
+                #userCardModal .game-ach-detail-progress { color: ${style.subtextColor} !important; }
+                #userCardModal .game-ach-detail-bar { background: ${style.subtextColor}26 !important; }
+                #userCardModal .game-ach-detail-bar-fill {
+                    background: linear-gradient(90deg, ${style.accentColor}, ${style.accentColor}b3) !important;
+                }
+                #userCardModal .game-achievement-list-item {
+                    background: linear-gradient(135deg, ${style.accentColor}1a 0%, ${style.accentColor}0a 100%) !important;
+                    border-color: ${style.accentColor}33 !important;
+                }
+                #userCardModal .game-achievement-list-item.unlocked {
+                    background: linear-gradient(135deg, ${style.accentColor}2e 0%, ${style.accentColor}14 100%) !important;
+                    border-color: ${style.accentColor}4d !important;
+                }
+                #userCardModal .game-achievement-list-name { color: ${style.textColor} !important; }
+                #userCardModal .game-achievement-list-desc { color: ${style.subtextColor} !important; }
+                #userCardModal .status-locked {
+                    background: ${style.subtextColor}1f !important;
+                    color: ${style.subtextColor} !important;
+                }
+                /* 赛季未开始/已结束 hero 跟随主题 */
+                #userCardModal .season-hero-inactive {
+                    background: linear-gradient(135deg, ${style.subtextColor}26 0%, ${style.subtextColor}14 100%) !important;
+                    border-color: ${style.subtextColor}59 !important;
+                }
+                #userCardModal .season-hero-inactive .season-hero-crown {
+                    background: linear-gradient(135deg, ${style.subtextColor} 0%, ${style.subtextColor}cc 100%) !important;
+                    box-shadow: 0 4px 14px ${style.subtextColor}59 !important;
+                }
+                #userCardModal .season-hero-await { color: ${style.subtextColor} !important; }
+                #userCardModal .season-hero-await i { color: ${style.subtextColor} !important; }
             `;
 
             var existingStyle = document.getElementById('card-style-applied');
@@ -36978,7 +38654,7 @@
         // 渲染标签页管理列表
         function renderTabManagementList(config) {
             var container = document.getElementById('tabManagementList');
-            var tabOrder = ['profile', 'growth', 'achievements', 'stats', 'collection', 'friends'];
+            var tabOrder = ['profile', 'growth', 'achievements', 'season', 'stats', 'collection', 'friends'];
             
             var sortedTabs = tabOrder
                 .filter(function(id) { return config.tabs[id]; })
@@ -37050,7 +38726,7 @@
         // 渲染章节管理列表
         function renderSectionManagementList(config) {
             var container = document.getElementById('sectionManagementList');
-            var tabOrder = ['profile', 'growth', 'achievements', 'stats', 'collection', 'friends'];
+            var tabOrder = ['profile', 'growth', 'achievements', 'season', 'stats', 'collection', 'friends'];
 
             container.innerHTML = tabOrder.map(function(tabId) {
                 if (!config.sections[tabId]) return '';
@@ -37503,7 +39179,7 @@ ID：${user ? user.userId : '---'}
             }
         });
         
-        // 显示游戏成就详情（弹窗版本）
+        // 显示游戏成就详情（名片内联版本，点击游戏卡片后在下方展示条目）
         function showGameAchievement(gameCode) {
             // 游戏基础信息配置（成就ID必须与account-settings.js中一致）
             var gameConfigs = {
@@ -37666,41 +39342,34 @@ ID：${user ? user.userId : '---'}
                 showToastInfo('未找到游戏配置');
                 return;
             }
-            
+
+            var detailArea = document.getElementById('gameAchDetailArea');
+            if (!detailArea) return;
+
             // 获取用户数据
             var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             var user = users.find(function(u) {
                 return u.username === currentUser.username;
             });
-            
+
             // 获取已解锁成就ID列表
             var unlockedIds = [];
             if (user && user.gameData) {
-                if (gameCode === 'fk') {
-                    unlockedIds = user.gameData.achievements || [];
-                } else {
-                    unlockedIds = user.gameData[config.dataKey] || [];
-                }
+                unlockedIds = user.gameData[config.dataKey] || [];
             }
-            
+
             var completedCount = unlockedIds.length;
             var total = config.total;
             var completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
-            
-            // 填充弹窗头部
-            var iconEl = document.getElementById('gameAchievementModalIcon');
-            iconEl.style.background = config.iconBg;
-            iconEl.innerHTML = '<i class="' + config.icon + '"></i>';
-            
-            document.getElementById('gameAchievementModalName').textContent = config.name;
-            document.getElementById('gameAchievementModalProgress').textContent = completedCount + '/' + total;
-            document.getElementById('gameAchievementModalPercent').textContent = completionRate + '%';
-            document.getElementById('gameAchievementModalFill').style.width = completionRate + '%';
-            
-            // 生成成就列表HTML（使用indexOf检测ID是否在已解锁列表中）
-            var bodyEl = document.getElementById('gameAchievementModalBody');
-            bodyEl.innerHTML = config.achievements.map(function(ach) {
+
+            // 选中态：高亮当前游戏卡片，其余取消
+            document.querySelectorAll('#userCardModal .game-achievement-card').forEach(function(card) {
+                card.classList.toggle('selected', card.getAttribute('data-game') === gameCode);
+            });
+
+            // 生成成就条目列表HTML（使用indexOf检测ID是否在已解锁列表中）
+            var entriesHtml = config.achievements.map(function(ach) {
                 var isUnlocked = unlockedIds.indexOf(ach.id) >= 0;
                 return '<div class="game-achievement-list-item ' + (isUnlocked ? 'unlocked' : 'locked') + '">' +
                     '<div class="game-achievement-list-icon">' +
@@ -37711,19 +39380,24 @@ ID：${user ? user.userId : '---'}
                         '<div class="game-achievement-list-desc">' + ach.desc + '</div>' +
                     '</div>' +
                     '<div class="game-achievement-list-status">' +
-                        (isUnlocked 
-                            ? '<span class="status-unlocked"><i class="fas fa-check-circle"></i> 已解锁</span>' 
+                        (isUnlocked
+                            ? '<span class="status-unlocked"><i class="fas fa-check-circle"></i> 已解锁</span>'
                             : '<span class="status-locked"><i class="fas fa-lock"></i> 未解锁</span>') +
                     '</div>' +
                 '</div>';
             }).join('');
-            
-            // 显示弹窗（清除残留关闭类）
-            var modal = document.getElementById('gameAchievementModal');
-            if (modal) {
-                modal.classList.remove('modal-closing');
-                modal.style.display = 'flex';
-            }
+
+            // 内联渲染到游戏成就详情卡片底部（概要头部 + 条目列表，不弹出弹窗）
+            detailArea.innerHTML =
+                '<div class="game-ach-detail-head">' +
+                    '<div class="game-ach-detail-icon" style="background: ' + config.iconBg + ';"><i class="' + config.icon + '"></i></div>' +
+                    '<div class="game-ach-detail-summary">' +
+                        '<span class="game-ach-detail-name">' + config.name + ' · 成就条目</span>' +
+                        '<span class="game-ach-detail-progress">' + completedCount + '/' + total + ' 已解锁 · ' + completionRate + '%</span>' +
+                    '</div>' +
+                    '<div class="game-ach-detail-bar"><div class="game-ach-detail-bar-fill" style="width: ' + completionRate + '%;"></div></div>' +
+                '</div>' +
+                '<div class="game-ach-detail-list">' + entriesHtml + '</div>';
         }
 
         // ==================== 引导功能 ====================
