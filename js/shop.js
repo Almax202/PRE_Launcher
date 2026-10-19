@@ -79,14 +79,14 @@ var SHOP_ITEM_PRICES = {
         note: '每周限购 2 张，解锁错过的签到奖励'
     },
 
-    // ===== 消耗品：幸运币 =====
+    // ===== 消耗品：幸运币（幸运抽奖机投币使用） =====
     luck_coin: {
         price: 100,
         discount: 0,
         stock: 3,
         stockType: 'daily',
         enabled: true,
-        note: '每日限购 3 枚，下一次提取稀有项概率翻倍'
+        note: '每日限购 3 枚，在幸运抽奖机投币口使用：提升普通档位奖品概率（上限 75%）'
     },
 
     // ===== 消耗品：经验值补给卡 =====
@@ -1507,26 +1507,35 @@ function renderShopUI() {
         });
     });
 
+    // 可购买物品卡 ± 步进：单击一次一步，长按可快速批量增减（bindHoldRepeat 由 warehouse.js 提供）
     content.querySelectorAll('.shop-qty-minus').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var id = btn.getAttribute('data-id');
+        var id = btn.getAttribute('data-id');
+        var step = function() {
             var input = document.getElementById('shopQty_' + id);
             if (!input) return;
             input.value = Math.max(1, (parseInt(input.value, 10) || 1) - 1);
             _shopUpdateTotalPrice(id, input.value);
-        });
+        };
+        if (typeof window.bindHoldRepeat === 'function') {
+            window.bindHoldRepeat(btn, step, { stopPropagation: true });
+        } else {
+            btn.addEventListener('click', function(e) { e.stopPropagation(); step(); });
+        }
     });
     content.querySelectorAll('.shop-qty-plus').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var id = btn.getAttribute('data-id');
+        var id = btn.getAttribute('data-id');
+        var step = function() {
             var input = document.getElementById('shopQty_' + id);
             var maxV = Math.min(99, getShopStockRemaining(id));
             if (!input) return;
             input.value = Math.min(maxV, (parseInt(input.value, 10) || 1) + 1);
             _shopUpdateTotalPrice(id, input.value);
-        });
+        };
+        if (typeof window.bindHoldRepeat === 'function') {
+            window.bindHoldRepeat(btn, step, { stopPropagation: true });
+        } else {
+            btn.addEventListener('click', function(e) { e.stopPropagation(); step(); });
+        }
     });
     content.querySelectorAll('.shop-qty-input').forEach(function(input) {
         input.addEventListener('change', function() {

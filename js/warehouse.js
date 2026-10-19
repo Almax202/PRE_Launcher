@@ -80,16 +80,101 @@ var WAREHOUSE_ITEMS = {
     makeup_card: {
         name: '补签卡', icon: 'fas fa-calendar-plus', color: '#e67e22',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '在部分签到活动中可使用该补签卡即可解锁未被解锁的奖励卡，并领取该天奖励。',
+        desc: '在每日签到中可进行补签（每日最多两次），在部分签到活动中可使用该补签卡解锁未被签到的奖励卡，并领取该天奖励。',
         flavorText: '错过的时光终究无法倒流，但这张卡可以为你轻轻补上那一天的印记。\n——认真对待每一天的人，也值得被每一天温柔以待。',
         source: '活动奖励 / 邮件附件', usable: false
     },
     luck_coin: {
         name: '幸运币', icon: 'fas fa-dice-five', color: '#f1c40f',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '使用后激活幸运状态：下一次提取时稀有项概率翻倍（自动消耗1枚）。',
+        desc: '可在幸运抽奖机投币口投入（效果与「幸运币 · 普通」一致）：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%。（自新版起不再对抽卡模拟器生效）',
         flavorText: '把它轻轻抛起的那一刻，仿佛连概率女神都忍不住多看了你一眼。\n——所谓幸运，不过是机会恰好遇见了相信它的人。',
-        source: '百宝箱 / 活动奖励', usable: true
+        source: '商店 / 新手组合包', usable: false
+    },
+    luck_coin_common: {
+        name: '幸运币 · 普通', icon: 'fas fa-coins', color: '#95a5a6',
+        category: 'consumable', rarity: 'common', showSource: true,
+        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%（超出部分无效）。',
+        flavorText: '一枚朴素的银色硬币，却能让平凡的时刻悄悄偏向你。\n——幸运从不喧哗，它只是站在你这边。',
+        source: '签到（前半月）/ 通行证 1-30 级 / 自选兑换卡', usable: false
+    },
+    luck_coin_rare: {
+        name: '幸运币 · 稀有', icon: 'fas fa-coins', color: '#f1c40f',
+        category: 'consumable', rarity: 'rare', showSource: true,
+        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时稀有奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；稀有档位奖励合计概率上限 65%（超出部分无效）。',
+        flavorText: '金色纹路在币面上流转，命运的天平开始微微倾斜。\n——它会记得每一次被投入投币口的瞬间。',
+        source: '签到（后半月）/ 通行证 31-60 级 / 自选兑换卡', usable: false
+    },
+    luck_coin_epic: {
+        name: '幸运币 · 史诗', icon: 'fas fa-coins', color: '#9b59b6',
+        category: 'consumable', rarity: 'epic', showSource: true,
+        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时史诗奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；史诗档位奖励合计概率上限 40%（超出部分无效）。',
+        flavorText: '紫色的微光自币心升起，那是对更高处的一次郑重邀请。\n——史诗从不轻易现身，除非你足够诚心。',
+        source: '通行证 61-90 级 / 自选兑换卡', usable: false
+    },
+    luck_coin_legend: {
+        name: '幸运币 · 传说', icon: 'fas fa-coins', color: '#e67e22',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时传说奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；传说档位奖励合计概率上限 25%（超出部分无效）。',
+        flavorText: '炽金的光晕包裹着这枚传说中的硬币，投下的刹那，整台抽奖机都会为之震颤。\n——传说的门槛很高，但幸运女神此刻正注视着你。',
+        source: '通行证 91-120 级 / 自选兑换卡', usable: false
+    },
+    // ---- 幸运币 袋 / 盒（开箱型道具：随机开出对应档位幸运币；暂不加入自选物品兑换卡）----
+    luck_bag_common: {
+        name: '一袋幸运币 · 普通', icon: 'fas fa-shopping-bag', color: '#95a5a6',
+        category: 'consumable', rarity: 'common', showSource: true,
+        desc: '使用后随机开出 3~5 枚「幸运币 · 普通」。幸运币可在幸运抽奖机投币口投入：下一次抽取时普通奖品概率提升（普通档位合计概率上限 75%）。',
+        flavorText: '沉甸甸的一小袋银币，倒出来时叮当作响。\n——幸运这东西，有时候也论袋卖。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_common', min: 3, max: 5 }
+    },
+    luck_bag_rare: {
+        name: '一袋幸运币 · 稀有', icon: 'fas fa-shopping-bag', color: '#f1c40f',
+        category: 'consumable', rarity: 'rare', showSource: true,
+        desc: '使用后随机开出 3~5 枚「幸运币 · 稀有」。幸运币可在幸运抽奖机投币口投入：下一次抽取时稀有奖品概率提升（稀有档位合计概率上限 65%）。',
+        flavorText: '袋口微微透出金光，掂一掂就知道今天手气不错。\n——好运成串而来时，记得接稳。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_rare', min: 3, max: 5 }
+    },
+    luck_bag_epic: {
+        name: '一袋幸运币 · 史诗', icon: 'fas fa-shopping-bag', color: '#9b59b6',
+        category: 'consumable', rarity: 'epic', showSource: true,
+        desc: '使用后随机开出 3~5 枚「幸运币 · 史诗」。幸运币可在幸运抽奖机投币口投入：下一次抽取时史诗奖品概率提升（史诗档位合计概率上限 40%）。',
+        flavorText: '紫色的雾气从袋口的缝隙里溢出来，隐约有雷鸣般的低吟。\n——史诗的分量，从来压不住袋口的绳结。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_epic', min: 3, max: 5 }
+    },
+    luck_bag_legend: {
+        name: '一袋幸运币 · 传说', icon: 'fas fa-shopping-bag', color: '#e67e22',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用后随机开出 3~5 枚「幸运币 · 传说」。幸运币可在幸运抽奖机投币口投入：下一次抽取时传说奖品概率提升（传说档位合计概率上限 25%）。',
+        flavorText: '据说这袋硬币在铸造时曾浸入流星坠落的余烬。\n——解开绳结的瞬间，连时间都会屏住呼吸。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_legend', min: 3, max: 5 }
+    },
+    luck_box_common: {
+        name: '一盒幸运币 · 普通', icon: 'fas fa-box-open', color: '#95a5a6',
+        category: 'consumable', rarity: 'common', showSource: true,
+        desc: '使用后随机开出 10~30 枚「幸运币 · 普通」。幸运币可在幸运抽奖机投币口投入：下一次抽取时普通奖品概率提升（普通档位合计概率上限 75%）。',
+        flavorText: '整整齐齐码放的一盒银币，开盖时像是打开了一小片星空。\n——量变引起质变，幸运也不例外。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_common', min: 10, max: 30 }
+    },
+    luck_box_rare: {
+        name: '一盒幸运币 · 稀有', icon: 'fas fa-box-open', color: '#f1c40f',
+        category: 'consumable', rarity: 'rare', showSource: true,
+        desc: '使用后随机开出 10~30 枚「幸运币 · 稀有」。幸运币可在幸运抽奖机投币口投入：下一次抽取时稀有奖品概率提升（稀有档位合计概率上限 65%）。',
+        flavorText: '盒盖开启的刹那，金色的反光晃得人睁不开眼。\n——这不是钱，这是排面。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_rare', min: 10, max: 30 }
+    },
+    luck_box_epic: {
+        name: '一盒幸运币 · 史诗', icon: 'fas fa-box-open', color: '#9b59b6',
+        category: 'consumable', rarity: 'epic', showSource: true,
+        desc: '使用后随机开出 10~30 枚「幸运币 · 史诗」。幸运币可在幸运抽奖机投币口投入：下一次抽取时史诗奖品概率提升（史诗档位合计概率上限 40%）。',
+        flavorText: '盒子很轻，分量却压手——紫电在币面上游走不散。\n——雷雨天请勿开启（开玩笑的）。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_epic', min: 10, max: 30 }
+    },
+    luck_box_legend: {
+        name: '一盒幸运币 · 传说', icon: 'fas fa-box-open', color: '#e67e22',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用后随机开出 10~30 枚「幸运币 · 传说」。幸运币可在幸运抽奖机投币口投入：下一次抽取时传说奖品概率提升（传说档位合计概率上限 25%）。',
+        flavorText: '传说中，抽奖机曾为这一盒硬币单独亮过一次整排的灯。\n——打开它，然后去改写概率。',
+        source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_legend', min: 10, max: 30 }
     },
     exp_supply_1: {
         name: '经验值补给卡 Ⅰ', icon: 'fas fa-star', color: '#3498db',
@@ -158,7 +243,7 @@ var WAREHOUSE_ITEMS = {
     exchange_card: {
         name: '自选物品兑换卡', icon: 'fas fa-gift', color: '#16a085',
         category: 'consumable', rarity: 'legendary', showSource: true,
-        desc: '使用该兑换卡后可以任选一个当前版本在商店内正在售卖的物品进行兑换获取。（包括未来新加入的物品（不含特殊物品）；该兑换卡不包含也不能兑换商店内所有的组合包）',
+        desc: '使用该兑换卡后可以任选一个当前版本可兑换的物品并获取到仓库。（包括未来新加入的物品（不含特殊物品）；该兑换卡不包含也不能兑换商店内所有的组合包）',
         flavorText: '「你想要什么？」——这一次，选择权完全握在你自己手中。\n——世间最珍贵的从来不是礼物本身，而是握在手中的选择权。',
         source: '特殊补偿 / 活动奖励', usable: true, _exchangeCard: true
     },
@@ -188,14 +273,14 @@ var WAREHOUSE_ITEMS = {
     diligent_medal: {
         name: '勤奋者勋章', icon: 'fas fa-ribbon', color: '#27ae60',
         category: 'badge', rarity: 'legendary', showSource: true,
-        desc: '授予连续签到满180天用户的荣誉勋章，镌刻着持之以恒的勤奋。',
+        desc: '在签到里程碑「标准阶段」中，授予累计签到满180天用户的荣誉勋章，镌刻着持之以恒的勤奋。',
         flavorText: '一百八十个日夜未曾间断——勤奋从来不是一时兴起，而是一种习惯。\n——所有看似轻松的毫不费力，背后都是不为人知的坚持。',
         source: '签到里程碑 · 连续签到180天', usable: false
     },
     persistent_medal: {
         name: '坚持者勋章', icon: 'fas fa-gem', color: '#9b59b6',
         category: 'badge', rarity: 'legendary', showSource: true,
-        desc: '授予连续签到满365天用户的至高荣誉勋章，见证一整年的不懈坚持。',
+        desc: '在签到里程碑「标准阶段」中，授予累计签到满365天用户的至高荣誉勋章，见证你的持续支持和贡献。',
         flavorText: '三百六十五天的坚持，让这枚勋章拥有了比宝石更璀璨的重量。\n——能把一件事重复三百六十五天的人，本身就已是传奇。',
         source: '签到里程碑 · 连续签到365天', usable: false
     },
@@ -209,14 +294,14 @@ var WAREHOUSE_ITEMS = {
     untiring_medal: {
         name: '不懈者勋章', icon: 'fas fa-fire', color: '#e74c3c',
         category: 'badge', rarity: 'legendary', showSource: true,
-        desc: '授予阶段突破模式下累计签到满 365 天用户的至高荣誉勋章，镌刻着跨越 120 级的不懈坚持。',
+        desc: '在签到里程碑「阶段突破」中，授予累计签到满 365 天用户的至高荣誉勋章，上面镌刻着你的不懈坚持。',
         flavorText: '当 60 级的天花板被你亲手打破，又用整整一年把它踩在脚下——这枚勋章，是你给自己的回答。\n——所谓极限，不过是留给不够坚持的人的借口。',
         source: '签到里程碑 · 阶段突破 · 累计签到 365 天', usable: false
     },
     breakthrough_medal: {
         name: '突破者勋章', icon: 'fas fa-meteor', color: '#ff2d55',
         category: 'badge', rarity: 'legendary', showSource: true,
-        desc: '授予阶段突破·极限模式下累计签到满 365 天用户的终极荣誉勋章，见证你突破 200 级极限的传奇征程。',
+        desc: '在签到里程碑「阶段突破 · 极限」中，授予累计签到满 365 天用户的终极荣誉勋章，见证你突破极限的传奇征程。',
         flavorText: '一百二十级只是序章，两百级才是终章——你把所有人眼中的不可能，活成了自己的日常。\n——真正的突破，永远不是抵达终点，而是敢于向终点再迈一步。',
         source: '签到里程碑 · 阶段突破·极限 · 累计签到 365 天', usable: false
     }
@@ -282,13 +367,12 @@ function getWarehouseData() {
                     data.expBuff = null;
                     migrated = true;
                 }
-                if (typeof data.luckyActive === 'undefined') data.luckyActive = false;
                 if (migrated) saveWarehouseData(data); // 迁移结果立即落盘
                 return data;
             }
         } catch (e) {}
     }
-    return { version: WAREHOUSE_DATA_VERSION, items: {}, expBuffs: [], luckyActive: false, timedItems: [], createdAt: new Date().toISOString() };
+    return { version: WAREHOUSE_DATA_VERSION, items: {}, expBuffs: [], timedItems: [], createdAt: new Date().toISOString() };
 }
 
 function saveWarehouseData(data) {
@@ -543,41 +627,6 @@ function activateWarehouseExpBuff(boostType, percent) {
     data.expBuffs = buffs;
     saveWarehouseData(data);
     return { ok: true, refreshed: false };
-}
-
-// 幸运币：激活幸运状态（使用时调用）
-function activateWarehouseLucky() {
-    var data = getWarehouseData();
-    data.luckyActive = true;
-    saveWarehouseData(data);
-}
-
-// 幸运币：提取时调用——若幸运状态激活则消耗1枚幸运币并返回true（仅提升一次）
-// 支持普通幸运币和限时幸运币
-function warehouseTakeLuckyBoost() {
-    var data = getWarehouseData();
-    if (!data.luckyActive) return false;
-    // 优先扣普通幸运币
-    if (data.items['luck_coin']) {
-        data.items['luck_coin'].qty -= 1;
-        if (data.items['luck_coin'].qty <= 0) delete data.items['luck_coin'];
-        data.luckyActive = false;
-        saveWarehouseData(data);
-        return true;
-    }
-    // 否则扣限时幸运币
-    var timedList = getActiveTimedItems().filter(function(t) { return t.itemId === 'luck_coin' && t.qty > 0; });
-    timedList.sort(function(a, b) { return new Date(a.expiresAt) - new Date(b.expiresAt); });
-    if (timedList.length > 0) {
-        warehouseUseTimedItem(timedList[0].uid);
-        data.luckyActive = false;
-        saveWarehouseData(data);
-        return true;
-    }
-    // 都没有了，关闭幸运状态
-    data.luckyActive = false;
-    saveWarehouseData(data);
-    return false;
 }
 
 // 补签卡：解锁活动签到的指定天（写入 makeupDays，仅解锁该天）
@@ -1075,15 +1124,14 @@ function useWarehouseItem(itemId, timedUid) {
         }
     }
 
-    // 批量使用弹窗：持有数量 > 1 且非加成卡（同类型不可叠加，批量无意义）、非幸运币（一次性布尔标记，批量浪费）、非兑换卡时弹出
+    // 批量使用弹窗：持有数量 > 1 且非加成卡（同类型不可叠加，批量无意义）、非兑换卡时弹出
     var ownedQty = timedEntry ? timedEntry.qty : normalEntry.qty;
-    if (ownedQty > 1 && !item._exchangeCard && !item._boostType && itemId !== 'luck_coin') {
+    if (ownedQty > 1 && !item._exchangeCard && !item._boostType) {
         showWarehouseBatchUseModal(itemId, timedUid, ownedQty);
         return true;
     }
 
     var isBoost = item._boostType && typeof item._boostPercent === 'number';
-    var isLucky = itemId === 'luck_coin';
     var expGain = item._expGain || null;
     var precoinGain = item._precoinGain || null;
 
@@ -1161,14 +1209,31 @@ function useWarehouseItem(itemId, timedUid) {
     // 先消耗道具
     deductOne();
 
+    // 幸运币 袋 / 盒：随机开出对应档位幸运币并直接存入仓库
+    if (item._luckPack && item._luckPack.coinId) {
+        var lp = item._luckPack;
+        var openN = lp.min + Math.floor(Math.random() * (lp.max - lp.min + 1));
+        var coinItem = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS[lp.coinId] : null;
+        if (openN > 0 && typeof warehouseAddItem === 'function') {
+            warehouseAddItem(lp.coinId, openN, '仓库道具：' + item.name, true);
+        }
+        if (typeof showToast === 'function') {
+            showToast({ type: 'success', title: '幸运币开箱', message: '「' + item.name + '」已使用，随机开出 ' + openN + ' 枚「' + (coinItem ? coinItem.name : lp.coinId) + '」，已存入仓库' });
+        }
+        renderWarehouseItems();
+        return true;
+    }
+
+    // 经验值补给：记录使用前等级快照（补给反馈弹窗用）
+    var _expBefore = (expGain !== null && typeof _whGetLevelSnapshot === 'function') ? _whGetLevelSnapshot() : null;
+
     // 再激活效果（避免旧数据覆盖）
-    if (isLucky) {
-        activateWarehouseLucky();
-    } else if (expGain !== null) {
+    if (expGain !== null) {
         if (typeof addCheckinExp === 'function') {
             addCheckinExp(expGain);
         } else {
             console.warn('[Warehouse] addCheckinExp not available, exp supply skipped:', expGain);
+            _expBefore = null;
         }
     }
     // PRE Coin 补给：与经验值补给独立分支处理（支持综合补给包同时发放经验+硬币）
@@ -1181,10 +1246,19 @@ function useWarehouseItem(itemId, timedUid) {
         }
     }
 
+    // 经验值补给反馈弹窗（替代经验 toast）：动态进度条展示本次增加的经验值/等级
+    if (expGain !== null && _expBefore && typeof _whShowExpSupplyModal === 'function') {
+        var _expAfter = _whGetLevelSnapshot();
+        if (_expAfter.totalExp > _expBefore.totalExp) {
+            _whShowExpSupplyModal(item, 1, _expBefore, _expAfter, precoinGain || 0);
+            renderWarehouseItems();
+            return true;
+        }
+        // 快照异常（经验未增加）时回落到下方 toast 提示
+    }
+
     if (typeof showToast === 'function') {
-        if (isLucky) {
-            showToast({ type: 'success', title: '幸运状态', message: '幸运币已激活：下一次提取时稀有项概率翻倍（自动消耗）' });
-        } else if (expGain !== null && precoinGain !== null) {
+        if (expGain !== null && precoinGain !== null) {
             showToast({ type: 'success', title: '综合补给', message: '「' + item.name + '」已使用，获得 ' + expGain + ' 点经验值和 ' + precoinGain + ' PRE Coin，均已生效' });
         } else if (expGain !== null) {
             showToast({ type: 'success', title: '经验值补给', message: '「' + item.name + '」已使用，获得 ' + expGain + ' 点经验值，已对账户等级生效' });
@@ -1195,6 +1269,52 @@ function useWarehouseItem(itemId, timedUid) {
     renderWarehouseItems();
     return true;
 }
+
+// ==================== 长按连发工具（仓库 / 商店 / 通行证 ± 步进按钮共用） ====================
+// 单击一次步进一次；按住约 420ms 后进入连发模式，步进间隔逐渐缩短（110ms → 45ms）。
+// 长按松开时抑制随之而来的 click，避免多走一步。opts.stopPropagation 用于卡片内按钮阻止冒泡。
+// 重复调用会刷新步进回调（复用型弹窗每次打开可安全重绑）。
+window.bindHoldRepeat = function(btn, onStep, opts) {
+    if (!btn) return;
+    btn._holdRepeatStep = onStep;
+    var stopPropagation = !!(opts && opts.stopPropagation);
+    if (btn._holdRepeatBound) {
+        btn._holdRepeatStopProp = stopPropagation;
+        return;
+    }
+    btn._holdRepeatBound = true;
+    btn._holdRepeatStopProp = stopPropagation;
+    var holdTimer = null, repeatTimer = null, suppressClick = false;
+    function clearTimers() {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+        if (repeatTimer) { clearTimeout(repeatTimer); repeatTimer = null; }
+    }
+    btn.addEventListener('pointerdown', function(e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        suppressClick = false;
+        holdTimer = setTimeout(function() {
+            suppressClick = true;
+            var delay = 110;
+            var tick = function() {
+                if (typeof btn._holdRepeatStep === 'function') btn._holdRepeatStep();
+                repeatTimer = setTimeout(tick, delay);
+                if (delay > 45) delay = Math.max(45, delay - 6);
+            };
+            tick();
+        }, 420);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev) {
+        btn.addEventListener(ev, clearTimers);
+    });
+    btn.addEventListener('click', function(e) {
+        if (btn._holdRepeatStopProp) e.stopPropagation();
+        if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
+        if (typeof btn._holdRepeatStep === 'function') btn._holdRepeatStep();
+    });
+    btn.addEventListener('contextmenu', function(e) {
+        if (suppressClick) e.preventDefault();
+    });
+};
 
 // ==================== 批量使用弹窗 ====================
 // 当仓库中某物品持有数量 > 1 且可批量使用时，先弹出数量选择弹窗
@@ -1276,7 +1396,7 @@ function showWarehouseBatchUseModal(itemId, timedUid, maxQty) {
         var parts = [];
         if (item._expGain) parts.push((item._expGain * n) + ' 点经验值');
         if (item._precoinGain) parts.push((item._precoinGain * n) + ' PRE Coin');
-        if (itemId === 'luck_coin') parts.push('幸运状态（仅首次激活生效）');
+        if (item._luckPack) parts.push('随机开出 ' + (item._luckPack.min * n) + '~' + (item._luckPack.max * n) + ' 枚幸运币');
         if (parts.length > 0) {
             preview.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> 预计效果：使用 ' + n + ' 次后获得 ' + parts.join('，');
         } else {
@@ -1290,8 +1410,19 @@ function showWarehouseBatchUseModal(itemId, timedUid, maxQty) {
     var maxBtn = modal.querySelector('#whBatchMaxBtn');
     var confirmBtn = modal.querySelector('#whBatchConfirm');
 
-    minusBtn.onclick = function() { input.value = Math.max(1, (parseInt(input.value, 10) || 1) - 1); _clampInput(); };
-    plusBtn.onclick = function() { input.value = Math.min(maxQty, (parseInt(input.value, 10) || 1) + 1); _clampInput(); };
+    // ± 步进：单击一次一步，长按可快速批量增减
+    function _batchStep(delta) {
+        var n = (parseInt(input.value, 10) || 1) + delta;
+        input.value = Math.max(1, Math.min(maxQty, n));
+        _clampInput();
+    }
+    if (typeof window.bindHoldRepeat === 'function') {
+        window.bindHoldRepeat(minusBtn, function() { _batchStep(-1); });
+        window.bindHoldRepeat(plusBtn, function() { _batchStep(1); });
+    } else {
+        minusBtn.onclick = function() { _batchStep(-1); };
+        plusBtn.onclick = function() { _batchStep(1); };
+    }
     maxBtn.onclick = function() { input.value = maxQty; _clampInput(); };
     input.addEventListener('input', _clampInput);
 
@@ -1314,9 +1445,9 @@ function showWarehouseBatchUseModal(itemId, timedUid, maxQty) {
 
 // 批量使用的核心逻辑：循环消耗物品并激活效果，最终统一通知
 function _doBatchUse(itemId, timedUid, useCount, item) {
-    var totalExpGain = 0, totalPrecoinGain = 0;
-    var luckyUsed = false;
+    var totalExpGain = 0, totalPrecoinGain = 0, totalLuckCoins = 0;
     var actualUsed = 0;
+    var _expBefore = (typeof _whGetLevelSnapshot === 'function') ? _whGetLevelSnapshot() : null;
 
     for (var i = 0; i < useCount; i++) {
         // 每次循环重新扣减（优先按 timedUid 扣限时物品，否则扣普通物品）
@@ -1350,10 +1481,6 @@ function _doBatchUse(itemId, timedUid, useCount, item) {
         actualUsed++;
 
         // 激活效果（与 useWarehouseItem 中单个物品逻辑一致）
-        if (itemId === 'luck_coin' && !luckyUsed) {
-            activateWarehouseLucky();
-            luckyUsed = true;
-        }
         if (item._expGain) {
             if (typeof addCheckinExp === 'function') addCheckinExp(item._expGain);
             totalExpGain += item._expGain;
@@ -1361,6 +1488,25 @@ function _doBatchUse(itemId, timedUid, useCount, item) {
         if (item._precoinGain) {
             if (typeof addPreCoin === 'function') addPreCoin(item._precoinGain, '仓库道具（批量）：' + item.name, true);
             totalPrecoinGain += item._precoinGain;
+        }
+        if (item._luckPack) {
+            // 幸运币 袋 / 盒：每次随机开出对应档位幸运币
+            var lpB = item._luckPack;
+            var nB = lpB.min + Math.floor(Math.random() * (lpB.max - lpB.min + 1));
+            if (nB > 0 && typeof warehouseAddItem === 'function') {
+                warehouseAddItem(lpB.coinId, nB, '仓库道具（批量）：' + item.name, true);
+            }
+            totalLuckCoins += nB;
+        }
+    }
+
+    // 经验值补给反馈弹窗（替代经验 toast）：动态进度条展示本次增加的经验值/等级
+    if (actualUsed > 0 && totalExpGain > 0 && _expBefore && typeof _whShowExpSupplyModal === 'function') {
+        var _expAfter = _whGetLevelSnapshot();
+        if (_expAfter.totalExp > _expBefore.totalExp) {
+            _whShowExpSupplyModal(item, actualUsed, _expBefore, _expAfter, totalPrecoinGain);
+            renderWarehouseItems();
+            return;
         }
     }
 
@@ -1372,12 +1518,155 @@ function _doBatchUse(itemId, timedUid, useCount, item) {
         var extras = [];
         if (totalExpGain > 0) extras.push(totalExpGain + ' 点经验值');
         if (totalPrecoinGain > 0) extras.push(totalPrecoinGain + ' PRE Coin');
-        if (luckyUsed) extras.push('幸运状态已激活');
+        if (totalLuckCoins > 0) extras.push('共开出 ' + totalLuckCoins + ' 枚幸运币（已存入仓库）');
         if (extras.length > 0) toastMsg += '，获得 ' + extras.join('，') + '，均已生效';
         showToast({ type: toastType, title: toastTitle, message: toastMsg });
     }
 
     renderWarehouseItems();
+}
+
+// ==================== 经验值补给反馈弹窗 ====================
+// 使用经验值补给卡（含综合补给包）后弹出：以成长等级卡片同款进度条动态展示本次增加的经验值与等级变化
+function _whGetLevelSnapshot() {
+    var snap = { level: 1, totalExp: 0, inLevel: 0, need: 0, maxLevel: 60, maxed: false };
+    try {
+        var cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        var u = null;
+        for (var i = 0; i < users.length; i++) {
+            if (users[i].username === cu.username) { u = users[i]; break; }
+        }
+        if (u && u.gameData) {
+            var gd = u.gameData;
+            snap.maxLevel = (typeof window.MAX_LEVEL === 'number') ? window.MAX_LEVEL : 60;
+            snap.totalExp = (gd.totalExp !== undefined) ? gd.totalExp : 0;
+            snap.level = (typeof getLevelFromExp === 'function') ? getLevelFromExp(snap.totalExp) : (gd.level || 1);
+            snap.inLevel = (typeof getExpInCurrentLevel === 'function') ? Math.max(0, getExpInCurrentLevel(snap.totalExp, snap.level)) : (gd.exp || 0);
+            snap.need = (typeof getExpRequiredForLevel === 'function') ? getExpRequiredForLevel(snap.level) : (gd.expToNext || 0);
+            snap.maxed = snap.level >= snap.maxLevel || snap.need <= 0;
+        }
+    } catch (e) {}
+    return snap;
+}
+
+// 数字滚动动画（rAF 缓出）
+function _wesupCountUp(el, from, to, dur, formatter) {
+    if (!el) return;
+    if (from === to) { el.textContent = formatter(to); return; }
+    var start = null;
+    function frame(ts) {
+        if (start === null) start = ts;
+        var p = Math.min(1, (ts - start) / dur);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = formatter(Math.round(from + (to - from) * eased));
+        if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+
+function _whShowExpSupplyModal(item, usedCount, before, after, precoinGain) {
+    var gainedExp = Math.max(0, after.totalExp - before.totalExp);
+    var gainedLv = Math.max(0, after.level - before.level);
+    var pctBefore = before.maxed ? 100 : (before.need > 0 ? Math.min(100, before.inLevel / before.need * 100) : 0);
+    var pctAfter = after.maxed ? 100 : (after.need > 0 ? Math.min(100, after.inLevel / after.need * 100) : 0);
+    var fmt = function(n) { return n.toLocaleString('zh-CN'); };
+
+    var modal = document.getElementById('warehouseExpSupplyModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'custom-alert';
+        modal.id = 'warehouseExpSupplyModal';
+        modal.style.display = 'none';
+        modal.style.zIndex = 100002; // 需覆盖物品详情弹窗（100001）
+        modal.innerHTML =
+            '<div class="wesup-box" role="dialog" aria-modal="true">' +
+                '<div class="wesup-icon" id="wesupIcon"><i class="fas fa-star"></i></div>' +
+                '<h3 class="wesup-title">经验值补给已生效</h3>' +
+                '<p class="wesup-sub" id="wesupSub"></p>' +
+                '<div class="wesup-gain" id="wesupGain"></div>' +
+                '<div class="wesup-precoin" id="wesupPrecoin" style="display:none;"></div>' +
+                '<div class="wesup-level-row" id="wesupLevelRow"></div>' +
+                '<div class="wesup-bar-wrapper">' +
+                    '<div class="wesup-bar-bg"><div class="wesup-bar-inner" id="wesupBarFill"></div></div>' +
+                    '<div class="wesup-bar-labels">' +
+                        '<span id="wesupExpText">0 / 0 EXP</span>' +
+                        '<span id="wesupNextLevel"></span>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="wesup-actions"><button class="wesup-ok" id="wesupOkBtn" type="button">确定</button></div>' +
+            '</div>';
+        document.body.appendChild(modal);
+        modal.querySelector('#wesupOkBtn').addEventListener('click', function() {
+            modal.classList.remove('show');
+            setTimeout(function() { modal.style.display = 'none'; }, 250);
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.querySelector('#wesupOkBtn').click();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                e.stopPropagation();
+                modal.querySelector('#wesupOkBtn').click();
+            }
+        }, true);
+    }
+
+    // 填充内容
+    var iconEl = modal.querySelector('#wesupIcon');
+    iconEl.innerHTML = '<i class="' + (item.icon || 'fas fa-star') + '" style="color:' + (item.color || '#3498db') + ';"></i>';
+    iconEl.style.background = hexToRgba(item.color || '#3498db', 0.15);
+    modal.querySelector('#wesupSub').textContent = '「' + item.name + '」' + (usedCount > 1 ? '× ' + usedCount + ' ' : '') + '已对账户等级生效';
+
+    var gainEl = modal.querySelector('#wesupGain');
+    var gainSuffix = gainedLv > 0 ? ' · 连升 ' + gainedLv + ' 级' : '';
+    var precoinEl = modal.querySelector('#wesupPrecoin');
+    if (precoinGain > 0) {
+        precoinEl.style.display = 'block';
+        precoinEl.textContent = '+' + fmt(precoinGain) + ' PRE Coin';
+    } else {
+        precoinEl.style.display = 'none';
+    }
+
+    // 等级变化行
+    var lvRow = modal.querySelector('#wesupLevelRow');
+    if (gainedLv > 0) {
+        lvRow.innerHTML =
+            '<span class="wesup-lv-old">Lv.' + before.level + '</span>' +
+            '<i class="fas fa-arrow-right"></i>' +
+            '<span class="wesup-lv-new">Lv.' + after.level + '</span>' +
+            '<span class="wesup-lv-badge">+' + gainedLv + ' 级</span>';
+    } else {
+        lvRow.innerHTML = '<span class="wesup-lv-old">Lv.' + after.level + '</span>';
+    }
+
+    // 进度条标签
+    var expTextEl = modal.querySelector('#wesupExpText');
+    var nextEl = modal.querySelector('#wesupNextLevel');
+    if (after.maxed) {
+        nextEl.textContent = '已达最高等级';
+    } else {
+        nextEl.textContent = '升级至 Lv.' + (after.level + 1);
+    }
+
+    // 打开弹窗并播放动画：进度条先停在使用前进度，随后动态增长到使用后进度（数字同步滚动）
+    var barFill = modal.querySelector('#wesupBarFill');
+    barFill.style.transition = 'none';
+    barFill.style.width = pctBefore + '%';
+    void barFill.offsetWidth; // 强制回流，确保起始宽度不产生过渡
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+
+    setTimeout(function() {
+        barFill.style.transition = 'width 0.9s cubic-bezier(0.25, 0.8, 0.35, 1)';
+        barFill.style.width = pctAfter + '%';
+        _wesupCountUp(gainEl, 0, gainedExp, 900, function(v) { return '+' + fmt(v) + ' 点经验值' + gainSuffix; });
+        if (after.maxed) {
+            _wesupCountUp(expTextEl, before.totalExp, after.totalExp, 900, function(v) { return '累计 ' + fmt(v) + ' EXP'; });
+        } else {
+            _wesupCountUp(expTextEl, before.inLevel, after.inLevel, 900, function(v) { return fmt(v) + ' / ' + fmt(after.need) + ' EXP'; });
+        }
+    }, 500);
 }
 
 // ==================== 物品详情弹窗（仓库 / 邮件附件 / 邮件领取记录共用） ====================
@@ -1561,8 +1850,8 @@ function _getExchangeCardCandidates() {
         list.push(wid);
     });
     var rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
-    // 追加未上架商店但可用自选兑换卡兑换的物品（阶段突破·极限限定道具）
-    ['exp_boost_5', 'exp_supply_5'].forEach(function(extraId) {
+    // 追加未上架商店但可用自选兑换卡兑换的物品（阶段突破·极限限定道具 + 全档位幸运币）
+    ['exp_boost_5', 'exp_supply_5', 'luck_coin_common', 'luck_coin_rare', 'luck_coin_epic', 'luck_coin_legend'].forEach(function(extraId) {
         if (WAREHOUSE_ITEMS[extraId] && !seen[extraId]) {
             seen[extraId] = true;
             list.push(extraId);
@@ -1593,7 +1882,7 @@ function ensureExchangeCardModal() {
                     <i class="fas fa-gift" style="color:#16a085;"></i>
                     <h2>自选物品兑换卡</h2>
                 </div>
-                <span class="wh-ex-tip">选择一个商店在售物品后点击「确定兑换」（不可兑换组合包）</span>
+                <span class="wh-ex-tip">选择一个可兑换物品后点击「确定兑换」（不可兑换组合包）</span>
                 <button class="wh-close" id="whExCloseBtn"><i class="fas fa-times"></i></button>
             </div>
             <div class="wh-content wh-ex-content" id="whExContent"></div>
@@ -2136,29 +2425,33 @@ function getWarehouseStyleCSS() {
             box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.25);
         }
 
-        /* 卡片内移除按钮（移除模式下显示） */
+        /* 卡片内移除按钮（移除模式下显示）：与使用按钮同款胶囊，绝对定位右下 */
         .wh-remove-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 8px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 7px 0;
+            gap: 4px;
+            padding: 5px 12px;
             border: none;
-            border-radius: 10px;
+            border-radius: 999px;
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white;
-            font-size: 13px;
+            font-size: 11.5px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.25s ease;
+            flex-shrink: 0;
         }
 
         .wh-remove-btn:hover {
-            transform: scale(1.03);
+            transform: scale(1.05);
             box-shadow: 0 4px 10px rgba(231, 76, 60, 0.35);
         }
 
-        /* 内容区域：一行固定6个道具 */
+        /* 内容区域：一行固定6个道具（仓库主窗口通过 #warehouseModal 作用域覆盖为 5 个） */
         .wh-content {
             flex: 1;
             overflow-y: auto;
@@ -2203,7 +2496,7 @@ function getWarehouseStyleCSS() {
             background-clip: padding-box;
         }
 
-        /* 道具卡片 - 与游戏中心卡片统一风格 */
+        /* 道具卡片 - 与游戏中心卡片统一风格（基础自适应布局：仓库主窗口在下方作用域块中覆盖为紧凑固定卡片） */
         .wh-item-card {
             position: relative;
             display: flex;
@@ -2321,6 +2614,117 @@ function getWarehouseStyleCSS() {
         .wh-use-btn:hover {
             transform: scale(1.03);
             box-shadow: 0 4px 10px rgba(212, 93, 121, 0.35);
+        }
+
+        /* ===== 仓库主窗口专属：紧凑固定卡片样式（仅作用于 #warehouseModal，
+           商店 / 自选兑换卡 / 开发者发放弹窗保持上方原始自适应卡片，互不影响） ===== */
+        #warehouseModal .wh-content {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        #warehouseModal .wh-item-card {
+            height: 210px;
+            gap: 6px;
+            padding: 14px 14px 42px;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        #warehouseModal .wh-item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+        }
+
+        #warehouseModal .wh-qty-badge {
+            top: 10px;
+            right: 56px;
+            padding: 1px 8px;
+            font-size: 11px;
+        }
+
+        #warehouseModal .wh-type-tag {
+            top: 10px;
+            right: 10px;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+
+        #warehouseModal .wh-item-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            font-size: 22px;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+
+        #warehouseModal .wh-item-name {
+            font-size: 13.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+        }
+
+        #warehouseModal .wh-item-desc {
+            font-size: 11.5px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 34px;
+            min-height: 0;
+        }
+
+        #warehouseModal .wh-item-source {
+            position: absolute;
+            left: 12px;
+            bottom: 10px;
+            gap: 4px;
+            font-size: 10.5px;
+            max-width: calc(100% - 90px);
+            pointer-events: none;
+        }
+
+        #warehouseModal .wh-item-source i {
+            font-size: 9px;
+        }
+
+        #warehouseModal .wh-use-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 8px;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 11.5px;
+        }
+
+        #warehouseModal .wh-use-btn:hover {
+            transform: scale(1.05);
+        }
+
+        #warehouseModal .wh-remove-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 8px;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 11.5px;
+        }
+
+        #warehouseModal .wh-remove-btn:hover {
+            transform: scale(1.05);
+        }
+
+        body.dark-mode #warehouseModal .wh-item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
         }
 
         /* 空状态 */
@@ -2857,10 +3261,160 @@ function getWarehouseStyleCSS() {
             color: white;
         }
 
-        /* 窄屏适配（优先保证一行 6 个，仅在较窄视口逐级减少） */
+        /* ==================== 经验值补给反馈弹窗 ==================== */
+        #warehouseExpSupplyModal {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        .wesup-box {
+            position: relative;
+            width: min(92vw, 430px);
+            background: white;
+            border-radius: 18px;
+            padding: 26px 26px 22px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            text-align: center;
+            animation: wesupPop 0.28s ease;
+        }
+
+        @keyframes wesupPop {
+            from { opacity: 0; transform: translateY(14px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .wesup-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin: 0 auto 12px;
+        }
+
+        .wesup-title {
+            margin: 0 0 4px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .wesup-sub {
+            margin: 0 0 10px;
+            font-size: 12.5px;
+            color: #999;
+        }
+
+        .wesup-gain {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .wesup-precoin {
+            font-size: 12.5px;
+            color: #f39c12;
+            margin-bottom: 4px;
+        }
+
+        .wesup-level-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0 14px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .wesup-level-row i {
+            color: #d45d79;
+            font-size: 13px;
+        }
+
+        .wesup-lv-new {
+            color: #d45d79;
+        }
+
+        .wesup-lv-badge {
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+            padding: 2px 9px;
+            border-radius: 999px;
+        }
+
+        .wesup-bar-wrapper {
+            text-align: left;
+        }
+
+        .wesup-bar-bg {
+            background: #e8e8e8;
+            border-radius: 20px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .wesup-bar-inner {
+            background: linear-gradient(90deg, #ffd700, #ffaa00);
+            height: 100%;
+            border-radius: 20px;
+            width: 0%;
+        }
+
+        .wesup-bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .wesup-actions {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wesup-ok {
+            padding: 9px 42px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(255, 170, 0, 0.35);
+        }
+
+        .wesup-ok:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(255, 170, 0, 0.45);
+        }
+
+        body.dark-mode .wesup-box { background: #1e1e2e; }
+        body.dark-mode .wesup-title { color: #eee; }
+        body.dark-mode .wesup-sub { color: #888; }
+        body.dark-mode .wesup-level-row { color: #eee; }
+        body.dark-mode .wesup-bar-bg { background: #0f3460; }
+        body.dark-mode .wesup-bar-labels { color: #aaa; }
+
+        /* 窄屏适配（仓库主窗口 5 个起步、其余容器 6 个起步，仅在较窄视口逐级减少） */
         @media (max-width: 1200px) {
             .wh-content,
-            .wh-dev-content {
+            .wh-dev-content,
+            #warehouseModal .wh-content {
                 grid-template-columns: repeat(4, 1fr);
             }
 
@@ -2871,7 +3425,8 @@ function getWarehouseStyleCSS() {
 
         @media (max-width: 900px) {
             .wh-content,
-            .wh-dev-content {
+            .wh-dev-content,
+            #warehouseModal .wh-content {
                 grid-template-columns: repeat(3, 1fr);
             }
 
@@ -2895,7 +3450,8 @@ function getWarehouseStyleCSS() {
             }
 
             .wh-content,
-            .wh-dev-content {
+            .wh-dev-content,
+            #warehouseModal .wh-content {
                 padding: 16px;
                 grid-template-columns: repeat(2, 1fr);
             }

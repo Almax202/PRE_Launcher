@@ -52,10 +52,11 @@
     <script src="./js/settings.js" defer></script>
     <script src="./js/versionHistory.js?v=3.0.2.6" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
-    <script src="./js/warehouse.js?v=3.7" defer></script>
-    <script src="./js/pass.js?v=3.12" defer></script>
+    <script src="./js/warehouse.js?v=4.0" defer></script>
+    <script src="./js/pass.js?v=3.13" defer></script>
     <script src="./js/dailytasks.js?v=1.1" defer></script>
-    <script src="./js/shop.js?v=2.4" defer></script>
+    <script src="./js/lottery.js?v=1.5" defer></script>
+    <script src="./js/shop.js?v=2.5" defer></script>
     <script src="./js/premail.js?v=2.0" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
@@ -12362,6 +12363,13 @@
                                                 <span class="reward-value" id="nextBonusPreview">距离累计签到7天奖励还有 7 天</span>
                                             </div>
                                         </div>
+                                        <div class="reward-item clickable" id="makeupCheckinBtn" title="选择本月今天之前未签到的日期，使用补签卡补签">
+                                            <i class="fas fa-calendar-plus"></i>
+                                            <div class="reward-info">
+                                                <span class="reward-label">我要补签</span>
+                                                <span class="reward-value" id="makeupAvailableDays">可补签 0 天</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="streak-bonus-info" id="streakBonusInfo">
                                         <i class="fas fa-info-circle"></i>
@@ -12628,7 +12636,7 @@
                     <div class="ui-min-dropdown-menu active" data-menu="gamecenter">
                         <div class="ui-min-nav-item active" data-nav="gamecenter-main">
                             <i class="fas fa-home"></i>
-                            <span>游戏中心</span>
+                            <span>大厅</span>
                             <i class="fas fa-chevron-down ui-min-arrow"></i>
                         </div>
                         <div class="ui-min-dropdown-panel">
@@ -12650,22 +12658,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ui-min-nav-item" data-nav="battlepass" id="uiMinBattlePass">
-                        <i class="fas fa-crown"></i>
-                        <span>通行证</span>
-                    </div>
-                    <div class="ui-min-nav-item" data-nav="warehouse" id="uiMinWarehouse">
-                        <i class="fas fa-warehouse"></i>
-                        <span>仓库</span>
-                    </div>
-                    <div class="ui-min-nav-item" data-nav="shop" id="uiMinShop">
-                        <i class="fas fa-store"></i>
-                        <span>商店</span>
-                    </div>
                     <div class="ui-min-dropdown-menu" data-menu="task-center">
                         <div class="ui-min-nav-item" data-nav="task-center">
                             <i class="fas fa-tasks"></i>
-                            <span>任务</span>
+                            <span>每日</span>
                             <i class="fas fa-chevron-down ui-min-arrow"></i>
                         </div>
                         <div class="ui-min-dropdown-panel">
@@ -12677,16 +12673,28 @@
                                 <i class="fas fa-list-check"></i>
                                 <span>每日任务</span>
                             </div>
+                            <div class="ui-min-dropdown-item" data-nav="lottery" id="uiMinLottery">
+                                <i class="fas fa-dice-five"></i>
+                                <span>幸运抽奖机</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="ui-min-nav-item" data-nav="feedback" id="uiMinFeedback">
-                        <i class="fas fa-comment-dots"></i>
-                        <span>反馈建议</span>
+                    <div class="ui-min-nav-item" data-nav="battlepass" id="uiMinBattlePass">
+                        <i class="fas fa-crown"></i>
+                        <span>赛季</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="shop" id="uiMinShop">
+                        <i class="fas fa-store"></i>
+                        <span>商店</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="warehouse" id="uiMinWarehouse">
+                        <i class="fas fa-warehouse"></i>
+                        <span>仓库</span>
                     </div>
                     <div class="ui-min-dropdown-menu" data-menu="announcement-center">
                         <div class="ui-min-nav-item" data-nav="announcement-center">
                             <i class="fas fa-bullhorn"></i>
-                            <span>公告中心</span>
+                            <span>公告</span>
                             <i class="fas fa-chevron-down ui-min-arrow"></i>
                         </div>
                         <div class="ui-min-dropdown-panel">
@@ -12711,6 +12719,10 @@
                     <div class="ui-min-nav-item" data-nav="mail">
                         <i class="fas fa-envelope"></i>
                         <span>邮件</span>
+                    </div>
+                    <div class="ui-min-nav-item" data-nav="feedback" id="uiMinFeedback">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>反馈</span>
                     </div>
                 `;
                 
@@ -12774,6 +12786,8 @@
                                 if (checkinBtn) checkinBtn.click();
                             } else if (nav === 'dailytask') {
                                 if (typeof showDailyTaskModal === 'function') showDailyTaskModal();
+                            } else if (nav === 'lottery') {
+                                if (typeof showLotteryModal === 'function') showLotteryModal();
                             } else if (nav === 'event-center') {
                                 if (typeof showEventCenterModal === 'function') {
                                     showEventCenterModal();
@@ -15933,6 +15947,7 @@
                 
                 .checkin-rewards-info {
                     display: flex;
+                    flex-wrap: wrap;
                     gap: 15px;
                     margin-bottom: 15px;
                 }
@@ -16182,11 +16197,391 @@
                     background: rgba(255,255,255,0.3);
                 }
 
-                /* 仓库限时物品 tag + 卡片 */
-                .wh-timed-tag {
+                /* 补签日期卡片（粉色） */
+                .calendar-day.makeup {
+                    background: linear-gradient(135deg, #ff9ad5 0%, #ff6b9d 100%);
+                    color: #fff;
+                }
+                .calendar-day.makeup .day-item {
+                    background: rgba(255,255,255,0.3);
+                    color: #fff !important;
+                }
+                body.dark-mode .calendar-day.makeup {
+                    background: linear-gradient(135deg, #ff9ad5 0%, #ff6b9d 100%);
+                    color: #fff;
+                }
+                body.transparent-mode .calendar-day.makeup {
+                    background: linear-gradient(135deg, #ff9ad5 0%, #ff6b9d 100%);
+                    color: #fff;
+                }
+
+                /* ==================== 每日签到 · 我要补签 ==================== */
+                .mk-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.55);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 99997;
+                    padding: 20px;
+                    box-sizing: border-box;
+                    animation: mkFadeIn 0.2s ease;
+                }
+                @keyframes mkFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes mkPop { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: none; } }
+                .mk-modal {
+                    width: 94%;
+                    max-width: 1080px;
+                    max-height: 86vh;
+                    background: #fff;
+                    border-radius: 18px;
+                    padding: 22px 26px 18px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 14px;
+                    animation: mkPop 0.22s ease;
+                    box-sizing: border-box;
+                }
+                .mk-header {
+                    display: flex;
+                    align-items: flex-start;
+                    justify-content: space-between;
+                    gap: 16px;
+                }
+                .mk-header-text h3 {
+                    margin: 0 0 4px;
+                    font-size: 19px;
+                    color: #333;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .mk-header-text h3 i { color: #ff6b9d; }
+                .mk-header-text p { margin: 0; font-size: 12.5px; color: #888; }
+                .mk-close {
+                    flex: 0 0 auto;
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 50%;
+                    border: none;
+                    background: #f2f3f7;
+                    color: #888;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                }
+                .mk-close:hover { background: #ff6b9d; color: #fff; transform: rotate(90deg); }
+                .mk-info-bar {
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    gap: 10px 22px;
+                    padding: 10px 14px;
+                    background: #f8f9fb;
+                    border: 1px solid #f0f0f4;
+                    border-radius: 12px;
+                    font-size: 13px;
+                    color: #555;
+                }
+                .mk-info-item { display: inline-flex; align-items: center; gap: 6px; }
+                .mk-info-item i { color: #667eea; }
+                .mk-info-item strong { color: #ff6b9d; font-size: 15px; }
+                .mk-info-item strong.mk-remain-empty { color: #e74c3c; }
+                .mk-info-sub { font-size: 11.5px; color: #999; }
+                .mk-info-tip { margin-left: auto; font-size: 12px; color: #999; }
+                .mk-info-tip i { color: #bbb; }
+                .mk-strip-wrap {
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    padding: 4px 2px 10px;
+                    scrollbar-width: thin;
+                    scrollbar-color: #ff6b9d #f2f3f7;
+                }
+                .mk-strip-wrap::-webkit-scrollbar { height: 8px; }
+                .mk-strip-wrap::-webkit-scrollbar-track { background: #f2f3f7; border-radius: 999px; }
+                .mk-strip-wrap::-webkit-scrollbar-thumb {
+                    border-radius: 999px;
+                    background: linear-gradient(90deg, #ff6b9d, #6a5acd);
+                }
+                .mk-strip { display: flex; gap: 12px; padding: 2px; }
+                .mk-card {
+                    position: relative;
+                    flex: 0 0 auto;
+                    width: 92px;
+                    min-height: 118px;
+                    padding: 10px 6px;
+                    border-radius: 14px;
+                    border: 1px solid #eee;
+                    background: #f5f5f5;
+                    color: #777;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 2px;
+                    transition: all 0.2s ease;
+                    user-select: none;
+                }
+                .mk-card-week { font-size: 11px; opacity: 0.85; }
+                .mk-card-day { font-size: 24px; font-weight: 700; line-height: 1.1; }
+                .mk-card-label { font-size: 11px; opacity: 0.8; }
+                .mk-card-state {
+                    margin-top: 4px;
+                    padding: 1px 8px;
+                    border-radius: 999px;
+                    font-size: 11px;
+                    background: rgba(0, 0, 0, 0.05);
+                }
+                .mk-card-item {
                     position: absolute;
                     top: 6px;
                     right: 6px;
+                    padding: 1px 4px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                    font-weight: 700;
+                    background: rgba(255, 255, 255, 0.78);
+                }
+                .mk-card.mk-checked {
+                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                    border-color: transparent;
+                    color: #fff;
+                }
+                .mk-card.mk-streak {
+                    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+                    border-color: transparent;
+                    color: #fff;
+                }
+                .mk-card.mk-makeup {
+                    background: linear-gradient(135deg, #ff9ad5 0%, #ff6b9d 100%);
+                    border-color: transparent;
+                    color: #fff;
+                }
+                .mk-card.mk-today {
+                    background: #f3f5ff;
+                    border: 1.5px dashed #667eea;
+                    color: #667eea;
+                }
+                .mk-card.mk-checked .mk-card-state,
+                .mk-card.mk-streak .mk-card-state,
+                .mk-card.mk-makeup .mk-card-state { background: rgba(255, 255, 255, 0.28); }
+                .mk-card.mk-available {
+                    background: #fff6fa;
+                    border-color: #ffc6dd;
+                    color: #d4427a;
+                    cursor: pointer;
+                }
+                .mk-card.mk-available:hover {
+                    transform: translateY(-3px);
+                    border-color: #ff6b9d;
+                    box-shadow: 0 8px 20px rgba(255, 107, 157, 0.28);
+                }
+                .mk-legend {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px 18px;
+                    font-size: 12px;
+                    color: #888;
+                }
+                .mk-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+                .mk-dot { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+                .mk-dot-checked { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+                .mk-dot-streak { background: linear-gradient(135deg, #ffd700, #ffaa00); }
+                .mk-dot-makeup { background: linear-gradient(135deg, #ff9ad5, #ff6b9d); }
+                .mk-dot-missed { background: #f5f5f5; border: 1px solid #ddd; }
+
+                /* 补签确认弹窗 */
+                .mk-confirm-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 99998;
+                    padding: 20px;
+                    box-sizing: border-box;
+                }
+                .mk-confirm-box {
+                    width: 92%;
+                    max-width: 420px;
+                    padding: 22px 22px 18px;
+                    background: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+                    text-align: center;
+                    animation: mkPop 0.2s ease;
+                    box-sizing: border-box;
+                }
+                .mk-confirm-icon {
+                    width: 54px;
+                    height: 54px;
+                    margin: 0 auto 10px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #ff9ad5, #ff6b9d);
+                    color: #fff;
+                    font-size: 22px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .mk-confirm-box h3 { margin: 0 0 8px; font-size: 17px; color: #333; }
+                .mk-confirm-text { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: #666; }
+                .mk-confirm-text b { color: #ff6b9d; }
+                .mk-confirm-reward {
+                    margin: 0 0 16px;
+                    padding: 8px 10px;
+                    border-radius: 10px;
+                    background: #fff8e1;
+                    font-size: 12.5px;
+                    color: #8d6e00;
+                }
+                .mk-confirm-reward i { color: #f39c12; margin-right: 4px; }
+                .mk-confirm-note { font-size: 11.5px; color: #999; }
+                .mk-confirm-actions { display: flex; gap: 12px; }
+                .mk-btn {
+                    flex: 1;
+                    padding: 10px 0;
+                    border: none;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .mk-btn-cancel { background: #f2f3f7; color: #666; }
+                .mk-btn-cancel:hover { background: #e6e8ee; }
+                .mk-btn-ok { background: linear-gradient(135deg, #ff6b9d, #6a5acd); color: #fff; }
+                .mk-btn-ok:hover { filter: brightness(1.06); box-shadow: 0 6px 18px rgba(255, 107, 157, 0.35); }
+
+                /* 补签弹窗 · 暗黑模式 */
+                body.dark-mode .mk-modal { background: #1e1e2e; }
+                body.dark-mode .mk-header-text h3 { color: #fff; }
+                body.dark-mode .mk-header-text p { color: #9a9aae; }
+                body.dark-mode .mk-close { background: #2a2a3e; color: #bbb; }
+                body.dark-mode .mk-info-bar { background: #262638; border-color: #33334a; color: #bbb; }
+                body.dark-mode .mk-info-tip { color: #7f7f95; }
+                body.dark-mode .mk-card { background: #2a2a3e; border-color: #38384f; color: #bbb; }
+                body.dark-mode .mk-card.mk-today { background: #262640; border-color: #8b9cf7; color: #aab6ff; }
+                body.dark-mode .mk-card.mk-available { background: #3a2436; border-color: #6b3a52; color: #ffa6c9; }
+                body.dark-mode .mk-card-item { background: rgba(255, 255, 255, 0.16); }
+                body.dark-mode .mk-legend { color: #9a9aae; }
+                body.dark-mode .mk-dot-missed { background: #2a2a3e; border-color: #444458; }
+                body.dark-mode .mk-confirm-box { background: #1e1e2e; }
+                body.dark-mode .mk-confirm-box h3 { color: #fff; }
+                body.dark-mode .mk-confirm-text { color: #bbb; }
+                body.dark-mode .mk-confirm-reward { background: #3a3220; color: #e8c766; }
+                body.dark-mode .mk-confirm-note { color: #8a8fa8; }
+                body.dark-mode .mk-btn-cancel { background: #2a2a3e; color: #bbb; }
+                body.dark-mode .mk-btn-cancel:hover { background: #34344c; }
+
+                /* 补签弹窗 · 移动端适配 */
+                @media (max-width: 768px) {
+                    .mk-modal { padding: 16px 14px 12px; max-height: 88vh; gap: 12px; }
+                    .mk-header-text h3 { font-size: 17px; }
+                    .mk-header-text p { font-size: 11.5px; }
+                    .mk-info-tip { margin-left: 0; }
+                    .mk-card { width: 78px; min-height: 104px; }
+                    .mk-card-day { font-size: 20px; }
+                }
+
+                /* ==================== 弹窗统一动效（与「我要补签」弹窗一致） ==================== */
+                @keyframes mkFadeOut { from { opacity: 1; } to { opacity: 0; } }
+                @keyframes mkPopOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(10px) scale(0.97); } }
+                /* 关闭动效：给弹窗容器（遮罩）与内容盒加 .modal-closing，播放完下沉淡出后再移除节点 */
+                .modal-closing { animation: mkFadeOut 0.19s ease forwards; }
+                .modal-closing.mk-modal,
+                .modal-closing.milestone-modal,
+                .modal-closing.gc-modal,
+                .modal-closing.mk-confirm-box { animation-name: mkPopOut; }
+
+                .mk-confirm-overlay { animation: mkFadeIn 0.2s ease; }
+
+                /* ==================== 弹窗统一视觉样式（每日奖励 / 本月奖励一览 / 签到里程碑） ==================== */
+                .milestone-modal-overlay {
+                    background: rgba(0, 0, 0, 0.55);
+                    padding: 20px;
+                    box-sizing: border-box;
+                    animation: mkFadeIn 0.2s ease;
+                }
+                .milestone-modal {
+                    border-radius: 18px;
+                    padding: 22px 26px 18px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+                    animation: mkPop 0.22s ease;
+                }
+                .milestone-modal-header {
+                    margin-bottom: 16px;
+                    padding-bottom: 0;
+                    border-bottom: none;
+                }
+                .milestone-modal-header h3 { font-size: 19px; color: #333; }
+                .milestone-modal-header h3 i { color: #ff6b9d; }
+                .milestone-close {
+                    flex: 0 0 auto;
+                    width: 34px;
+                    height: 34px;
+                    padding: 0;
+                    border: none;
+                    border-radius: 50%;
+                    background: #f2f3f7;
+                    color: #888;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .milestone-close:hover { background: #ff6b9d; color: #fff; transform: rotate(90deg); }
+                body.dark-mode .milestone-modal { background: #1e1e2e; color: #eee; }
+                body.dark-mode .milestone-modal-header h3 { color: #fff; }
+                body.dark-mode .milestone-close { background: #2a2a3e; color: #bbb; }
+
+                /* ==================== 成长曲线弹窗（统一弹窗外壳样式） ==================== */
+                .gc-modal {
+                    width: 94%;
+                    max-width: 1080px;
+                    max-height: 94vh;
+                    overflow-y: auto;
+                    background: #fff;
+                    border-radius: 18px;
+                    padding: 22px 26px 18px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+                    box-sizing: border-box;
+                    animation: mkPop 0.22s ease;
+                }
+                .gc-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 6px; }
+                .gc-title { margin: 0; font-size: 19px; color: #333; }
+                .gc-title i { color: #ff6b9d; margin-right: 8px; }
+                .gc-sub { margin: 0 0 14px; font-size: 12.5px; color: #888; }
+                .gc-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+                .gc-stat { flex: 1; min-width: 160px; background: #f7f8ff; border-radius: 12px; padding: 12px 16px; }
+                .gc-stat-label { font-size: 12px; color: #999; }
+                .gc-stat-value { font-size: 18px; font-weight: bold; }
+                .gc-formula { margin-top: 14px; padding: 12px 16px; background: #fafafa; border-radius: 12px; font-size: 12px; color: #777; line-height: 1.8; }
+                .gc-formula i { color: #ff6b9d; margin-right: 6px; }
+                .gc-tip { display: none; position: absolute; pointer-events: none; background: rgba(30, 30, 40, 0.92); color: #fff; font-size: 12px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, -120%); }
+                body.dark-mode .gc-modal { background: #1e1e2e; }
+                body.dark-mode .gc-title { color: #fff; }
+                body.dark-mode .gc-sub { color: #9a9aae; }
+                body.dark-mode .gc-stat { background: #262638; }
+                body.dark-mode .gc-stat-label { color: #8a8fa8; }
+                body.dark-mode .gc-formula { background: #262638; color: #bbb; }
+
+                /* 仓库限时物品 tag + 卡片 */
+                .wh-timed-tag {
+                    position: absolute;
+                    top: 28px;
+                    right: 10px;
                     font-size: 10px;
                     font-weight: 700;
                     line-height: 1;
@@ -20393,13 +20788,6 @@
                     showToastWarning('已使用1张十连卡券，本次提取免费！');
                 }
 
-                // 仓库幸运币：若已激活幸运状态，本次提取消耗1枚并提升稀有项概率
-                var luckBoosted = false;
-                if (typeof warehouseTakeLuckyBoost === 'function' && warehouseTakeLuckyBoost()) {
-                    luckBoosted = true;
-                    showToastWarning('幸运币生效：本次提取稀有项概率翻倍！');
-                }
-
                 // 1. 新手池提取次数上限检查
                 var poolGroup = getPoolGroup();
                 var poolId = getUniquePoolId();
@@ -23966,6 +24354,10 @@
             exp_boost_large: '加III',
             makeup_card: '签',
             luck_coin: '币',
+            luck_coin_common: '普币',
+            luck_coin_rare: '稀币',
+            luck_coin_epic: '史币',
+            luck_coin_legend: '传币',
             gacha_single: '卷'
         };
 
@@ -23980,6 +24372,10 @@
             exp_boost_large: '#f39c12',
             makeup_card: '#e67e22',
             luck_coin: '#f1c40f',
+            luck_coin_common: '#95a5a6',
+            luck_coin_rare: '#f1c40f',
+            luck_coin_epic: '#9b59b6',
+            luck_coin_legend: '#e67e22',
             gacha_single: '#2ecc71'
         };
 
@@ -24039,8 +24435,8 @@
                 items.push({ itemId: 'makeup_card', qty: 1 });
                 return items;
             }
-            if (info.weekday === 0) { // 周日
-                items.push({ itemId: 'luck_coin', qty: 1 });
+            if (info.weekday === 0) { // 周日 — 幸运币（前半月发普通档，后半月发稀有档）
+                items.push({ itemId: info.day <= 15 ? 'luck_coin_common' : 'luck_coin_rare', qty: 1 });
                 return items;
             }
 
@@ -24082,8 +24478,8 @@
                     items.push({ itemId: 'makeup_card', qty: 1 });
                     break;
 
-                case 4: // 周四 — 幸运币
-                    items.push({ itemId: 'luck_coin', qty: 1 });
+                case 4: // 周四 — 幸运币（前半月发普通档，后半月发稀有档）
+                    items.push({ itemId: info.day <= 15 ? 'luck_coin_common' : 'luck_coin_rare', qty: 1 });
                     break;
 
                 case 5: // 周五 — 单次抽卡券
@@ -24145,10 +24541,30 @@
             if (milestoneBtn) {
                 milestoneBtn.addEventListener('click', openMilestoneModal);
             }
+            var makeupBtn = document.getElementById('makeupCheckinBtn');
+            if (makeupBtn) {
+                makeupBtn.addEventListener('click', openMakeupCheckinModal);
+            }
             loadCheckinData();
             initDevModeButtons();
         }
         
+        // 统一弹窗关闭动效：先在遮罩与内容盒上播放「下沉淡出」，动画结束后再移除节点
+        function animateModalClose(overlay, onRemoved) {
+            if (!overlay || !overlay.parentNode) {
+                if (typeof onRemoved === 'function') onRemoved();
+                return;
+            }
+            if (overlay.classList.contains('modal-closing')) return;
+            overlay.classList.add('modal-closing');
+            var box = overlay.querySelector('.mk-modal, .milestone-modal, .gc-modal, .mk-confirm-box');
+            if (box) box.classList.add('modal-closing');
+            setTimeout(function() {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                if (typeof onRemoved === 'function') onRemoved();
+            }, 200);
+        }
+
         // 打开里程碑弹窗（奖励需手动点击领取，每轮连续签到各领一次）
         function openMilestoneModal() {
             var overlay = document.createElement('div');
@@ -24156,7 +24572,7 @@
             overlay.innerHTML =
                 '<div class="milestone-modal">' +
                     '<div class="milestone-modal-header">' +
-                        '<h3><i class="fas fa-flag" style="color: #667eea;"></i> 签到里程碑</h3>' +
+                        '<h3><i class="fas fa-flag"></i> 签到里程碑</h3>' +
                         '<div class="milestone-mode-switch">' +
                             '<button class="milestone-mode-btn active" data-mode="standard" type="button">标准阶段</button>' +
                             '<button class="milestone-mode-btn" data-mode="stage" type="button"' + (isStageBreakthroughActive() ? '' : ' disabled title="开启阶段突破模式后解锁"') + '>阶段突破</button>' +
@@ -24395,7 +24811,7 @@
 
             function closeOverlay() {
                 window.removeEventListener('resize', updateScrollHint);
-                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                animateModalClose(overlay);
             }
 
             var closeBtn = overlay.querySelector('.milestone-close');
@@ -24540,7 +24956,7 @@
             overlay.innerHTML =
                 '<div class="milestone-modal dr-override">' +
                     '<div class="milestone-modal-header">' +
-                        '<h3><i class="fas fa-coins" style="color: #667eea;"></i> 每日签到 · 今日可领取内容</h3>' +
+                        '<h3><i class="fas fa-coins"></i> 每日签到 · 今日可领取内容</h3>' +
                         '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
                     '</div>' +
                     (checkedToday
@@ -24557,7 +24973,7 @@
             document.body.appendChild(overlay);
 
             var closeBtn = overlay.querySelector('.milestone-close');
-            function closeOverlay() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+            function closeOverlay() { animateModalClose(overlay); }
             closeBtn.addEventListener('click', closeOverlay);
             overlay.addEventListener('click', function(e) {
                 if (e.target === overlay) closeOverlay();
@@ -24655,7 +25071,7 @@
             overlay.innerHTML = 
                 '<div class="milestone-modal mr-override">' +
                     '<div class="milestone-modal-header">' +
-                        '<h3><i class="fas fa-calendar-check" style="color: #667eea;"></i> ' + year + '年' + (month + 1) + '月 · 每日奖励一览</h3>' +
+                        '<h3><i class="fas fa-calendar-check"></i> ' + year + '年' + (month + 1) + '月 · 每日奖励一览</h3>' +
                         '<button class="milestone-close"><i class="fas fa-times"></i></button>' +
                     '</div>' +
                     '<div class="mr-tip"><i class="fas fa-info-circle"></i> 每日签到除 EXP 和 PRE Coin 外，还可获得限时道具（有效期14天）。工作日物品随周数提升等级，周末发放固定简单物品（补签卡 / 幸运币）。</div>' +
@@ -24667,11 +25083,11 @@
             
             var closeBtn = overlay.querySelector('.milestone-close');
             closeBtn.addEventListener('click', function() {
-                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                animateModalClose(overlay);
             });
             overlay.addEventListener('click', function(e) {
                 if (e.target === overlay) {
-                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                    animateModalClose(overlay);
                 }
             });
         }
@@ -24737,6 +25153,9 @@
             
             // 更新奖励预览
             updateRewardPreview(user);
+
+            // 更新「我要补签」按钮的可补签天数
+            updateMakeupButtonLabel(user);
             
             // 检查今日是否已签到（以凌晨 4 点为签到日分界）
             var today = getCheckinDayStr();
@@ -24955,22 +25374,29 @@
             }
             area += 'L ' + xAt(n - 1) + ' ' + yAt(0) + ' Z';
 
+            // 暗黑模式适配：弹窗外壳与文字走 CSS 类，图表内联配色在此换算
+            var gcDark = document.body.classList.contains('dark-mode');
+            var gcGridColor = gcDark ? '#33334a' : '#eee';
+            var gcTickColor = gcDark ? '#8a8fa8' : '#999';
+            var gcGuideColor = gcDark ? '#e8e8f0' : '#333';
+            var gcDotFill = gcDark ? '#1e1e2e' : '#fff';
+
             // 横向网格与 Y 轴刻度（5 档）
             var gridHtml = '';
             for (var gi = 0; gi <= 5; gi++) {
                 var gv = Math.round(maxY * gi / 5);
                 var gy = yAt(gv);
-                gridHtml += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" stroke="#eee" stroke-width="1"/>' +
-                    '<text x="' + (padL - 8) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="#999">' + gv.toLocaleString() + '</text>';
+                gridHtml += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" stroke="' + gcGridColor + '" stroke-width="1"/>' +
+                    '<text x="' + (padL - 8) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + gcTickColor + '">' + gv.toLocaleString() + '</text>';
             }
 
             // X 轴刻度（约每 10 级一档，末端强制标注满级）
             var xTickHtml = '';
             var xStep = Math.max(1, Math.round(n / 12));
             for (var xi = 0; xi < n; xi += xStep) {
-                xTickHtml += '<text x="' + xAt(xi) + '" y="' + (H - padB + 18) + '" text-anchor="middle" font-size="11" fill="#999">Lv.' + points[xi].level + '</text>';
+                xTickHtml += '<text x="' + xAt(xi) + '" y="' + (H - padB + 18) + '" text-anchor="middle" font-size="11" fill="' + gcTickColor + '">Lv.' + points[xi].level + '</text>';
             }
-            xTickHtml += '<text x="' + xAt(n - 1) + '" y="' + (H - padB + 18) + '" text-anchor="middle" font-size="11" fill="#999">Lv.' + points[n - 1].level + '</text>';
+            xTickHtml += '<text x="' + xAt(n - 1) + '" y="' + (H - padB + 18) + '" text-anchor="middle" font-size="11" fill="' + gcTickColor + '">Lv.' + points[n - 1].level + '</text>';
 
             // 分档边界竖线标注
             var tiers = extremeMode ? [121, 150, 170, 190]
@@ -25000,21 +25426,21 @@
 
             var overlay = document.createElement('div');
             overlay.id = 'growthCurveOverlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:25000;display:flex;align-items:center;justify-content:center;animation:gcFadeIn 0.2s ease;';
+            overlay.className = 'mk-overlay';
             overlay.innerHTML =
-                '<div style="background:#fff;border-radius:20px;width:1080px;max-width:94vw;max-height:94vh;overflow-y:auto;padding:28px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:gcPop 0.25s cubic-bezier(0.34,1.4,0.64,1);">' +
-                    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
-                        '<h3 style="margin:0;font-size:20px;color:#333;"><i class="fas fa-chart-line" style="color:#667eea;margin-right:8px;"></i>成长曲线' +
+                '<div class="gc-modal">' +
+                    '<div class="gc-header">' +
+                        '<h3 class="gc-title"><i class="fas fa-chart-line"></i>成长曲线' +
                         (extremeMode ? '<span style="margin-left:10px;font-size:12px;font-weight:normal;color:#fff;background:linear-gradient(135deg,#ff2d55,#ff6b6b);padding:3px 10px;border-radius:10px;vertical-align:middle;">阶段突破 · 极限</span>'
                             : (stageMode ? '<span style="margin-left:10px;font-size:12px;font-weight:normal;color:#fff;background:linear-gradient(135deg,#f093fb,#f5576c);padding:3px 10px;border-radius:10px;vertical-align:middle;">阶段突破模式</span>' : '')) +
                         '</h3>' +
-                        '<button id="growthCurveClose" style="border:none;background:#f0f0f0;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px;color:#666;"><i class="fas fa-times"></i></button>' +
+                        '<button id="growthCurveClose" class="mk-close" type="button" title="关闭"><i class="fas fa-times"></i></button>' +
                     '</div>' +
-                    '<p style="margin:0 0 14px;font-size:12px;color:#999;">各等级升至下一级所需经验值趋势（当前生效分档公式）</p>' +
-                    '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">' +
-                        '<div style="flex:1;min-width:160px;background:#f7f8ff;border-radius:12px;padding:12px 16px;"><div style="font-size:12px;color:#999;">当前等级升级所需</div><div style="font-size:18px;font-weight:bold;color:#667eea;">' + (curLevel >= maxLv ? '已满级' : curNeed.toLocaleString() + ' EXP') + '</div></div>' +
-                        '<div style="flex:1;min-width:160px;background:#f7f8ff;border-radius:12px;padding:12px 16px;"><div style="font-size:12px;color:#999;">升至满级（Lv.' + maxLv + '）还需</div><div style="font-size:18px;font-weight:bold;color:#e67e22;">' + (curLevel >= maxLv ? '已满级' : remainToMax.toLocaleString() + ' EXP') + '</div></div>' +
-                        '<div style="flex:1;min-width:160px;background:#f7f8ff;border-radius:12px;padding:12px 16px;"><div style="font-size:12px;color:#999;">满级累计总经验</div><div style="font-size:18px;font-weight:bold;color:#27ae60;">' + totalToMax.toLocaleString() + ' EXP</div></div>' +
+                    '<p class="gc-sub">各等级升至下一级所需经验值趋势（当前生效分档公式）</p>' +
+                    '<div class="gc-stats">' +
+                        '<div class="gc-stat"><div class="gc-stat-label">当前等级升级所需</div><div class="gc-stat-value" style="color:#667eea;">' + (curLevel >= maxLv ? '已满级' : curNeed.toLocaleString() + ' EXP') + '</div></div>' +
+                        '<div class="gc-stat"><div class="gc-stat-label">升至满级（Lv.' + maxLv + '）还需</div><div class="gc-stat-value" style="color:#e67e22;">' + (curLevel >= maxLv ? '已满级' : remainToMax.toLocaleString() + ' EXP') + '</div></div>' +
+                        '<div class="gc-stat"><div class="gc-stat-label">满级累计总经验</div><div class="gc-stat-value" style="color:#27ae60;">' + totalToMax.toLocaleString() + ' EXP</div></div>' +
                     '</div>' +
                     '<div style="position:relative;">' +
                         '<svg id="growthCurveSvg" viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block;cursor:crosshair;">' +
@@ -25026,20 +25452,16 @@
                             '<path d="' + area + '" fill="url(#gcAreaGrad)"/>' +
                             '<path d="' + line + '" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linejoin="round"/>' +
                             curMarkHtml +
-                            '<line id="gcGuide" x1="0" y1="' + padT + '" x2="0" y2="' + (H - padB) + '" stroke="#333" stroke-width="1" stroke-dasharray="3 3" style="display:none;"/>' +
-                            '<circle id="gcDot" r="4.5" fill="#fff" stroke="#333" stroke-width="2" style="display:none;"/>' +
+                            '<line id="gcGuide" x1="0" y1="' + padT + '" x2="0" y2="' + (H - padB) + '" stroke="' + gcGuideColor + '" stroke-width="1" stroke-dasharray="3 3" style="display:none;"/>' +
+                            '<circle id="gcDot" r="4.5" fill="' + gcDotFill + '" stroke="' + gcGuideColor + '" stroke-width="2" style="display:none;"/>' +
                         '</svg>' +
-                        '<div id="growthCurveTip" style="display:none;position:absolute;pointer-events:none;background:rgba(30,30,40,0.92);color:#fff;font-size:12px;padding:6px 10px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-120%);"></div>' +
+                        '<div id="growthCurveTip" class="gc-tip"></div>' +
                     '</div>' +
-                    '<div style="margin-top:14px;padding:12px 16px;background:#fafafa;border-radius:12px;font-size:12px;color:#777;line-height:1.8;">' +
-                        '<i class="fas fa-info-circle" style="color:#667eea;margin-right:6px;"></i><b>当前公式：</b>' + formulaText +
+                    '<div class="gc-formula">' +
+                        '<i class="fas fa-info-circle"></i><b>当前公式：</b>' + formulaText +
                     '</div>' +
                 '</div>';
 
-            // 弹窗动画
-            var styleTag = document.createElement('style');
-            styleTag.textContent = '@keyframes gcFadeIn{from{opacity:0}to{opacity:1}}@keyframes gcPop{from{opacity:0;transform:scale(0.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}';
-            overlay.appendChild(styleTag);
             document.body.appendChild(overlay);
 
             // 悬浮交互：最近等级数值提示
@@ -25072,10 +25494,10 @@
 
             // 关闭
             overlay.querySelector('#growthCurveClose').addEventListener('click', function() {
-                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                animateModalClose(overlay);
             });
             overlay.addEventListener('click', function(e) {
-                if (e.target === overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                if (e.target === overlay) animateModalClose(overlay);
             });
         }
 
@@ -25188,7 +25610,10 @@
                     historyMap[d.getDate()] = h;
                 }
             });
-            
+
+            // 补签日期（粉色卡片）
+            var makeupMap = getMakeupDaySet(user, year, month);
+
             var todayDate = today.getDate();
             var weekDays = ['日', '一', '二', '三', '四', '五', '六'];
             
@@ -25229,20 +25654,357 @@
                 if (isToday) classes += ' today';
                 if (isFuture) classes += ' future';
                 if (isChecked && streakOnDay >= 7) classes += ' streak-high';
+                if (makeupMap[day]) classes += ' makeup';
                 
                 var itemHtml = itemLabel ? '<span class="day-item" style="color:' + itemColor + ';">' + itemLabel + '</span>' : '';
                 
                 html += '<div class="' + classes + '">' +
                     '<span class="day-num">' + day + '</span>' +
                     itemHtml +
-                    (isChecked ? '<span class="day-check"><i class="fas fa-check"></i></span>' : '') +
+                    ((isChecked || makeupMap[day]) ? '<span class="day-check"><i class="fas fa-check"></i></span>' : '') +
                     '</div>';
             }
             
             html += '</div>';
             calendarEl.innerHTML = html;
         }
-        
+
+        // ==================== 每日签到 · 我要补签 ====================
+        var MAKEUP_DAILY_LIMIT = 2;         // 每日最多补签次数（凌晨 4 点刷新）
+        var MAKEUP_ITEM_ID = 'makeup_card'; // 补签卡（含限时补签卡）
+
+        // 当前签到日（凌晨 4 点为界）对应的日历日期（本地 00:00）
+        function getCheckinSigninDayDate() {
+            return new Date(getCheckinDayStr());
+        }
+
+        // 持有补签卡总数（普通 + 限时，自动清理过期）
+        function getMakeupCardCount() {
+            return (typeof warehouseGetTotalItemCount === 'function') ? warehouseGetTotalItemCount(MAKEUP_ITEM_ID) : 0;
+        }
+
+        // 今日已使用的补签次数（凌晨 4 点刷新）
+        function getMakeupUsedToday(user) {
+            var stats = (user && user.userProfile && user.userProfile.checkinStats) || {};
+            var daily = stats.makeupDaily;
+            if (!daily || daily.day !== getCheckinDayStr()) return 0;
+            return daily.count || 0;
+        }
+
+        // 指定月份已补签的日期集合（第几天 -> true）
+        function getMakeupDaySet(user, year, month) {
+            var set = {};
+            var list = (user && user.userProfile && user.userProfile.checkinStats && user.userProfile.checkinStats.makeupDays) || [];
+            list.forEach(function(ds) {
+                var d = new Date(ds);
+                if (d.getFullYear() === year && d.getMonth() === month) set[d.getDate()] = true;
+            });
+            return set;
+        }
+
+        // 本月「今天之前」未签到且未补签的天数列表
+        function getMakeupAvailableDates(user) {
+            var result = [];
+            if (!user) return result;
+            var signin = getCheckinSigninDayDate();
+            var year = signin.getFullYear();
+            var month = signin.getMonth();
+            var todayDay = signin.getDate();
+            var stats = (user.userProfile && user.userProfile.checkinStats) || {};
+            var checkedSet = {};
+            (stats.history || []).forEach(function(h) {
+                var d = new Date(h.date);
+                if (d.getFullYear() === year && d.getMonth() === month) checkedSet[d.getDate()] = true;
+            });
+            var makeupSet = getMakeupDaySet(user, year, month);
+            for (var d = 1; d < todayDay; d++) {
+                if (!checkedSet[d] && !makeupSet[d]) result.push(d);
+            }
+            return result;
+        }
+
+        // 更新「我要补签」按钮的可补签天数标签
+        function updateMakeupButtonLabel(user) {
+            var el = document.getElementById('makeupAvailableDays');
+            if (!el) return;
+            if (!user) user = getCurrentUserRecord().user;
+            el.textContent = '可补签 ' + getMakeupAvailableDates(user).length + ' 天';
+        }
+
+        // 打开「我要补签」弹窗：横向可滑动日历（仅展示到当前签到日）
+        function openMakeupCheckinModal() {
+            if (document.getElementById('makeupOverlay')) return;
+
+            var overlay = document.createElement('div');
+            overlay.className = 'mk-overlay';
+            overlay.id = 'makeupOverlay';
+            overlay.innerHTML =
+                '<div class="mk-modal">' +
+                    '<div class="mk-header">' +
+                        '<div class="mk-header-text">' +
+                            '<h3><i class="fas fa-calendar-plus"></i> 补签</h3>' +
+                            '<p>选择本月今天之前未签到的日期补签。补签仅发放该日期对应的物品奖励，不补发等级经验值、通行证经验值和 PRE Coin</p>' +
+                        '</div>' +
+                        '<button class="mk-close" type="button" title="关闭"><i class="fas fa-times"></i></button>' +
+                    '</div>' +
+                    '<div class="mk-info-bar">' +
+                        '<span class="mk-info-item"><i class="fas fa-ticket-alt"></i> 持有补签卡 <strong id="mkCardCount">0</strong> 张<span class="mk-info-sub">（含限时）</span></span>' +
+                        '<span class="mk-info-item"><i class="fas fa-clock"></i> 今日剩余补签次数 <strong id="mkRemainCount">0</strong> / ' + MAKEUP_DAILY_LIMIT + '</span>' +
+                        '<span class="mk-info-item mk-info-tip"><i class="fas fa-circle-info"></i> 补签次数每日 04:00 刷新</span>' +
+                    '</div>' +
+                    '<div class="mk-strip-wrap" id="mkStripWrap"><div class="mk-strip" id="mkStrip"></div></div>' +
+                    '<div class="mk-legend">' +
+                        '<span class="mk-legend-item"><i class="mk-dot mk-dot-checked"></i>已签到</span>' +
+                        '<span class="mk-legend-item"><i class="mk-dot mk-dot-streak"></i>连签7天以上</span>' +
+                        '<span class="mk-legend-item"><i class="mk-dot mk-dot-makeup"></i>已补签</span>' +
+                        '<span class="mk-legend-item"><i class="mk-dot mk-dot-missed"></i>未签到（可补签）</span>' +
+                    '</div>' +
+                '</div>';
+
+            document.body.appendChild(overlay);
+
+            var stripEl = overlay.querySelector('#mkStrip');
+            var wrapEl = overlay.querySelector('#mkStripWrap');
+            var weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+
+            function render() {
+                var user = getCurrentUserRecord().user;
+                var signin = getCheckinSigninDayDate();
+                var year = signin.getFullYear();
+                var month = signin.getMonth();
+                var todayDay = signin.getDate();
+                var stats = (user && user.userProfile && user.userProfile.checkinStats) || {};
+
+                var checkedSet = {};
+                (stats.history || []).forEach(function(h) {
+                    var d = new Date(h.date);
+                    if (d.getFullYear() === year && d.getMonth() === month) checkedSet[d.getDate()] = h;
+                });
+                var makeupSet = getMakeupDaySet(user, year, month);
+                var cardCount = getMakeupCardCount();
+                var remain = Math.max(0, MAKEUP_DAILY_LIMIT - getMakeupUsedToday(user));
+                var canMakeup = !!user && cardCount > 0 && remain > 0;
+
+                var countEl = overlay.querySelector('#mkCardCount');
+                var remainEl = overlay.querySelector('#mkRemainCount');
+                if (countEl) countEl.textContent = cardCount;
+                if (remainEl) {
+                    remainEl.textContent = remain;
+                    remainEl.classList.toggle('mk-remain-empty', remain <= 0);
+                }
+
+                var html = '';
+                for (var day = 1; day <= todayDay; day++) {
+                    var dateObj = new Date(year, month, day);
+                    var dateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
+                    var cls = 'mk-card';
+                    var stateText = '';
+                    var isChecked = !!checkedSet[day];
+                    var isMakeup = !!makeupSet[day];
+                    var isToday = day === todayDay;
+
+                    if (isChecked) {
+                        cls += ' mk-checked';
+                        if ((checkedSet[day].streak || 0) >= 7) cls += ' mk-streak';
+                        stateText = '已签到';
+                    } else if (isMakeup) {
+                        cls += ' mk-makeup';
+                        stateText = '已补签';
+                    } else if (isToday) {
+                        cls += ' mk-today';
+                        stateText = '今天';
+                    } else {
+                        cls += ' mk-missed';
+                        stateText = '未签到';
+                        if (canMakeup) {
+                            cls += ' mk-available';
+                            stateText = '可补签';
+                        }
+                    }
+
+                    // 该日限时道具缩写
+                    var itemHtml = '';
+                    var dayItems = getDailyCheckinReward(dateStr, user);
+                    if (dayItems.length > 0) {
+                        var firstItem = dayItems[0];
+                        var abbr = CHECKIN_ITEM_ABBREV[firstItem.itemId] || '';
+                        var color = CHECKIN_ITEM_COLOR[firstItem.itemId] || '#666';
+                        if (abbr) itemHtml = '<span class="mk-card-item" style="color:' + color + ';">' + abbr + '</span>';
+                    }
+
+                    html += '<div class="' + cls + '" data-day="' + day + '">' +
+                                '<span class="mk-card-week">周' + weekNames[dateObj.getDay()] + '</span>' +
+                                '<span class="mk-card-day">' + day + '</span>' +
+                                '<span class="mk-card-label">' + (month + 1) + '/' + ('0' + day).slice(-2) + '</span>' +
+                                '<span class="mk-card-state">' + stateText + '</span>' +
+                                itemHtml +
+                            '</div>';
+                }
+                stripEl.innerHTML = html;
+
+                // 默认滚动到最右侧（当前签到日）
+                wrapEl.scrollLeft = wrapEl.scrollWidth;
+            }
+
+            // 点击日期卡片：可补签日期弹出确认弹窗，其余给出不可补签原因
+            stripEl.addEventListener('click', function(e) {
+                var cardEl = e.target.closest ? e.target.closest('.mk-card') : null;
+                if (!cardEl || !stripEl.contains(cardEl)) return;
+                if (cardEl.classList.contains('mk-available')) {
+                    openMakeupConfirm(parseInt(cardEl.getAttribute('data-day'), 10), render);
+                    return;
+                }
+                var curUser = getCurrentUserRecord().user;
+                var msg;
+                if (cardEl.classList.contains('mk-makeup')) msg = '该日期已补签，无需重复补签';
+                else if (cardEl.classList.contains('mk-checked')) msg = '该日期已签到，无需补签';
+                else if (cardEl.classList.contains('mk-today')) msg = '今天不能补签，请等待次日 04:00 后补签';
+                else if (curUser && getMakeupUsedToday(curUser) >= MAKEUP_DAILY_LIMIT) msg = '今日补签次数已用完，请等待至 UTC+8 每日 04:00 刷新后再试';
+                else msg = '暂无补签卡，可通过每日签到（周三 / 周六）或商店获取';
+                if (typeof showToast === 'function') showToast({ type: 'info', title: '提示', message: msg });
+            });
+
+            overlay.querySelector('.mk-close').addEventListener('click', closeMakeupCheckinModal);
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) closeMakeupCheckinModal(); });
+
+            render();
+        }
+
+        function closeMakeupCheckinModal() {
+            var overlay = document.getElementById('makeupOverlay');
+            animateModalClose(overlay);
+            var confirmOverlay = document.querySelector('.mk-confirm-overlay');
+            animateModalClose(confirmOverlay);
+        }
+
+        // 补签确认弹窗（确认后才消耗补签卡）
+        function openMakeupConfirm(day, onDone) {
+            var user = getCurrentUserRecord().user;
+            var signin = getCheckinSigninDayDate();
+            var year = signin.getFullYear();
+            var month = signin.getMonth();
+            var dateObj = new Date(year, month, day);
+            var weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+            var dateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
+            var dateText = (month + 1) + '月' + day + '日（周' + weekNames[dateObj.getDay()] + '）';
+
+            // 该日奖励预览（补签仅发放该日对应的物品奖励）
+            var dayItems = getDailyCheckinReward(dateStr, user);
+            var rewardText = '';
+            if (dayItems.length > 0 && typeof WAREHOUSE_ITEMS !== 'undefined') {
+                dayItems.forEach(function(it) {
+                    var wi = WAREHOUSE_ITEMS[it.itemId];
+                    if (wi) rewardText += (rewardText ? ' + ' : '') + wi.name + ' ×' + it.qty;
+                });
+            }
+            if (!rewardText) rewardText = '无（该日期无物品奖励）';
+
+            var overlay = document.createElement('div');
+            overlay.className = 'mk-confirm-overlay';
+            overlay.innerHTML =
+                '<div class="mk-confirm-box">' +
+                    '<div class="mk-confirm-icon"><i class="fas fa-calendar-plus"></i></div>' +
+                    '<h3>补签确认</h3>' +
+                    '<p class="mk-confirm-text">是否要补签 <b>' + dateText + '</b> 并领取其对应日期的物品奖励？</p>' +
+                    '<p class="mk-confirm-reward"><i class="fas fa-gift"></i> 该日物品奖励：' + rewardText +
+                        '<br><span class="mk-confirm-note">补签不发放成长经验值、通行证经验值和 PRE 硬币</span></p>' +
+                    '<div class="mk-confirm-actions">' +
+                        '<button class="mk-btn mk-btn-cancel" type="button">取消</button>' +
+                        '<button class="mk-btn mk-btn-ok" type="button">确定补签</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+
+            function close() {
+                animateModalClose(overlay);
+            }
+
+            overlay.querySelector('.mk-btn-cancel').addEventListener('click', close);
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+            overlay.querySelector('.mk-btn-ok').addEventListener('click', function() {
+                if (overlay.classList.contains('modal-closing')) return;
+                var res = doCheckinMakeup(day);
+                close();
+                if (typeof showToast === 'function') {
+                    if (res.ok) {
+                        showToast({ type: 'success', title: '补签成功', message: '已补签 ' + dateText + '，' + res.rewardText });
+                    } else {
+                        showToast({ type: res.type || 'error', title: res.title || '补签失败', message: res.reason || '补签失败，请重试' });
+                    }
+                }
+                if (typeof onDone === 'function') onDone();
+            });
+        }
+
+        // 执行补签：消耗 1 张补签卡，发放该日奖励并计入累计签到（连续签到不回溯修复）
+        function doCheckinMakeup(day) {
+            var rec = getCurrentUserRecord();
+            if (!rec.user || rec.index === -1) return { ok: false, title: '补签失败', reason: '未找到当前登录用户' };
+
+            var user = rec.user;
+            var signin = getCheckinSigninDayDate();
+            var year = signin.getFullYear();
+            var month = signin.getMonth();
+            var todayDay = signin.getDate();
+
+            if (!user.userProfile) user.userProfile = {};
+            if (!user.userProfile.checkinStats) user.userProfile.checkinStats = { streak: 0, total: 0, lastCheckin: null, history: [], claimedMilestones: [] };
+            var stats = user.userProfile.checkinStats;
+            if (!Array.isArray(stats.history)) stats.history = [];
+
+            if (day >= todayDay) return { ok: false, title: '无法补签', reason: '只能补签当前签到日之前的日期' };
+            var alreadyChecked = stats.history.some(function(h) {
+                var d = new Date(h.date);
+                return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+            });
+            if (alreadyChecked) return { ok: false, title: '无法补签', reason: '该日期已签到，无需补签' };
+            if (getMakeupDaySet(user, year, month)[day]) return { ok: false, title: '无法补签', reason: '该日期已补签，无需重复补签' };
+
+            if (getMakeupUsedToday(user) >= MAKEUP_DAILY_LIMIT) {
+                return { ok: false, title: '今日补签次数已用完', reason: '每日最多补签 ' + MAKEUP_DAILY_LIMIT + ' 次，请等待至 UTC+8 每日 04:00 刷新后再试' };
+            }
+            if (getMakeupCardCount() <= 0) {
+                return { ok: false, type: 'info', title: '暂无补签卡', reason: '可通过每日签到（周三 / 周六）或商店获取补签卡后再补签' };
+            }
+            if (typeof warehouseConsumeItem !== 'function' || !warehouseConsumeItem(MAKEUP_ITEM_ID, 1)) {
+                return { ok: false, title: '补签失败', reason: '补签卡使用失败，请重试' };
+            }
+
+            var makeupUsed = getMakeupUsedToday(user);
+
+            // 记录补签日期（签到日历区显示为粉色卡片）
+            if (!Array.isArray(stats.makeupDays)) stats.makeupDays = [];
+            stats.makeupDays.push(new Date(year, month, day).toDateString());
+            stats.total = (stats.total || 0) + 1;
+            stats.makeupDaily = { day: getCheckinDayStr(), count: makeupUsed + 1 };
+
+            // 发放该日奖励：仅发放该日期对应的物品奖励（不含成长经验值、通行证经验值和 PRE 硬币）
+            var dateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
+            var dayItems = getDailyCheckinReward(dateStr, user);
+            var rewardText = '';
+            if (dayItems.length > 0) {
+                if (typeof warehouseAddTimedItems === 'function') {
+                    warehouseAddTimedItems(dayItems, '补签奖励 · ' + (month + 1) + '/' + day, 14, true);
+                }
+                consumeMonthlyCheckinCaps(user, dayItems);
+                if (typeof WAREHOUSE_ITEMS !== 'undefined') {
+                    dayItems.forEach(function(it) {
+                        var wi = WAREHOUSE_ITEMS[it.itemId];
+                        if (wi) rewardText += (rewardText ? ' + ' : '') + wi.name + ' ×' + it.qty;
+                    });
+                }
+            }
+            if (!rewardText) rewardText = '该日期无物品奖励';
+
+            rec.users[rec.index] = user;
+            persistUsers(rec.users);
+
+            // 同步主界面：累计签到天数、签到日历、可补签天数标签、等级卡片
+            loadCheckinData();
+
+            return { ok: true, rewardText: rewardText };
+        }
+
         // 签到后更新页面
         function updateCheckinPageAfterCheckin(user) {
             updateLevelCard(user);

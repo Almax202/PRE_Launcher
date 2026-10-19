@@ -46,7 +46,7 @@ var eventAnnouncementData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 公告侧边栏排序配置：按数组顺序显示
-    sortOrder: ['event_season_s1', 'event_level_boost', 'event_autumn_sale', 'event_002', 'event_001', 'event_daily_checkin'],
+    sortOrder: ['event_lottery', 'event_season_s1', 'event_level_boost', 'event_autumn_sale', 'event_002', 'event_001', 'event_daily_checkin'],
     announcements: [
         {
             id: 'event_level_boost',
@@ -80,6 +80,16 @@ var eventAnnouncementData = {
             endDate: '无限制',
             description: '每天登录签到，领取日常奖励',
             content: '<h2>每日签到</h2><p>欢迎使用 PRE Launcher！每日签到是一项<span style="color:#d45d79;font-weight:600;">常驻活动</span>，只要您的账号存在，即可随时参与。</p><h3>活动时间</h3><p>起始日：账号建立时间<br>结束时间：无限制<br>每日更新，签到获取成长经验值</p><h3>奖励说明</h3><p>每日签到可获取成长经验值，限时物品道具和赛季通行证经验值（仅限赛季开放期间），帮助您的账号等级提升。连续签到还将解锁更多里程碑奖励。</p><h3>参与方式</h3><p>在活动中心点击「立即参与」即可跳转至每日签到区域，点击当日签到卡片完成签到。</p>',
+            banner: ''
+        },
+        {
+            id: 'event_lottery',
+            category: 'current',
+            title: '幸运抽奖机',
+            date: '2026-10-20',
+            endDate: '无限制',
+            description: '常驻活动，注册即可参与！每日 / 每周 / 月度三种免费抽取，奖池概率全程公示，幸运币投币可提升指定档位奖品概率。',
+            content: '<h2>幸运抽奖机</h2><p>欢迎使用 PRE Launcher！幸运抽奖机是一项<span style="color:#d45d79;font-weight:600;">常驻活动</span>，只要您的账号存在，即可随时参与。</p><h3>活动时间</h3><p>起始日：账号建立时间<br>结束时间：无限制<br>抽取次数刷新：每日 04:00 / 每周一 04:00 / 每月 1 日 04:00（UTC+8）</p><h3>玩法说明</h3><ul><li><strong>三种抽取：</strong>每日抽取 1 次、每周抽取 3 次、月度抽取 5 次，三种机会相互独立计算</li><li><strong>奖池公示：</strong>奖池覆盖仓库全部道具（不含特定物品），全部物品概率在「概率详情」中全程公示</li><li><strong>幸运币投币：</strong>普通 / 稀有 / 史诗 / 传说四档幸运币可在投币口投入，提升下一次抽取对应档位奖品的概率；不同档位不可同时投入，单次最多投入 10 枚，各档位设有概率上限</li><li><strong>获奖历史：</strong>最近 90 日内的全部获奖记录可随时回查，支持按抽取类型筛选与一键清空</li></ul><h3>参与方式</h3><p>在活动中心「每日活动」分类下找到本活动，点击「立即参与」即可直接打开幸运抽奖机。</p><h3>公告发布时间</h3><p>2026年10月20日（UTC+8）</p>',
             banner: ''
         },
         {
@@ -207,7 +217,7 @@ var eventCenterData = {
         { id: 'ended', name: '已结束', icon: 'fa-flag-checkered' }
     ],
     // 活动侧边栏排序配置：按数组顺序显示
-    sortOrder: ['center_season_s1', 'center_005', 'center_004', 'center_003', 'center_002', 'center_001'],
+    sortOrder: ['center_season_s1', 'center_005', 'center_004', 'center_003', 'center_002', 'center_001', 'center_lottery'],
     events: [
         {
             id: 'center_season_s1',
@@ -263,6 +273,18 @@ var eventCenterData = {
             icon: 'fa-calendar-check',
             announcementId: 'event_daily_checkin',
             showParticipate: true
+        },
+        {
+            id: 'center_lottery',
+            category: 'daily',
+            title: '幸运抽奖机',
+            subtitle: '每日 / 每周 / 月度抽取',
+            status: 'active',
+            description: '常驻活动，注册即可参与！每日 / 每周 / 月度三种免费抽取，奖池概率全程公示，幸运币投币可提升指定档位奖品概率。<p>每日抽取 1 次 · 每周抽取 3 次 · 月度抽取 5 次</p><p>次数刷新：每日 / 每周一 / 每月 1 日 04:00（UTC+8）</p><p>起始日：账号建立时间 · 结束时间：无限制</p>',
+            icon: 'fa-dice-five',
+            announcementId: 'event_lottery',
+            showParticipate: true,
+            participateAction: 'lottery'
         },
         {
             id: 'center_002',
@@ -1079,6 +1101,12 @@ function showEventCenterDetail(id) {
                         closeEventCenterModal();
                         setTimeout(function() {
                             if (window.pass && typeof window.pass.openUI === 'function') window.pass.openUI();
+                        }, 350);
+                    } else if (targetEvt && targetEvt.participateAction === 'lottery') {
+                        // 直接打开幸运抽奖机全屏弹窗
+                        closeEventCenterModal();
+                        setTimeout(function() {
+                            if (typeof window.showLotteryModal === 'function') window.showLotteryModal();
                         }, 350);
                     } else if (targetEvt && targetEvt.id === 'center_001') {
                         closeEventCenterModal();

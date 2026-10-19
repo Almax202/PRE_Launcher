@@ -35,9 +35,18 @@ function buildPassRewards() {
     var W = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS : {};
 
     // 常见物品轮换池（已移除所有 PRE Coin 补给包，补给包改由稀有投放表精确控制）
+    // 幸运币为占位标记：发放时按等级段替换为对应档位（1-30 普通 / 31-60 稀有 / 61-90 史诗 / 91-120 传说）
     var FREE_COMMON = ['gacha_single', 'luck_coin', 'exp_supply_1', 'exp_supply_2'];
     var PREMIUM_COMMON_A = ['exp_boost_small', 'gacha_single', 'luck_coin'];
     var PREMIUM_COMMON_B = ['exp_boost_mid', 'exp_boost_large', 'gacha_ten'];
+
+    // 幸运币档位映射：按通行证等级段返回对应档位物品 id
+    function luckCoinTierForLevel(lv) {
+        if (lv <= 30) return 'luck_coin_common';
+        if (lv <= 60) return 'luck_coin_rare';
+        if (lv <= 90) return 'luck_coin_epic';
+        return 'luck_coin_legend';
+    }
 
     // 稀有物品限量投放表：[物品id, 全赛季上限, 投放等级列表]
     var PREMIUM_RARE_SCHEDULE = [
@@ -81,15 +90,19 @@ function buildPassRewards() {
 
     var rewards = [];
     for (var lv = 1; lv <= PASS_CONFIG.levelCap; lv++) {
-        // 免费物品：整十级给十连抽券，其余从常见池轮换（不含 PRE 硬币）
+        // 免费物品：整十级给十连抽券，其余从常见池轮换（不含 PRE 硬币；幸运币按等级段替换档位）
         var isMilestone = lv % 10 === 0;
+        var freeId = FREE_COMMON[(lv - 1) % FREE_COMMON.length];
+        if (freeId === 'luck_coin') freeId = luckCoinTierForLevel(lv);
         var freeItem = isMilestone
             ? makeItem('gacha_ten', 1)
-            : makeItem(FREE_COMMON[(lv - 1) % FREE_COMMON.length], getQty(lv, 'free'));
+            : makeItem(freeId, getQty(lv, 'free'));
 
-        // 付费槽 A / B：稀有投放表优先，否则常见池轮换
+        // 付费槽 A / B：稀有投放表优先，否则常见池轮换（幸运币按等级段替换档位）
         var rares = PREMIUM_RARE[lv] || [];
-        var premA = makeItem(PREMIUM_COMMON_A[(lv - 1) % PREMIUM_COMMON_A.length], getQty(lv, 'premium'));
+        var premAId = PREMIUM_COMMON_A[(lv - 1) % PREMIUM_COMMON_A.length];
+        if (premAId === 'luck_coin') premAId = luckCoinTierForLevel(lv);
+        var premA = makeItem(premAId, getQty(lv, 'premium'));
         var premB = rares.length > 0
             ? makeItem(rares[0], 1)
             : makeItem(PREMIUM_COMMON_B[(lv - 1) % PREMIUM_COMMON_B.length], getQty(lv, 'premium'));
@@ -2664,19 +2677,25 @@ function _bindPassEvents() {
     // 购买等级弹窗：输入框实时计算
     var buyInput = document.getElementById('passBuyLevelInput');
     buyInput.addEventListener('input', _updateBuyLevelCost);
-    document.getElementById('passStepMinus').addEventListener('click', function() {
+    // 购买等级 ± 步进：单击一次一步，长按可快速批量增减（bindHoldRepeat 由 warehouse.js 提供）
+    function _passBuyStep(delta) {
         var n = parseInt(buyInput.value, 10) || 1;
-        n = Math.max(1, n - 1);
+        if (delta > 0) {
+            var max = PASS_CONFIG.levelCap - getPassData().level;
+            n = Math.min(max, n + 1);
+        } else {
+            n = Math.max(1, n - 1);
+        }
         buyInput.value = n;
         _updateBuyLevelCost();
-    });
-    document.getElementById('passStepPlus').addEventListener('click', function() {
-        var n = parseInt(buyInput.value, 10) || 1;
-        var max = PASS_CONFIG.levelCap - getPassData().level;
-        n = Math.min(max, n + 1);
-        buyInput.value = n;
-        _updateBuyLevelCost();
-    });
+    }
+    if (typeof window.bindHoldRepeat === 'function') {
+        window.bindHoldRepeat(document.getElementById('passStepMinus'), function() { _passBuyStep(-1); });
+        window.bindHoldRepeat(document.getElementById('passStepPlus'), function() { _passBuyStep(1); });
+    } else {
+        document.getElementById('passStepMinus').addEventListener('click', function() { _passBuyStep(-1); });
+        document.getElementById('passStepPlus').addEventListener('click', function() { _passBuyStep(1); });
+    }
     document.getElementById('passBuyLevelCancel').addEventListener('click', _closeBuyLevelModal);
     document.getElementById('passBuyLevelConfirm').addEventListener('click', _openBuyLevelConfirm);
 
