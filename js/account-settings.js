@@ -9788,7 +9788,16 @@
                     });
                 } else if (action === 'logout') {
                     showConfirm('是否要退出登录？\n退出后需要重新登录才能使用启动器', function() {
+                        // 与主退出流程保持一致：同时清除快速登录凭据，
+                        // 否则返回登录页后登录卡片仍保留之前账户的快速登录模式
                         localStorage.removeItem('currentUser');
+                        localStorage.removeItem('rememberMe');
+                        localStorage.removeItem('savedUsername');
+                        localStorage.removeItem('savedPassword');
+                        localStorage.removeItem('autoLogin');
+                        localStorage.removeItem('currentUserAvatar');
+                        localStorage.removeItem('skipSecurityVerify');
+                        localStorage.removeItem('skipSecurityVerifyExpire');
                         sessionStorage.clear();
                         window.location.href = '../index.html';
                     });

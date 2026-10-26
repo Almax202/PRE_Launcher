@@ -6,6 +6,12 @@ const EVENT_STORAGE_KEYS = {
     EVENT_DATA_VERSION: 'event_data_version'
 };
 
+// 物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
+function _evtItemIconHtml(icon, color) {
+    if (typeof preIcon === 'function') return preIcon(icon, color ? { color: color } : {});
+    return '<i class="' + icon + '"' + (color ? ' style="color:' + color + ';"' : '') + '></i>';
+}
+
 // 初始化：如果数据版本不匹配，重置已读状态
 (function initEventData() {
     var currentVersion = '2';
@@ -153,7 +159,7 @@ var passAnnouncementData = {
             category: 'system',
             title: '赛季任务与经验获取指南',
             date: '2026-10-10',
-            content: '<h2>赛季任务与经验获取指南</h2><p>通行证经验是提升通行证等级的唯一途径，本公告帮助您快速了解<span style="color:#ff9dc0;font-weight:600;">经验获取途径与任务系统</span>，规划本赛季的升级节奏。</p><h3>升级所需经验</h3><p>通行证每提升 1 级需要 <strong>10 点通行证经验</strong>，全赛季 120 级共需 1200 点经验，满级后进入 EX 溢出阶段。</p><h3>三层任务系统</h3><ul><li><strong>日常任务：</strong>每日凌晨 4 点刷新，完成签到、商店兑换、仓库管理等日常行为即可自动累积通行证经验</li><li><strong>周常任务：</strong>每周一凌晨 4 点刷新，目标跨度更大，奖励经验更多，请留意每周事项页签的刷新时间</li><li><strong>赛季任务：</strong>贯穿整个赛季的长线目标，一次性完成后可获取大额经验奖励</li></ul><h3>经验获取途径</h3><ul><li>完成日常 / 周常 / 赛季任务</li><li>每日签到（仅限赛季开放期间同步累积通行证经验）</li><li>商店兑换、仓库管理等日常行为的附带经验</li></ul><h3>温馨提示</h3><p>通行证经验与账号成长等级经验相互独立；赛季结束后未使用的通行证经验将清零，请合理安排完成节奏。</p><h3>公告发布时间</h3><p>2026年10月10日（UTC+8）</p>'
+            content: '<h2>赛季任务与经验获取指南</h2><p>通行证经验是提升通行证等级的唯一途径，本公告帮助您快速了解<span style="color:#ff9dc0;font-weight:600;">经验获取途径与任务系统</span>，规划本赛季的升级节奏。</p><h3>升级所需经验</h3><p>通行证每提升 1 级需要 <strong>10 点通行证经验</strong>，全赛季 120 级共需 1200 点经验，满级后进入 EX 溢出阶段。</p><h3>三层任务系统</h3><ul><li><strong>日常任务：</strong>每日凌晨 4 点刷新，固定 <strong>8 个任务</strong>全部放出，全部完成每日可获取 <strong>20 点通行证经验</strong>，完成签到、商店兑换、仓库管理等日常行为即可自动累积</li><li><strong>周常任务：</strong>每周一凌晨 4 点刷新，固定 <strong>10 个任务</strong>全部放出，每个任务 <strong>5 点经验</strong>，全部完成每周可获取 <strong>50 点通行证经验</strong>，请留意每周的刷新时间</li><li><strong>赛季任务：</strong>贯穿整个赛季的 <strong>15 个长线目标</strong>（5~10 经验/个），一次性完成后可获取大额经验奖励</li></ul><h3>经验获取途径</h3><ul><li>完成日常 / 周常 / 赛季任务</li><li>每日签到（仅限赛季开放期间同步累积通行证经验）</li><li>商店兑换、仓库管理等日常行为的附带经验</li></ul><h3>温馨提示</h3><p>通行证经验与账号成长等级经验相互独立；赛季结束后未使用的通行证经验将清零，请合理安排完成节奏。</p><h3>公告发布时间</h3><p>2026年10月10日（UTC+8）</p>'
         },
         {
             id: 'pass_ann_purchase_guide',
@@ -174,7 +180,7 @@ var passAnnouncementData = {
             category: 'rules',
             title: '每周事项机制说明',
             date: '2026-10-10',
-            content: '<h2>每周事项机制说明</h2><p>「每周事项」是赛季通行证的<span style="color:#ff9dc0;font-weight:600;">12 周长线任务玩法</span>，每周解锁一批专属任务，帮助您在赛季全程稳定获取通行证经验。</p><h3>开放规则</h3><ul><li>自赛季开启（2026年10月1日 04:00，UTC+8）起，<strong>每 7 天开放 1 周</strong>（即新一周第一天的凌晨 4 点扩充），全赛季共 12 周</li><li>点击「每周事项」页签后，周次按钮会从页签栏右侧滑出，可点击周次切换，也可使用左右箭头翻页</li><li>未开放的周次按钮置灰显示，页签栏内会实时显示<strong>距下一周开放的天数</strong>（1~7 天）</li><li>12 周全部开放后不再显示倒计时</li></ul><h3>任务构成</h3><ul><li>每周固定 <strong>8 个任务</strong>，全赛季 12 周共 96 个任务</li><li>任务内容涵盖每日签到、小游戏、抽卡模拟器、仓库、商店、邮件、百宝箱与累计赚取 PRE Coin 等日常行为</li><li>任务难度随周次递进（如第 1 周签到 2 次、第 2 周签到 3 次），单任务经验值为 <strong>3~8 点</strong></li></ul><h3>进度与领取</h3><ul><li>任务进度由对应的日常行为自动累积，无需手动报名</li><li>进度达标后需在「每周事项」页内<strong>手动点击领取</strong>通行证经验</li><li>开放周次内的任务在当周结束后仍可领取，请放心安排时间</li></ul><h3>温馨提示</h3><p>每周事项经验与日常/周常/赛季任务相互独立；赛季结束后未领取的任务经验将随赛季一并失效，建议每周定期查看并领取。</p><h3>公告发布时间</h3><p>2026年10月10日（UTC+8）</p>'
+            content: '<h2>每周事项机制说明</h2><p>「每周事项」是赛季通行证的<span style="color:#ff9dc0;font-weight:600;">12 周长线任务玩法</span>，每周解锁一批专属任务，帮助您在赛季全程稳定获取通行证经验。</p><h3>开放规则</h3><ul><li>自赛季开启（2026年10月1日 04:00，UTC+8）起，<strong>每 7 天开放 1 周</strong>（即新一周第一天的凌晨 4 点扩充），全赛季共 12 周</li><li>点击「每周事项」页签后，周次按钮会从页签栏右侧滑出，可点击周次切换，也可使用左右箭头翻页</li><li>未开放的周次按钮置灰显示，页签栏内会实时显示<strong>距下一周开放的天数</strong>（1~7 天）</li><li>12 周全部开放后不再显示倒计时</li></ul><h3>任务构成</h3><ul><li>每周固定 <strong>10 个任务</strong>，全赛季 12 周共 120 个任务</li><li>任务内容涵盖每日签到、小游戏、抽卡模拟器、仓库、商店、邮件、百宝箱与累计赚取 PRE Coin 等日常行为</li><li>任务难度随周次递进（如第 1 周签到 2 次、第 2 周签到 3 次），单任务经验值为 <strong>3~10 点</strong></li></ul><h3>进度与领取</h3><ul><li>任务进度由对应的日常行为自动累积，无需手动报名</li><li>进度达标后需在「每周事项」页内<strong>手动点击领取</strong>通行证经验</li><li>开放周次内的任务在当周结束后仍可领取，请放心安排时间</li></ul><h3>温馨提示</h3><p>每周事项经验与日常/周常/赛季任务相互独立；赛季结束后未领取的任务经验将随赛季一并失效，建议每周定期查看并领取。</p><h3>公告发布时间</h3><p>2026年10月10日（UTC+8）</p>'
         },
         {
             id: 'pass_ann_phase_guide',
@@ -202,7 +208,14 @@ var passAnnouncementData = {
             category: 'system',
             title: '赛季完成度功能指南',
             date: '2026-10-12',
-            content: '<h2>赛季完成度功能指南</h2><p>赛季通行证现已新增<span style="color:#ffb347;font-weight:600;">「赛季完成度」</span>功能，帮助您直观掌握本赛季各维度的完成进度，一眼看出哪些方面还有提升空间。</p><h3>功能入口</h3><ul><li>打开赛季通行证窗口，在顶部页签栏中点击<strong>「赛季完成度」</strong>即可进入</li><li>也可点击通行证窗口左上角「切换」按钮，在赛季卡片的<strong>右上角金色完成度标签</strong>上点击，查看当前赛季完成度概览</li></ul><h3>界面布局</h3><ul><li>页面<strong>左侧</strong>为金色渐变描边的<strong>总进度圆环</strong>，中心显示整体完成百分比，下方在 100% 时会出现「全部完成」金色徽章</li><li>页面<strong>右侧</strong>以 2 列网格展示各维度完成度条目，通过金色连接线统一汇入左侧总进度圆环</li></ul><h3>五大完成度维度</h3><ul><li><strong>通行证等级总进度：</strong>当前等级与 120 级满级的比值（已等级经验折算）</li><li><strong>通行证任务总进度：</strong>赛季任务（10 个长线任务）的累计完成度，日常/周常为循环刷新任务不计入</li><li><strong>每周事项十二周总进度：</strong>仅计入<strong>已开放周次</strong>（每 7 天开放 1 周），新周次开放后自动纳入计算，赛季全程共 12 周</li><li><strong>阶段奖励领取完成度：</strong>付费通行证专属的 6 个里程碑节点（0/30/50/80/100/120 级）领取完成情况；未购买付费通行证时显示解锁提示</li><li><strong>等级提速完成度：</strong>仅在<strong>赛季最后一周</strong>开启后自动计入总进度，未开启时显示为 0% 且不计入平均值</li></ul><h3>总进度计算</h3><ul><li>总进度为已计入维度完成度的<strong>简单平均值</strong>（未开启等级提速时为 4 维平均，开启后为 5 维平均）</li><li>赛季完成后总进度将冻结，进入下一赛季后可通过切换赛季弹窗回看历史赛季完成度</li></ul><h3>温馨提示</h3><p>总进度 100% 时圆环下方会出现发光的「全部完成」金色徽章；赛季结束后可随时在切换赛季弹窗中点击金色标签回看本赛季的完成度数据。</p><h3>公告发布时间</h3><p>2026年10月12日（UTC+8）</p>'
+            content: '<h2>赛季完成度功能指南</h2><p>赛季通行证现已新增<span style="color:#ffb347;font-weight:600;">「赛季完成度」</span>功能，帮助您直观掌握本赛季各维度的完成进度，一眼看出哪些方面还有提升空间。</p><h3>功能入口</h3><ul><li>打开赛季通行证窗口，在顶部页签栏中点击<strong>「赛季完成度」</strong>即可进入</li><li>也可点击通行证窗口左上角「切换」按钮，在赛季卡片的<strong>右上角金色完成度标签</strong>上点击，查看当前赛季完成度概览</li></ul><h3>界面布局</h3><ul><li>页面<strong>左侧</strong>为金色渐变描边的<strong>总进度圆环</strong>，中心显示整体完成百分比，下方在 100% 时会出现「全部完成」金色徽章</li><li>页面<strong>右侧</strong>以 2 列网格展示各维度完成度条目，通过金色连接线统一汇入左侧总进度圆环</li></ul><h3>五大完成度维度</h3><ul><li><strong>通行证等级总进度：</strong>当前等级与 120 级满级的比值（已等级经验折算）</li><li><strong>通行证任务总进度：</strong>赛季任务（15 个长线任务）的累计完成度，日常/周常为循环刷新任务不计入</li><li><strong>每周事项十二周总进度：</strong>仅计入<strong>已开放周次</strong>（每 7 天开放 1 周），新周次开放后自动纳入计算，赛季全程共 12 周</li><li><strong>阶段奖励领取完成度：</strong>付费通行证专属的 6 个里程碑节点（0/30/50/80/100/120 级）领取完成情况；未购买付费通行证时显示解锁提示</li><li><strong>等级提速完成度：</strong>仅在<strong>赛季最后一周</strong>开启后自动计入总进度，未开启时显示为 0% 且不计入平均值</li></ul><h3>总进度计算</h3><ul><li>总进度为已计入维度完成度的<strong>简单平均值</strong>（未开启等级提速时为 4 维平均，开启后为 5 维平均）</li><li>赛季完成后总进度将冻结，进入下一赛季后可通过切换赛季弹窗回看历史赛季完成度</li></ul><h3>温馨提示</h3><p>总进度 100% 时圆环下方会出现发光的「全部完成」金色徽章；赛季结束后可随时在切换赛季弹窗中点击金色标签回看本赛季的完成度数据。</p><h3>公告发布时间</h3><p>2026年10月12日（UTC+8）</p>'
+        },
+        {
+            id: 'pass_ann_exp_calc_guide',
+            category: 'system',
+            title: '等级获取计算功能指南',
+            date: '2026-10-23',
+            content: '<h2>等级获取计算功能指南</h2><p>赛季通行证现已新增<span style="color:#7ee8fa;font-weight:600;">「等级获取计算」</span>功能，一键统计您当前仍可获取的通行证经验总量，并自动折算为通行证等级，帮助您合理规划本赛季的升级节奏。</p><h3>功能入口</h3><ul><li>打开赛季通行证窗口，在右上角 PRE Coin 统计卡片内、「等级上限」右侧点击<strong>「等级获取计算」</strong>即可打开计算弹窗</li></ul><h3>计算范围</h3><ul><li><strong>日常任务：</strong>今日已刷新的 8 个日常任务中，尚未领取经验的任务</li><li><strong>周常任务：</strong>本周已刷新的 10 个周常任务中，尚未领取经验的任务</li><li><strong>赛季任务：</strong>15 个长线赛季任务中，尚未领取经验的任务</li><li><strong>每周事项：</strong>仅计入<strong>当前已开放的周次</strong>（每 7 天开放 1 周，每周 10 个任务），未开放周次不参与计算</li><li><strong>等级提速：</strong>仅在赛季最后一周提速<strong>开启后</strong>计入，未开启 / 等待期时不参与计算</li></ul><h3>计算规则</h3><ul><li>仅统计<strong>尚未领取经验</strong>的任务，已领取的任务经验不会重复计入</li><li>每 <strong>10 点通行证经验</strong>可提升 1 级通行证等级，弹窗顶部会显示剩余可获取经验总量与折算等级数</li><li>结合您当前的等级与经验进度，预估全部获取后可达到的通行证等级；超出 120 级满级的部分将自动折算为 EX 溢出等级</li></ul><h3>温馨提示</h3><p>计算结果为当前时刻的实时数据；日常 / 周常任务在每日 / 每周刷新后，可获取经验会相应变化，请以弹窗内最新计算结果为准。</p><h3>公告发布时间</h3><p>2026年10月23日（UTC+8）</p>'
         }
     ]
 };
@@ -436,7 +449,7 @@ function getEventExpMultiplier() {
 }
 
 // 当前经验获取总倍率 = 活动固定倍率 × 仓库经验值加成卡倍率
-// 加成卡仍严格遵循其自身叠加规则（不同类型可叠加、同类型不可叠加、最多同时4张）
+// 加成卡仍严格遵循其自身叠加规则（不同类型可叠加、同类型不可叠加、最多同时5张）
 function getTotalExpMultiplier() {
     var eventMult = getEventExpMultiplier();
     var cardMult = (typeof getWarehouseExpMultiplier === 'function') ? getWarehouseExpMultiplier() : 1;
@@ -1383,15 +1396,15 @@ function generateCheckinSection(eventId) {
         if (isLocked) {
             innerContent = '<div class="evt-reward-card-lock"><i class="fas fa-lock"></i></div><div class="evt-reward-card-label">第' + reward.day + '天 待解锁</div>';
         } else if (reward.type === 'cardStyle') {
-            innerContent = '<div class="evt-reward-card-icon" style="background: rgba(212, 93, 121, 0.15);"><i class="fas fa-id-card" style="color: #d45d79;"></i></div><div class="evt-reward-card-label">' + reward.label + '</div>';
+            innerContent = '<div class="evt-reward-card-icon" style="background: rgba(212, 93, 121, 0.15);">' + _evtItemIconHtml('fas fa-id-card', '#d45d79') + '</div><div class="evt-reward-card-label">' + reward.label + '</div>';
         } else if (reward.type === 'background3d') {
-            innerContent = '<div class="evt-reward-card-icon" style="background: rgba(124, 92, 191, 0.15);"><i class="fas fa-rocket" style="color: #7c5cbf;"></i></div><div class="evt-reward-card-label">' + reward.label + '</div>';
+            innerContent = '<div class="evt-reward-card-icon" style="background: rgba(124, 92, 191, 0.15);">' + _evtItemIconHtml('fas fa-rocket', '#7c5cbf') + '</div><div class="evt-reward-card-label">' + reward.label + '</div>';
         } else if (reward.type === 'warehouse') {
             var wColor = reward.color || '#d45d79';
             var wCountBadge = reward.count > 1 ? '<span class="evt-reward-card-count">×' + reward.count + '</span>' : '';
-            innerContent = '<div class="evt-reward-card-icon" style="background: ' + wColor + '22;"><i class="fas ' + reward.icon + '" style="color: ' + wColor + ';"></i>' + wCountBadge + '</div><div class="evt-reward-card-label">' + reward.label + '</div>';
+            innerContent = '<div class="evt-reward-card-icon" style="background: ' + wColor + '22;">' + _evtItemIconHtml('fas ' + reward.icon, wColor) + wCountBadge + '</div><div class="evt-reward-card-label">' + reward.label + '</div>';
         } else {
-            innerContent = '<div class="evt-reward-card-icon"><i class="fas ' + reward.icon + '"></i></div><div class="evt-reward-card-label">' + reward.label + '</div>';
+            innerContent = '<div class="evt-reward-card-icon">' + _evtItemIconHtml('fas ' + reward.icon) + '</div><div class="evt-reward-card-label">' + reward.label + '</div>';
         }
 
         return `

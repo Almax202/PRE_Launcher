@@ -6,6 +6,12 @@
 
 var PASS_DATA_VERSION = 1;
 
+// 物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
+function _passItemIconHtml(icon, color) {
+    if (typeof preIcon === 'function') return preIcon(icon, color ? { color: color } : {});
+    return '<i class="' + icon + '"' + (color ? ' style="color:' + color + ';"' : '') + '></i>';
+}
+
 // ==================== 赛季配置 ====================
 var PASS_CONFIG = {
     seasonId: 1,
@@ -121,34 +127,38 @@ function buildPassRewards() {
 }
 
 // ==================== 任务定义 ====================
-// 日常任务：每天刷新，最多 5 个，每个 2 经验
+// 日常任务：每天刷新，固定 8 个全部放出，每日合计 20 经验
 var PASS_DAILY_TASK_POOL = [
     { id: 'd_claim',    title: '领取任意每日奖励', desc: '在每日签到领取 1 次奖励',        target: 1, exp: 2 },
     { id: 'd_warehouse', title: '查看仓库',          desc: '打开仓库 1 次',                  target: 1, exp: 2 },
     { id: 'd_shop',     title: '浏览商店',          desc: '打开商店 1 次',                  target: 1, exp: 2 },
     { id: 'd_login',    title: '每日登录',          desc: '今日启动启动器 1 次',             target: 1, exp: 2 },
-    { id: 'd_coin',     title: '赚取 PRE Coin',     desc: '今日获得任意数量 PRE Coin',       target: 1, exp: 2 },
-    { id: 'd_play',     title: '玩一次小游戏',      desc: '在游戏中心游玩任意小游戏 1 次',   target: 1, exp: 2 },
-    { id: 'd_gacha',    title: '抽卡一次',          desc: '在抽卡模拟器执行 1 次抽取',       target: 1, exp: 2 }
+    { id: 'd_coin',     title: '赚取 PRE Coin',     desc: '今日获得任意数量 PRE Coin',       target: 1, exp: 3 },
+    { id: 'd_play',     title: '玩一次小游戏',      desc: '在游戏中心游玩任意小游戏 1 次',   target: 1, exp: 3 },
+    { id: 'd_gacha',    title: '抽卡一次',          desc: '在抽卡模拟器执行 1 次抽取',       target: 1, exp: 3 },
+    { id: 'd_pass',     title: '查看通行证',        desc: '打开赛季通行证 1 次',             target: 1, exp: 3 }
 ];
 
-// 周常任务：每周一刷新，最多 5 个，每个 4 经验
+// 周常任务：每周一刷新，固定 10 个全部放出，每个 5 经验，每周合计 50 经验
 var PASS_WEEKLY_TASK_POOL = [
-    { id: 'w_claim7',   title: '签到累计',          desc: '本周在每日签到累计领取 3 天',     target: 3, exp: 4 },
-    { id: 'w_play5',    title: '玩小游戏',          desc: '本周游玩任意小游戏 5 次',         target: 5, exp: 4 },
-    { id: 'w_gacha10',  title: '抽卡挑战',          desc: '本周在抽卡模拟器抽取 10 次',      target: 10, exp: 4 },
-    { id: 'w_coin100',  title: '积累财富',          desc: '本周累计赚取 100 PRE Coin',       target: 100, exp: 4 },
-    { id: 'w_browse',   title: '探索启动器',        desc: '本周打开仓库/商店/任务中心各 1 次', target: 3, exp: 4 },
-    { id: 'w_catchup',  title: '补签奖励',          desc: '本周使用补签卡 1 次',             target: 1, exp: 4 },
-    { id: 'w_premium',  title: '体验付费道具',      desc: '本周使用任意经验加成卡 2 次',     target: 2, exp: 4 }
+    { id: 'w_claim7',   title: '签到累计',          desc: '本周在每日签到累计领取 3 天',     target: 3, exp: 5 },
+    { id: 'w_play5',    title: '玩小游戏',          desc: '本周游玩任意小游戏 5 次',         target: 5, exp: 5 },
+    { id: 'w_gacha10',  title: '抽卡挑战',          desc: '本周在抽卡模拟器抽取 10 次',      target: 10, exp: 5 },
+    { id: 'w_coin100',  title: '积累财富',          desc: '本周累计赚取 100 PRE Coin',       target: 100, exp: 5 },
+    { id: 'w_browse',   title: '探索启动器',        desc: '本周打开仓库/商店/任务中心各 1 次', target: 3, exp: 5 },
+    { id: 'w_catchup',  title: '补签奖励',          desc: '本周使用补签卡 1 次',             target: 1, exp: 5 },
+    { id: 'w_premium',  title: '体验付费道具',      desc: '本周使用任意经验加成卡 2 次',     target: 2, exp: 5 },
+    { id: 'w_login3',   title: '登录打卡',          desc: '本周累计登录 3 天',               target: 3, exp: 5 },
+    { id: 'w_gacha20',  title: '抽卡进阶',          desc: '本周在抽卡模拟器抽取 20 次',      target: 20, exp: 5 },
+    { id: 'w_pass3',    title: '关注通行证',        desc: '本周打开赛季通行证 3 次',         target: 3, exp: 5 }
 ];
 
-// ==================== 每周事项（12 周 × 8 个任务，3-8 经验） ====================
+// ==================== 每周事项（12 周 × 10 个任务，3-10 经验） ====================
 // 周次开放规则：自 PASS_CONFIG.startTime 起每 7 天开放 1 周，总计 12 周
 // （扩充时刻随赛季起始时间固定在 UTC+8 凌晨 4 点，即新一周第一天的凌晨 4 点扩充）
 // 任务类型 key 与 _wireTaskHooks / dailyTaskMarkProgress 的 taskKey 保持一致
 //   checkin / minigame / gacha / warehouse / treasure / mail / shop / coin / boost
-// 每周任务列表按顺序固定，每周 8 个，通行证经验值范围 3~8
+// 每周任务列表按顺序固定，每周 10 个，通行证经验值范围 3~10
 var PASS_WEEKLY12_TASK_POOLS = [
     // ===== 第一周 =====
     [
@@ -159,7 +169,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk1_t5', title: '商店常客',       desc: '本周打开商店 2 次',                        target: 2,   exp: 3, taskKey: 'shop'      },
         { id: 'wk1_t6', title: '邮件查收',       desc: '本周打开邮件系统 1 次',                    target: 1,   exp: 3, taskKey: 'mail'      },
         { id: 'wk1_t7', title: '百宝箱探秘',     desc: '本周打开百宝箱 1 次',                      target: 1,   exp: 3, taskKey: 'treasure'  },
-        { id: 'wk1_t8', title: '小有积蓄',       desc: '本周累计赚取 150 PRE Coin',                target: 150, exp: 6, taskKey: 'coin'      }
+        { id: 'wk1_t8', title: '小有积蓄',       desc: '本周累计赚取 150 PRE Coin',                target: 150, exp: 6, taskKey: 'coin'      },
+        { id: 'wk1_t9', title: '签到先锋',       desc: '本周完成每日签到 3 次',                    target: 3,   exp: 8, taskKey: 'checkin'   },
+        { id: 'wk1_t10', title: '聚财有方',      desc: '本周累计赚取 200 PRE Coin',                target: 200, exp: 9, taskKey: 'coin'      }
     ],
     // ===== 第二周 =====
     [
@@ -170,7 +182,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk2_t5', title: '逛街购物',       desc: '本周打开商店 3 次',                        target: 3,   exp: 3, taskKey: 'shop'      },
         { id: 'wk2_t6', title: '邮件达人',       desc: '本周打开邮件系统 2 次',                    target: 2,   exp: 4, taskKey: 'mail'      },
         { id: 'wk2_t7', title: '宝箱探索',       desc: '本周打开百宝箱 2 次',                      target: 2,   exp: 4, taskKey: 'treasure'  },
-        { id: 'wk2_t8', title: '财富积累',       desc: '本周累计赚取 250 PRE Coin',                target: 250, exp: 7, taskKey: 'coin'      }
+        { id: 'wk2_t8', title: '财富积累',       desc: '本周累计赚取 250 PRE Coin',                target: 250, exp: 7, taskKey: 'coin'      },
+        { id: 'wk2_t9', title: '签到加速',       desc: '本周完成每日签到 4 次',                    target: 4,   exp: 8, taskKey: 'checkin'   },
+        { id: 'wk2_t10', title: '幸运连抽',      desc: '本周在抽卡模拟器抽取 6 次',                target: 6,   exp: 9, taskKey: 'gacha'     }
     ],
     // ===== 第三周 =====
     [
@@ -181,7 +195,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk3_t5', title: '商店扫货',       desc: '本周打开商店 4 次',                        target: 4,   exp: 4, taskKey: 'shop'      },
         { id: 'wk3_t6', title: '信息查阅',       desc: '本周打开邮件系统 3 次',                    target: 3,   exp: 4, taskKey: 'mail'      },
         { id: 'wk3_t7', title: '百宝箱常客',     desc: '本周打开百宝箱 3 次',                      target: 3,   exp: 4, taskKey: 'treasure'  },
-        { id: 'wk3_t8', title: '经验加成',       desc: '本周使用任意经验加成卡 1 次',              target: 1,   exp: 6, taskKey: 'boost'     }
+        { id: 'wk3_t8', title: '经验加成',       desc: '本周使用任意经验加成卡 1 次',              target: 1,   exp: 6, taskKey: 'boost'     },
+        { id: 'wk3_t9', title: '签到稳固',       desc: '本周完成每日签到 5 次',                    target: 5,   exp: 8, taskKey: 'checkin'   },
+        { id: 'wk3_t10', title: '金币汇聚',      desc: '本周累计赚取 300 PRE Coin',                target: 300, exp: 9, taskKey: 'coin'      }
     ],
     // ===== 第四周 =====
     [
@@ -192,7 +208,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk4_t5', title: '购物达人',       desc: '本周打开商店 5 次',                        target: 5,   exp: 4, taskKey: 'shop'      },
         { id: 'wk4_t6', title: '邮件勤查',       desc: '本周打开邮件系统 3 次',                    target: 3,   exp: 4, taskKey: 'mail'      },
         { id: 'wk4_t7', title: '宝藏猎人',       desc: '本周打开百宝箱 3 次',                      target: 3,   exp: 4, taskKey: 'treasure'  },
-        { id: 'wk4_t8', title: '财源广进',       desc: '本周累计赚取 350 PRE Coin',                target: 350, exp: 7, taskKey: 'coin'      }
+        { id: 'wk4_t8', title: '财源广进',       desc: '本周累计赚取 350 PRE Coin',                target: 350, exp: 7, taskKey: 'coin'      },
+        { id: 'wk4_t9', title: '游戏冲刺',       desc: '本周游玩任意小游戏 6 次',                  target: 6,   exp: 9, taskKey: 'minigame'  },
+        { id: 'wk4_t10', title: '欧气连发',      desc: '本周在抽卡模拟器抽取 8 次',                target: 8,   exp: 10, taskKey: 'gacha'     }
     ],
     // ===== 第五周 =====
     [
@@ -203,7 +221,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk5_t5', title: '购物扫货',       desc: '本周打开商店 5 次',                        target: 5,   exp: 4, taskKey: 'shop'      },
         { id: 'wk5_t6', title: '信件达人',       desc: '本周打开邮件系统 4 次',                    target: 4,   exp: 5, taskKey: 'mail'      },
         { id: 'wk5_t7', title: '宝箱专家',       desc: '本周打开百宝箱 4 次',                      target: 4,   exp: 5, taskKey: 'treasure'  },
-        { id: 'wk5_t8', title: '加成强化',       desc: '本周使用任意经验加成卡 2 次',              target: 2,   exp: 7, taskKey: 'boost'     }
+        { id: 'wk5_t8', title: '加成强化',       desc: '本周使用任意经验加成卡 2 次',              target: 2,   exp: 7, taskKey: 'boost'     },
+        { id: 'wk5_t9', title: '签到进阶',       desc: '本周完成每日签到 6 次',                    target: 6,   exp: 9, taskKey: 'checkin'   },
+        { id: 'wk5_t10', title: '财富涌流',      desc: '本周累计赚取 400 PRE Coin',                target: 400, exp: 10, taskKey: 'coin'      }
     ],
     // ===== 第六周 =====
     [
@@ -214,7 +234,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk6_t5', title: '商店老主顾',     desc: '本周打开商店 6 次',                        target: 6,   exp: 5, taskKey: 'shop'      },
         { id: 'wk6_t6', title: '邮件快递',       desc: '本周打开邮件系统 4 次',                    target: 4,   exp: 5, taskKey: 'mail'      },
         { id: 'wk6_t7', title: '宝藏挖掘',       desc: '本周打开百宝箱 4 次',                      target: 4,   exp: 5, taskKey: 'treasure'  },
-        { id: 'wk6_t8', title: '日进斗金',       desc: '本周累计赚取 400 PRE Coin',                target: 400, exp: 8, taskKey: 'coin'      }
+        { id: 'wk6_t8', title: '日进斗金',       desc: '本周累计赚取 400 PRE Coin',                target: 400, exp: 8, taskKey: 'coin'      },
+        { id: 'wk6_t9', title: '连抽不断',       desc: '本周在抽卡模拟器抽取 10 次',               target: 10,  exp: 9, taskKey: 'gacha'     },
+        { id: 'wk6_t10', title: '游戏无止境',    desc: '本周游玩任意小游戏 8 次',                  target: 8,   exp: 10, taskKey: 'minigame'  }
     ],
     // ===== 第七周 =====
     [
@@ -225,7 +247,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk7_t5', title: '购物狂欢',       desc: '本周打开商店 6 次',                        target: 6,   exp: 5, taskKey: 'shop'      },
         { id: 'wk7_t6', title: '信息站长',       desc: '本周打开邮件系统 5 次',                    target: 5,   exp: 5, taskKey: 'mail'      },
         { id: 'wk7_t7', title: '百宝箱大师',     desc: '本周打开百宝箱 5 次',                      target: 5,   exp: 5, taskKey: 'treasure'  },
-        { id: 'wk7_t8', title: '加成连击',       desc: '本周使用任意经验加成卡 2 次',              target: 2,   exp: 7, taskKey: 'boost'     }
+        { id: 'wk7_t8', title: '加成连击',       desc: '本周使用任意经验加成卡 2 次',              target: 2,   exp: 7, taskKey: 'boost'     },
+        { id: 'wk7_t9', title: '金币满贯',       desc: '本周累计赚取 450 PRE Coin',                target: 450, exp: 9, taskKey: 'coin'      },
+        { id: 'wk7_t10', title: '抽卡风暴',      desc: '本周在抽卡模拟器抽取 12 次',               target: 12,  exp: 10, taskKey: 'gacha'     }
     ],
     // ===== 第八周 =====
     [
@@ -236,7 +260,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk8_t5', title: '商店大亨',       desc: '本周打开商店 7 次',                        target: 7,   exp: 5, taskKey: 'shop'      },
         { id: 'wk8_t6', title: '邮件专家',       desc: '本周打开邮件系统 5 次',                    target: 5,   exp: 5, taskKey: 'mail'      },
         { id: 'wk8_t7', title: '宝藏专家',       desc: '本周打开百宝箱 5 次',                      target: 5,   exp: 5, taskKey: 'treasure'  },
-        { id: 'wk8_t8', title: '富甲一方',       desc: '本周累计赚取 500 PRE Coin',                target: 500, exp: 8, taskKey: 'coin'      }
+        { id: 'wk8_t8', title: '富甲一方',       desc: '本周累计赚取 500 PRE Coin',                target: 500, exp: 8, taskKey: 'coin'      },
+        { id: 'wk8_t9', title: '游戏征服',       desc: '本周游玩任意小游戏 9 次',                  target: 9,   exp: 9, taskKey: 'minigame'  },
+        { id: 'wk8_t10', title: '金玉满堂',      desc: '本周累计赚取 600 PRE Coin',                target: 600, exp: 10, taskKey: 'coin'      }
     ],
     // ===== 第九周 =====
     [
@@ -247,7 +273,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk9_t5', title: '购物无止境',     desc: '本周打开商店 7 次',                        target: 7,   exp: 5, taskKey: 'shop'      },
         { id: 'wk9_t6', title: '信使达人',       desc: '本周打开邮件系统 6 次',                    target: 6,   exp: 6, taskKey: 'mail'      },
         { id: 'wk9_t7', title: '宝箱无止境',     desc: '本周打开百宝箱 6 次',                      target: 6,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk9_t8', title: '经验狂潮',       desc: '本周使用任意经验加成卡 3 次',              target: 3,   exp: 8, taskKey: 'boost'     }
+        { id: 'wk9_t8', title: '经验狂潮',       desc: '本周使用任意经验加成卡 3 次',              target: 3,   exp: 8, taskKey: 'boost'     },
+        { id: 'wk9_t9', title: '十连风暴',       desc: '本周在抽卡模拟器抽取 14 次',               target: 14,  exp: 9, taskKey: 'gacha'     },
+        { id: 'wk9_t10', title: '加成巅峰',      desc: '本周使用任意经验加成卡 4 次',              target: 4,   exp: 10, taskKey: 'boost'     }
     ],
     // ===== 第十周 =====
     [
@@ -258,7 +286,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk10_t5', title: '购物大师',      desc: '本周打开商店 8 次',                        target: 8,   exp: 6, taskKey: 'shop'      },
         { id: 'wk10_t6', title: '邮件大师',      desc: '本周打开邮件系统 6 次',                    target: 6,   exp: 6, taskKey: 'mail'      },
         { id: 'wk10_t7', title: '百宝箱宗师',    desc: '本周打开百宝箱 6 次',                      target: 6,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk10_t8', title: '金币大亨',      desc: '本周累计赚取 600 PRE Coin',                target: 600, exp: 8, taskKey: 'coin'      }
+        { id: 'wk10_t8', title: '金币大亨',      desc: '本周累计赚取 600 PRE Coin',                target: 600, exp: 8, taskKey: 'coin'      },
+        { id: 'wk10_t9', title: '仓库宗师',      desc: '本周打开仓库 9 次',                        target: 9,   exp: 9, taskKey: 'warehouse' },
+        { id: 'wk10_t10', title: '抽卡至尊',     desc: '本周在抽卡模拟器抽取 15 次',               target: 15,  exp: 10, taskKey: 'gacha'     }
     ],
     // ===== 第十一周 =====
     [
@@ -269,7 +299,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk11_t5', title: '商店王者',      desc: '本周打开商店 8 次',                        target: 8,   exp: 6, taskKey: 'shop'      },
         { id: 'wk11_t6', title: '信使大师',      desc: '本周打开邮件系统 7 次',                    target: 7,   exp: 6, taskKey: 'mail'      },
         { id: 'wk11_t7', title: '百宝箱王者',    desc: '本周打开百宝箱 7 次',                      target: 7,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk11_t8', title: '加成大师',      desc: '本周使用任意经验加成卡 3 次',              target: 3,   exp: 8, taskKey: 'boost'     }
+        { id: 'wk11_t8', title: '加成大师',      desc: '本周使用任意经验加成卡 3 次',              target: 3,   exp: 8, taskKey: 'boost'     },
+        { id: 'wk11_t9', title: '游戏至臻',      desc: '本周游玩任意小游戏 10 次',                 target: 10,  exp: 9, taskKey: 'minigame'  },
+        { id: 'wk11_t10', title: '财通四海',     desc: '本周累计赚取 700 PRE Coin',                target: 700, exp: 10, taskKey: 'coin'      }
     ],
     // ===== 第十二周 =====
     [
@@ -280,7 +312,9 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk12_t5', title: '购物之巅',      desc: '本周打开商店 9 次',                        target: 9,   exp: 6, taskKey: 'shop'      },
         { id: 'wk12_t6', title: '邮件之巅',      desc: '本周打开邮件系统 7 次',                    target: 7,   exp: 6, taskKey: 'mail'      },
         { id: 'wk12_t7', title: '百宝箱之巅',    desc: '本周打开百宝箱 7 次',                      target: 7,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk12_t8', title: '财富之巅',      desc: '本周累计赚取 800 PRE Coin',                target: 800, exp: 8, taskKey: 'coin'      }
+        { id: 'wk12_t8', title: '财富之巅',      desc: '本周累计赚取 800 PRE Coin',                target: 800, exp: 8, taskKey: 'coin'      },
+        { id: 'wk12_t9', title: '加成之巅',      desc: '本周使用任意经验加成卡 4 次',              target: 4,   exp: 9, taskKey: 'boost'     },
+        { id: 'wk12_t10', title: '财富帝国',     desc: '本周累计赚取 1000 PRE Coin',               target: 1000, exp: 10, taskKey: 'coin'     }
     ]
 ];
 
@@ -312,7 +346,7 @@ var PASS_BOOST_TASK_POOL = [
     { id: 'bst_t15', title: '提速·冲刺收官',  desc: '等级提速期间打开商店 7 次完成收官冲刺',    target: 7,   exp: PASS_BOOST_TASK_EXP, taskKey: 'shop'      }
 ];
 
-// 赛季任务：赛季内固定 10 个，赛季结束后整体刷新，5-8 经验
+// 赛季任务：赛季内固定 15 个，赛季结束后整体刷新，5-10 经验
 function buildSeasonTasks() {
     return [
         { id: 's_first_login', title: '新赛季启航',        desc: '进入游戏中心 1 次',                      target: 1,   exp: 5 },
@@ -324,7 +358,12 @@ function buildSeasonTasks() {
         { id: 's_reach30',    title: '初入巅峰',          desc: '赛季通行证等级达到 30 级',                 target: 30,  exp: 7 },
         { id: 's_reach60',    title: '稳定攀登',          desc: '赛季通行证等级达到 60 级',                 target: 60,  exp: 8 },
         { id: 's_reach90',    title: '高级征途',          desc: '赛季通行证等级达到 90 级',                 target: 90,  exp: 8 },
-        { id: 's_reach120',   title: '赛季顶点',          desc: '赛季通行证等级达到 120 级（满级）',        target: 120, exp: 8 }
+        { id: 's_reach120',   title: '赛季顶点',          desc: '赛季通行证等级达到 120 级（满级）',        target: 120, exp: 8 },
+        { id: 's_reach80',    title: '卓越征途',          desc: '赛季通行证等级达到 80 级',                 target: 80,  exp: 10 },
+        { id: 's_claim60',    title: '签到常青树',        desc: '赛季内累计签到 60 天',                    target: 60,  exp: 10 },
+        { id: 's_gacha200',   title: '抽卡至尊',          desc: '赛季内在抽卡模拟器抽取 200 次',           target: 200, exp: 10 },
+        { id: 's_coin5000',   title: '财富帝国',          desc: '赛季内累计赚取 5000 PRE Coin',            target: 5000, exp: 10 },
+        { id: 's_boost20',    title: '加成达人',          desc: '赛季内累计使用任意经验加成卡 20 次',      target: 20,  exp: 10 }
     ];
 }
 
@@ -466,10 +505,10 @@ function refreshDailyTasks(data) {
     var today = _passUtc8DayKey();
     if (data.lastDailyRefresh === today) return data;
     data.lastDailyRefresh = today;
-    // 从池子里随机抽 5 个
+    // 固定放出全部 8 个日常任务（打乱顺序）
     var pool = PASS_DAILY_TASK_POOL.slice();
     data.dailyTasks = [];
-    for (var i = 0; i < 5 && pool.length > 0; i++) {
+    while (pool.length > 0) {
         var idx = Math.floor(Math.random() * pool.length);
         var t = pool.splice(idx, 1)[0];
         data.dailyTasks.push({ id: t.id, progress: 0, claimed: false });
@@ -484,9 +523,10 @@ function refreshWeeklyTasks(data) {
     if (data.lastWeeklyRefresh && new Date(data.lastWeeklyRefresh) >= weekStart) return data;
     data.lastWeeklyRefresh = weekStart.toISOString();
 
+    // 固定放出全部 10 个周常任务（打乱顺序）
     var pool = PASS_WEEKLY_TASK_POOL.slice();
     data.weeklyTasks = [];
-    for (var i = 0; i < 5 && pool.length > 0; i++) {
+    while (pool.length > 0) {
         var idx = Math.floor(Math.random() * pool.length);
         var t = pool.splice(idx, 1)[0];
         data.weeklyTasks.push({ id: t.id, progress: 0, claimed: false });
@@ -496,12 +536,24 @@ function refreshWeeklyTasks(data) {
 }
 
 function ensureSeasonTasks(data) {
+    var defs = buildSeasonTasks();
     if (!data.seasonTasks || data.seasonTasks.length === 0) {
-        data.seasonTasks = buildSeasonTasks().map(function(t) {
+        data.seasonTasks = defs.map(function(t) {
             return { id: t.id, progress: 0, claimed: false };
         });
         savePassData(data);
+        return data;
     }
+    // 增量合并：后续版本新增的赛季任务自动补充进已有存档，不清空旧进度
+    var changed = false;
+    defs.forEach(function(t) {
+        var exists = data.seasonTasks.some(function(st) { return st.id === t.id; });
+        if (!exists) {
+            data.seasonTasks.push({ id: t.id, progress: 0, claimed: false });
+            changed = true;
+        }
+    });
+    if (changed) savePassData(data);
     return data;
 }
 
@@ -538,6 +590,7 @@ function passAddExp(amount, source) {
         data.seasonTasks.forEach(function(st) {
             if (st.id === 's_reach30' && data.level >= 30) st.progress = Math.max(st.progress, 30);
             if (st.id === 's_reach60' && data.level >= 60) st.progress = Math.max(st.progress, 60);
+            if (st.id === 's_reach80' && data.level >= 80) st.progress = Math.max(st.progress, 80);
             if (st.id === 's_reach90' && data.level >= 90) st.progress = Math.max(st.progress, 90);
             if (st.id === 's_reach120' && data.level >= 120) st.progress = 120;
         });
@@ -800,7 +853,7 @@ function _showPassRewardModal(opts) {
     // 仓库物品卡（聚合后的全部物品）
     (opts.items || []).forEach(function(it) {
         html += '<div class="pass-reward-result-card">' +
-            '<div class="pass-reward-result-iconb" style="background:' + _passHexToRgba(it.color, 0.15) + ';color:' + it.color + ';"><i class="' + it.icon + '"></i></div>' +
+            '<div class="pass-reward-result-iconb" style="background:' + _passHexToRgba(it.color, 0.15) + ';color:' + it.color + ';">' + _passItemIconHtml(it.icon) + '</div>' +
             '<div class="pass-reward-result-name">' + it.name + '</div>' +
             '<div class="pass-reward-result-qty">×' + it.qty + '</div>' +
         '</div>';
@@ -1085,17 +1138,30 @@ function _getPassWeekly12DaysUntilNext() {
     return Math.max(1, Math.min(7, days));
 }
 
-// 确保每周事项数据已初始化
+// 确保每周事项数据已初始化（含增量合并：后续版本新增的周任务自动补充，不清空旧进度）
 function ensureWeekly12Tasks(data) {
     if (!data.weekly12Tasks) data.weekly12Tasks = {};
+    var changed = false;
     for (var w = 1; w <= PASS_WEEKLY12_TOTAL_WEEKS; w++) {
+        var pool = PASS_WEEKLY12_TASK_POOLS[w - 1];
         if (!data.weekly12Tasks[w] || data.weekly12Tasks[w].length === 0) {
-            var pool = PASS_WEEKLY12_TASK_POOLS[w - 1];
             data.weekly12Tasks[w] = pool.map(function(t) {
                 return { id: t.id, progress: 0, claimed: false };
             });
+            changed = true;
+        } else {
+            // 已有存档：补齐新增任务条目（按池顺序追加到末尾，保持索引对齐）
+            var arr = data.weekly12Tasks[w];
+            pool.forEach(function(def) {
+                var exists = arr.some(function(t) { return t.id === def.id; });
+                if (!exists) {
+                    arr.push({ id: def.id, progress: 0, claimed: false });
+                    changed = true;
+                }
+            });
         }
     }
+    if (changed) savePassData(data);
     return data;
 }
 
@@ -1386,7 +1452,7 @@ function passDevUnlockAllLevels() {
     data.exp = 0;
     // 同步赛季任务的等级进度
     data = ensureSeasonTasks(data);
-    var reachMap = { s_reach30: 30, s_reach60: 60, s_reach90: 90, s_reach120: 120 };
+    var reachMap = { s_reach30: 30, s_reach60: 60, s_reach80: 80, s_reach90: 90, s_reach120: 120 };
     data.seasonTasks.forEach(function(st) {
         if (reachMap[st.id]) st.progress = Math.max(st.progress || 0, reachMap[st.id]);
     });
@@ -2151,11 +2217,15 @@ function _buildPassHTML() {
                 <div class="pass-hero-stats">
                     <div class="pass-stat">
                         <div class="pass-stat-num" id="passStatPrecoin" style="color:#ffd93d;">0</div>
-                        <div class="pass-stat-label"><i class="fas fa-coins"></i> PRE Coin</div>
+                        <div class="pass-stat-label"><i class="fas fa-coins"></i>PRE Coin</div>
                     </div>
                     <div class="pass-stat">
                         <div class="pass-stat-num" id="passStatCap">120</div>
                         <div class="pass-stat-label">等级上限</div>
+                    </div>
+                    <div class="pass-stat pass-stat-clickable" id="passStatExpCalc" title="计算当前可获取的通行证经验与等级">
+                        <div class="pass-stat-num" style="color:#7ee8fa;"><i class="fas fa-calculator"></i></div>
+                        <div class="pass-stat-label">计算器</div>
                     </div>
                     <div class="pass-stat">
                         <div class="pass-stat-num" id="passStatPremium">免费</div>
@@ -2377,6 +2447,18 @@ function _buildPassHTML() {
         </div>
     </div>
 
+    <!-- ===== 等级获取计算弹窗 ===== -->
+    <div class="pass-modal-overlay" id="passExpCalcModal" style="display:none;">
+        <div class="pass-modal-box pass-modal-box-lg">
+            <div class="pass-modal-title">等级获取计算</div>
+            <div class="pass-modal-subtitle">统计当前各任务系统中仍可获取的通行证经验，并折算为通行证等级</div>
+            <div class="pass-modal-body" id="passExpCalcBody"></div>
+            <div class="pass-modal-footer">
+                <button class="pass-btn pass-btn-primary" id="passExpCalcOk"><i class="fas fa-check"></i> 知道了</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== Dev：重置通行证购买状态确认弹窗 ===== -->
     <div class="pass-modal-overlay" id="passDevResetPurchaseModal" style="display:none;">
         <div class="pass-modal-box pass-modal-box-sm">
@@ -2462,12 +2544,17 @@ function _buildPassHTML() {
 }
 
 function openPassUI() {
+    // 打开行为计入任务进度：日常「查看通行证」+ 周常「关注通行证」（赛季锁定时内部自动忽略）
+    try { passUpdateTaskProgress('daily', 'd_pass', 1); } catch (e) {}
+    try { passUpdateTaskProgress('weekly', 'w_pass3', 1); } catch (e) {}
     if (_passUI.overlay) {
         _passUI.overlay.style.display = 'flex';
         // 恢复粒子动画
         _passUI._particleRunning = true;
         // 重新渲染最新数据
         renderPassUI();
+        // 进入通行证：等级卡片自动定位到当前等级
+        _scrollPassRewardsToCurrentLevel(false);
         _animatePassEnter();
         return;
     }
@@ -2485,6 +2572,8 @@ function openPassUI() {
     _bindPassEvents();
     _initPassLenis();
     renderPassUI();
+    // 进入通行证：等级卡片自动定位到当前等级
+    _scrollPassRewardsToCurrentLevel(false);
     _animatePassEnter();
 }
 
@@ -2759,7 +2848,7 @@ function _bindPassEvents() {
     });
 
     // 点击遮罩关闭所有弹窗
-    ['passBuyLevelModal', 'passBuyLevelConfirmModal', 'passBuyPremiumModal', 'passPurchaseSelectModal', 'passBuyBundleModal', 'passSeasonSwitchModal', 'passAnnouncementModal', 'passSeasonProgressModal'].forEach(function(id) {
+    ['passBuyLevelModal', 'passBuyLevelConfirmModal', 'passBuyPremiumModal', 'passPurchaseSelectModal', 'passBuyBundleModal', 'passSeasonSwitchModal', 'passAnnouncementModal', 'passSeasonProgressModal', 'passExpCalcModal'].forEach(function(id) {
         var m = document.getElementById(id);
         if (m) m.addEventListener('click', function(e) {
             if (e.target === this) this.style.display = 'none';
@@ -2775,6 +2864,12 @@ function _bindPassEvents() {
     if (annBtn) annBtn.addEventListener('click', _openPassAnnouncementModal);
     var annCloseBtn = document.getElementById('passAnnouncementClose');
     if (annCloseBtn) annCloseBtn.addEventListener('click', _closePassAnnouncementModal);
+
+    // 等级获取计算：统计区可点击条目 + 弹窗确认按钮
+    var expCalcBtn = document.getElementById('passStatExpCalc');
+    if (expCalcBtn) expCalcBtn.addEventListener('click', _openPassExpCalcModal);
+    var expCalcOk = document.getElementById('passExpCalcOk');
+    if (expCalcOk) expCalcOk.addEventListener('click', _closePassExpCalcModal);
     var annList = document.getElementById('passAnnList');
     if (annList) annList.addEventListener('click', function(e) {
         var item = e.target.closest('.pass-ann-item[data-ann-id]');
@@ -2954,6 +3049,137 @@ function _openBuyLevelModal() {
 
 function _closeBuyLevelModal() {
     document.getElementById('passBuyLevelModal').style.display = 'none';
+}
+
+// ==================== 等级获取计算弹窗 ====================
+// 统计任务条目组中「尚未领取经验」的任务经验总量
+function _sumPassUnclaimedExp(entries, pool) {
+    var exp = 0, remain = 0;
+    (entries || []).forEach(function(t) {
+        if (t.claimed) return;
+        for (var i = 0; i < pool.length; i++) {
+            if (pool[i].id === t.id) { exp += pool[i].exp; remain++; break; }
+        }
+    });
+    return { exp: exp, remain: remain, total: (entries || []).length };
+}
+
+// 汇总当前仍可获取的通行证经验：日常 / 周常 / 赛季任务 + 每周事项（仅已开放周次）+ 等级提速（仅开启后）
+function _calcPassObtainableExp() {
+    var data = getPassData();
+    data = refreshDailyTasks(data);
+    data = refreshWeeklyTasks(data);
+    data = ensureSeasonTasks(data);
+    data = ensureWeekly12Tasks(data);
+    data = ensureBoostTasks(data);
+
+    var sections = [];
+
+    // 日常任务（今日刷新周期内剩余）
+    var d = _sumPassUnclaimedExp(data.dailyTasks, PASS_DAILY_TASK_POOL);
+    sections.push({ name: '日常任务', icon: 'fas fa-calendar-day', exp: d.exp,
+        note: '今日剩余 ' + d.remain + ' / ' + d.total + ' 个任务未领取' });
+
+    // 周常任务（本周刷新周期内剩余）
+    var w = _sumPassUnclaimedExp(data.weeklyTasks, PASS_WEEKLY_TASK_POOL);
+    sections.push({ name: '周常任务', icon: 'fas fa-calendar-week', exp: w.exp,
+        note: '本周剩余 ' + w.remain + ' / ' + w.total + ' 个任务未领取' });
+
+    // 赛季任务（长线任务剩余）
+    var s = _sumPassUnclaimedExp(data.seasonTasks, buildSeasonTasks());
+    sections.push({ name: '赛季任务', icon: 'fas fa-trophy', exp: s.exp,
+        note: '剩余 ' + s.remain + ' / ' + s.total + ' 个任务未领取' });
+
+    // 每周事项：仅计入已开放周次（Dev 解锁态下按 12 周全开放计）
+    var openWeeks = _isWeekly12DevUnlocked() ? PASS_WEEKLY12_TOTAL_WEEKS : _getPassWeekly12OpenWeeks();
+    var w12Exp = 0, w12Remain = 0, w12Total = 0;
+    for (var wk = 1; wk <= openWeeks; wk++) {
+        var r = _sumPassUnclaimedExp(data.weekly12Tasks[wk], PASS_WEEKLY12_TASK_POOLS[wk - 1] || []);
+        w12Exp += r.exp; w12Remain += r.remain; w12Total += r.total;
+    }
+    sections.push({ name: '每周事项', icon: 'fas fa-calendar-check', exp: w12Exp,
+        note: '已开放第 1 ~ ' + openWeeks + ' 周 · 剩余 ' + w12Remain + ' / ' + w12Total + ' 个任务未领取（未开放周次不计入）' });
+
+    // 等级提速：仅开启后可计算，等待期 / 未开启均不计入
+    var boostState = _getPassBoostState();
+    if (boostState === 'active') {
+        var b = _sumPassUnclaimedExp(data.boostTasks, PASS_BOOST_TASK_POOL);
+        sections.push({ name: '等级提速', icon: 'fas fa-rocket', exp: b.exp,
+            note: '限时开启中 · 剩余 ' + b.remain + ' / ' + b.total + ' 个任务未领取' });
+    } else {
+        sections.push({ name: '等级提速', icon: 'fas fa-rocket', exp: 0, excluded: true,
+            note: boostState === 'wait' ? '等待期 · 赛季最后一周开启后计入' : '未开启 · 开启后计入' });
+    }
+
+    var totalExp = sections.reduce(function(sum, sec) { return sum + sec.exp; }, 0);
+    return { sections: sections, totalExp: totalExp, data: data };
+}
+
+// 结合当前等级进度，生成「全部获取后预计可达等级」文案
+function _buildPassExpCalcProjection(data, totalExp) {
+    var perLevel = PASS_CONFIG.expPerLevel;
+    var curLevel = data.level;
+    // 已满级（含 Dev 设定的超等级）：新增经验全部折算为 EX 溢出等级增量
+    if (curLevel >= PASS_CONFIG.levelCap) {
+        var exGain = Math.floor(((data.expOverflow || 0) % perLevel + totalExp) / perLevel);
+        return '当前已满级 120 级' + (curLevel > PASS_CONFIG.levelCap ? '（EX 溢出阶段）' : '') +
+            '，全部获取后 EX 溢出等级预计 <b>+' + exGain + '</b> 级';
+    }
+    var curExp = data.exp;
+    var need = (PASS_CONFIG.levelCap - curLevel) * perLevel - curExp; // 距满级还需经验
+    if (totalExp >= need) {
+        var exLevels = Math.floor((totalExp - need) / perLevel);
+        return '当前 Lv.' + curLevel + '（' + curExp + '/' + perLevel + '），全部获取后可达 <b>满级 120 级</b>' +
+            (exLevels > 0 ? '，并溢出 <b>EX ' + exLevels + '</b> 级' : '');
+    }
+    var gained = Math.floor((curExp + totalExp) / perLevel);
+    var projLevel = curLevel + gained;
+    var left = (curExp + totalExp) % perLevel;
+    return '当前 Lv.' + curLevel + '（' + curExp + '/' + perLevel + '），全部获取后预计可达 <b>Lv.' + projLevel +
+        '</b>（' + left + '/' + perLevel + '），可提升 <b>' + gained + '</b> 级';
+}
+
+function _renderPassExpCalc() {
+    var body = document.getElementById('passExpCalcBody');
+    if (!body) return;
+    var r = _calcPassObtainableExp();
+    var perLevel = PASS_CONFIG.expPerLevel;
+    var approxLevels = Math.floor(r.totalExp / perLevel);
+
+    var html = '';
+    // 汇总卡片
+    html += '<div class="pass-expcalc-summary">'
+        + '<div class="pass-expcalc-summary-main"><span class="pass-expcalc-total">' + r.totalExp + '</span><span class="pass-expcalc-unit">点经验</span></div>'
+        + '<div class="pass-expcalc-summary-sub">当前剩余可获取总量 ≈ <b>' + approxLevels + '</b> 级通行证等级（每 ' + perLevel + ' 经验 = 1 级）</div>'
+        + '</div>';
+    // 等级预估
+    html += '<div class="pass-expcalc-proj"><i class="fas fa-arrow-trend-up"></i><span>' + _buildPassExpCalcProjection(r.data, r.totalExp) + '</span></div>';
+    // 明细列表
+    html += '<div class="pass-expcalc-list">';
+    r.sections.forEach(function(sec) {
+        html += '<div class="pass-expcalc-row' + (sec.excluded ? ' pass-expcalc-row-off' : '') + '">'
+            + '<div class="pass-expcalc-row-icon"><i class="' + sec.icon + '"></i></div>'
+            + '<div class="pass-expcalc-row-info">'
+            + '<div class="pass-expcalc-row-name">' + sec.name + '</div>'
+            + '<div class="pass-expcalc-row-note">' + sec.note + '</div>'
+            + '</div>'
+            + (sec.excluded
+                ? '<div class="pass-expcalc-row-exp pass-expcalc-row-exp-off">不计入</div>'
+                : '<div class="pass-expcalc-row-exp">+' + sec.exp + ' <span>经验</span></div>')
+            + '</div>';
+    });
+    html += '</div>';
+    html += '<div class="pass-expcalc-foot">仅统计当前刷新周期内尚未领取经验的任务；日常 / 周常任务刷新后，可获取经验会相应变化</div>';
+    body.innerHTML = html;
+}
+
+function _openPassExpCalcModal() {
+    _renderPassExpCalc();
+    document.getElementById('passExpCalcModal').style.display = 'flex';
+}
+
+function _closePassExpCalcModal() {
+    document.getElementById('passExpCalcModal').style.display = 'none';
 }
 
 // ==================== 更换赛季通行证弹窗 ====================
@@ -3319,7 +3545,7 @@ function _buildPremiumItemsHTML() {
     Object.keys(itemMap).forEach(function(id) {
         var it = itemMap[id];
         html += '<div class="pass-premium-item">' +
-            '<i class="' + it.icon + '" style="color:' + it.color + ';"></i>' +
+            _passItemIconHtml(it.icon, it.color) +
             '<span class="pass-premium-item-name">' + it.name + '</span>' +
             '<span class="pass-premium-item-qty">×' + it.totalQty + '</span>' +
             '</div>';
@@ -3400,7 +3626,7 @@ function _openBuyBundleModal() {
     var extrasHtml = '';
     extras.forEach(function(ex) {
         extrasHtml += '<div class="pass-bundle-extra">' +
-            '<i class="' + ex.icon + '" style="color:' + ex.color + ';"></i>' +
+            _passItemIconHtml(ex.icon, ex.color) +
             '<span class="pass-bundle-extra-name">' + ex.name + '</span>' +
             '<span class="pass-bundle-extra-qty">' + ex.qty + '</span>' +
             '</div>';
@@ -3471,6 +3697,8 @@ function _switchPassTab(tab) {
     } else if (tab === 'boost') {
         _renderPassBoostTasks();
     }
+    // 点击「赛季通行证」：等级卡片自动平滑滚动到当前等级
+    if (tab === 'rewards') _scrollPassRewardsToCurrentLevel(true);
 }
 
 function _switchPassSubTab(sub) {
@@ -3853,7 +4081,7 @@ function _renderPassRewards(data) {
                         : (seasonLocked ? '<span class="pass-tier-state"><i class="fas fa-lock"></i> 赛季未开始</span>' : ''))}
             </div>
             <div class="pass-slot pass-slot-clickable ${freeClaimed ? 'pass-slot-claimed' : ''}" data-item-id="${r.freeItem.id}" data-item-qty="${r.freeItem.qty}" title="点击查看物品详情">
-                <i class="${r.freeItem.icon}" style="color:${r.freeItem.color};"></i>
+                ${_passItemIconHtml(r.freeItem.icon, r.freeItem.color)}
                 <div class="pass-slot-name">${r.freeItem.name}</div>
                 <div class="pass-slot-qty">×${r.freeItem.qty}</div>
                 ${isLocked ? '<div class="pass-slot-locked-mask"><i class="fas fa-lock"></i></div>' : ''}
@@ -3874,7 +4102,7 @@ function _renderPassRewards(data) {
             ${r.premiumItems.map(function(p) {
                 return `
 <div class="pass-slot pass-slot-clickable ${premClaimed ? 'pass-slot-claimed' : ''}" data-item-id="${p.id}" data-item-qty="${p.qty}" title="点击查看物品详情">
-    <i class="${p.icon}" style="color:${p.color};"></i>
+    ${_passItemIconHtml(p.icon, p.color)}
     <div class="pass-slot-name">${p.name}</div>
     <div class="pass-slot-qty">×${p.qty}</div>
     ${(isLocked || !data.isPremium) ? '<div class="pass-slot-locked-mask"><i class="fas ' + (isLocked ? 'fa-lock' : 'fa-gem') + '"></i></div>' : ''}
@@ -3946,6 +4174,31 @@ function _renderPassRewards(data) {
             }
         });
     });
+}
+
+// 自动滚动奖励网格：让当前通行证等级卡片成为首个可见卡片
+// smooth = true  → 点击「赛季通行证」Tab 时平滑滚动
+// smooth = false → 进入通行证时瞬时定位（避免与入场动画叠加产生晃动感）
+function _scrollPassRewardsToCurrentLevel(smooth) {
+    if (_passUI.activeTab !== 'rewards') return;
+    var grid = document.getElementById('passRewardsGrid');
+    if (!grid) return;
+    var data = getPassData();
+    // 等级收敛到已渲染的卡片范围（1~levelCap）：0 级 → 首张卡，EX 溢出等级 → 末张卡
+    var lv = Math.max(1, Math.min(PASS_CONFIG.levelCap, data.level || 0));
+    var card = grid.querySelector('.pass-reward-card[data-level="' + lv + '"]');
+    if (!card) return; // 赛季未开始 / 已结束等无等级卡片的场景
+    // 用 offsetLeft 链取卡片相对网格内容的布局位置（不受入场动画 transform 影响）
+    var left = 0, el = card;
+    while (el && el !== grid) { left += el.offsetLeft; el = el.offsetParent; }
+    // 保留网格左内边距的呼吸感，并收敛到可滚动范围内
+    var maxScroll = Math.max(0, grid.scrollWidth - grid.clientWidth);
+    var target = Math.max(0, Math.min(left - 8, maxScroll));
+    if (smooth && typeof grid.scrollTo === 'function') {
+        grid.scrollTo({ left: target, behavior: 'smooth' });
+    } else {
+        grid.scrollLeft = target;
+    }
 }
 
 // 领取动效（仅保留 GSAP 按钮缩放，已移除烟花粒子效果以避免卡顿）
@@ -4592,12 +4845,12 @@ function _renderPassPhaseRewards() {
         // 竖线连接线：自圆点向上连接至横线上方的奖励卡片
         html += '<div class="pass-phase-connector pass-phase-connector-down"></div>';
         // 节点圆点
-        html += '<div class="pass-phase-dot"><i class="' + node.icon + '"></i></div>';
+        html += '<div class="pass-phase-dot">' + _passItemIconHtml(node.icon) + '</div>';
         // 奖励卡片（物品类奖励卡片可点击查看物品详情）
         html += '<div class="pass-phase-card' + (canViewDetail ? ' pass-phase-card-clickable' : '') + '"' +
             (canViewDetail ? ' data-phase-detail="' + node.reward.id + '" title="点击查看物品详情"' : '') + '>';
         html +=   '<div class="pass-phase-level-tag">' + node.level + ' 级</div>';
-        html +=   '<div class="pass-phase-reward-icon" style="color:' + node.color + ';"><i class="' + node.icon + '"></i></div>';
+        html +=   '<div class="pass-phase-reward-icon" style="color:' + node.color + ';">' + _passItemIconHtml(node.icon) + '</div>';
         html +=   '<div class="pass-phase-reward-name">' + node.name + qtyText + '</div>';
         html +=   '<button class="pass-btn ' + btnCls + ' pass-phase-claim-btn" data-phase-level="' + node.level + '" ' + btnDisabled + '>' + btnText + '</button>';
         if (canViewDetail) html += '<div class="pass-phase-detail-hint"><i class="fas fa-info-circle"></i> 查看详情</div>';
@@ -5042,6 +5295,68 @@ function _injectPassCSS() {
 .pass-buy-panel.pass-season-locked > .pass-buy-hint { display: none; }
 .pass-hero-stats.pass-season-locked > .pass-season-locked-msg,
 .pass-buy-panel.pass-season-locked > .pass-season-locked-msg { display: block; }
+
+/* 等级获取计算入口：统计区内可点击条目 */
+.pass-stat-clickable {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    transition: background 0.2s, transform 0.15s;
+}
+.pass-stat-clickable:hover { background: rgba(126,232,250,0.10); }
+.pass-stat-clickable:hover .pass-stat-label { color: rgba(126,232,250,0.85); }
+.pass-stat-clickable:active { transform: scale(0.94); }
+
+/* ===== 等级获取计算弹窗 ===== */
+.pass-expcalc-summary {
+    text-align: center;
+    background: linear-gradient(135deg, rgba(126,232,250,0.10), rgba(106,90,205,0.15));
+    border: 1px solid rgba(126,232,250,0.30);
+    border-radius: 14px; padding: 18px 16px;
+}
+.pass-expcalc-summary-main { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+.pass-expcalc-total {
+    font-size: 36px; font-weight: 800;
+    background: linear-gradient(90deg, #7ee8fa, #c084fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.pass-expcalc-unit { font-size: 13px; color: rgba(255,255,255,0.55); }
+.pass-expcalc-summary-sub { margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.55); }
+.pass-expcalc-summary-sub b { color: #7ee8fa; font-size: 14px; }
+.pass-expcalc-proj {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: rgba(255,255,255,0.80);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px; padding: 10px 14px;
+}
+.pass-expcalc-proj i { color: #7ee8fa; flex-shrink: 0; }
+.pass-expcalc-proj b { color: #ffd93d; }
+.pass-expcalc-list { display: flex; flex-direction: column; gap: 8px; }
+.pass-expcalc-row {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 10px 14px;
+}
+.pass-expcalc-row-off { opacity: 0.45; }
+.pass-expcalc-row-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; font-size: 15px;
+    background: rgba(126,232,250,0.12); color: #7ee8fa;
+    border: 1px solid rgba(126,232,250,0.25);
+}
+.pass-expcalc-row-info { flex: 1; min-width: 0; }
+.pass-expcalc-row-name { font-size: 14px; font-weight: 600; color: #fff; }
+.pass-expcalc-row-note { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.pass-expcalc-row-exp {
+    font-size: 17px; font-weight: 700; color: #7ee8fa; flex-shrink: 0;
+}
+.pass-expcalc-row-exp span { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.45); }
+.pass-expcalc-row-exp-off { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.40); }
+.pass-expcalc-foot { font-size: 11px; color: rgba(255,255,255,0.35); text-align: center; line-height: 1.6; }
 
 .pass-buy-panel {
     background: rgba(255,255,255,0.04);
@@ -5766,41 +6081,48 @@ function _injectPassCSS() {
     border-top: 1px solid rgba(255,255,255,0.08);
 }
 
-.pass-tasks-list { display: flex; flex-direction: column; gap: 12px; }
+/* 任务列表：横向一行四个长方形任务卡片，行数向下扩展（通行证任务 / 每周事项 / 等级提速共用） */
+.pass-tasks-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-content: start; }
+/* 占位提示（赛季锁定卡片 / 赛季横幅 / 提速等待卡片）横跨整行 */
+.pass-tasks-list > .pass-season-banner,
+.pass-tasks-list > .pass-boost-wait { grid-column: 1 / -1; }
 .pass-task-item {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px; padding: 14px 18px;
-    display: flex; flex-direction: column; gap: 10px;
+    border-radius: 12px; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 8px;
     transition: all 0.2s;
+    min-width: 0;
 }
 .pass-task-item.pass-task-ready { border-color: rgba(74,222,128,0.5); background: rgba(74,222,128,0.08); }
 .pass-task-item.pass-task-done { opacity: 0.65; }
 /* 任务项：赛季未开始锁定态 */
 .pass-task-item.pass-task-locked { opacity: 0.5; }
 .pass-task-item.pass-task-locked .pass-task-bar-fill { background: rgba(255,255,255,0.25); }
-.pass-task-title { display: flex; align-items: center; gap: 10px; }
-.pass-task-title > i:first-child { color: #ff6b9d; font-size: 18px; }
+.pass-task-title { display: flex; align-items: center; gap: 8px; }
+.pass-task-title > i:first-child { color: #ff6b9d; font-size: 15px; flex-shrink: 0; }
 .pass-task-item.pass-task-ready .pass-task-title > i:first-child { color: #4ade80; }
-.pass-task-name { font-size: 15px; font-weight: 600; flex: 1; }
+.pass-task-name { font-size: 13.5px; font-weight: 600; flex: 1; min-width: 0; }
 .pass-task-exp-tag {
-    font-size: 12px; font-weight: 700; color: #f8b500;
+    font-size: 11px; font-weight: 700; color: #f8b500;
     background: rgba(248,181,0,0.15);
-    padding: 4px 12px; border-radius: 12px;
-    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 10px;
+    display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;
 }
-.pass-task-desc { font-size: 12px; color: rgba(255,255,255,0.5); }
-.pass-task-bar-wrap { display: flex; align-items: center; gap: 12px; }
+.pass-task-desc { font-size: 11.5px; color: rgba(255,255,255,0.5); line-height: 1.5; min-height: 34px; }
+.pass-task-bar-wrap { display: flex; align-items: center; gap: 8px; }
 .pass-task-bar {
-    flex: 1; height: 8px; background: rgba(255,255,255,0.08);
+    flex: 1; height: 7px; background: rgba(255,255,255,0.08);
     border-radius: 4px; overflow: hidden;
 }
 .pass-task-bar-fill {
     height: 100%; background: linear-gradient(90deg, #ff6b9d, #6a5acd);
     border-radius: 4px; transition: width 0.3s ease;
 }
-.pass-task-bar-text { font-size: 12px; color: rgba(255,255,255,0.5); min-width: 70px; text-align: right; }
+.pass-task-bar-text { font-size: 11px; color: rgba(255,255,255,0.5); min-width: 46px; text-align: right; }
 .pass-task-item.pass-task-ready .pass-task-bar-fill { background: linear-gradient(90deg, #4ade80, #22c55e); }
+/* 卡片内按钮贴底，保证同一行卡片按钮对齐 */
+.pass-task-item > .pass-btn { margin-top: auto; width: 100%; font-size: 12px; padding: 8px 10px; }
 
 /* ===== Footer ===== */
 .pass-footer-hint {
@@ -6660,6 +6982,8 @@ function _injectPassCSS() {
     .pass-hero-right { flex-direction: row; min-width: auto; }
     .pass-hero-right > * { flex: 1; }
     .pass-season-time { flex-wrap: wrap; gap: 6px; }
+    /* 任务卡片网格：中等宽度下降为 3 列 */
+    .pass-tasks-list { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 768px) {
     .pass-container { padding: 16px; }
@@ -6696,6 +7020,8 @@ function _injectPassCSS() {
     .pp-ring-complete { font-size: 11px; padding: 6px 14px; top: calc(100% + 8px); }
     .pass-buylevel-control { flex-wrap: wrap; }
     .pass-premium-items { grid-template-columns: 1fr; }
+    /* 任务卡片网格：窄屏下降为 2 列 */
+    .pass-tasks-list { grid-template-columns: repeat(2, 1fr); }
 }
 `;
     document.head.appendChild(style);
@@ -6734,6 +7060,7 @@ function _wireTaskHooks() {
                     passUpdateTaskProgress('daily', 'd_coin', 1);
                     passUpdateTaskProgress('weekly', 'w_coin100', amount);
                     passUpdateTaskProgress('season', 's_coin1000', amount);
+                    passUpdateTaskProgress('season', 's_coin5000', amount);
                     passUpdateWeekly12Progress('coin', amount);
                     passUpdateBoostProgress('coin', amount);
                 }
@@ -6750,6 +7077,19 @@ function _wireTaskHooks() {
                 var ret = _origDtMark.apply(this, arguments);
                 try { passUpdateWeekly12Progress(taskKey, 1); } catch (e) {}
                 try { passUpdateBoostProgress(taskKey, 1); } catch (e) {}
+                // 通行证日常/周常/赛季任务中按行为类型推进的任务（小游戏 / 抽卡）
+                try {
+                    var passKeyMap = {
+                        minigame: { daily: ['d_play'], weekly: ['w_play5'], season: ['s_play50'] },
+                        gacha:    { daily: ['d_gacha'], weekly: ['w_gacha10', 'w_gacha20'], season: ['s_gacha50', 's_gacha200'] }
+                    };
+                    var m = passKeyMap[taskKey];
+                    if (m) {
+                        m.daily.forEach(function(id) { passUpdateTaskProgress('daily', id, 1); });
+                        m.weekly.forEach(function(id) { passUpdateTaskProgress('weekly', id, 1); });
+                        m.season.forEach(function(id) { passUpdateTaskProgress('season', id, 1); });
+                    }
+                } catch (e) {}
                 return ret;
             };
             // 兼容非 window 引用的直接全局调用：同步覆盖全局标识符
@@ -6793,6 +7133,7 @@ function _wireTaskHooks() {
                         passUpdateTaskProgress('daily', 'd_claim', 1);
                         passUpdateTaskProgress('weekly', 'w_claim7', 1);
                         passUpdateTaskProgress('season', 's_claim30', 1);
+                        passUpdateTaskProgress('season', 's_claim60', 1);
                         return _origClaim.apply(this, arguments);
                     };
                 }
@@ -6806,6 +7147,7 @@ function _wireTaskHooks() {
             window.activateWarehouseExpBuff = function() {
                 passUpdateTaskProgress('weekly', 'w_premium', 1);
                 passUpdateTaskProgress('season', 's_boost10', 1);
+                passUpdateTaskProgress('season', 's_boost20', 1);
                 passUpdateWeekly12Progress('boost', 1);
                 passUpdateBoostProgress('boost', 1);
                 return _origActivate.apply(this, arguments);
@@ -6814,6 +7156,7 @@ function _wireTaskHooks() {
 
         // 6. 登录（首次进入） → 每日"登录"任务
         passUpdateTaskProgress('daily', 'd_login', 1);
+        passUpdateTaskProgress('weekly', 'w_login3', 1);
         passUpdateTaskProgress('season', 's_first_login', 1);
 
     } catch(e) {
@@ -6821,10 +7164,18 @@ function _wireTaskHooks() {
     }
 }
 
-// 注入导航栏通行证条目（仅在已登录状态下显示）
+// 注入导航栏通行证条目（仅在大厅模式且已登录状态下显示）
 function _injectPassNavItem() {
     var centerNav = document.querySelector('#uiMinTopnav .ui-min-topnav-center');
     if (!centerNav) return;
+
+    // 仅大厅模式显示通行证入口；登录页等其他模式一律移除（通行证仅大厅可查看）
+    var isGameCenter = !!centerNav.querySelector('[data-menu="gamecenter"]');
+    if (!isGameCenter) {
+        var existingGc = centerNav.querySelector('[data-nav="battlepass"]');
+        if (existingGc) existingGc.remove();
+        return;
+    }
 
     // 未登录时不显示通行证入口；若已注入（如退回登录页场景）则移除
     var currentUser = {};

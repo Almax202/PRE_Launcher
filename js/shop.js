@@ -6,6 +6,12 @@
 
 var SHOP_DATA_VERSION = 4; // v4: 补齐 precoin_supply_1-4 商店上架条目（自选物品兑换卡可兑换）
 
+// 物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
+function _shopItemIconHtml(icon, color) {
+    if (typeof preIcon === 'function') return preIcon(icon, color ? { color: color } : {});
+    return '<i class="' + icon + '"' + (color ? ' style="color:' + color + ';"' : '') + '></i>';
+}
+
 // ==================== 商店定价配置（★ 修改价格/折扣仅需改此处 ★）====================
 // 规则：
 //   - price: 原价（购买 1 件所需 PRE Coin 数量，必须 ≥ 1）
@@ -17,7 +23,7 @@ var SHOP_DATA_VERSION = 4; // v4: 补齐 precoin_supply_1-4 商店上架条目�
 //   - note: 商品说明（卡片底部展示）
 //   - 说明：徽章（category === 'badge'）不得在商店出售，此处只允许消耗品和材料
 var SHOP_ITEM_PRICES = {
-    // ===== 消耗品：经验值加成卡（可与不同类型叠加，同类型不叠加，最多同时4张；同时激活4张时叠加可达 +100%） =====
+    // ===== 消耗品：经验值加成卡（可与不同类型叠加，同类型不叠加，最多同时5张；同时激活5张时叠加可达 +175%） =====
     exp_boost_small: {
         price: 400,
         discount: 0,
@@ -793,6 +799,29 @@ function getShopBundleStockRemaining(bundleId) {
 }
 
 // ==================== 购买 API ====================
+// 实际执行购买（仅在确认弹窗点确定后由回调调用）
+function _shopExecutePurchaseItem(itemId, qty) {
+    var cfg = SHOP_ITEM_PRICES[itemId];
+    var wid = _shopResolveWarehouseId(itemId);
+    var item = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS[wid] : null;
+    var finalPrice = getShopItemFinalPrice(itemId);
+    var totalCost = finalPrice * qty;
+
+    var spent = spendPreCoin(totalCost, '商店兑换：' + (item ? item.name : itemId) + ' ×' + qty);
+    if (!spent) return false;
+    if (typeof warehouseAddItem === 'function') {
+        warehouseAddItem(wid, qty, '商店兑换');
+    }
+    _shopRecordPurchase(itemId, finalPrice, qty);
+
+    if (typeof renderShopUI === 'function') {
+        var modal = document.getElementById('shopModal');
+        if (modal && modal.style.display === 'flex') renderShopUI();
+    }
+    return true;
+}
+
+// 商店单个商品购买入口：快速可校验部分先过，通过后弹出「确认购买」弹窗
 function shopPurchaseItem(itemId, qty) {
     qty = Math.max(1, parseInt(qty, 10) || 1);
     var cfg = SHOP_ITEM_PRICES[itemId];
@@ -833,18 +862,18 @@ function shopPurchaseItem(itemId, qty) {
         return false;
     }
 
-    var spent = spendPreCoin(totalCost, '商店兑换：' + item.name + ' ×' + qty);
-    if (!spent) return false;
-    if (typeof warehouseAddItem === 'function') {
-        warehouseAddItem(wid, qty, '商店兑换');
-    }
-    _shopRecordPurchase(itemId, finalPrice, qty);
-
-    if (typeof renderShopUI === 'function') {
-        var modal = document.getElementById('shopModal');
-        if (modal && modal.style.display === 'flex') renderShopUI();
-    }
+    shopOpenPurchaseConfirm({ kind: 'item', itemId: itemId, qty: qty });
     return true;
+}
+
+// 商店单个商品确认：点确定后真正执行购买 → 显示购买成功弹窗
+function _shopConfirmPurchaseItem(itemId, qty) {
+    var ok = _shopExecutePurchaseItem(itemId, qty);
+    if (ok) {
+        shopOpenPurchaseSuccess({ kind: 'item', itemId: itemId, qty: qty });
+    } else {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '购买过程中发生问题，请稍后重试' });
+    }
 }
 
 // ==================== 全屏弹窗 ====================
@@ -1058,7 +1087,26 @@ function shopOpenSpecialBackgroundPreview(itemId) {
     }
 }
 
-// 特殊商品购买（每账号限购 1 件，已拥有后禁止重复购买）
+// 特殊商品实际执行购买（仅确认弹窗点确定后由回调调用）
+function _shopExecutePurchaseSpecialItem(itemId) {
+    var cfg = SHOP_SPECIAL_ITEMS[itemId];
+    var price = getShopSpecialPrice(itemId);
+    var spent = spendPreCoin(price, '商店购买：' + cfg.name);
+    if (!spent) return false;
+
+    if (cfg.kind === 'background') {
+        _shopUnlockBackground(cfg.targetId);
+    } else {
+        _shopUnlockCardStyle(cfg.targetId);
+    }
+    _shopRecordPurchase('special_' + itemId, price, 1);
+
+    var modal = document.getElementById('shopModal');
+    if (modal && modal.style.display === 'flex') renderShopUI();
+    return true;
+}
+
+// 特殊商品购买入口（背景 / 名片样式）：快速校验后弹出确认弹窗
 function shopPurchaseSpecialItem(itemId) {
     var cfg = SHOP_SPECIAL_ITEMS[itemId];
     if (!cfg || !cfg.enabled) {
@@ -1083,21 +1131,19 @@ function shopPurchaseSpecialItem(itemId) {
         showToast({ type: 'error', title: 'PRE Coin 不足', message: '当前余额 ' + balance + '，需要 ' + price });
         return false;
     }
-    var spent = spendPreCoin(price, '商店购买：' + cfg.name);
-    if (!spent) return false;
 
-    if (cfg.kind === 'background') {
-        _shopUnlockBackground(cfg.targetId);
-        if (typeof showToast === 'function') showToast({ type: 'success', title: '购买成功', message: cfg.name + ' 已解锁，可前往系统设置 → 预设背景应用' });
-    } else {
-        _shopUnlockCardStyle(cfg.targetId);
-        if (typeof showToast === 'function') showToast({ type: 'success', title: '购买成功', message: cfg.name + ' 已解锁，可在系统设置中更改名片样式' });
-    }
-    _shopRecordPurchase('special_' + itemId, price, 1);
-
-    var modal = document.getElementById('shopModal');
-    if (modal && modal.style.display === 'flex') renderShopUI();
+    shopOpenPurchaseConfirm({ kind: 'special', specialId: itemId });
     return true;
+}
+
+// 特殊商品确认：点确定后真正执行 → 显示购买成功弹窗
+function _shopConfirmPurchaseSpecialItem(itemId) {
+    var ok = _shopExecutePurchaseSpecialItem(itemId);
+    if (ok) {
+        shopOpenPurchaseSuccess({ kind: 'special', specialId: itemId });
+    } else {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '购买过程中发生问题，请稍后重试' });
+    }
 }
 
 // ★ 统一的类别过滤：返回 { singles: [itemIds], bundles: [bundleIds], specials: [specialIds] }
@@ -1153,6 +1199,33 @@ function _shopFilterByCategory(catId) {
     });
 
     return { singles: singles, bundles: bundles, specials: specials };
+}
+
+// ★ 按仓库分类分组渲染 singles（与仓库「全部视图」一致：分类标题 + 数量 + 虚线隔断）
+//   仅当存在多个分类时才插入 .wh-cat-divider；复用仓库的 .wh-cat-header / .wh-cat-count / .wh-cat-divider 样式
+function _shopRenderSinglesGroupedByCategory(singles) {
+    if (!singles || singles.length === 0) return '';
+    var groups = {};
+    singles.forEach(function(id) {
+        var wid = _shopResolveWarehouseId(id);
+        var cat = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[wid] && WAREHOUSE_ITEMS[wid].category) || 'other';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(id);
+    });
+    var order = (typeof WAREHOUSE_CATEGORY_ORDER !== 'undefined') ? WAREHOUSE_CATEGORY_ORDER.slice() : ['consumable', 'material', 'badge'];
+    var ordered = order.filter(function(c) { return groups[c] && groups[c].length > 0; });
+    Object.keys(groups).forEach(function(c) { if (ordered.indexOf(c) < 0) ordered.push(c); });
+    var meta = (typeof WAREHOUSE_CATEGORY_META !== 'undefined') ? WAREHOUSE_CATEGORY_META : {};
+    return ordered.map(function(cat, idx) {
+        var m = meta[cat] || { name: (typeof getWarehouseCategoryLabel === 'function' ? getWarehouseCategoryLabel(cat) : cat), icon: 'fas fa-cube' };
+        var list = groups[cat];
+        var html = '<div class="shop-cat-group">' +
+            '<div class="wh-cat-header"><i class="' + m.icon + '"></i><span class="wh-cat-name">' + m.name + '</span><em class="wh-cat-count">' + list.length + '</em></div>' +
+            '<div class="shop-grid">' + list.map(function(id) { return buildShopCardHTML(id); }).join('') + '</div>' +
+            '</div>';
+        if (idx < ordered.length - 1) html += '<div class="wh-cat-divider"></div>';
+        return html;
+    }).join('');
 }
 
 // 格式化促销时间戳为 UTC+8 紧凑展示（MM-DD HH:mm）
@@ -1466,9 +1539,9 @@ function renderShopUI() {
     }
 
     // —— 渲染逻辑：
-    // ・只有 singles：直接渲染 singles（原有表现）
+    // ・只有 singles：直接渲染 singles（「全部商品」按仓库分类分组，含分类标题 + 虚线隔断）
     // ・只有 bundles：直接渲染 bundles（复用 bundle 卡片）
-    // ・两者都有：分成两个 subsection（单独售卖 / 组合包），中间留间距
+    // ・两者都有：分成两个 subsection（单独售卖 / 组合包），中间用仓库同款虚线隔断
     // ・只有 specials（背景 / 名片分类）：渲染特殊商品卡片（背景卡片点击可预览）
     var html = '';
     if (hasS && hasB) {
@@ -1477,6 +1550,8 @@ function renderShopUI() {
         html += '<div class="shop-subsection-title"><i class="fas fa-tag"></i> 单独售卖 <span class="shop-subsection-count">' + singles.length + ' 款</span></div>';
         html += '<div class="shop-grid">' + singles.map(function(id) { return buildShopCardHTML(id); }).join('') + '</div>';
         html += '</div>';
+        // 仓库同款虚线隔断（separate 单独售卖 / 组合包）
+        html += '<div class="wh-cat-divider"></div>';
         // subsection: bundles
         html += '<div class="shop-subsection">';
         html += '<div class="shop-subsection-title"><i class="fas fa-gift"></i> 组合包 <span class="shop-subsection-count">' + bundles.length + ' 款</span></div>';
@@ -1490,13 +1565,18 @@ function renderShopUI() {
         html += '<div class="shop-grid">' + specials.map(function(id) { return buildShopSpecialCardHTML(id); }).join('') + '</div>';
     } else {
         // 纯 singles 分类
-        html += '<div class="shop-grid">' + singles.map(function(id) { return buildShopCardHTML(id); }).join('') + '</div>';
+        if (_shopActiveCategory === 'all') {
+            // 「全部商品」：按仓库分类分组渲染（分类标题 + 数量 + 虚线隔断）
+            html += _shopRenderSinglesGroupedByCategory(singles);
+        } else {
+            html += '<div class="shop-grid">' + singles.map(function(id) { return buildShopCardHTML(id); }).join('') + '</div>';
+        }
     }
 
     content.innerHTML = html;
 
-    // —— 绑定事件（singles，排除特殊商品购买按钮）
-    content.querySelectorAll('.shop-buy-btn:not(.shop-special-buy)').forEach(function(btn) {
+    // —— 绑定事件（singles，排除特殊商品购买按钮与组合包购买按钮）
+    content.querySelectorAll('.shop-buy-btn:not(.shop-special-buy):not(.shop-bundle-buy)').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             var id = btn.getAttribute('data-id');
@@ -1656,7 +1736,7 @@ function buildShopCardHTML(itemId) {
             ${mirrorTagHtml}
             <span class="wh-type-tag" style="color:${rarity.color}; border-color:${rarity.color};">${categoryLabel}</span>
             <div class="wh-item-icon" style="background: ${hexToRgbaShop(item.color, 0.15)};">
-                <i class="${item.icon}" style="color:${item.color};"></i>
+                ${_shopItemIconHtml(item.icon, item.color)}
             </div>
             <div class="wh-item-name">${item.name}</div>
             <div class="wh-item-desc">${item.desc}</div>
@@ -1723,7 +1803,7 @@ function buildShopSpecialCardHTML(itemId) {
             ${priceTagHtml}
             <span class="wh-type-tag" style="color:${cfg.color}; border-color:${cfg.color};"><i class="${cfg.icon}"></i> ${typeLabel}</span>
             <div class="wh-item-icon" style="background: ${hexToRgbaShop(cfg.color, 0.15)};">
-                <i class="${cfg.icon}" style="color:${cfg.color};"></i>
+                ${_shopItemIconHtml(cfg.icon, cfg.color)}
             </div>
             <div class="wh-item-name">${cfg.name}</div>
             <div class="wh-item-desc">${cfg.desc || ''}</div>
@@ -1809,7 +1889,7 @@ function buildShopBundleCardHTML(bundleId) {
             ${priceTagHtml}
             <span class="wh-type-tag shop-bundle-type">组合包</span>
             <div class="wh-item-icon shop-bundle-icon" style="background: ${hexToRgbaShop(cfg.color, 0.15)};">
-                <i class="${cfg.icon}" style="color:${cfg.color};"></i>
+                ${_shopItemIconHtml(cfg.icon, cfg.color)}
             </div>
             <div class="wh-item-name">${cfg.name}</div>
             <div class="shop-bundle-count"><i class="fas fa-boxes-stacked"></i> 含 ${cfg.items.length} 件商品${savings > 0 ? ' · 立省 ' + savings + ' PRE Coin' : ''}</div>
@@ -1828,7 +1908,23 @@ function buildShopBundleCardHTML(bundleId) {
     `;
 }
 
-// 组合包购买（整包一次购买，限购按包计数）
+// 组合包实际执行购买（仅确认弹窗点确定后由回调调用）
+function _shopExecutePurchaseBundle(bundleId) {
+    var cfg = SHOP_BUNDLES[bundleId];
+    var totalCost = getShopBundleFinalPrice(bundleId);
+
+    var spent = spendPreCoin(totalCost, '商店组合包：' + cfg.name);
+    if (!spent) return false;
+    cfg.items.forEach(function(it) {
+        if (typeof warehouseAddItem === 'function') warehouseAddItem(it.itemId, it.qty || 1, '组合包：' + cfg.name);
+    });
+    _shopRecordPurchase('bundle_' + bundleId, totalCost, 1);
+    var modal = document.getElementById('shopModal');
+    if (modal && modal.style.display === 'flex') renderShopUI();
+    return true;
+}
+
+// 组合包购买入口：快速校验后弹出「确认购买」弹窗
 function shopPurchaseBundle(bundleId) {
     var cfg = SHOP_BUNDLES[bundleId];
     if (!cfg || !cfg.enabled) {
@@ -1854,16 +1950,333 @@ function shopPurchaseBundle(bundleId) {
         if (typeof showToast === 'function') showToast({ type: 'error', title: 'PRE Coin 不足', message: '当前余额 ' + balance + '，需要 ' + totalCost });
         return false;
     }
-    var spent = spendPreCoin(totalCost, '商店组合包：' + cfg.name);
-    if (!spent) return false;
-    cfg.items.forEach(function(it) {
-        if (typeof warehouseAddItem === 'function') warehouseAddItem(it.itemId, it.qty || 1, '组合包：' + cfg.name);
-    });
-    _shopRecordPurchase('bundle_' + bundleId, totalCost, 1);
-    if (typeof showToast === 'function') showToast({ type: 'success', title: '购买成功', message: cfg.name + ' 已存入仓库' });
-    var modal = document.getElementById('shopModal');
-    if (modal && modal.style.display === 'flex') renderShopUI();
+
+    shopOpenPurchaseConfirm({ kind: 'bundle', bundleId: bundleId });
     return true;
+}
+
+// 组合包确认：点确定后真正执行 → 关闭可能已打开的详情弹窗 → 显示购买成功弹窗
+function _shopConfirmPurchaseBundle(bundleId) {
+    var ok = _shopExecutePurchaseBundle(bundleId);
+    if (ok) {
+        // 如果是从详情弹窗点的「立即购买」，购买成功后顺手关掉详情弹窗
+        var bundleModal = document.getElementById('shopBundleModal');
+        if (bundleModal) closeShopBundleModal();
+        shopOpenPurchaseSuccess({ kind: 'bundle', bundleId: bundleId });
+    } else {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '购买过程中发生问题，请稍后重试' });
+    }
+}
+
+// ==================== 购买确认弹窗 & 购买成功弹窗 ====================
+// 打开「确认购买」弹窗：展示商品 / 组合包信息、数量、PRE Coin 花费与当前余额
+function shopOpenPurchaseConfirm(opts) {
+    if (document.getElementById('shopPurchaseConfirmModal')) return; // 防重入
+    var cfg, item, finalPrice, totalCost, rowsHtml, name, icon, color, desc, unitLabel, extraHtml = '';
+
+    if (opts.kind === 'item') {
+        var wid = _shopResolveWarehouseId(opts.itemId);
+        item = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS[wid] : null;
+        cfg = SHOP_ITEM_PRICES[opts.itemId];
+        finalPrice = getShopItemFinalPrice(opts.itemId);
+        totalCost = finalPrice * opts.qty;
+        name = item ? item.name : opts.itemId;
+        icon = item ? item.icon : 'fas fa-box';
+        color = item ? item.color : '#999999';
+        desc = item ? item.desc : '';
+        unitLabel = '件';
+    } else if (opts.kind === 'bundle') {
+        cfg = SHOP_BUNDLES[opts.bundleId];
+        totalCost = getShopBundleFinalPrice(opts.bundleId);
+        name = cfg.name;
+        icon = cfg.icon || 'fas fa-gift';
+        color = cfg.color || '#e67e22';
+        desc = '组合包';
+        unitLabel = '包';
+        var singleSum = getShopBundleSingleSum(opts.bundleId);
+        var savings = singleSum - totalCost;
+        var isDiscounted = cfg.discount > 0 && cfg.discount < 100;
+        rowsHtml = cfg.items.map(function(it) {
+            var sub = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId])
+                ? WAREHOUSE_ITEMS[it.itemId] : { name: it.itemId, icon: 'fas fa-box', color: '#999' };
+            return `
+                <div class="shop-cf-sub">
+                    <div class="shop-cf-sub-icon" style="background:${hexToRgbaShop(sub.color, 0.15)};">
+                        ${_shopItemIconHtml(sub.icon, sub.color)}
+                    </div>
+                    <div class="shop-cf-sub-info">
+                        <div class="shop-cf-sub-name">${sub.name}${(it.qty || 1) > 1 ? ' ×' + (it.qty || 1) : ''}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        extraHtml = `
+            <div class="shop-cf-section-title"><i class="fas fa-boxes-stacked"></i> 包含商品</div>
+            <div class="shop-cf-items">${rowsHtml}</div>
+            ${isDiscounted ? '<div class="shop-cf-promo">整包促销 -' + cfg.discount + '% 立省 <b>' + savings + '</b> PRE Coin</div>' : ''}
+        `;
+    } else if (opts.kind === 'special') {
+        cfg = SHOP_SPECIAL_ITEMS[opts.specialId];
+        totalCost = getShopSpecialPrice(opts.specialId);
+        name = cfg.name;
+        icon = cfg.icon || 'fas fa-palette';
+        color = cfg.color || '#3498db';
+        desc = cfg.kind === 'background' ? '动态背景' : '名片样式';
+        unitLabel = '件';
+    }
+
+    var balance = (typeof getPreCoinBalance === 'function') ? getPreCoinBalance() : 0;
+    var finalBalance = balance - totalCost;
+    var shortage = balance < totalCost;
+
+    var qtyRowHtml = '';
+    if (opts.kind === 'item') {
+        qtyRowHtml = `
+            <div class="shop-cf-row">
+                <span>购买数量</span>
+                <b>${opts.qty} ${unitLabel}</b>
+            </div>
+            <div class="shop-cf-row">
+                <span>单价</span>
+                <b>${finalPrice} PRE Coin</b>
+            </div>
+        `;
+    }
+
+    // 左侧 1/3 区域：单件 / 特殊商品 = 大号图标卡；组合包 = 3D 叠放图标堆
+    var leftHtml = '';
+    if (opts.kind === 'bundle') {
+        // 取最多 5 件展示在叠放堆中；超出用 +N 标记
+        var pileItems = cfg.items.slice(0, 5).map(function(it) {
+            var sub = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId])
+                ? WAREHOUSE_ITEMS[it.itemId] : { name: it.itemId, icon: 'fas fa-box', color: '#999' };
+            return { name: sub.name, icon: sub.icon, color: sub.color, qty: it.qty || 1 };
+        });
+        var extraCount = Math.max(0, cfg.items.length - pileItems.length);
+        leftHtml = `
+            <div class="shop-cf-pile-bg" style="background:linear-gradient(135deg,${hexToRgbaShop(color,0.22)} 0%,${hexToRgbaShop(color,0.06)} 100%);">
+                <div class="shop-cf-pile">
+                    ${pileItems.map(function(it, idx) {
+                        // 每张卡叠放偏移 & 旋转角
+                        var offsets = [
+                            { tx: 0,   ty: 0,   rot: -8,  z: 3 },
+                            { tx: 14,  ty: -16, rot: -2,  z: 4 },
+                            { tx: 24,  ty: 14,  rot: 6,   z: 5 },
+                            { tx: -10, ty: 22,  rot: 10,  z: 6 },
+                            { tx: 18,  ty: -26, rot: -6,  z: 7 }
+                        ];
+                        var o = offsets[idx] || offsets[0];
+                        return `<div class="shop-cf-pile-item" style="
+                            background:${hexToRgbaShop(it.color,0.9)};
+                            transform:translate(${o.tx}px,${o.ty}px) rotate(${o.rot}deg);
+                            z-index:${o.z};
+                            box-shadow:0 6px 18px ${hexToRgbaShop(it.color,0.35)}, 0 2px 6px rgba(0,0,0,0.15);
+                        " title="${it.name}${it.qty>1?' ×'+it.qty:''}">
+                            ${_shopItemIconHtml(it.icon)}
+                        </div>`;
+                    }).join('')}
+                </div>
+                ${extraCount > 0 ? '<div class="shop-cf-pile-more">+' + extraCount + '</div>' : ''}
+            </div>
+        `;
+    } else {
+        // item / special — 单张大号图标卡
+        leftHtml = `
+            <div class="shop-cf-single-bg" style="background:linear-gradient(135deg,${hexToRgbaShop(color,0.22)} 0%,${hexToRgbaShop(color,0.06)} 100%);">
+                <div class="shop-cf-single" style="background:${hexToRgbaShop(color,0.95)}; box-shadow:0 10px 28px ${hexToRgbaShop(color,0.4)}, 0 4px 10px rgba(0,0,0,0.15);">
+                    ${_shopItemIconHtml(icon, 'white')}
+                </div>
+                ${opts.kind === 'item' && opts.qty > 1 ? '<div class="shop-cf-qty-badge">×' + opts.qty + '</div>' : ''}
+            </div>
+        `;
+    }
+
+    // 右侧 2/3 区域：商品信息 + 包含商品（组合包）+ 消费明细
+    var rightHtml = `
+        <div class="shop-cf-right-top">
+            <div class="shop-cf-product-name">${name}</div>
+            <div class="shop-cf-product-desc">${desc}</div>
+        </div>
+    `;
+    if (opts.kind === 'bundle') {
+        rightHtml += `
+            ${isDiscounted ? '<div class="shop-cf-promo">整包促销 -' + cfg.discount + '% 立省 <b>' + savings + '</b> PRE Coin</div>' : ''}
+            <div class="shop-cf-section-title shop-cf-section-title-sm"><i class="fas fa-boxes-stacked"></i> 包含商品（${cfg.items.length} 种）</div>
+            <div class="shop-cf-items-compact">
+                ${cfg.items.map(function(it) {
+                    var sub = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId])
+                        ? WAREHOUSE_ITEMS[it.itemId] : { name: it.itemId, icon: 'fas fa-box', color: '#999' };
+                    return `<span class="shop-cf-chip" style="background:${hexToRgbaShop(sub.color,0.12)};color:${sub.color};border-color:${hexToRgbaShop(sub.color,0.35)};">
+                        ${_shopItemIconHtml(sub.icon)}${sub.name} ×${it.qty || 1}
+                    </span>`;
+                }).join('')}
+            </div>
+        `;
+    }
+    rightHtml += `
+        <div class="shop-cf-section-title"><i class="fas fa-receipt"></i> 消费明细</div>
+        ${qtyRowHtml}
+        <div class="shop-cf-row shop-cf-row-total">
+            <span>合计花费</span>
+            <b class="shop-cf-total">${totalCost} <small>PRE Coin</small></b>
+        </div>
+        <div class="shop-cf-balance">
+            <span>当前余额<b>：${balance}</b> PRE Coin</span>
+            <span>购买后余额<b class="${shortage ? 'shop-cf-bad' : 'shop-cf-good'}">${finalBalance}</b> PRE Coin</span>
+        </div>
+    `;
+
+    var modal = document.createElement('div');
+    modal.className = 'custom-alert shop-cf-modal';
+    modal.id = 'shopPurchaseConfirmModal';
+    modal.style.display = 'none';
+    modal.innerHTML = `
+        <div class="shop-cf-box">
+            <button class="shop-cf-close" title="关闭"><i class="fas fa-times"></i></button>
+            <div class="shop-cf-body">
+                <div class="shop-cf-left">${leftHtml}</div>
+                <div class="shop-cf-right">${rightHtml}</div>
+            </div>
+            <div class="shop-cf-foot">
+                <button class="shop-cf-btn shop-cf-cancel" type="button">取消</button>
+                <button class="shop-cf-btn shop-cf-ok" type="button" ${shortage ? 'disabled' : ''}>
+                    <i class="fas fa-check"></i> 确定购买
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    var confirmEscHandler = function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) cleanup();
+    };
+    document.addEventListener('keydown', confirmEscHandler);
+
+    function cleanup() {
+        document.removeEventListener('keydown', confirmEscHandler);
+        modal.classList.remove('show');
+        setTimeout(function() { if (modal.parentNode) modal.parentNode.removeChild(modal); }, 260);
+    }
+
+    modal.querySelector('.shop-cf-close').addEventListener('click', function() { cleanup(); });
+    modal.querySelector('.shop-cf-cancel').addEventListener('click', function() { cleanup(); });
+    modal.addEventListener('click', function(e) { if (e.target === modal) cleanup(); });
+
+    var okBtn = modal.querySelector('.shop-cf-ok');
+    if (okBtn) okBtn.addEventListener('click', function() {
+        cleanup();
+        if (opts.kind === 'item') _shopConfirmPurchaseItem(opts.itemId, opts.qty);
+        else if (opts.kind === 'bundle') _shopConfirmPurchaseBundle(opts.bundleId);
+        else if (opts.kind === 'special') _shopConfirmPurchaseSpecialItem(opts.specialId);
+    });
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+// 关闭确认弹窗（对外暴露，便于遮罩点击 / Esc 兜底；内部 cleanup 已自动调用）
+function closeShopPurchaseConfirm() {
+    var m = document.getElementById('shopPurchaseConfirmModal');
+    if (!m) return;
+    m.classList.remove('show');
+    setTimeout(function() { if (m.parentNode) m.parentNode.removeChild(m); }, 260);
+}
+
+// 打开「购买成功」弹窗：展示商品信息，告知已存入仓库
+function shopOpenPurchaseSuccess(opts) {
+    if (document.getElementById('shopPurchaseSuccessModal')) return;
+
+    var cfg, item, qty, totalCost, name, icon, color, desc, labelLine, itemsMiniHtml = '';
+
+    if (opts.kind === 'item') {
+        var wid = _shopResolveWarehouseId(opts.itemId);
+        item = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS[wid] : null;
+        cfg = SHOP_ITEM_PRICES[opts.itemId];
+        qty = opts.qty;
+        totalCost = (getShopItemFinalPrice(opts.itemId) || (cfg && cfg.price) || 0) * qty;
+        name = item ? item.name : opts.itemId;
+        icon = item ? item.icon : 'fas fa-box';
+        color = item ? item.color : '#2ecc71';
+        desc = item ? item.desc : '';
+        labelLine = '已存入仓库';
+    } else if (opts.kind === 'bundle') {
+        cfg = SHOP_BUNDLES[opts.bundleId];
+        totalCost = getShopBundleFinalPrice(opts.bundleId);
+        name = cfg.name;
+        icon = cfg.icon || 'fas fa-gift';
+        color = cfg.color || '#e67e22';
+        desc = '组合包';
+        labelLine = '已存入仓库';
+        itemsMiniHtml = cfg.items.map(function(it) {
+            var sub = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId])
+                ? WAREHOUSE_ITEMS[it.itemId] : { name: it.itemId, icon: 'fas fa-box', color: '#999' };
+            return `<span class="shop-ps-chip" style="background:${hexToRgbaShop(sub.color, 0.12)};color:${sub.color};border-color:${hexToRgbaShop(sub.color, 0.35)};">
+            ${_shopItemIconHtml(sub.icon)}${sub.name} ×${it.qty || 1}
+            </span>`;
+        }).join('');
+    } else if (opts.kind === 'special') {
+        cfg = SHOP_SPECIAL_ITEMS[opts.specialId];
+        totalCost = getShopSpecialPrice(opts.specialId);
+        name = cfg.name;
+        icon = cfg.icon || 'fas fa-palette';
+        color = cfg.color || '#3498db';
+        desc = cfg.kind === 'background' ? '动态背景' : '名片样式';
+        labelLine = cfg.kind === 'background' ? '已解锁 · 可前往系统设置 → 预设背景应用' : '已解锁 · 可在系统设置中更改名片样式';
+    }
+
+    var modal = document.createElement('div');
+    modal.className = 'custom-alert shop-ps-modal';
+    modal.id = 'shopPurchaseSuccessModal';
+    modal.style.display = 'none';
+    modal.innerHTML = `
+        <div class="shop-ps-box">
+            <div class="shop-ps-confetti">
+                <div class="shop-ps-check">
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+            <div class="shop-ps-title">购买成功</div>
+            <div class="shop-ps-product">
+                <div class="shop-ps-icon" style="background:${hexToRgbaShop(color, 0.15)};">
+                    ${_shopItemIconHtml(icon, color)}
+                </div>
+                <div class="shop-ps-info">
+                    <div class="shop-ps-name">${name}${opts.kind === 'item' && qty > 1 ? ' ×' + qty : ''}</div>
+                    <div class="shop-ps-desc">${desc}</div>
+                </div>
+            </div>
+            <div class="shop-ps-label"><i class="fas fa-warehouse"></i> ${labelLine}</div>
+            ${itemsMiniHtml ? '<div class="shop-ps-chips">' + itemsMiniHtml + '</div>' : ''}
+            <div class="shop-ps-foot">
+                <span class="shop-ps-cost">本次花费 <b>${totalCost}</b> PRE Coin</span>
+                <button class="shop-ps-close" type="button"><i class="fas fa-check-circle"></i> 好的</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    var successEscHandler = function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) cleanup();
+    };
+    document.addEventListener('keydown', successEscHandler);
+    function cleanup() {
+        document.removeEventListener('keydown', successEscHandler);
+        modal.classList.remove('show');
+        setTimeout(function() { if (modal.parentNode) modal.parentNode.removeChild(modal); }, 260);
+    }
+
+    modal.querySelector('.shop-ps-close').addEventListener('click', function() { cleanup(); });
+    modal.addEventListener('click', function(e) { if (e.target === modal) cleanup(); });
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+function closeShopPurchaseSuccess() {
+    var m = document.getElementById('shopPurchaseSuccessModal');
+    if (!m) return;
+    m.classList.remove('show');
+    setTimeout(function() { if (m.parentNode) m.parentNode.removeChild(m); }, 260);
 }
 
 // 组合包详情弹窗
@@ -1873,6 +2286,46 @@ function openShopBundleModal(bundleId) {
     var old = document.getElementById('shopBundleModal');
     if (old && old.parentNode) old.parentNode.removeChild(old);
 
+    var finalPrice = getShopBundleFinalPrice(bundleId);
+    var singleSum = getShopBundleSingleSum(bundleId);
+    var savings = singleSum - finalPrice;
+    var isDiscounted = cfg.discount > 0 && cfg.discount < 100;
+    var remaining = getShopBundleStockRemaining(bundleId);
+
+    // 左侧 1/4 —— 3D 叠放堆（与确认弹窗一致的视觉）
+    var pileItems = cfg.items.slice(0, 5).map(function(it) {
+        var item = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId])
+            ? WAREHOUSE_ITEMS[it.itemId] : { name: it.itemId, icon: 'fas fa-box', color: '#999' };
+        return { name: item.name, icon: item.icon, color: item.color, qty: it.qty || 1 };
+    });
+    var extraCount = Math.max(0, cfg.items.length - pileItems.length);
+    var offsets = [
+        { tx: 0,   ty: 0,   rot: -8,  z: 3 },
+        { tx: 14,  ty: -16, rot: -2,  z: 4 },
+        { tx: 24,  ty: 14,  rot: 6,   z: 5 },
+        { tx: -10, ty: 22,  rot: 10,  z: 6 },
+        { tx: 18,  ty: -26, rot: -6,  z: 7 }
+    ];
+    var pileHtml = `
+        <div class="shop-bm-pile-bg" style="background:linear-gradient(135deg,${hexToRgbaShop(cfg.color,0.22)} 0%,${hexToRgbaShop(cfg.color,0.06)} 100%);">
+            <div class="shop-bm-pile" style="transform-style:preserve-3d;perspective:420px;">
+                ${pileItems.map(function(it, idx) {
+                    var o = offsets[idx] || offsets[0];
+                    return `<div class="shop-bm-pile-item" style="
+                        background:${hexToRgbaShop(it.color,0.9)};
+                        transform:translate(${o.tx}px,${o.ty}px) rotate(${o.rot}deg);
+                        z-index:${o.z};
+                        box-shadow:0 6px 18px ${hexToRgbaShop(it.color,0.35)}, 0 2px 6px rgba(0,0,0,0.15);
+                    " title="${it.name}${it.qty>1?' ×'+it.qty:''}">
+                        ${_shopItemIconHtml(it.icon)}
+                    </div>`;
+                }).join('')}
+            </div>
+            ${extraCount > 0 ? '<div class="shop-bm-pile-more">+' + extraCount + '</div>' : ''}
+        </div>
+    `;
+
+    // 右侧 3/4 —— 组合包名 + 包含商品清单（详细说明 + 单价）+ 取消 / 立即购买
     var rowsHtml = cfg.items.map(function(it) {
         var item = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId])
             ? WAREHOUSE_ITEMS[it.itemId]
@@ -1881,62 +2334,66 @@ function openShopBundleModal(bundleId) {
         var inPrice = _shopBundleItemFinal(it);
         var qty = it.qty || 1;
         return `
-            <div class="shop-bi-row">
-                <div class="shop-bi-icon" style="background:${hexToRgbaShop(item.color, 0.15)};">
-                    <i class="${item.icon}" style="color:${item.color};"></i>
+            <div class="shop-bm-row">
+                <div class="shop-bm-row-icon" style="background:${hexToRgbaShop(item.color,0.15)};">
+                    ${_shopItemIconHtml(item.icon, item.color)}
                 </div>
-                <div class="shop-bi-info">
-                    <div class="shop-bi-name">${item.name}${qty > 1 ? ' ×' + qty : ''}</div>
-                    <div class="shop-bi-desc">${item.desc || ''}</div>
+                <div class="shop-bm-row-info">
+                    <div class="shop-bm-row-name">${item.name}${qty > 1 ? ' ×' + qty : ''}</div>
+                    <div class="shop-bm-row-desc">${item.desc || ''}</div>
                 </div>
-                <div class="shop-bi-price">
-                    ${inPrice < singlePrice ? '<span class="shop-bi-single">' + singlePrice + '</span>' : ''}
-                    <b>${inPrice}</b> PRE Coin
+                <div class="shop-bm-row-price">
+                    ${inPrice < singlePrice ? '<span class="shop-bm-row-single">' + singlePrice + '</span>' : ''}
+                    <b>${inPrice}</b>
                 </div>
             </div>
         `;
     }).join('');
 
-    var finalPrice = getShopBundleFinalPrice(bundleId);
-    var singleSum = getShopBundleSingleSum(bundleId);
-    var savings = singleSum - finalPrice;
-    var isDiscounted = cfg.discount > 0 && cfg.discount < 100;
-    var remaining = getShopBundleStockRemaining(bundleId);
-
     var modal = document.createElement('div');
-    modal.className = 'custom-alert';
+    modal.className = 'custom-alert shop-bm-modal';
     modal.id = 'shopBundleModal';
     modal.style.display = 'none';
     modal.innerHTML = `
-        <div class="shop-bundle-box">
-            <div class="shop-bundle-head">
-                <div class="shop-bundle-head-icon" style="background:${hexToRgbaShop(cfg.color, 0.15)};">
-                    <i class="${cfg.icon}" style="color:${cfg.color};"></i>
+        <div class="shop-bm-box">
+            <button class="shop-bm-close" title="关闭"><i class="fas fa-times"></i></button>
+            <div class="shop-bm-body">
+                <div class="shop-bm-left">${pileHtml}</div>
+                <div class="shop-bm-right">
+                    <div class="shop-bm-head">
+                        <div class="shop-bm-title">${cfg.name}</div>
+                        <div class="shop-bm-sub">包含 ${cfg.items.length} 件商品${isDiscounted ? ' · 整包 -' + cfg.discount + '% 促销中' : ' · 原价组合'}</div>
+                        ${cfg.note ? '<div class="shop-bm-note"><i class="fas fa-info-circle"></i> ' + cfg.note + '</div>' : ''}
+                    </div>
+                    ${isDiscounted ? '<div class="shop-bm-promo">整包促销 -' + cfg.discount + '% 立省 <b>' + savings + '</b> PRE Coin</div>' : ''}
+                    <div class="shop-bm-section-title"><i class="fas fa-boxes-stacked"></i> 包含商品明细</div>
+                    <div class="shop-bm-list">${rowsHtml}</div>
                 </div>
-                <div>
-                    <div class="shop-bundle-head-title">${cfg.name}</div>
-                    <div class="shop-bundle-head-sub">包含 ${cfg.items.length} 件商品 · ${isDiscounted ? '整包 -' + cfg.discount + '% 促销中' : '原价组合'}</div>
-                </div>
-                <button class="shop-bundle-close" title="关闭"><i class="fas fa-times"></i></button>
             </div>
-            <div class="shop-bundle-list">${rowsHtml}</div>
-            ${cfg.note ? '<div class="shop-bundle-note"><i class="fas fa-info-circle"></i> ' + cfg.note + '</div>' : ''}
-            <div class="shop-bundle-foot">
-                <span class="shop-bundle-total">组合价：<b>${finalPrice}</b> PRE Coin${savings > 0 ? ' <span class="shop-bundle-save">立省 ' + savings + ' PRE Coin</span>' : ''}</span>
-                <button class="shop-buy-btn shop-bundle-buy" data-id="${bundleId}" style="margin-left:auto; width:auto; padding:9px 22px;" ${remaining < 1 ? 'disabled' : ''}>
-                    <i class="fas ${remaining < 1 ? 'fa-ban' : 'fa-shopping-cart'}"></i> ${remaining < 1 ? '已售罄' : '立即购买'}
-                </button>
+            <div class="shop-bm-foot">
+                <span class="shop-bm-total">合计花费<b>${finalPrice}</b> PRE Coin${savings > 0 ? ' <span class="shop-bm-save">立省 ' + savings + ' PRE Coin</span>' : ''}</span>
+                <div style="display:flex; gap:10px;">
+                    <button class="shop-bm-btn shop-bm-cancel" type="button">取消</button>
+                    <button class="shop-bm-btn shop-bm-buy" type="button" ${remaining < 1 ? 'disabled' : ''}>
+                        <i class="fas ${remaining < 1 ? 'fa-ban' : 'fa-shopping-cart'}"></i> ${remaining < 1 ? '已售罄' : '立即购买'}
+                    </button>
+                </div>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
 
-    modal.querySelector('.shop-bundle-close').addEventListener('click', closeShopBundleModal);
-    modal.addEventListener('click', function(e) { if (e.target === modal) closeShopBundleModal(); });
-    var buyBtn = modal.querySelector('.shop-bundle-buy');
+    function cleanup() {
+        closeShopBundleModal();
+    }
+    modal.querySelector('.shop-bm-close').addEventListener('click', cleanup);
+    modal.querySelector('.shop-bm-cancel').addEventListener('click', cleanup);
+    modal.addEventListener('click', function(e) { if (e.target === modal) cleanup(); });
+    var buyBtn = modal.querySelector('.shop-bm-buy');
     if (buyBtn) buyBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        if (shopPurchaseBundle(bundleId)) closeShopBundleModal();
+        // shopPurchaseBundle 会自行弹出确认弹窗，购买成功后由 _shopConfirmPurchaseBundle 负责关闭本详情弹窗
+        shopPurchaseBundle(bundleId);
     });
 
     modal.style.display = 'flex';
@@ -2010,21 +2467,40 @@ function getShopStyleCSS() {
             grid-template-columns: repeat(5, 1fr);
         }
         /* ★ 分组 subsection（weekly/monthly/total 混排 singles + bundles 时） */
-        #shopModal .shop-subsection { margin-bottom: 28px; }
+        #shopModal .shop-subsection { margin-bottom: 18px; }
         #shopModal .shop-subsection:last-child { margin-bottom: 0; }
         #shopModal .shop-subsection-title {
             display: flex; align-items: center; gap: 8px;
             font-size: 14px; font-weight: 700; color: #2c3e50;
             margin: 0 0 14px 4px;
-            padding: 0 0 8px 12px;
+            padding: 0 0 0 12px;
             border-left: 3px solid #c0392b;
-            border-bottom: 1px dashed rgba(0,0,0,0.08);
         }
         #shopModal .shop-subsection-title i { color: #c0392b; }
         #shopModal .shop-subsection-count {
             font-size: 12px; font-weight: 500; color: #7f8c8d;
             margin-left: auto;
         }
+        /* ★ 分类标题 / 虚线隔断（与仓库同款，独立注入以免先开商店时仓库样式未加载） */
+        #shopModal .wh-cat-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 2px 2px 0; color: #555;
+            font-size: 14px; font-weight: 700;
+        }
+        #shopModal .wh-cat-header i { color: #d45d79; font-size: 13px; }
+        #shopModal .wh-cat-count {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; padding: 0 6px; height: 18px;
+            border-radius: 9px; background: rgba(212, 93, 121, 0.12);
+            color: #d45d79; font-size: 11px; font-style: normal; font-weight: 600;
+        }
+        #shopModal .wh-cat-divider {
+            border-top: 1.5px dashed rgba(0, 0, 0, 0.16);
+            margin: 6px 0; height: 0;
+        }
+        /* 「全部商品」按分类分组：分类标题与网格容器之间的间距 */
+        #shopModal .shop-cat-group .wh-cat-header { margin-bottom: 12px; }
+        #shopModal .shop-cat-group + .wh-cat-divider { margin: 18px 0; }
         #shopModal .wh-item-card {
             position: relative; display: flex; flex-direction: column;
             gap: 8px; padding: 22px 18px 18px; background: white;
@@ -2438,99 +2914,440 @@ function getShopStyleCSS() {
             background: #c0392b; background-clip: padding-box;
         }
 
-        /* ====== 组合包详情弹窗 ====== */
+        /* ====== 组合包详情弹窗（新横向布局 shop-bm-*） ====== */
         #shopBundleModal {
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            display: none; position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none; position: fixed; inset: 0; z-index: 100010;
             align-items: center; justify-content: center;
         }
         #shopBundleModal.show { display: flex; }
-        #shopBundleModal .shop-bundle-box {
-            width: 480px; max-width: 94vw; max-height: 86vh;
+        #shopBundleModal .shop-bm-box {
+            position: relative;
+            width: 720px; max-width: 95vw;
             display: flex; flex-direction: column;
-            background: white; border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.35); overflow: hidden;
+            background: white; border-radius: 20px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.4); overflow: hidden;
+            animation: shopBmPop 0.28s cubic-bezier(0.34,1.56,0.64,1);
         }
-        #shopBundleModal .shop-bundle-head {
-            display: flex; align-items: center; gap: 12px;
-            padding: 18px 20px; border-bottom: 1px solid rgba(0,0,0,0.08); flex-shrink: 0;
+        @keyframes shopBmPop {
+            0% { transform: translateY(18px) scale(0.92); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
         }
-        #shopBundleModal .shop-bundle-head-icon {
-            width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        #shopBundleModal .shop-bm-close {
+            position: absolute; top: 14px; right: 14px; z-index: 10;
+            width: 30px; height: 30px; border: none; border-radius: 50%; cursor: pointer;
+            background: rgba(0,0,0,0.06); color: #777; font-size: 14px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
         }
-        #shopBundleModal .shop-bundle-head-title { font-size: 16px; font-weight: bold; color: #333; }
-        #shopBundleModal .shop-bundle-head-sub { font-size: 11px; color: #999; margin-top: 2px; }
-        #shopBundleModal .shop-bundle-close {
-            margin-left: auto; width: 32px; height: 32px; border: none; border-radius: 50%;
-            background: rgba(0,0,0,0.05); color: #666; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;
+        #shopBundleModal .shop-bm-close:hover { background: #e67e22; color: white; transform: rotate(90deg); }
+
+        #shopBundleModal .shop-bm-body {
+            display: grid; grid-template-columns: 1fr 3fr; gap: 0;
+            padding: 24px 22px 14px;
         }
-        #shopBundleModal .shop-bundle-close:hover { background: #e67e22; color: white; transform: rotate(90deg); }
-        #shopBundleModal .shop-bundle-list {
-            flex: 1; overflow-y: auto; padding: 14px 20px;
-            display: flex; flex-direction: column; gap: 10px;
+        #shopBundleModal .shop-bm-left {
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 0 6px 12px;
+        }
+        #shopBundleModal .shop-bm-pile-bg {
+            position: relative; width: 100%; aspect-ratio: 1/1;
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        #shopBundleModal .shop-bm-pile { position: relative; width: 100%; height: 100%; }
+        #shopBundleModal .shop-bm-pile-item {
+            position: absolute; left: 50%; top: 50%;
+            width: 58%; aspect-ratio: 1/1;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            margin-left: -29%; margin-top: -29%;
+            animation: shopCfPileIn 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        #shopBundleModal .shop-bm-pile-item i { color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+        #shopBundleModal .shop-bm-pile-more {
+            position: absolute; right: 10px; bottom: 10px;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,0,0,0.2); color: white; font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        #shopBundleModal .shop-bm-right { padding: 0 0 0 40px; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+        #shopBundleModal .shop-bm-title { font-size: 18px; font-weight: bold; color: #2c3e50; line-height: 1.25; }
+        #shopBundleModal .shop-bm-sub { font-size: 12px; color: #888; margin-top: 3px; }
+        #shopBundleModal .shop-bm-note {
+            font-size: 11px; color: #a88; margin-top: 5px; padding: 6px 10px;
+            background: rgba(230,126,34,0.06); border-radius: 8px; border-left: 3px solid #e67e22;
+        }
+        #shopBundleModal .shop-bm-note i { color: #e67e22; margin-right: 3px; }
+        #shopBundleModal .shop-bm-promo {
+            margin-top: 8px; padding: 6px 12px; border-radius: 8px;
+            background: linear-gradient(135deg,#fff4e6 0%,#ffe2bf 100%);
+            color: #a55a00; font-size: 12px; text-align: center; font-weight: 600;
+        }
+        #shopBundleModal .shop-bm-promo b { color: #d35400; }
+        #shopBundleModal .shop-bm-section-title {
+            margin: 10px 0 6px; font-size: 11px; font-weight: 700; color: #888;
+            display: flex; align-items: center; gap: 6px; letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        #shopBundleModal .shop-bm-section-title i { color: #e67e22; font-size: 11px; }
+
+        #shopBundleModal .shop-bm-list {
+            overflow-y: auto; max-height: 224px;
+            display: flex; flex-direction: column; gap: 8px;
+            padding-right: 4px;
             scrollbar-width: thin; scrollbar-color: #e67e22 rgba(0,0,0,0.05);
         }
-        #shopBundleModal .shop-bundle-list::-webkit-scrollbar { width: 8px; }
-        #shopBundleModal .shop-bundle-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); border-radius: 8px; }
-        #shopBundleModal .shop-bundle-list::-webkit-scrollbar-thumb {
+        #shopBundleModal .shop-bm-list::-webkit-scrollbar { width: 8px; }
+        #shopBundleModal .shop-bm-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); border-radius: 8px; }
+        #shopBundleModal .shop-bm-list::-webkit-scrollbar-thumb {
             background: linear-gradient(180deg, #f39c12 0%, #e67e22 100%);
             border-radius: 8px; border: 2px solid transparent; background-clip: padding-box;
         }
-        #shopBundleModal .shop-bi-row {
-            display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+        #shopBundleModal .shop-bm-row {
+            display: flex; align-items: center; gap: 12px; padding: 9px 12px;
             border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; background: rgba(0,0,0,0.02);
         }
-        #shopBundleModal .shop-bi-icon {
-            width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        #shopBundleModal .shop-bm-row-icon {
+            width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 17px;
         }
-        #shopBundleModal .shop-bi-info { flex: 1; min-width: 0; }
-        #shopBundleModal .shop-bi-name { font-size: 13px; font-weight: bold; color: #333; }
-        #shopBundleModal .shop-bi-desc {
+        #shopBundleModal .shop-bm-row-info { flex: 1; min-width: 0; }
+        #shopBundleModal .shop-bm-row-name { font-size: 13px; font-weight: bold; color: #333; }
+        #shopBundleModal .shop-bm-row-desc {
             font-size: 11px; color: #999; margin-top: 2px;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        #shopBundleModal .shop-bi-price { text-align: right; font-size: 13px; color: #c0392b; flex-shrink: 0; }
-        #shopBundleModal .shop-bi-single { text-decoration: line-through; color: #b0b0b0; font-size: 11px; margin-right: 5px; }
-        #shopBundleModal .shop-bundle-note {
-            font-size: 11px; color: #a88; padding: 0 20px 10px; flex-shrink: 0;
+        #shopBundleModal .shop-bm-row-price { text-align: right; font-size: 13px; color: #c0392b; flex-shrink: 0; min-width: 80px; }
+        #shopBundleModal .shop-bm-row-price b { font-weight: 700; }
+        #shopBundleModal .shop-bm-row-single { text-decoration: line-through; color: #b0b0b0; font-size: 11px; margin-right: 4px; }
+
+        #shopBundleModal .shop-bm-foot {
+            padding: 12px 22px 18px; border-top: 1px solid rgba(0,0,0,0.06);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0;
         }
-        #shopBundleModal .shop-bundle-note i { color: #e67e22; margin-right: 3px; }
-        #shopBundleModal .shop-bundle-foot {
-            padding: 14px 20px; border-top: 1px solid rgba(0,0,0,0.08);
-            display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-        }
-        #shopBundleModal .shop-bundle-total { font-size: 13px; color: #777; }
-        #shopBundleModal .shop-bundle-total b { color: #c0392b; font-size: 16px; }
-        #shopBundleModal .shop-bundle-save {
-            font-size: 11px; font-weight: bold; color: #27ae60;
+        #shopBundleModal .shop-bm-total { font-size: 12px; color: #777; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #shopBundleModal .shop-bm-total b { color: #c0392b; font-size: 16px; margin: 0 2px; }
+        #shopBundleModal .shop-bm-save {
+            font-size: 11px; font-weight: bold; color: #27ae60; margin-left: 4px;
             background: rgba(39,174,96,0.1); padding: 3px 8px; border-radius: 8px;
         }
+        #shopBundleModal .shop-bm-btn {
+            padding: 9px 18px; border-radius: 10px; border: none; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            white-space: nowrap;
+        }
+        #shopBundleModal .shop-bm-cancel { background: rgba(0,0,0,0.06); color: #555; }
+        #shopBundleModal .shop-bm-cancel:hover { background: rgba(0,0,0,0.12); color: #222; }
+        #shopBundleModal .shop-bm-buy {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white; box-shadow: 0 4px 12px rgba(230,126,34,0.35);
+        }
+        #shopBundleModal .shop-bm-buy:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(230,126,34,0.45); }
+        #shopBundleModal .shop-bm-buy:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
 
-        /* 组合包暗色模式 */
-        body.dark-mode #shopBundleModal .shop-bundle-box { background: #24243a; }
-        body.dark-mode #shopBundleModal .shop-bundle-head { border-color: rgba(255,255,255,0.08); }
-        body.dark-mode #shopBundleModal .shop-bundle-head-title { color: #e0e0e0; }
-        body.dark-mode #shopBundleModal .shop-bundle-close { background: rgba(255,255,255,0.08); color: #ccc; }
-        body.dark-mode #shopBundleModal .shop-bi-row { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); }
-        body.dark-mode #shopBundleModal .shop-bi-name { color: #e0e0e0; }
-        body.dark-mode #shopBundleModal .shop-bundle-foot { border-color: rgba(255,255,255,0.08); }
+        /* 组合包弹窗暗色模式 */
+        body.dark-mode #shopBundleModal .shop-bm-box { background: #24243a; }
+        body.dark-mode #shopBundleModal .shop-bm-close { background: rgba(255,255,255,0.08); color: #ccc; }
+        body.dark-mode #shopBundleModal .shop-bm-title { color: #e8e8e8; }
+        body.dark-mode #shopBundleModal .shop-bm-sub { color: #aaa; }
+        body.dark-mode #shopBundleModal .shop-bm-note { color: #d98; background: rgba(230,126,34,0.1); border-left-color: #e67e22; }
+        body.dark-mode #shopBundleModal .shop-bm-promo { background: linear-gradient(135deg,rgba(230,126,34,0.2) 0%,rgba(211,84,0,0.1) 100%); color: #ffcc88; }
+        body.dark-mode #shopBundleModal .shop-bm-row { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); }
+        body.dark-mode #shopBundleModal .shop-bm-row-name { color: #e0e0e0; }
+        body.dark-mode #shopBundleModal .shop-bm-foot { border-color: rgba(255,255,255,0.08); }
+        body.dark-mode #shopBundleModal .shop-bm-total { color: #aaa; }
+        body.dark-mode #shopBundleModal .shop-bm-cancel { background: rgba(255,255,255,0.08); color: #ddd; }
+        body.dark-mode #shopBundleModal .shop-bm-cancel:hover { background: rgba(255,255,255,0.16); color: #fff; }
+
+        @media (max-width: 640px) {
+            #shopBundleModal .shop-bm-box { width: 95vw; }
+            #shopBundleModal .shop-bm-body { grid-template-columns: 1fr; padding: 18px 16px 10px; }
+            #shopBundleModal .shop-bm-left { padding: 4px 24px 10px; }
+            #shopBundleModal .shop-bm-right { padding: 0; }
+            #shopBundleModal .shop-bm-foot { flex-wrap: wrap; }
+        }
         body.dark-mode #shopModal .shop-toolbar-sep { background: rgba(255,255,255,0.16); }
         body.dark-mode #shopModal .shop-promo-period-tag { color: white; }
         body.dark-mode #shopModal .shop-promo-period-tag.shop-promo-pending { background: rgba(255,255,255,0.1); color: #888; }
         body.dark-mode #shopModal .shop-bundle-count { background: rgba(230,126,34,0.18); color: #f5b041; }
         body.dark-mode #shopModal .shop-bundle-open { background: rgba(230,126,34,0.12); color: #f5b041; border-color: rgba(230,126,34,0.5); }
-        body.dark-mode #shopModal .shop-subsection-title { color: #e8e8e8; border-bottom-color: rgba(255,255,255,0.12); }
+        body.dark-mode #shopModal .shop-subsection-title { color: #e8e8e8; }
         body.dark-mode #shopModal .shop-subsection-count { color: #aaa; }
+        body.dark-mode #shopModal .wh-cat-header { color: #ccc; }
+        body.dark-mode #shopModal .wh-cat-count { background: rgba(230, 126, 138, 0.18); color: #e67e8a; }
+        body.dark-mode #shopModal .wh-cat-divider { border-top-color: rgba(255, 255, 255, 0.16); }
         body.dark-mode #shopModal .wh-content { scrollbar-color: #e74c3c rgba(255,255,255,0.08); }
         body.dark-mode #shopModal .wh-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.06); }
         body.dark-mode #shopModal .wh-content::-webkit-scrollbar-thumb {
             background: linear-gradient(180deg, #f0716a 0%, #e74c3c 100%);
             background-clip: padding-box;
         }
+
+        /* ===== 确认购买弹窗 & 购买成功弹窗（#shopPurchaseConfirmModal / #shopPurchaseSuccessModal） ===== */
+        #shopPurchaseConfirmModal, #shopPurchaseSuccessModal {
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 100020;
+        }
+        #shopPurchaseConfirmModal .shop-cf-box,
+        #shopPurchaseSuccessModal .shop-ps-box {
+            width: 460px; max-width: 92vw; background: white; border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35); overflow: hidden;
+            animation: shopCfPop 0.28s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes shopCfPop {
+            0% { transform: translateY(18px) scale(0.92); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        /* 确认弹窗（长方形横向布局） */
+        #shopPurchaseConfirmModal .shop-cf-box {
+            position: relative;
+            width: 700px; max-width: 95vw; background: white; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35); overflow: hidden;
+            animation: shopCfPop 0.28s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        #shopPurchaseConfirmModal .shop-cf-close {
+            position: absolute; top: 14px; right: 14px;
+            width: 30px; height: 30px; border: none; border-radius: 50%; cursor: pointer; z-index: 10;
+            background: rgba(0,0,0,0.06); color: #777; font-size: 14px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #shopPurchaseConfirmModal .shop-cf-close:hover { background: #e74c3c; color: white; transform: rotate(90deg); }
+
+        #shopPurchaseConfirmModal .shop-cf-body {
+            display: grid; grid-template-columns: 1fr 3fr; gap: 0;
+            padding: 24px 22px 16px;
+        }
+
+        /* 左侧 1/3 */
+        #shopPurchaseConfirmModal .shop-cf-left {
+            display: flex; align-items: center; justify-content: center;
+            padding: 12px 6px;
+        }
+        #shopPurchaseConfirmModal .shop-cf-single-bg,
+        #shopPurchaseConfirmModal .shop-cf-pile-bg {
+            position: relative;
+            width: 100%; aspect-ratio: 1/1;
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        #shopPurchaseConfirmModal .shop-cf-single {
+            width: 66%; height: 66%;
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 42px;
+            animation: shopCfIconPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes shopCfIconPop {
+            0% { transform: scale(0.6) rotate(-10deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        #shopPurchaseConfirmModal .shop-cf-single i { color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+        #shopPurchaseConfirmModal .shop-cf-qty-badge {
+            position: absolute; right: 10px; bottom: 10px;
+            padding: 3px 10px; border-radius: 12px; background: rgba(0,0,0,0.15);
+            color: white; font-size: 12px; font-weight: 700; backdrop-filter: blur(4px);
+        }
+
+        /* 左侧 —— 组合包 3D 叠放堆 */
+        #shopPurchaseConfirmModal .shop-cf-pile {
+            position: relative; width: 100%; height: 100%;
+            transform-style: preserve-3d; perspective: 420px;
+        }
+        #shopPurchaseConfirmModal .shop-cf-pile-item {
+            position: absolute; left: 50%; top: 50%;
+            width: 58%; aspect-ratio: 1/1;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            margin-left: -29%; margin-top: -29%;
+            transition: transform 0.3s ease;
+            animation: shopCfPileIn 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes shopCfPileIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        #shopPurchaseConfirmModal .shop-cf-pile-item i {
+            color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+        }
+        #shopPurchaseConfirmModal .shop-cf-pile-more {
+            position: absolute; right: 10px; bottom: 10px;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,0,0,0.2); color: white; font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        /* 右侧 2/3 */
+        #shopPurchaseConfirmModal .shop-cf-right {
+            padding: 4px 0 0 40px; min-width: 0;
+        }
+        #shopPurchaseConfirmModal .shop-cf-right-top { margin-bottom: 6px; }
+        #shopPurchaseConfirmModal .shop-cf-product-name {
+            font-size: 17px; font-weight: bold; color: #2c3e50; line-height: 1.25;
+        }
+        #shopPurchaseConfirmModal .shop-cf-product-desc {
+            font-size: 12px; color: #888; margin-top: 3px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        #shopPurchaseConfirmModal .shop-cf-promo {
+            margin: 8px 0; padding: 6px 12px; border-radius: 8px;
+            background: linear-gradient(135deg,#fff4e6 0%,#ffe2bf 100%);
+            color: #a55a00; font-size: 12px; text-align: center; font-weight: 600;
+        }
+        #shopPurchaseConfirmModal .shop-cf-promo b { color: #d35400; }
+
+        #shopPurchaseConfirmModal .shop-cf-section-title {
+            margin: 12px 0 6px; font-size: 11px; font-weight: 700; color: #888;
+            display: flex; align-items: center; gap: 6px; letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        #shopPurchaseConfirmModal .shop-cf-section-title-sm { margin-top: 6px; }
+        #shopPurchaseConfirmModal .shop-cf-section-title i { color: #c0392b; font-size: 11px; }
+
+        #shopPurchaseConfirmModal .shop-cf-items-compact {
+            display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 2px;
+        }
+        #shopPurchaseConfirmModal .shop-cf-chip {
+            display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 12px;
+            font-size: 11px; font-weight: 600; border: 1px solid; white-space: nowrap;
+        }
+        #shopPurchaseConfirmModal .shop-cf-chip i { font-size: 10px; }
+
+        #shopPurchaseConfirmModal .shop-cf-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 4px 0; font-size: 13px; color: #555;
+        }
+        #shopPurchaseConfirmModal .shop-cf-row b { color: #333; font-weight: 600; }
+        #shopPurchaseConfirmModal .shop-cf-row-total {
+            margin-top: 4px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);
+            font-size: 14px; color: #2c3e50; font-weight: 600;
+        }
+        #shopPurchaseConfirmModal .shop-cf-total { color: #c0392b; font-size: 19px; }
+        #shopPurchaseConfirmModal .shop-cf-total small { font-size: 12px; font-weight: normal; color: #999; margin-left: 2px; }
+        #shopPurchaseConfirmModal .shop-cf-balance {
+            margin-top: 8px; padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,0.03);
+            display: flex; justify-content: space-between; font-size: 12px; color: #666; gap: 8px; flex-wrap: wrap;
+        }
+        #shopPurchaseConfirmModal .shop-cf-balance b { color: #333; font-weight: 600; }
+        #shopPurchaseConfirmModal .shop-cf-balance .shop-cf-bad { color: #c0392b; }
+        #shopPurchaseConfirmModal .shop-cf-balance .shop-cf-good { color: #27ae60; }
+
+        #shopPurchaseConfirmModal .shop-cf-foot {
+            display: flex; gap: 10px; padding: 12px 22px 18px; border-top: 1px solid rgba(0,0,0,0.06);
+        }
+        #shopPurchaseConfirmModal .shop-cf-btn {
+            flex: 1; padding: 10px 0; border-radius: 10px; border: none; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        #shopPurchaseConfirmModal .shop-cf-cancel { background: rgba(0,0,0,0.06); color: #555; }
+        #shopPurchaseConfirmModal .shop-cf-cancel:hover { background: rgba(0,0,0,0.12); color: #222; }
+        #shopPurchaseConfirmModal .shop-cf-ok {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            color: white; box-shadow: 0 4px 12px rgba(231,76,60,0.35);
+        }
+        #shopPurchaseConfirmModal .shop-cf-ok:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(231,76,60,0.45); }
+        #shopPurchaseConfirmModal .shop-cf-ok:active:not(:disabled) { transform: translateY(0); }
+        #shopPurchaseConfirmModal .shop-cf-ok:disabled {
+            background: #bdc3c7; box-shadow: none; cursor: not-allowed; opacity: 0.7;
+        }
+
+        /* 成功弹窗 */
+        #shopPurchaseSuccessModal .shop-ps-box {
+            width: 420px; max-width: 92vw; padding: 24px 22px 18px; text-align: center;
+        }
+        #shopPurchaseSuccessModal .shop-ps-confetti {
+            display: flex; justify-content: center; margin-bottom: 12px;
+        }
+        #shopPurchaseSuccessModal .shop-ps-check {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white; font-size: 32px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 22px rgba(46,204,113,0.45);
+            animation: shopPsBounce 0.55s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes shopPsBounce {
+            0% { transform: scale(0); }
+            60% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        #shopPurchaseSuccessModal .shop-ps-title {
+            font-size: 20px; font-weight: bold; color: #2c3e50; margin-bottom: 16px;
+        }
+        #shopPurchaseSuccessModal .shop-ps-product {
+            display: flex; gap: 12px; align-items: center; justify-content: center;
+            padding: 12px; border-radius: 12px; background: linear-gradient(135deg,#fafbfc 0%,#f3f4f6 100%);
+            border: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;
+        }
+        #shopPurchaseSuccessModal .shop-ps-icon {
+            width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        #shopPurchaseSuccessModal .shop-ps-name { font-size: 15px; font-weight: bold; color: #2c3e50; }
+        #shopPurchaseSuccessModal .shop-ps-desc { font-size: 12px; color: #9aa0a6; margin-top: 3px; }
+        #shopPurchaseSuccessModal .shop-ps-label {
+            display: inline-flex; align-items: center; gap: 6px; color: #27ae60; font-size: 13px; font-weight: 600;
+            padding: 6px 12px; border-radius: 18px; background: rgba(46,204,113,0.1); margin-bottom: 10px;
+        }
+        #shopPurchaseSuccessModal .shop-ps-label i { font-size: 14px; }
+        #shopPurchaseSuccessModal .shop-ps-chips {
+            display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0 14px;
+        }
+        #shopPurchaseSuccessModal .shop-ps-chip {
+            display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 14px;
+            font-size: 11px; font-weight: 600; border: 1px solid;
+        }
+        #shopPurchaseSuccessModal .shop-ps-chip i { font-size: 10px; }
+        #shopPurchaseSuccessModal .shop-ps-foot {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding-top: 14px; border-top: 1px dashed rgba(0,0,0,0.08);
+        }
+        #shopPurchaseSuccessModal .shop-ps-cost { font-size: 12px; color: #666; }
+        #shopPurchaseSuccessModal .shop-ps-cost b { color: #c0392b; font-size: 14px; }
+        #shopPurchaseSuccessModal .shop-ps-close {
+            padding: 9px 22px; border-radius: 10px; border: none; cursor: pointer;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 12px rgba(46,204,113,0.35); transition: all 0.2s;
+        }
+        #shopPurchaseSuccessModal .shop-ps-close:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(46,204,113,0.45); }
+
+        /* 暗色主题覆盖 —— 确认弹窗（横向） */
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-box,
+        body.dark-mode #shopPurchaseSuccessModal .shop-ps-box { background: #24243a; color: #ddd; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-close { background: rgba(255,255,255,0.08); color: #ccc; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-product-name { color: #e8e8e8; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-product-desc { color: #aaa; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-section-title { color: #aaa; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-row { color: #aaa; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-row b { color: #e8e8e8; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-balance { background: rgba(255,255,255,0.05); color: #aaa; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-balance b { color: #eee; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-foot { border-color: rgba(255,255,255,0.08); }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-cancel { background: rgba(255,255,255,0.08); color: #ddd; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-cancel:hover { background: rgba(255,255,255,0.16); color: #fff; }
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-single i,
+        body.dark-mode #shopPurchaseConfirmModal .shop-cf-pile-item i { color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        body.dark-mode #shopPurchaseSuccessModal .shop-ps-product { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+        body.dark-mode #shopPurchaseSuccessModal .shop-ps-foot { border-color: rgba(255,255,255,0.1); }
+        body.dark-mode #shopPurchaseSuccessModal .shop-ps-cost { color: #aaa; }
+
+        @media (max-width: 640px) {
+            #shopPurchaseConfirmModal .shop-cf-box { width: 94vw; }
+            #shopPurchaseConfirmModal .shop-cf-body { grid-template-columns: 1fr; padding: 18px 16px 12px; }
+            #shopPurchaseConfirmModal .shop-cf-left { padding: 4px 24px 10px; }
+            #shopPurchaseConfirmModal .shop-cf-right { padding: 0; }
+            #shopPurchaseConfirmModal .shop-cf-foot { padding: 10px 16px 16px; }
+        }
+
     `;
 
     return warehouseBaseCSS + warehouseDarkCSS + responsiveCSS + shopExtCSS + devCoinCSS + devResetCSS + bundleCSS;

@@ -14,6 +14,12 @@
 // 存储：按账户隔离  key = lottery_<username>
 // 期次判定：以 UTC+8 凌晨 4 点为界（将当前时间 -4h 后取日期/ISO 周/月份作为期次 key）
 
+// 物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
+function _ltItemIconHtml(icon, color) {
+    if (typeof preIcon === 'function') return preIcon(icon, color ? { color: color } : {});
+    return '<i class="' + icon + '"' + (color ? ' style="color:' + color + ';"' : '') + '></i>';
+}
+
 (function () {
     'use strict';
 
@@ -976,7 +982,7 @@
             rows.forEach(function (p) {
                 var it = p.item;
                 html += '<div class="lt2-row" title="' + it.name + '">' +
-                    '<div class="lt2-ico" style="background:' + _ltIconBg(it, rc) + '"><i class="' + (it.icon || 'fas fa-box') + '"></i></div>' +
+                    '<div class="lt2-ico" style="background:' + _ltIconBg(it, rc) + '">' + _ltItemIconHtml(it.icon || 'fas fa-box') + '</div>' +
                     '<div class="lt2-name">' + it.name +
                     (it._requireExtreme ? '<span class="lt2-extreme">极限</span>' : '') +
                     '</div>' +
@@ -1025,7 +1031,7 @@
                 ' ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2);
             var typeInfo = LT_TYPES[rec.type] || { name: rec.type, color: '#999' };
             rowsHtml += '<div class="lt2-hrow">' +
-                '<div class="lt2-hico" style="background:' + _ltIconBg(it, rc) + '"><i class="' + (it.icon || 'fas fa-box') + '"></i></div>' +
+                '<div class="lt2-hico" style="background:' + _ltIconBg(it, rc) + '">' + _ltItemIconHtml(it.icon || 'fas fa-box') + '</div>' +
                 '<div class="lt2-hinfo">' +
                     '<div class="lt2-hname">' + it.name + ' ×1</div>' +
                     '<div class="lt2-hmeta">' + timeStr + '</div>' +
@@ -1119,7 +1125,7 @@
         var it = entry.item;
         var rc = LT_RARITY_COLOR[it.rarity] || '#fff';
         return '<div class="lt-cell' + (isWin ? ' lt-win' : '') + '" style="--rc:' + rc + '">' +
-            '<div class="lt-cell-ico" style="background:' + _ltIconBg(it, rc) + '"><i class="' + (it.icon || 'fas fa-box') + '"></i></div>' +
+            '<div class="lt-cell-ico" style="background:' + _ltIconBg(it, rc) + '">' + _ltItemIconHtml(it.icon || 'fas fa-box') + '</div>' +
             '<div class="lt-cell-name">' + it.name + '</div>' +
             '<div class="lt-cell-rar" style="color:' + rc + '">' + (LT_RARITY_NAME[it.rarity] || '道具') + '</div>' +
         '</div>';
@@ -1314,7 +1320,7 @@
             var maxQty = devFree ? LT_COIN_MAX : Math.min(LT_COIN_MAX, _ltCoinOwned(id));
             var ownedText = devFree ? ('持有 ' + _ltCoinOwned(id) + ' · 调试：无视数量') : ('持有 ' + _ltCoinOwned(id));
             html += '<div class="lt2-coin-row' + (active ? ' lt2-active' : '') + '" data-id="' + id + '">' +
-                '<div class="lt2-coin-ico" style="background:' + _ltIconBg(it, cfg.tier && LT_RARITY_COLOR[cfg.tier]) + '"><i class="' + it.icon + '"></i></div>' +
+                '<div class="lt2-coin-ico" style="background:' + _ltIconBg(it, cfg.tier && LT_RARITY_COLOR[cfg.tier]) + '">' + _ltItemIconHtml(it.icon) + '</div>' +
                 '<div class="lt2-coin-info">' +
                     '<div class="lt2-coin-name">' + it.name + '<span class="lt2-owned">' + ownedText + '</span></div>' +
                     '<div class="lt2-coin-cap">下一次抽取' + LT_RARITY_NAME[cfg.tier] + '档奖品概率提升 · 档位概率上限 ' + Math.round(cfg.cap * 100) + '% · 不同档位不可同时投入</div>' +
@@ -1600,7 +1606,7 @@
             var rc = LT_RARITY_COLOR[it.rarity] || '#fff';
             if (result) {
                 result.innerHTML =
-                    '<div class="lt-result-ico" style="background:' + _ltIconBg(it, rc) + '"><i class="' + (it.icon || 'fas fa-box') + '"></i></div>' +
+                    '<div class="lt-result-ico" style="background:' + _ltIconBg(it, rc) + '">' + _ltItemIconHtml(it.icon || 'fas fa-box') + '</div>' +
                     '<div>' +
                         '<div class="lt-result-label">恭喜获得 · ' + LT_TYPES[type].name + '</div>' +
                         '<div class="lt-result-name" style="color:' + rc + '">' + it.name + ' ×1</div>' +

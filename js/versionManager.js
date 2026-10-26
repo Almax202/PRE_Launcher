@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 3.0.3.9 (c4)",
+    login: "RC 3.0.3.10 (c4)",
 
     // 点击方块游戏版本号
     fkgame: "RC 1.3.1",
@@ -23,8 +23,8 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20261019.3039.c4.145.l6",
-
+    launcher: "20261026.30310.c4.146.l6",
+    
     // 主题版本信息
     // status字段可选值说明：
     // - "停用优化中": 主题正在优化，暂时不可用，显示红色标签
@@ -242,13 +242,13 @@ const launcherInfo = {
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),    
     buildDate: "2026-10-04",
-    patchDate: "2026-10-19",
+    patchDate: "2026-10-26",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",
     description: "集休闲小游戏、实用组件与个性化主题于一体的网页启动器",
     license: "MIT License",
-    techStack: "HTML5 / CSS3 / JavaScript",
+    techStack: "HTML5 / CSS3 / JavaScript / React / Lucide Icons",
     supportedPlatforms: "Windows / macOS / Linux / Android / iOS",
     githubRepoUrl: "https://github.com/Almax202/PRE_Launcher",
     githubDeveloperUrl: "https://github.com/Almax202"

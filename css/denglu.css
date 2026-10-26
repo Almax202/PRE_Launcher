@@ -447,12 +447,12 @@ body.page-transition-in {
     gap: 10px;
 }
 
-.remember, .auto-login {
+.remember, .auto-login, .remember-account {
     display: flex;
     align-items: center;
 }
 
-.remember input, .auto-login input {
+.remember input, .auto-login input, .remember-account input {
     margin-right: 8px;
     accent-color: #d45d79;
     width: 18px;
@@ -2498,7 +2498,7 @@ body.dark-mode #userCardSettingsPanel .empty-state {
         justify-content: space-between;
     }
     
-    .remember, .auto-login {
+    .remember, .auto-login, .remember-account {
         flex-direction: row;
         align-items: center;
     }
@@ -20197,6 +20197,387 @@ body.dark-mode.ui-minimalist .bg-shape-3 {
     background: rgba(212, 93, 121, 0.2);
 }
 
+/* ===================== UI编辑：导航栏布局自定义 ===================== */
+/* 自定义排版位置：标题右侧 */
+.ui-min-topnav.nav-pos-left .ui-min-topnav-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.ui-min-topnav.nav-pos-left .ui-min-topnav-center {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    margin-left: 18px;
+}
+
+/* 自定义排版位置：右侧更多功能按钮旁边 */
+.ui-min-topnav.nav-pos-right .ui-min-topnav-right {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.ui-min-topnav.nav-pos-right .ui-min-topnav-center {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+}
+
+/* 编辑模式：内容区黑灰透明遮罩（不可点击，导航栏与编辑面板仍可操作） */
+.ui-edit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(20, 20, 28, 0.45);
+    z-index: 999;
+    animation: uiEditOverlayIn 0.25s ease;
+}
+
+@keyframes uiEditOverlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 编辑模式：八个条目转为固定虚线框 */
+.ui-min-topnav.ui-edit-mode .ui-min-topnav-center > .ui-edit-slot {
+    outline: 2px dashed rgba(212, 93, 121, 0.55);
+    outline-offset: 4px;
+    border-radius: 10px;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ui-min-topnav.ui-edit-mode .ui-min-topnav-center > .ui-edit-slot:hover {
+    background: rgba(212, 93, 121, 0.06);
+}
+
+.ui-min-topnav.ui-edit-mode .ui-min-topnav-center > .ui-edit-slot.ui-edit-dragging {
+    opacity: 0.45;
+    cursor: grabbing;
+}
+
+.ui-min-topnav.ui-edit-mode .ui-min-topnav-center > .ui-edit-slot.ui-edit-drag-over {
+    outline-color: #d45d79;
+    outline-width: 3px;
+    background: rgba(212, 93, 121, 0.14);
+}
+
+/* 编辑模式下禁用下拉面板弹出 */
+.ui-min-topnav.ui-edit-mode .ui-min-dropdown-panel {
+    display: none !important;
+}
+
+/* UI编辑浮动面板 */
+.ui-edit-panel {
+    position: fixed;
+    top: 84px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1200;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 560px;
+    animation: uiEditPanelIn 0.25s ease;
+}
+
+@keyframes uiEditPanelIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.ui-edit-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #d45d79;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ui-edit-panel-hint {
+    color: #999;
+    font-size: 12px;
+    font-weight: 400;
+    margin-left: 6px;
+}
+
+.ui-edit-panel-pos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ui-edit-pos-label {
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.ui-edit-pos-group {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+
+.ui-edit-pos-btn {
+    flex: 1;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #f7f7f9;
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.ui-edit-pos-btn:hover {
+    border-color: #d45d79;
+    color: #d45d79;
+}
+
+.ui-edit-pos-btn.active {
+    background: rgba(212, 93, 121, 0.12);
+    border-color: #d45d79;
+    color: #d45d79;
+    font-weight: 600;
+}
+
+/* UI编辑：隐藏标题/版本号与启动器图标 */
+#uiMinTopnav.hide-brand .ui-min-brand {
+    display: none;
+}
+
+#uiMinTopnav.hide-logo .ui-min-logo {
+    display: none;
+}
+
+/* UI编辑：隐藏所有条目图标（保留下拉箭头，便于识别可展开菜单） */
+#uiMinTopnav.hide-nav-icons .ui-min-topnav-center .ui-min-nav-item > i:not(.ui-min-arrow),
+#uiMinTopnav.hide-nav-icons .ui-min-topnav-center .ui-min-dropdown-item > i {
+    display: none;
+}
+
+/* UI编辑：隐藏所有条目文本（图标模式） */
+#uiMinTopnav.hide-nav-text .ui-min-topnav-center .ui-min-nav-item > span,
+#uiMinTopnav.hide-nav-text .ui-min-topnav-center .ui-min-dropdown-item > span {
+    display: none;
+}
+
+/* UI编辑：显隐开关行 */
+.ui-edit-panel-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.ui-edit-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.ui-edit-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.ui-edit-toggle-label i {
+    color: #d45d79;
+    font-size: 12px;
+}
+
+.ui-edit-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 11px;
+    background: #d9d9de;
+    cursor: pointer;
+    transition: background 0.22s ease;
+    padding: 0;
+}
+
+.ui-edit-switch-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+    transition: transform 0.22s ease;
+}
+
+.ui-edit-switch.on {
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+}
+
+.ui-edit-switch.on .ui-edit-switch-knob {
+    transform: translateX(18px);
+}
+
+/* 互斥禁用态（灰化不可点击） */
+.ui-edit-switch.disabled,
+.ui-edit-switch:disabled {
+    background: #e8e8ec;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.ui-edit-switch.disabled .ui-edit-switch-knob,
+.ui-edit-switch:disabled .ui-edit-switch-knob {
+    background: #f4f4f6;
+    box-shadow: none;
+}
+
+.ui-edit-toggle-row:has(.ui-edit-switch.disabled) .ui-edit-toggle-label {
+    color: #b0b0b8;
+    cursor: not-allowed;
+}
+
+.ui-edit-toggle-row:has(.ui-edit-switch.disabled) .ui-edit-toggle-label i {
+    color: #c9c9d0;
+}
+
+.ui-edit-panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.ui-edit-action-btn {
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.ui-edit-action-btn.ui-edit-reset {
+    background: #f0f0f3;
+    color: #666;
+}
+
+.ui-edit-action-btn.ui-edit-reset:hover {
+    background: #e6e6ea;
+}
+
+.ui-edit-action-btn.ui-edit-done {
+    background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
+    color: #fff;
+    font-weight: 600;
+}
+
+.ui-edit-action-btn.ui-edit-done:hover {
+    box-shadow: 0 6px 16px rgba(212, 93, 121, 0.35);
+}
+
+/* 深色模式适配 */
+body.dark-mode .ui-edit-panel {
+    background: rgba(35, 35, 50, 0.98);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .ui-edit-panel-hint {
+    color: #777;
+}
+
+body.dark-mode .ui-edit-pos-label {
+    color: #bbb;
+}
+
+body.dark-mode .ui-edit-pos-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #ccc;
+}
+
+body.dark-mode .ui-edit-pos-btn:hover {
+    border-color: #d45d79;
+    color: #e67e8a;
+}
+
+body.dark-mode .ui-edit-toggle-label {
+    color: #ccc;
+}
+
+body.dark-mode .ui-edit-switch {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+body.dark-mode .ui-edit-switch.disabled,
+body.dark-mode .ui-edit-switch:disabled {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .ui-edit-switch.disabled .ui-edit-switch-knob,
+body.dark-mode .ui-edit-switch:disabled .ui-edit-switch-knob {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+body.dark-mode .ui-edit-toggle-row:has(.ui-edit-switch.disabled) .ui-edit-toggle-label {
+    color: #6b6b78;
+}
+
+body.dark-mode .ui-edit-toggle-row:has(.ui-edit-switch.disabled) .ui-edit-toggle-label i {
+    color: #55555f;
+}
+
+body.dark-mode .ui-edit-action-btn.ui-edit-reset {
+    background: rgba(255, 255, 255, 0.08);
+    color: #bbb;
+}
+
+body.dark-mode .ui-edit-action-btn.ui-edit-reset:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+body.dark-mode .ui-min-topnav.ui-edit-mode .ui-min-topnav-center > .ui-edit-slot {
+    outline-color: rgba(230, 126, 138, 0.65);
+}
+
+body.dark-mode .ui-min-topnav.ui-edit-mode .ui-min-topnav-center > .ui-edit-slot.ui-edit-drag-over {
+    outline-color: #e67e8a;
+    background: rgba(212, 93, 121, 0.25);
+}
+
+@media (max-width: 768px) {
+    .ui-edit-panel {
+        min-width: 0;
+        width: calc(100% - 24px);
+        top: 60px;
+    }
+}
+
 /* 简约模式响应式 */
 @media (max-width: 768px) {
     .ui-min-topnav {
@@ -30332,6 +30713,14 @@ body.login-page-mode .framework-icon.cannon {
     background: linear-gradient(135deg, #22d3ee, #0891b2);
 }
 
+body.login-page-mode .framework-icon.react {
+    background: linear-gradient(135deg, #61dafb, #149eca);
+}
+
+body.login-page-mode .framework-icon.lucide {
+    background: linear-gradient(135deg, #ff6b6b, #d45d79);
+}
+
 body.login-page-mode .framework-icon.extra {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
 }
@@ -31989,3 +32378,24 @@ body.dark-mode .ui-min-drawer-user-id {
 body.dark-mode .ui-min-mobile-menu-btn {
     box-shadow: 0 4px 12px rgba(212, 93, 121, 0.45);
 }
+
+/* ===================== Lucide Icons 桥接图标 ===================== */
+/* Lucide 图标：外层 <i> 保留原有 `i` 选择器样式，内联 SVG 随父级字号、颜色 */
+.pre-lucide {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    vertical-align: -0.125em;
+    font-style: normal;
+    line-height: 1;
+}
+
+.pre-lucide > svg {
+    width: 1em;
+    height: 1em;
+    display: block;
+}
+

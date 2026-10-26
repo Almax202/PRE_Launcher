@@ -1,3 +1,9 @@
+// 邮件附件/物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
+function _mailItemIconHtml(icon, color) {
+    if (typeof preIcon === 'function') return preIcon(icon, color ? { color: color } : {});
+    return '<i class="' + icon + '"' + (color ? ' style="color:' + color + ';"' : '') + '></i>';
+}
+
 var mailSystem = {
     MAX_MAILS: 200,
     MAX_HISTORY: 200,
@@ -1209,6 +1215,35 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 29,
+            date: "2026-10-26",
+            mails: [
+                {
+                    id: 'compensation_mail_20261026',
+                    title: '2026-10-26 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。在 2026-10-23 推送的 RC 3.0.3.10 (c4) 版本更新中，我们为启动器带来了全新「UI 编辑」功能（顶部导航栏拖拽排序、三档排版位置切换与四组显隐开关，登录页与大厅双向同步）、商店购买「确认弹窗 + 成功弹窗」二次确认流程、通行证「等级获取计算」功能、仓库按分类分组展示与开箱结果弹窗，以及全站 40+ 处图标体系升级为 Lucide Icons（内置 React 18.3.1 与 Lucide Icons 0.544.0 开源组件离线分发）等多项新功能、优化与问题修复。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上经验值补给卡 Ⅰ ×1 与经验值加成卡 Ⅰ ×1 作为版本更新补偿。经验值补给卡 Ⅰ 使用后获得 300 点经验值，将立即对您的账户等级生效；经验值加成卡 Ⅰ 使用后 30 分钟内经验获取提升 5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时 5 张）。领取后物品将发放至您的仓库，配合补给反馈弹窗即可查看本次经验值到账与等级变化。\n\n本邮件发放对象为 2026-10-26 14:45:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-11-03 04:00:00 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        },
+                        {
+                            name: '经验值加成卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_boost_small',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-10-26 14:50:00",
+                    endTime: "2026-11-03 04:00:00",
+                    requireRegisteredBefore: "2026-10-26 14:50:00"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {
@@ -1819,9 +1854,9 @@ function selectMail(mailId) {
                 iconDiv.className = 'mail-attachment-icon';
                 if (whItem) {
                     iconDiv.style.background = hexToRgba(whItem.color || '#3498db', 0.15);
-                    iconDiv.innerHTML = '<i class="' + (whItem.icon || 'fas fa-gift') + '" style="color:' + (whItem.color || '#3498db') + ';"></i>';
+                    iconDiv.innerHTML = _mailItemIconHtml(whItem.icon || 'fas fa-gift', whItem.color || '#3498db');
                 } else {
-                    iconDiv.innerHTML = '<i class="fas fa-gift"></i>';
+                    iconDiv.innerHTML = _mailItemIconHtml('fas fa-gift');
                 }
                 itemDiv.appendChild(iconDiv);
                 
@@ -1861,7 +1896,7 @@ function selectMail(mailId) {
                 
                 var iconDiv = document.createElement('div');
                 iconDiv.className = 'mail-attachment-icon';
-                iconDiv.innerHTML = '<i class="fas ' + (att.icon || 'fa-gift') + '"></i>';
+                iconDiv.innerHTML = _mailItemIconHtml('fas ' + (att.icon || 'fa-gift'));
                 itemDiv.appendChild(iconDiv);
                 
                 var infoDiv = document.createElement('div');

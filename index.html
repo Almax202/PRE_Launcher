@@ -43,27 +43,30 @@
     </script>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="./css/denglu.css?v=2.6" as="style">
-    <link rel="stylesheet" href="./css/denglu.css?v=2.6">
+    <link rel="preload" href="./css/denglu.css?v=3.0" as="style">
+    <link rel="stylesheet" href="./css/denglu.css?v=3.0">
     <link rel="stylesheet" href="./css/homenav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='./css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" onerror="this.onerror=null; window.JSZipFallback=true" defer></script>
+    <!-- Lucide Icons（本地内置 UMD 构建）+ 图标桥接层（Font Awesome → Lucide 统一渲染） -->
+    <script src="./js/lib/lucide.min.js" defer onerror="console.warn('Lucide 加载失败')"></script>
+    <script src="./js/lucide-bridge.js?v=1.2" defer></script>
     <script src="./js/settings.js" defer></script>
-    <script src="./js/versionHistory.js?v=3.0.2.6" defer></script>
+    <script src="./js/versionHistory.js?v=3.0.2.7" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
-    <script src="./js/warehouse.js?v=4.0" defer></script>
-    <script src="./js/pass.js?v=3.13" defer></script>
+    <script src="./js/warehouse.js?v=4.4" defer></script>
+    <script src="./js/pass.js?v=3.14" defer></script>
     <script src="./js/dailytasks.js?v=1.1" defer></script>
-    <script src="./js/lottery.js?v=1.5" defer></script>
-    <script src="./js/shop.js?v=2.5" defer></script>
-    <script src="./js/premail.js?v=2.0" defer></script>
+    <script src="./js/lottery.js?v=1.6" defer></script>
+    <script src="./js/shop.js?v=2.6" defer></script>
+    <script src="./js/premail.js?v=2.1" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
     <script src="./js/lang.js" defer></script>
     <script src="./js/announcement.js?v=3.0.2.6" defer></script>
-    <script src="./js/event.js?v=1.8" defer></script>
+    <script src="./js/event.js?v=1.9" defer></script>
     <script src="./js/identity_ego.js" defer></script>
     <script src="./js/account-settings.js?v=1.3" defer></script>
     <script src="./js/soundtrack.js?v=1.0" defer></script>
@@ -5081,6 +5084,9 @@
                 // 绑定导航栏事件
                 bindMinimalistNavEvents();
 
+                // 同步全屏状态到个人卡片菜单条目（含 F11 全屏）
+                bindFullscreenStateSync();
+
                 // 初始化移动端侧边栏菜单
                 initMobileNavDrawer();
                 
@@ -5578,6 +5584,10 @@
                                 localStorage.setItem('previousPage', window.location.href);
                                 window.location.href = 'html/account-settings.html';
                             }
+                        } else if (action === 'uiEdit') {
+                            if (typeof toggleUiEditMode === 'function') toggleUiEditMode();
+                        } else if (action === 'toggleFullscreen') {
+                            toggleLauncherFullscreen();
                         } else if (action === 'backToLogin') {
                             showConfirm('是否要退回至登录页？', '保持登录状态，仅返回登录页面', function() {
                                 sessionStorage.removeItem('isInGameCenter');
@@ -5585,7 +5595,16 @@
                             });
                         } else if (action === 'logout') {
                             showConfirm('是否要退出登录？', '退出后需要重新登录才能使用启动器', function() {
+                                // 与主退出流程（logoutConfirm）保持一致：同时清除快速登录凭据，
+                                // 否则返回登录页后登录卡片仍保留之前账户的快速登录模式
                                 localStorage.removeItem('currentUser');
+                                localStorage.removeItem('rememberMe');
+                                localStorage.removeItem('savedUsername');
+                                localStorage.removeItem('savedPassword');
+                                localStorage.removeItem('autoLogin');
+                                localStorage.removeItem('currentUserAvatar');
+                                localStorage.removeItem('skipSecurityVerify');
+                                localStorage.removeItem('skipSecurityVerifyExpire');
                                 sessionStorage.clear();
                                 window.location.href = 'index.html';
                             });
@@ -5594,6 +5613,73 @@
                 });
             }
             
+            // ==================== 全屏显示 ====================
+            // 取当前的全屏元素（兼容各浏览器前缀）
+            function getFullscreenElement() {
+                return document.fullscreenElement || document.webkitFullscreenElement ||
+                    document.mozFullScreenElement || document.msFullscreenElement || null;
+            }
+
+            // 判断当前是否处于全屏（浏览器 F11 全屏不派发 fullscreenchange，也没有查询 API，
+            // 只能按“视口铺满屏幕 + 窗口无边框”的组合特征近似判断）
+            function isLauncherFullscreen() {
+                if (getFullscreenElement()) return true;
+                if (!window.screen || !screen.width || !screen.height) return false;
+                var tolerance = 2;
+                var fillsScreen = window.innerWidth >= screen.width - tolerance &&
+                    window.innerHeight >= screen.height - tolerance;
+                var noWindowFrame = window.outerWidth >= screen.width - tolerance &&
+                    window.outerHeight >= screen.height - tolerance;
+                return fillsScreen && noWindowFrame;
+            }
+
+            // 同步个人卡片下拉菜单中「全屏显示 / 退出全屏」条目的图标与文案
+            function updateFullscreenMenuItem() {
+                var item = document.getElementById('uiMinFullscreenItem');
+                if (!item) return;
+                var isFullscreen = isLauncherFullscreen();
+                var icon = item.querySelector('i');
+                var label = document.getElementById('uiMinFullscreenLabel') || item.querySelector('span');
+                if (icon) icon.className = isFullscreen ? 'fas fa-compress' : 'fas fa-expand';
+                if (label) label.textContent = isFullscreen ? '退出全屏' : '全屏显示';
+            }
+
+            // 点击条目：进入 / 退出全屏
+            function toggleLauncherFullscreen() {
+                var fullscreenElement = getFullscreenElement();
+                if (fullscreenElement) {
+                    var exitFn = document.exitFullscreen || document.webkitExitFullscreen ||
+                        document.mozCancelFullScreen || document.msExitFullscreen;
+                    if (exitFn) {
+                        var result = exitFn.call(document);
+                        if (result && typeof result.catch === 'function') result.catch(function() {});
+                    }
+                } else if (isLauncherFullscreen()) {
+                    // 浏览器 F11 全屏无法由脚本退出，只能提示用户
+                    if (typeof showToastInfo === 'function') showToastInfo('请按 F11 退出全屏');
+                } else {
+                    var el = document.documentElement;
+                    var requestFn = el.requestFullscreen || el.webkitRequestFullscreen ||
+                        el.mozRequestFullScreen || el.msRequestFullscreen;
+                    if (requestFn) {
+                        var reqResult = requestFn.call(el);
+                        if (reqResult && typeof reqResult.catch === 'function') reqResult.catch(function() {});
+                    }
+                }
+            }
+
+            // 监听全屏状态变化（脚本全屏 + F11 全屏）并同步菜单条目
+            function bindFullscreenStateSync() {
+                if (window._fullscreenStateSyncBound) return;
+                window._fullscreenStateSyncBound = true;
+                ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
+                    .forEach(function(evt) {
+                        document.addEventListener(evt, updateFullscreenMenuItem);
+                    });
+                window.addEventListener('resize', updateFullscreenMenuItem);
+                updateFullscreenMenuItem();
+            }
+
             function updateEnhancedFeatureButtons() {
                 var enhancedFeaturesEnabled = isEnhancedFeaturesEnabled();
                 
@@ -6499,6 +6585,9 @@
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onerror="this.onerror=null; console.warn('Lenis 加载失败')"></script>
     <!-- Three.js (3D 渲染) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="this.onerror=null; console.warn('Three.js 加载失败')"></script>
+    <!-- React / React DOM（本地内置 UMD 构建，暴露 window.React / window.ReactDOM） -->
+    <script src="./js/lib/react.min.js" defer onerror="console.warn('React 加载失败')"></script>
+    <script src="./js/lib/react-dom.min.js" defer onerror="console.warn('React DOM 加载失败')"></script>
     <!-- cannon-es (物理引擎)：官方 dist 为 ESM，经典脚本直接引入会因 export 语法报错，
          因此用 module 方式导入并挂到 window.CANNON，供全站经典脚本使用 -->
     <script type="module">
@@ -6951,35 +7040,7 @@
                 <i class="fas fa-comment-dots"></i>
                 <span>反馈建议</span>
             </div>
-            <div class="ui-min-dropdown-menu" data-menu="announcement-center">
-                <div class="ui-min-nav-item" data-nav="announcement-center">
-                    <i class="fas fa-bullhorn"></i>
-                    <span>公告中心</span>
-                    <i class="fas fa-chevron-down ui-min-arrow"></i>
-                </div>
-                <div class="ui-min-dropdown-panel">
-                    <div class="ui-min-dropdown-item" data-nav="event-center">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>活动中心</span>
-                    </div>
-                    <div class="ui-min-dropdown-item" data-nav="event-announcement">
-                        <i class="fas fa-bullhorn"></i>
-                        <span>活动公告</span>
-                    </div>
-                    <div class="ui-min-dropdown-item" data-nav="version">
-                        <i class="fas fa-history"></i>
-                        <span>版本更新</span>
-                    </div>
-                    <div class="ui-min-dropdown-item" data-nav="announcement">
-                        <i class="fas fa-newspaper"></i>
-                        <span>开发者公告</span>
-                    </div>
-                </div>
-            </div>
-            <div class="ui-min-nav-item" data-nav="mail" id="uiMinMail">
-                <i class="fas fa-envelope"></i>
-                <span>邮件</span>
-            </div>
+            <!-- 邮件 / 公告中心 / 通行证 仅登录后进入大厅可见，登录页不再显示 -->
         </div>
         <div class="ui-min-topnav-right">
             <div class="ui-min-header-buttons">
@@ -7038,6 +7099,14 @@
                     <div class="ui-min-dropdown-item" data-action="systemSettings">
                         <i class="fas fa-cog"></i>
                         <span>系统设置</span>
+                    </div>
+                    <div class="ui-min-dropdown-item" data-action="uiEdit">
+                        <i class="fas fa-pen-ruler"></i>
+                        <span>UI 编辑</span>
+                    </div>
+                    <div class="ui-min-dropdown-item" data-action="toggleFullscreen" id="uiMinFullscreenItem">
+                        <i class="fas fa-expand"></i>
+                        <span id="uiMinFullscreenLabel">全屏显示</span>
                     </div>
                     <div class="ui-min-dropdown-divider"></div>
                     <div class="ui-min-dropdown-item" data-action="backToLogin">
@@ -7374,6 +7443,10 @@
                                     
                                     <div class="options">
                                         <div class="left-options">
+                                            <div class="remember-account">
+                                                <input type="checkbox" id="rememberAccount">
+                                                <label for="rememberAccount">记住我</label>
+                                            </div>
                                             <div class="remember">
                                                 <input type="checkbox" id="remember">
                                                 <label for="remember">快速登录</label>
@@ -7600,6 +7673,24 @@
                                     <div class="framework-info">
                                         <span class="framework-name">cannon-es</span>
                                         <span class="framework-version">v0.20</span>
+                                    </div>
+                                </a>
+                                <a href="https://github.com/facebook/react" target="_blank" class="framework-item" rel="noopener noreferrer">
+                                    <div class="framework-icon react">
+                                        <i class="fab fa-react"></i>
+                                    </div>
+                                    <div class="framework-info">
+                                        <span class="framework-name">React</span>
+                                        <span class="framework-version">v18.3.1</span>
+                                    </div>
+                                </a>
+                                <a href="https://github.com/lucide-icons/lucide" target="_blank" class="framework-item" rel="noopener noreferrer">
+                                    <div class="framework-icon lucide">
+                                        <i class="fas fa-pen-nib"></i>
+                                    </div>
+                                    <div class="framework-info">
+                                        <span class="framework-name">Lucide Icons</span>
+                                        <span class="framework-version">v0.544.0</span>
                                     </div>
                                 </a>
                             </div>
@@ -9875,12 +9966,14 @@
     </div>
 
     <div id="forgotPasswordModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 450px;">
-            <div class="alert-icon" style="color: #3498db;">
-                <i class="fas fa-key"></i>
+        <div class="feedback-unified-card" style="width: 480px;">
+            <div class="feedback-unified-header">
+                <h3><i class="fas fa-key"></i>忘记密码</h3>
+                <button type="button" class="feedback-unified-close" id="forgotPasswordClose" title="关闭" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <h3>忘记密码</h3>
-            <p style="color: #666; margin: 15px 0;">请输入完整的手机号和邮箱进行验证</p>
+            <p class="feedback-unified-subtitle">请输入完整的手机号和邮箱进行验证</p>
             <div class="input-group">
                 <i class="fas fa-user"></i>
                 <input type="text" id="forgotUsername" placeholder="请输入用户名" style="width: 100%;">
@@ -9896,46 +9989,48 @@
             <div class="pin-reset-link">
                 <a href="#" id="usePinResetLink">使用PIN码重置</a>
             </div>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="forgotPasswordCancel">取消</button>
-                <button class="alert-confirm" id="forgotPasswordConfirm" style="background-color: #4CAF50;">验证</button>
+            <div class="feedback-leave-buttons">
+                <button type="button" class="feedback-leave-btn feedback-leave-cancel" id="forgotPasswordCancel">取消</button>
+                <button type="button" class="feedback-leave-btn feedback-leave-confirm" id="forgotPasswordConfirm">验证</button>
             </div>
         </div>
     </div>
 
     <div id="pinResetModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 450px;">
-            <div class="alert-icon" style="color: #3498db;">
-                <i class="fas fa-key"></i>
+        <div class="feedback-unified-card" style="width: 480px;">
+            <div class="feedback-unified-header">
+                <h3 id="pinResetTitle"><i class="fas fa-key"></i>使用PIN码重置密码</h3>
+                <button type="button" class="feedback-unified-close" id="pinResetClose" title="关闭" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <h3 id="pinResetTitle">使用PIN码重置密码</h3>
-            
+
             <div id="pinResetStep1" class="pin-reset-step">
-                <p style="color: #666; margin: 15px 0;">请输入账号检验是否启用了两步验证</p>
+                <p class="feedback-unified-subtitle">请输入账号检验是否启用了两步验证</p>
                 <div class="input-group">
                     <i class="fas fa-user"></i>
                     <input type="text" id="pinResetUsername" placeholder="请输入用户名" style="width: 100%;">
                 </div>
-                <div class="modal-buttons">
-                    <button class="alert-confirm" id="pinResetCancel">取消</button>
-                    <button class="alert-confirm" id="pinResetStep1Next" style="background-color: #3498db;">下一步</button>
+                <div class="feedback-leave-buttons">
+                    <button type="button" class="feedback-leave-btn feedback-leave-cancel" id="pinResetCancel">取消</button>
+                    <button type="button" class="feedback-leave-btn feedback-leave-confirm" id="pinResetStep1Next">下一步</button>
                 </div>
             </div>
-            
+
             <div id="pinResetStep2" class="pin-reset-step" style="display: none;">
-                <p style="color: #666; margin: 15px 0;">该账户已启用两步验证，请输入PIN码</p>
+                <p class="feedback-unified-subtitle">该账户已启用两步验证，请输入PIN码</p>
                 <div class="input-group">
                     <i class="fas fa-shield-alt"></i>
                     <input type="password" id="pinResetPin" placeholder="请输入PIN码" style="width: 100%;" maxlength="6">
                 </div>
-                <div class="modal-buttons">
-                    <button class="alert-confirm" id="pinResetBack">返回</button>
-                    <button class="alert-confirm" id="pinResetStep2Next" style="background-color: #3498db;">验证PIN码</button>
+                <div class="feedback-leave-buttons">
+                    <button type="button" class="feedback-leave-btn feedback-leave-cancel" id="pinResetBack">返回</button>
+                    <button type="button" class="feedback-leave-btn feedback-leave-confirm" id="pinResetStep2Next">验证PIN码</button>
                 </div>
             </div>
-            
+
             <div id="pinResetStep3" class="pin-reset-step" style="display: none;">
-                <p style="color: #666; margin: 15px 0;">PIN码验证成功，请设置新密码</p>
+                <p class="feedback-unified-subtitle">PIN码验证成功，请设置新密码</p>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
                     <input type="password" id="pinResetNewPassword" placeholder="请输入新密码" style="width: 100%;">
@@ -9944,21 +10039,23 @@
                     <i class="fas fa-lock"></i>
                     <input type="password" id="pinResetConfirmPassword" placeholder="请确认新密码" style="width: 100%;">
                 </div>
-                <div class="modal-buttons">
-                    <button class="alert-confirm" id="pinResetStep3Cancel">取消</button>
-                    <button class="alert-confirm" id="pinResetStep3Confirm" style="background-color: #4CAF50;">确认重置</button>
+                <div class="feedback-leave-buttons">
+                    <button type="button" class="feedback-leave-btn feedback-leave-cancel" id="pinResetStep3Cancel">取消</button>
+                    <button type="button" class="feedback-leave-btn feedback-leave-confirm" id="pinResetStep3Confirm">确认重置</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="resetPasswordModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 450px;">
-            <div class="alert-icon" style="color: #4CAF50;">
-                <i class="fas fa-lock"></i>
+        <div class="feedback-unified-card" style="width: 480px;">
+            <div class="feedback-unified-header">
+                <h3><i class="fas fa-lock"></i>重置密码</h3>
+                <button type="button" class="feedback-unified-close" id="resetPasswordClose" title="关闭" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <h3>重置密码</h3>
-            <p style="color: #666; margin: 15px 0;">请输入新密码</p>
+            <p class="feedback-unified-subtitle">请输入新密码</p>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
                 <input type="password" id="resetPassword" placeholder="请输入新密码" style="width: 100%;">
@@ -9973,9 +10070,9 @@
                     <i class="fas fa-eye"></i>
                 </button>
             </div>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="resetPasswordCancel">取消</button>
-                <button class="alert-confirm" id="resetPasswordConfirm" style="background-color: #4CAF50;">确认重置</button>
+            <div class="feedback-leave-buttons">
+                <button type="button" class="feedback-leave-btn feedback-leave-cancel" id="resetPasswordCancel">取消</button>
+                <button type="button" class="feedback-leave-btn feedback-leave-confirm" id="resetPasswordConfirm">确认重置</button>
             </div>
         </div>
     </div>
@@ -10515,42 +10612,49 @@
             modal.id = 'quickLoginConfirmModal';
             modal.className = 'custom-alert';
             modal.style.display = 'flex';
+            // 启动器统一弹窗样式（与反馈建议/外部链接确认弹窗一致）
             modal.innerHTML = `
-                <div class="alert-content" style="max-width: 450px;">
-                    <div class="alert-icon" style="color: #f39c12;">
-                        <i class="fas fa-info-circle"></i>
+                <div class="feedback-unified-card" style="width: 480px;">
+                    <div class="feedback-unified-header">
+                        <h3><i class="fas fa-bolt"></i>快速登录功能说明</h3>
+                        <button type="button" class="feedback-unified-close" id="quickLoginClose" title="关闭" aria-label="关闭">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
-                    <h3>快速登录功能说明</h3>
-                    <p style="margin: 15px 0; color: #666; line-height: 1.6;">
+                    <p class="feedback-unified-subtitle">
                         启用"快速登录"后，您的账号密码将保存在本地浏览器中。下次访问登录页面时，
                         将自动进入快速登录模式，只需点击登录按钮即可直接进入游戏大厅，无需再次输入验证码和密码。
                     </p>
-                    <p style="margin: 15px 0; color: #e74c3c; font-weight: bold;">
-                        请注意：此功能仅建议在个人设备上使用，公共设备请谨慎开启！
+                    <p class="feedback-unified-tip" style="color: #e74c3c; font-weight: 600; margin-bottom: 18px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>请注意：此功能仅建议在个人设备上使用，公共设备请谨慎开启！
                     </p>
-                    <div class="modal-buttons">
-                        <button class="alert-confirm" id="quickLoginCancel">取消</button>
-                        <button class="alert-confirm" id="quickLoginConfirm">确定启用</button>
+                    <div class="feedback-leave-buttons">
+                        <button type="button" class="feedback-leave-btn feedback-leave-cancel" id="quickLoginCancel">取消</button>
+                        <button type="button" class="feedback-leave-btn feedback-leave-confirm" id="quickLoginConfirm">确定启用</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
-            
+
             setTimeout(function() {
                 modal.classList.add('show');
             }, 10);
-            
-            document.getElementById('quickLoginCancel').addEventListener('click', function() {
+
+            function closeQuickLoginModal() {
                 modal.classList.remove('show');
                 setTimeout(function() {
-                    document.body.removeChild(modal);
+                    if (modal.parentNode) document.body.removeChild(modal);
                 }, 300);
-            });
-            
+            }
+
+            // 右上角关闭按钮与「取消」等价：不启用快速登录
+            document.getElementById('quickLoginClose').addEventListener('click', closeQuickLoginModal);
+            document.getElementById('quickLoginCancel').addEventListener('click', closeQuickLoginModal);
+
             document.getElementById('quickLoginConfirm').addEventListener('click', function() {
                 modal.classList.remove('show');
                 setTimeout(function() {
-                    document.body.removeChild(modal);
+                    if (modal.parentNode) document.body.removeChild(modal);
                     checkbox.checked = true;
                     document.getElementById('autoLogin').disabled = false;
                 }, 300);
@@ -10570,27 +10674,52 @@
             const rememberMe = localStorage.getItem('rememberMe') === 'true';
             const savedUsername = localStorage.getItem('savedUsername');
             const savedPassword = localStorage.getItem('savedPassword');
-            
+
             if (rememberMe && savedUsername && savedPassword) {
                 document.getElementById('remember').checked = true;
                 document.getElementById('username').value = savedUsername;
                 document.getElementById('password').value = savedPassword;
                 document.getElementById('autoLogin').disabled = false;
-                
+
+                // 快速登录隐含记住账号，勾选「记住我」保持语义一致
+                document.getElementById('rememberAccount').checked = true;
+
                 enableQuickLoginMode();
             } else if (rememberMe && savedUsername) {
                 document.getElementById('remember').checked = true;
                 document.getElementById('username').value = savedUsername;
                 document.getElementById('autoLogin').disabled = false;
-                
+
+                document.getElementById('rememberAccount').checked = true;
+
                 if (savedPassword) {
                     document.getElementById('password').value = savedPassword;
                 }
+            } else {
+                // 记住我：仅回填账号（快速登录模式优先级更高，命中上方分支后不再走这里）
+                const rememberAccount = localStorage.getItem('rememberAccount') === 'true';
+                const rememberedAccount = localStorage.getItem('rememberedAccount');
+                if (rememberAccount && rememberedAccount) {
+                    document.getElementById('rememberAccount').checked = true;
+                    document.getElementById('username').value = rememberedAccount;
+                }
             }
-            
+
             const autoLogin = localStorage.getItem('autoLogin') === 'true';
             if (autoLogin && rememberMe) {
                 document.getElementById('autoLogin').checked = true;
+            }
+        }
+
+        // 记住我：勾选后登录成功即保存账号，下次返回登录页自动回填账号输入框
+        function persistRememberAccount(username) {
+            var checkbox = document.getElementById('rememberAccount');
+            if (checkbox && checkbox.checked) {
+                localStorage.setItem('rememberAccount', 'true');
+                localStorage.setItem('rememberedAccount', username);
+            } else {
+                localStorage.removeItem('rememberAccount');
+                localStorage.removeItem('rememberedAccount');
             }
         }
         
@@ -11375,7 +11504,10 @@
                 localStorage.removeItem('savedPassword');
                 localStorage.removeItem('autoLogin');
             }
-            
+
+            // 记住我：登录成功后按勾选状态保存/清除账号
+            persistRememberAccount(username);
+
             var loginBtn = document.getElementById('loginButton');
             var originalText = loginBtn.innerHTML;
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
@@ -12627,6 +12759,10 @@
         
         // 更新简约设计顶部导航栏为游戏中心模式
         function updateMinimalistTopNavForGameCenter() {
+            // 导航重建会替换条目 DOM，若处于UI编辑模式则先退出（不重复保存）
+            if (typeof uiEditModeActive !== 'undefined' && uiEditModeActive && typeof exitUiEditMode === 'function') {
+                exitUiEditMode(false);
+            }
             var topnav = document.getElementById('uiMinTopnav');
             if (!topnav || topnav.style.display === 'none') return;
             
@@ -12860,7 +12996,10 @@
                     }
                 });
             }
-            
+
+            // 尽早应用用户自定义的导航栏布局（位置 + 条目顺序），避免后续初始化异常导致布局无法恢复
+            try { applyUiNavLayout(); } catch (e) { /* 忽略布局应用异常 */ }
+
             // 更新用户区域
             syncMinimalistUserInfo();
 
@@ -12875,11 +13014,434 @@
                     mailSystem.updateMailNotification();
                 } catch (e) { /* 忽略邮件检查异常 */ }
             }
-            if (typeof window.refreshNavUnreadBubbles === 'function') {
-                window.refreshNavUnreadBubbles();
+            try {
+                if (typeof window.refreshNavUnreadBubbles === 'function') {
+                    window.refreshNavUnreadBubbles();
+                }
+            } catch (e) { /* 忽略未读气泡异常 */ }
+
+            // 再次应用用户自定义的导航栏布局（邮件/快捷组件刷新后兜底，幂等操作）
+            try { applyUiNavLayout(); } catch (e) { /* 忽略布局应用异常 */ }
+        }
+
+        // ===================== UI编辑：导航栏布局自定义 =====================
+        // 布局存储键：{ position, order(大厅), orderLogin(登录页), hideBrand, hideLogo, hideNavIcons, hideNavText }
+        // 其中 position 与四个显隐开关两页共享同步；order / orderLogin 各自独立、互不同步
+        var UI_NAV_LAYOUT_KEY = 'uiNavLayout';
+        // 大厅模式下的 8 个顶级导航条目（key 取 data-menu 或 data-nav）
+        var UI_NAV_DEFAULT_ORDER = ['gamecenter', 'task-center', 'battlepass', 'shop', 'warehouse', 'announcement-center', 'mail', 'feedback'];
+        // 登录页导航条目默认顺序（与大厅条目不同，顺序独立存储、互不同步）
+        var UI_LOGIN_NAV_DEFAULT_ORDER = ['login', 'register', 'settings', 'feedback'];
+        var uiEditModeActive = false;
+
+        function getUiNavLayout() {
+            try {
+                var layout = JSON.parse(localStorage.getItem(UI_NAV_LAYOUT_KEY) || 'null');
+                if (layout && typeof layout === 'object') return layout;
+            } catch (e) { /* 忽略解析异常 */ }
+            return {
+                position: 'center',
+                order: UI_NAV_DEFAULT_ORDER.slice(),
+                orderLogin: UI_LOGIN_NAV_DEFAULT_ORDER.slice(),
+                hideBrand: false,
+                hideLogo: false,
+                hideNavIcons: false,
+                hideNavText: false
+            };
+        }
+
+        function saveUiNavLayout(layout) {
+            try { localStorage.setItem(UI_NAV_LAYOUT_KEY, JSON.stringify(layout)); } catch (e) { /* 忽略存储异常 */ }
+        }
+
+        function getUiNavItemKey(el) {
+            return el.getAttribute('data-menu') || el.getAttribute('data-nav') || '';
+        }
+
+        // 应用已保存的布局：先排序，再移动位置
+        function applyUiNavLayout() {
+            var topnav = document.getElementById('uiMinTopnav');
+            if (!topnav) return;
+            var centerNav = topnav.querySelector('.ui-min-topnav-center');
+            if (!centerNav) return;
+            var leftBox = topnav.querySelector('.ui-min-topnav-left');
+            var rightBox = topnav.querySelector('.ui-min-topnav-right');
+            var headerButtons = topnav.querySelector('.ui-min-header-buttons');
+            if (!leftBox || !rightBox) return;
+
+            // 大厅模式（含 gamecenter 菜单）与登录页均应用自定义布局
+            var isGameCenter = !!centerNav.querySelector('[data-menu="gamecenter"]');
+            var layout = getUiNavLayout();
+
+            // 1) 条目排序：大厅与登录页条目功能不同，顺序独立存储、互不同步
+            var savedOrder = isGameCenter ? layout.order : layout.orderLogin;
+            if (Array.isArray(savedOrder)) {
+                var keyed = {};
+                Array.prototype.slice.call(centerNav.children).forEach(function(el) {
+                    var key = getUiNavItemKey(el);
+                    if (key) keyed[key] = el;
+                });
+                savedOrder.forEach(function(key) {
+                    if (keyed[key]) centerNav.appendChild(keyed[key]);
+                });
+            }
+
+            // 2) 排版位置（大厅与登录页共享同步）
+            var position = layout.position || 'center';
+
+            // 3) 标题/版本号与启动器图标显隐（大厅与登录页共享同步）
+            topnav.classList.toggle('hide-brand', !!layout.hideBrand);
+            topnav.classList.toggle('hide-logo', !!layout.hideLogo);
+
+            // 4) 条目图标 / 条目文本显隐（互斥，防止条目整体消失；大厅与登录页共享同步）
+            var hideNavIcons = !!layout.hideNavIcons;
+            var hideNavText = !!layout.hideNavText;
+            if (hideNavIcons && hideNavText) hideNavText = false; // 兜底：不允许同时生效
+            topnav.classList.toggle('hide-nav-icons', hideNavIcons);
+            topnav.classList.toggle('hide-nav-text', hideNavText);
+
+            topnav.classList.remove('nav-pos-left', 'nav-pos-center', 'nav-pos-right');
+            if (position === 'left') {
+                // 移动到 PRELauncher 标题右侧
+                leftBox.appendChild(centerNav);
+                topnav.classList.add('nav-pos-left');
+            } else if (position === 'right') {
+                // 移动到右侧更多功能按钮旁边
+                rightBox.insertBefore(centerNav, headerButtons || rightBox.firstChild);
+                topnav.classList.add('nav-pos-right');
+            } else {
+                // 默认：顶部导航栏中间位置
+                topnav.insertBefore(centerNav, rightBox);
+                topnav.classList.add('nav-pos-center');
             }
         }
-        
+
+        // 进入 / 退出 UI编辑模式
+        function toggleUiEditMode() {
+            if (uiEditModeActive) {
+                exitUiEditMode();
+            } else {
+                enterUiEditMode();
+            }
+        }
+
+        function enterUiEditMode() {
+            var topnav = document.getElementById('uiMinTopnav');
+            if (!topnav) return;
+            var centerNav = topnav.querySelector('.ui-min-topnav-center');
+            // 大厅与登录页（含未登录）均可编辑 UI：排版位置与显隐开关两页同步，条目顺序各自独立
+            if (!centerNav || !centerNav.children.length) return;
+            uiEditModeActive = true;
+            topnav.classList.add('ui-edit-mode');
+
+            // 内容区遮罩：编辑期间下方内容黑灰透明且不可点击
+            var oldOverlay = document.getElementById('uiEditOverlay');
+            if (oldOverlay) oldOverlay.remove();
+            var overlay = document.createElement('div');
+            overlay.id = 'uiEditOverlay';
+            overlay.className = 'ui-edit-overlay';
+            document.body.appendChild(overlay);
+
+            // 八个顶级条目转换为可拖拽的虚线框
+            Array.prototype.slice.call(centerNav.children).forEach(function(el) {
+                if (!getUiNavItemKey(el)) return;
+                el.setAttribute('draggable', 'true');
+                el.classList.add('ui-edit-slot');
+                el.addEventListener('dragstart', uiEditOnDragStart);
+                el.addEventListener('dragover', uiEditOnDragOver);
+                el.addEventListener('dragleave', uiEditOnDragLeave);
+                el.addEventListener('drop', uiEditOnDrop);
+                el.addEventListener('dragend', uiEditOnDragEnd);
+            });
+            // 编辑模式下拦截点击，避免触发导航/下拉
+            centerNav.addEventListener('click', uiEditClickBlocker, true);
+
+            // 显示编辑面板
+            renderUiEditPanel();
+            if (typeof showToastInfo === 'function') showToastInfo('UI 编辑模式已开启，拖拽导航条目到虚线框内调整顺序');
+        }
+
+        function exitUiEditMode(save) {
+            var topnav = document.getElementById('uiMinTopnav');
+            if (!topnav) { uiEditModeActive = false; return; }
+            var centerNav = topnav.querySelector('.ui-min-topnav-center');
+            uiEditModeActive = false;
+            topnav.classList.remove('ui-edit-mode');
+
+            if (centerNav) {
+                Array.prototype.slice.call(centerNav.children).forEach(function(el) {
+                    el.removeAttribute('draggable');
+                    el.classList.remove('ui-edit-slot', 'ui-edit-drag-over', 'ui-edit-dragging');
+                    el.removeEventListener('dragstart', uiEditOnDragStart);
+                    el.removeEventListener('dragover', uiEditOnDragOver);
+                    el.removeEventListener('dragleave', uiEditOnDragLeave);
+                    el.removeEventListener('drop', uiEditOnDrop);
+                    el.removeEventListener('dragend', uiEditOnDragEnd);
+                });
+                centerNav.removeEventListener('click', uiEditClickBlocker, true);
+            }
+
+            var panel = document.getElementById('uiEditPanel');
+            if (panel) panel.remove();
+
+            var overlay = document.getElementById('uiEditOverlay');
+            if (overlay) overlay.remove();
+
+            if (save !== false) {
+                persistUiNavOrder();
+                if (typeof showToastSuccess === 'function') showToastSuccess('导航栏布局已保存');
+            }
+            applyUiNavLayout();
+        }
+
+        // 编辑模式下拦截导航点击（捕获阶段，阻止原有事件绑定触发）
+        function uiEditClickBlocker(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // 拖拽排序：条目拖到固定的虚线框上时交换位置
+        var uiEditDragSrc = null;
+
+        function uiEditOnDragStart(e) {
+            uiEditDragSrc = this;
+            this.classList.add('ui-edit-dragging');
+            try {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', getUiNavItemKey(this));
+            } catch (err) { /* 部分浏览器兼容 */ }
+        }
+
+        function uiEditOnDragOver(e) {
+            if (!uiEditDragSrc || uiEditDragSrc === this) return;
+            e.preventDefault();
+            try { e.dataTransfer.dropEffect = 'move'; } catch (err) { /* 兼容 */ }
+            this.classList.add('ui-edit-drag-over');
+        }
+
+        function uiEditOnDragLeave(e) {
+            // 在条目内部子元素间移动时不取消高亮
+            if (e.relatedTarget && this.contains(e.relatedTarget)) return;
+            this.classList.remove('ui-edit-drag-over');
+        }
+
+        function uiEditOnDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('ui-edit-drag-over');
+            if (!uiEditDragSrc || uiEditDragSrc === this) return;
+            var parent = this.parentNode;
+            var src = uiEditDragSrc;
+            var target = this;
+            // 交换两个条目在固定虚线框中的位置（兼容相邻节点与空白文本节点）
+            var srcNext = src.nextElementSibling;
+            var targetNext = target.nextElementSibling;
+            if (srcNext === target) {
+                parent.insertBefore(target, src);
+            } else if (targetNext === src) {
+                parent.insertBefore(src, target);
+            } else {
+                parent.insertBefore(src, targetNext);
+                parent.insertBefore(target, srcNext);
+            }
+            // 实时保存顺序
+            persistUiNavOrder();
+        }
+
+        function uiEditOnDragEnd(e) {
+            this.classList.remove('ui-edit-dragging');
+            var centerNav = document.querySelector('#uiMinTopnav .ui-min-topnav-center');
+            if (centerNav) {
+                centerNav.querySelectorAll('.ui-edit-drag-over').forEach(function(el) {
+                    el.classList.remove('ui-edit-drag-over');
+                });
+            }
+            uiEditDragSrc = null;
+        }
+
+        // 将当前条目顺序写入本地存储（大厅与登录页顺序分字段独立存储，互不同步）
+        function persistUiNavOrder() {
+            var centerNav = document.querySelector('#uiMinTopnav .ui-min-topnav-center');
+            if (!centerNav) return;
+            var order = [];
+            Array.prototype.slice.call(centerNav.children).forEach(function(el) {
+                var key = getUiNavItemKey(el);
+                if (key) order.push(key);
+            });
+            var layout = getUiNavLayout();
+            if (centerNav.querySelector('[data-menu="gamecenter"]')) {
+                layout.order = order;
+            } else {
+                layout.orderLogin = order;
+            }
+            saveUiNavLayout(layout);
+        }
+
+        // 编辑面板：位置切换 + 恢复默认 + 完成
+        function renderUiEditPanel() {
+            var oldPanel = document.getElementById('uiEditPanel');
+            if (oldPanel) oldPanel.remove();
+
+            var panel = document.createElement('div');
+            panel.id = 'uiEditPanel';
+            panel.className = 'ui-edit-panel';
+            panel.innerHTML =
+                '<div class="ui-edit-panel-header">' +
+                    '<i class="fas fa-pen-ruler"></i>' +
+                    '<span class="ui-edit-panel-title">UI 编辑</span>' +
+                    '<span class="ui-edit-panel-hint">拖拽上方导航条目到虚线框内调整顺序</span>' +
+                '</div>' +
+                '<div class="ui-edit-panel-pos">' +
+                    '<span class="ui-edit-pos-label">排版位置</span>' +
+                    '<div class="ui-edit-pos-group">' +
+                        '<button type="button" class="ui-edit-pos-btn" data-pos="left"><i class="fas fa-align-left"></i>标题右侧</button>' +
+                        '<button type="button" class="ui-edit-pos-btn" data-pos="center"><i class="fas fa-align-center"></i>中间位置</button>' +
+                        '<button type="button" class="ui-edit-pos-btn" data-pos="right"><i class="fas fa-align-right"></i>右侧按钮旁</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="ui-edit-panel-toggles">' +
+                    '<div class="ui-edit-toggle-row">' +
+                        '<span class="ui-edit-toggle-label"><i class="fas fa-heading"></i>隐藏 PRE Launcher 标题及其版本号</span>' +
+                        '<button type="button" class="ui-edit-switch" id="uiEditHideBrand" role="switch" aria-checked="false"><span class="ui-edit-switch-knob"></span></button>' +
+                    '</div>' +
+                    '<div class="ui-edit-toggle-row">' +
+                        '<span class="ui-edit-toggle-label"><i class="fas fa-rocket"></i>隐藏启动器图标</span>' +
+                        '<button type="button" class="ui-edit-switch" id="uiEditHideLogo" role="switch" aria-checked="false"><span class="ui-edit-switch-knob"></span></button>' +
+                    '</div>' +
+                    '<div class="ui-edit-toggle-row">' +
+                        '<span class="ui-edit-toggle-label"><i class="fas fa-icons"></i>隐藏所有条目图标</span>' +
+                        '<button type="button" class="ui-edit-switch" id="uiEditHideIcons" role="switch" aria-checked="false"><span class="ui-edit-switch-knob"></span></button>' +
+                    '</div>' +
+                    '<div class="ui-edit-toggle-row">' +
+                        '<span class="ui-edit-toggle-label"><i class="fas fa-font"></i>隐藏所有条目文本</span>' +
+                        '<button type="button" class="ui-edit-switch" id="uiEditHideText" role="switch" aria-checked="false"><span class="ui-edit-switch-knob"></span></button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="ui-edit-panel-actions">' +
+                    '<button type="button" class="ui-edit-action-btn ui-edit-reset" id="uiEditResetBtn"><i class="fas fa-undo"></i>恢复默认</button>' +
+                    '<button type="button" class="ui-edit-action-btn ui-edit-done" id="uiEditDoneBtn"><i class="fas fa-check"></i>完成</button>' +
+                '</div>';
+            document.body.appendChild(panel);
+
+            // 高亮当前位置
+            function refreshPosActive() {
+                var current = getUiNavLayout().position || 'center';
+                panel.querySelectorAll('.ui-edit-pos-btn').forEach(function(btn) {
+                    btn.classList.toggle('active', btn.getAttribute('data-pos') === current);
+                });
+            }
+            refreshPosActive();
+
+            panel.querySelectorAll('.ui-edit-pos-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var layout = getUiNavLayout();
+                    layout.position = this.getAttribute('data-pos');
+                    saveUiNavLayout(layout);
+                    applyUiNavLayout();
+                    refreshPosActive();
+                });
+            });
+
+            // 标题/版本号、启动器图标、条目图标与条目文本显隐开关
+            function refreshToggleStates() {
+                var layout = getUiNavLayout();
+                var brandSwitch = document.getElementById('uiEditHideBrand');
+                var logoSwitch = document.getElementById('uiEditHideLogo');
+                var iconsSwitch = document.getElementById('uiEditHideIcons');
+                var textSwitch = document.getElementById('uiEditHideText');
+                if (brandSwitch) {
+                    brandSwitch.classList.toggle('on', !!layout.hideBrand);
+                    brandSwitch.setAttribute('aria-checked', layout.hideBrand ? 'true' : 'false');
+                }
+                if (logoSwitch) {
+                    logoSwitch.classList.toggle('on', !!layout.hideLogo);
+                    logoSwitch.setAttribute('aria-checked', layout.hideLogo ? 'true' : 'false');
+                }
+                if (iconsSwitch) {
+                    iconsSwitch.classList.toggle('on', !!layout.hideNavIcons);
+                    iconsSwitch.setAttribute('aria-checked', layout.hideNavIcons ? 'true' : 'false');
+                }
+                if (textSwitch) {
+                    textSwitch.classList.toggle('on', !!layout.hideNavText);
+                    textSwitch.setAttribute('aria-checked', layout.hideNavText ? 'true' : 'false');
+                }
+                // 互斥：开启其中一项时，另一项灰化并禁用（避免条目图标与文本同时隐藏导致条目消失）
+                setSwitchDisabled(textSwitch, !!layout.hideNavIcons);
+                setSwitchDisabled(iconsSwitch, !!layout.hideNavText);
+            }
+
+            function setSwitchDisabled(el, disabled) {
+                if (!el) return;
+                el.disabled = disabled;
+                el.classList.toggle('disabled', disabled);
+                el.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+            }
+            refreshToggleStates();
+
+            function bindToggle(id, field, exclusiveField) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('click', function() {
+                    if (this.disabled) return;
+                    var layout = getUiNavLayout();
+                    layout[field] = !layout[field];
+                    // 开启时关闭互斥项，保证不会同时生效
+                    if (layout[field] && exclusiveField) layout[exclusiveField] = false;
+                    saveUiNavLayout(layout);
+                    applyUiNavLayout();
+                    refreshToggleStates();
+                });
+            }
+            bindToggle('uiEditHideBrand', 'hideBrand');
+            bindToggle('uiEditHideLogo', 'hideLogo');
+            bindToggle('uiEditHideIcons', 'hideNavIcons', 'hideNavText');
+            bindToggle('uiEditHideText', 'hideNavText', 'hideNavIcons');
+
+            document.getElementById('uiEditResetBtn').addEventListener('click', function() {
+                var layout = getUiNavLayout();
+                // 共享项（排版位置 + 四个显隐开关）恢复默认，两页同步生效
+                layout.position = 'center';
+                layout.hideBrand = false;
+                layout.hideLogo = false;
+                layout.hideNavIcons = false;
+                layout.hideNavText = false;
+                // 条目顺序仅重置当前所在页面，另一页面顺序保持不变
+                var centerNav = document.querySelector('#uiMinTopnav .ui-min-topnav-center');
+                if (centerNav && centerNav.querySelector('[data-menu="gamecenter"]')) {
+                    layout.order = UI_NAV_DEFAULT_ORDER.slice();
+                } else {
+                    layout.orderLogin = UI_LOGIN_NAV_DEFAULT_ORDER.slice();
+                }
+                saveUiNavLayout(layout);
+                applyUiNavLayout();
+                refreshPosActive();
+                refreshToggleStates();
+                if (typeof showToastInfo === 'function') showToastInfo('已恢复默认导航栏布局');
+            });
+
+            document.getElementById('uiEditDoneBtn').addEventListener('click', function() {
+                exitUiEditMode(true);
+            });
+        }
+
+        // 暴露全局接口，供通行证等延迟注入逻辑完成后重新应用布局
+        window.applyUiNavLayout = applyUiNavLayout;
+        window.getUiNavLayout = getUiNavLayout;
+
+        // 页面加载后多次尝试应用布局（防止刷新时其他初始化逻辑的时序覆盖已保存的布局）
+        // 大厅与登录页均应用：排版位置与显隐开关两页同步，条目顺序按页面各自生效
+        [100, 600, 1500].forEach(function(delay) {
+            setTimeout(function() {
+                try {
+                    var topnav = document.getElementById('uiMinTopnav');
+                    var centerNav = topnav && topnav.querySelector('.ui-min-topnav-center');
+                    if (centerNav && centerNav.children.length) {
+                        applyUiNavLayout();
+                    }
+                } catch (e) { /* 忽略布局重试异常 */ }
+            }, delay);
+        });
+
         // 添加游戏大厅样式
         function addGameCenterStyles() {
             var existingStyle = document.getElementById('game-center-style');
@@ -23763,7 +24325,7 @@
                 filteredBadges.map(function(badge) {
                     return '<div class="badge-list-item ' + (badge.unlocked ? 'unlocked' : 'locked') + '" onclick="showBadgeDetailModal(\'' + badge.id + '\')">' +
                         '<div class="badge-list-icon" style="background: linear-gradient(135deg, ' + badge.color + ' 0%, ' + badge.color + 'dd 100%);">' +
-                            '<i class="' + badge.icon + '"></i>' +
+                            preIcon(badge.icon) +
                         '</div>' +
                         '<span class="badge-list-name">' + badge.name + '</span>' +
                     '</div>';
@@ -23796,7 +24358,7 @@
             
             // 填充详情
             document.getElementById('badgeDetailIcon').style.background = 'linear-gradient(135deg, ' + badge.color + ' 0%, ' + badge.color + 'dd 100%)';
-            document.getElementById('badgeDetailIcon').innerHTML = '<i class="' + badge.icon + '"></i>';
+            document.getElementById('badgeDetailIcon').innerHTML = preIcon(badge.icon);
             document.getElementById('badgeDetailName').textContent = badge.name;
             document.getElementById('badgeDetailDescription').textContent = badge.description;
             
@@ -23935,7 +24497,7 @@
                 filteredHonors.map(function(honor) {
                     return '<div class="badge-list-item ' + (honor.unlocked ? 'unlocked' : 'locked') + '" onclick="showHonorDetailModal(\'' + honor.id + '\')">' +
                         '<div class="badge-list-icon" style="background: linear-gradient(135deg, ' + honor.color + ' 0%, ' + honor.color + 'dd 100%);">' +
-                            '<i class="' + honor.icon + '"></i>' +
+                            preIcon(honor.icon) +
                         '</div>' +
                         '<span class="badge-list-name">' + honor.name + '</span>' +
                     '</div>';
@@ -23970,7 +24532,7 @@
             
             // 填充详情
             document.getElementById('honorDetailIcon').style.background = 'linear-gradient(135deg, ' + honor.color + ' 0%, ' + honor.color + 'dd 100%)';
-            document.getElementById('honorDetailIcon').innerHTML = '<i class="' + honor.icon + '"></i>';
+            document.getElementById('honorDetailIcon').innerHTML = preIcon(honor.icon);
             document.getElementById('honorDetailName').textContent = honor.name;
             document.getElementById('honorDetailDescription').textContent = honor.description;
             
@@ -24669,7 +25231,7 @@
                     }
                     if (m.extraRewards && m.extraRewards.length) {
                         m.extraRewards.forEach(function(r) {
-                            rewardRowsHtml += '<div class="ms-rwd ms-rwd-extra ' + r.cls + '"><i class="' + r.icon + '"></i> ' + r.text + '</div>';
+                            rewardRowsHtml += '<div class="ms-rwd ms-rwd-extra ' + r.cls + '">' + preIcon(r.icon) + ' ' + r.text + '</div>';
                         });
                     }
 
@@ -24687,10 +25249,10 @@
                     nodesHTML += '<div class="ms-node ms-node-' + state + '" style="left:' + posInfo.positions[idx] + 'px;"' +
                             (state === 'claimable' ? ' data-days="' + m.days + '" title="点击领取该里程碑奖励"' : ' title="需累计签到 ' + m.days + ' 天"') + '>' +
                         '<div class="ms-connector"></div>' +
-                        '<div class="ms-dot"><i class="fas fa-' + m.icon + '"></i></div>' +
+                        '<div class="ms-dot">' + preIcon('fas fa-' + m.icon) + '</div>' +
                         '<div class="ms-card">' +
                             '<div class="ms-days-tag">' + m.days + ' 天</div>' +
-                            '<div class="ms-reward-icon"><i class="fas fa-' + m.icon + '"></i></div>' +
+                            '<div class="ms-reward-icon">' + preIcon('fas fa-' + m.icon) + '</div>' +
                             '<div class="ms-reward-name">' + m.name + '</div>' +
                             '<div class="ms-reward-list">' + rewardRowsHtml + '</div>' +
                             btnHtml +
@@ -24889,9 +25451,9 @@
             rowsHtml += cardHtml(
                 'linear-gradient(135deg, #ffd34d 0%, #f39c12 100%)',
                 'fas fa-coins',
-                'PRE 硬币',
+                'PRE Coin',
                 dailyCoin > 0 ? '+' + dailyCoin : '0',
-                '随连续签到天数提升（30/60/90 PRE）'
+                '随连续签到天数提升（30/60/90 PRE Coin）'
             );
 
             // 每日签到道具
@@ -24965,7 +25527,7 @@
                     '<div class="dr-cards">' + rowsHtml + '</div>' +
                     '<div class="dr-foot-tip">' +
                         '<i class="fas fa-circle-info"></i> ' +
-                        '成长经验值与 PRE 硬币会随连续签到天数及限时活动变化；' +
+                        '成长经验值与 PRE Coin 会随连续签到天数及限时活动变化；' +
                         '<b>通行证经验值为赛季固定奖励，每日始终 +3</b>，不会因连签状态或特殊活动改变。' +
                     '</div>' +
                 '</div>';
@@ -25907,7 +26469,7 @@
                     '<h3>补签确认</h3>' +
                     '<p class="mk-confirm-text">是否要补签 <b>' + dateText + '</b> 并领取其对应日期的物品奖励？</p>' +
                     '<p class="mk-confirm-reward"><i class="fas fa-gift"></i> 该日物品奖励：' + rewardText +
-                        '<br><span class="mk-confirm-note">补签不发放成长经验值、通行证经验值和 PRE 硬币</span></p>' +
+                        '<br><span class="mk-confirm-note">补签不发放成长经验值、通行证经验值和 PRE Coin</span></p>' +
                     '<div class="mk-confirm-actions">' +
                         '<button class="mk-btn mk-btn-cancel" type="button">取消</button>' +
                         '<button class="mk-btn mk-btn-ok" type="button">确定补签</button>' +
@@ -26248,7 +26810,7 @@
                     '<div class="cr-section cr-section-coin">' +
                         '<div class="cr-section-head">' +
                             '<span class="cr-section-icon cr-icon-coin"><i class="fas fa-coins"></i></span>' +
-                            '<span class="cr-section-title">PRE 硬币</span>' +
+                            '<span class="cr-section-title">PRE Coin</span>' +
                             '<span class="cr-section-amount">+' + data.totalCoin + '</span>' +
                         '</div>' +
                         coinSubHtml +
@@ -29101,7 +29663,10 @@
                         localStorage.removeItem('savedPassword');
                         localStorage.removeItem('autoLogin');
                     }
-                    
+
+                    // 记住我：登录成功后按勾选状态保存/清除账号
+                    persistRememberAccount(username);
+
                     var loginBtn = document.getElementById('loginButton');
                     var originalText = loginBtn.innerHTML;
                     loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
@@ -29319,7 +29884,10 @@
                 localStorage.removeItem('savedPassword');
                 localStorage.removeItem('autoLogin');
             }
-            
+
+            // 记住我：登录成功后按勾选状态保存/清除账号
+            persistRememberAccount(username);
+
             var loginBtn = document.getElementById('loginButton');
             var originalText = loginBtn.innerHTML;
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
@@ -29993,6 +30561,11 @@
             showForgotPasswordModal();
         });
         
+        // 右上角关闭按钮与「取消」等价
+        document.getElementById('forgotPasswordClose').addEventListener('click', function() {
+            document.getElementById('forgotPasswordCancel').click();
+        });
+
         document.getElementById('forgotPasswordCancel').addEventListener('click', function() {
             var modal = document.getElementById('forgotPasswordModal');
             modal.classList.remove('show');
@@ -30008,6 +30581,11 @@
             handleForgotPasswordVerify();
         });
         
+        // 右上角关闭按钮与「取消」等价
+        document.getElementById('resetPasswordClose').addEventListener('click', function() {
+            document.getElementById('resetPasswordCancel').click();
+        });
+
         document.getElementById('resetPasswordCancel').addEventListener('click', function() {
             var modal = document.getElementById('resetPasswordModal');
             modal.classList.remove('show');
@@ -30151,6 +30729,11 @@
             }, 300);
         });
         
+        // 右上角关闭按钮直接关闭弹窗（任意步骤均等价于取消）
+        document.getElementById('pinResetClose').addEventListener('click', function() {
+            hidePinResetModal();
+        });
+
         document.getElementById('pinResetCancel').addEventListener('click', function() {
             hidePinResetModal();
         });
@@ -31136,7 +31719,7 @@
                     developer: "PREAlmax",
                     description: "",
                     license: "MIT License",
-                    techStack: "HTML5 / CSS3 / JavaScript",
+                    techStack: "HTML5 / CSS3 / JavaScript / React / Lucide Icons",
                     supportedPlatforms: "Windows / macOS / Linux / Android / iOS",
                     githubRepoUrl: "https://github.com/Almax202/PRE_Launcher",
                     githubDeveloperUrl: "https://github.com/Almax202"
@@ -31316,6 +31899,14 @@
                                     <button class="copyright-btn" onclick="showAboutResource('cannon')">
                                         <i class="fas fa-bullseye"></i>
                                         <span>cannon-es</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('react')">
+                                        <i class="fab fa-react"></i>
+                                        <span>React</span>
+                                    </button>
+                                    <button class="copyright-btn" onclick="showAboutResource('lucide')">
+                                        <i class="fas fa-pen-nib"></i>
+                                        <span>Lucide Icons</span>
                                     </button>
                                     <button class="copyright-btn" onclick="showAboutResource('openmeteo')">
                                         <i class="fas fa-cloud-sun"></i>
@@ -31876,6 +32467,24 @@
                     + '<p>本项目使用 cannon-es（Cannon ES）作为 3D 物理引擎，用于实现刚体物理模拟、碰撞检测、接触材质、重力等物理效果，是光影冲刺等 3D 游戏的物理模拟基础。</p>'
                     + '<p>cannon-es 基于 MIT 许可证开源（Cannon 物理引擎的 ES Module 版本），其著作权、知识产权归属 theturtle3d 及贡献者所有。本项目严格遵守其许可证条款，仅作内部集成使用。</p>'
                     + '<p><strong>GitHub 地址：</strong><a href="https://github.com/pmndrs/cannon-es" target="_blank" class="about-resource-link">https://github.com/pmndrs/cannon-es</a></p>'
+                    + '</div>'
+            },
+            react: {
+                title: 'React 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目使用 React 作为组件化 UI 构建库（本地内置 v18.3.1 UMD 构建），用于页面与交互组件的开发。</p>'
+                    + '<p>React 基于 MIT 许可证开源，著作权、知识产权归属 Meta Platforms, Inc. 及其关联公司所有。本项目严格遵守其许可证条款，仅作内部集成使用，未对源码进行恶意篡改或二次分发。</p>'
+                    + '<p><strong>版权信息：</strong>Copyright (c) Meta Platforms, Inc. and affiliates.</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/facebook/react" target="_blank" class="about-resource-link">https://github.com/facebook/react</a></p>'
+                    + '</div>'
+            },
+            lucide: {
+                title: 'Lucide Icons 版权声明',
+                html: '<div class="about-resource-section">'
+                    + '<p>本项目使用 Lucide Icons 作为开源图标库（本地内置 v0.544.0 UMD 构建），用于界面图标的统一管理与渲染。</p>'
+                    + '<p>Lucide 基于 ISC 许可证开源，其图标源自 MIT 许可证的 Feather Icons 项目。著作权、知识产权归属 Lucide 贡献者及原作者所有。本项目严格遵守其许可证条款，仅作内部集成使用。</p>'
+                    + '<p><strong>版权信息：</strong>Copyright (c) Lucide Contributors；部分图标 Copyright (c) Cole Bemis（Feather Icons, MIT）。</p>'
+                    + '<p><strong>GitHub 地址：</strong><a href="https://github.com/lucide-icons/lucide" target="_blank" class="about-resource-link">https://github.com/lucide-icons/lucide</a></p>'
                     + '</div>'
             },
             openmeteo: {
@@ -33144,7 +33753,7 @@
                                                                     ${badges.map(b => `
                                                                         <div class="badge-item ${b.unlocked ? 'unlocked' : 'locked'}" onclick="showBadgeDetailModal('${b.id}')">
                                                                             <div class="badge-icon" style="background: linear-gradient(135deg, ${b.color} 0%, ${b.color}dd 100%);">
-                                                                                <i class="${b.icon}"></i>
+                                                                                ${preIcon(b.icon)}
                                                                             </div>
                                                                             <span class="badge-name">${b.name}</span>
                                                                         </div>
@@ -33171,7 +33780,7 @@
                                                                     ${honors.map(h => `
                                                                         <div class="badge-item unlocked" onclick="showHonorDetailModal('${h.id}')">
                                                                             <div class="badge-icon" style="background: linear-gradient(135deg, ${h.color} 0%, ${h.color}dd 100%);">
-                                                                                <i class="${h.icon}"></i>
+                                                                                ${preIcon(h.icon)}
                                                                             </div>
                                                                             <span class="badge-name">${h.name}</span>
                                                                         </div>
@@ -33503,7 +34112,7 @@
                                                                 // 仓库物品类奖励可点击查看统一物品详情（名片样式/背景无仓库条目，不响应）
                                                                 var phIsItem = p.reward && p.reward.type === 'item';
                                                                 return `<div class="season-phase-item${phIsItem ? ' season-phase-clickable' : ''}"${phIsItem ? ' onclick="cardShowPassPhaseItem(' + p.level + ')" title="' + (phIsItem ? '点击查看物品详情' : '') + '"' : ''}>
-                                                                    <div class="season-phase-icon" style="color:${p.color};border-color:${p.color}55;background:${p.color}1a;"><i class="${p.icon}"></i></div>
+                                                                    <div class="season-phase-icon" style="color:${p.color};border-color:${p.color}55;background:${p.color}1a;">${preIcon(p.icon)}</div>
                                                                     <div class="season-phase-info">
                                                                         <span class="season-phase-name">${p.name}</span>
                                                                         <span class="season-phase-lv">${p.level === 0 ? '初始奖励' : p.level + ' 级解锁'}</span>

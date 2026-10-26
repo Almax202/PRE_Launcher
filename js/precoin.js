@@ -79,7 +79,7 @@ function addPreCoin(amount, source, silent) {
         showToast({
             type: 'success',
             title: 'PRE Coin',
-            message: '获得 ' + amount + ' PRE 硬币' + (source ? '（' + source + '）' : '')
+            message: '获得 ' + amount + ' PRE Coin' + (source ? '（' + source + '）' : '')
         });
     }
 
@@ -99,7 +99,7 @@ function spendPreCoin(amount, source) {
             showToast({
                 type: 'error',
                 title: 'PRE Coin 不足',
-                message: '当前余额：' + data.balance + '，需要：' + amount + ' PRE 硬币'
+                message: '当前余额：' + data.balance + '，需要：' + amount + ' PRE Coin'
             });
         }
         return false;

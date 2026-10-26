@@ -7701,11 +7701,19 @@ body.ui-minimalist.dark-mode .settings-container {
     background: transparent;
 }
 
-body.ui-minimalist.dark-mode .settings-section,
+/* 暗色模式只给卡片本身着色：.settings-section 保持透明，
+   否则卡片之间的间距会被填成与卡片相同的深色，
+   导致圆角不可见、所有卡片连成一片 */
+body.ui-minimalist.dark-mode .settings-section {
+    background: transparent;
+}
+
 body.ui-minimalist.dark-mode .section-card,
 body.ui-minimalist.dark-mode .settings-card {
-    background: #1e1e2e;
-    border-color: rgba(255, 255, 255, 0.06);
+    background: #24243a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 /* 响应式 */
