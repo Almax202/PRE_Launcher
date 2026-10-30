@@ -8,39 +8,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>LauncherLogin</title>
-    <script>
-    /* 清理已下线的「在线更新」Service Worker 残留：
-       旧 SW 对所有导航请求返回缓存的根 index.html，会使 /html/ 下
-       页面（如系统设置）以 index 文档套壳加载、相对路径资源全部 404。
-       新的根目录 sw.js（kill switch）负责自愈，这里做双保险：
-       一旦本脚本能运行，立即注销旧 SW 并清除遗留缓存。 */
-    (function () {
-        try {
-            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
-                navigator.serviceWorker.getRegistrations().then(function (regs) {
-                    regs.forEach(function (reg) {
-                        try {
-                            var worker = reg.active || reg.waiting || reg.installing;
-                            var scriptUrl = worker && worker.scriptURL || '';
-                            // 仅注销旧在线更新机制遗留在根目录的 sw.js，避免误伤同域其他应用
-                            if (/\/sw\.js(\?|$)/i.test(scriptUrl)) {
-                                reg.unregister();
-                            }
-                        } catch (e) {}
-                    });
-                }).catch(function () {});
-            }
-            if (window.caches && caches.keys) {
-                caches.keys().then(function (keys) {
-                    keys.forEach(function (key) {
-                        if (key.indexOf('prelauncher') === 0) caches.delete(key);
-                    });
-                }).catch(function () {});
-            }
-        } catch (e) {}
-    })();
-    </script>
+    <title>PRE Launcher</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="./css/denglu.css?v=3.0" as="style">
@@ -53,13 +21,13 @@
     <script src="./js/lib/lucide.min.js" defer onerror="console.warn('Lucide 加载失败')"></script>
     <script src="./js/lucide-bridge.js?v=1.2" defer></script>
     <script src="./js/settings.js" defer></script>
-    <script src="./js/versionHistory.js?v=3.0.2.7" defer></script>
+    <script src="./js/versionHistory.js?v=3.0.3.11" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
-    <script src="./js/warehouse.js?v=4.4" defer></script>
+    <script src="./js/warehouse.js?v=4.5" defer></script>
     <script src="./js/pass.js?v=3.14" defer></script>
     <script src="./js/dailytasks.js?v=1.1" defer></script>
     <script src="./js/lottery.js?v=1.6" defer></script>
-    <script src="./js/shop.js?v=2.6" defer></script>
+    <script src="./js/shop.js?v=2.9" defer></script>
     <script src="./js/premail.js?v=2.1" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
@@ -5586,6 +5554,8 @@
                             }
                         } else if (action === 'uiEdit') {
                             if (typeof toggleUiEditMode === 'function') toggleUiEditMode();
+                        } else if (action === 'changeFont') {
+                            if (typeof openFontChangeModal === 'function') openFontChangeModal();
                         } else if (action === 'toggleFullscreen') {
                             toggleLauncherFullscreen();
                         } else if (action === 'backToLogin') {
@@ -5715,7 +5685,7 @@
                 var isRedeemCodeEnabled = localStorage.getItem('redeemCodeEnabled') === 'true';
                 var isNetworkSpeedTestOn = (typeof isNetworkSpeedTestEnabled === 'function')
                     ? isNetworkSpeedTestEnabled()
-                    : (localStorage.getItem('networkSpeedTestEnabled') === 'true' && localStorage.getItem('experimentalFeaturesDisabled') !== 'true');
+                    : (localStorage.getItem('networkSpeedTestEnabled') === 'true');
                 
                 var guideBtn = document.getElementById('modalShowGuideBtn');
                 var uiScaleBtn = document.getElementById('modalUiScaleBtn');
@@ -7103,6 +7073,10 @@
                     <div class="ui-min-dropdown-item" data-action="uiEdit">
                         <i class="fas fa-pen-ruler"></i>
                         <span>UI 编辑</span>
+                    </div>
+                    <div class="ui-min-dropdown-item" data-action="changeFont">
+                        <i class="fas fa-font"></i>
+                        <span>更换字体</span>
                     </div>
                     <div class="ui-min-dropdown-item" data-action="toggleFullscreen" id="uiMinFullscreenItem">
                         <i class="fas fa-expand"></i>
@@ -9547,61 +9521,86 @@
         </div>
     </div>
 
-    <div id="versionHistoryModal" class="custom-alert">
-        <div class="alert-content terms-modal-content">
-            <div class="header-container">
-                <div class="alert-icon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <h3>版本更新记录</h3>
-                <button class="about-desktop-close" id="versionHistoryCloseBtn" title="关闭">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="vh-toolbar" id="versionHistoryToolbar">
-                <button class="vh-tab active" id="featureUpdateNav">
-                    <i class="fas fa-cog"></i><span>查看功能更新</span>
-                </button>
-                <div class="vh-dropdown" id="earlyDropdown">
-                    <button class="vh-tab" id="earlyUpdateNav">
-                        <i class="fas fa-clock-rotate-left"></i><span>过时版本记录</span>
-                        <i class="fas fa-chevron-down vh-caret"></i>
-                    </button>
-                    <div class="vh-dropdown-menu">
-                        <button class="vh-dropdown-item" data-parent="outdatedSubButtons" data-type="launcher">启动器记录</button>
-                        <button class="vh-dropdown-item" data-parent="outdatedSubButtons" data-type="homepage">主页面记录</button>
+    <div id="versionHistoryModal" class="custom-alert fs-window-modal">
+        <div class="alert-content terms-modal-content fs-window-content">
+            <header class="fs-window-header">
+                <div class="fs-window-title">
+                    <div class="alert-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="fs-window-heading">
+                        <h3>版本更新记录</h3>
+                        <p>完整追溯启动器与各模块的每一次迭代</p>
                     </div>
                 </div>
-                <div class="vh-dropdown" id="miniGameDropdown">
-                    <button class="vh-tab" id="miniGameUpdateNav">
-                        <i class="fas fa-gamepad"></i><span>小游戏更新记录</span>
-                        <i class="fas fa-chevron-down vh-caret"></i>
-                    </button>
-                    <div class="vh-dropdown-menu">
-                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="snake">贪吃蛇</button>
-                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="colormatch">颜色匹配</button>
-                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="memory">记忆卡牌</button>
-                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="wzq">五子棋</button>
-                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="fxq">飞行器</button>
-                        <button class="vh-dropdown-item" data-parent="miniGameSubButtons" data-type="fkgame">点击方块</button>
-                    </div>
-                </div>
-                <button class="vh-tab" id="demoModeNav" style="display: none;">
-                    <i class="fas fa-play-circle"></i><span>演示模式</span>
-                </button>
-                <span class="vh-toolbar-right">
+                <div class="fs-window-actions">
                     <button class="mark-all-read-btn" id="markAllVersionReadBtn">
                         <i class="fas fa-check-double"></i>
                         <span>一键已读</span>
                     </button>
-                </span>
-            </div>
-            <div class="terms-main vh-main">
-                <div class="terms-content">
-                    <div class="version-history-content" id="launcherUpdateContent"></div>
-                    <div class="version-history-content" id="homepageUpdateContent" style="display: none;"></div>
-                    <div class="version-history-content" id="earlyUpdateContent" style="display: none;"></div>
+                    <button class="about-desktop-close" id="versionHistoryCloseBtn" title="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
+            </header>
+            <div class="fs-window-body">
+                <aside class="fs-sidebar">
+                    <div class="fs-sidebar-head">
+                        <span class="fs-sidebar-eyebrow">版本档案</span>
+                        <div class="fs-sidebar-stat">
+                            <strong id="vhStatTotal">0</strong>
+                            <span>条更新记录</span>
+                        </div>
+                    </div>
+                    <nav class="fs-sidebar-nav" id="versionHistoryToolbar">
+                        <div class="fs-nav-group">
+                            <div class="fs-nav-group-title"><i class="fas fa-layer-group"></i>功能更新</div>
+                            <button class="fs-nav-item active" id="featureUpdateNav" data-vh-parent="featureSubButtons" data-vh-type="launcher">
+                                <span class="fs-nav-icon"><i class="fas fa-rocket"></i></span>
+                                <span class="fs-nav-text"><b>启动器更新</b><small>核心功能与体验迭代</small></span>
+                                <i class="fas fa-chevron-right fs-nav-arrow"></i>
+                            </button>
+                        </div>
+                        <div class="fs-nav-group">
+                            <div class="fs-nav-group-title"><i class="fas fa-box-archive"></i>历史归档</div>
+                            <button class="fs-nav-item" id="earlyUpdateNav" data-vh-parent="outdatedSubButtons" data-vh-type="launcher">
+                                <span class="fs-nav-icon"><i class="fas fa-clock-rotate-left"></i></span>
+                                <span class="fs-nav-text"><b>过时版本 · 启动器</b><small>早期启动器版本</small></span>
+                                <i class="fas fa-chevron-right fs-nav-arrow"></i>
+                            </button>
+                            <button class="fs-nav-item" data-vh-parent="outdatedSubButtons" data-vh-type="homepage">
+                                <span class="fs-nav-icon"><i class="fas fa-clock-rotate-left"></i></span>
+                                <span class="fs-nav-text"><b>过时版本 · 主页</b><small>早期主页面版本</small></span>
+                                <i class="fas fa-chevron-right fs-nav-arrow"></i>
+                            </button>
+                        </div>
+                        <div class="fs-nav-group">
+                            <div class="fs-nav-group-title"><i class="fas fa-gamepad"></i>小游戏更新</div>
+                            <button class="fs-nav-item" data-vh-parent="miniGameSubButtons" data-vh-type="snake"><span class="fs-nav-icon"><i class="fas fa-bug"></i></span><span class="fs-nav-text"><b>贪吃蛇</b><small>Snake</small></span><i class="fas fa-chevron-right fs-nav-arrow"></i></button>
+                            <button class="fs-nav-item" data-vh-parent="miniGameSubButtons" data-vh-type="colormatch"><span class="fs-nav-icon"><i class="fas fa-palette"></i></span><span class="fs-nav-text"><b>颜色匹配</b><small>Color Match</small></span><i class="fas fa-chevron-right fs-nav-arrow"></i></button>
+                            <button class="fs-nav-item" data-vh-parent="miniGameSubButtons" data-vh-type="memory"><span class="fs-nav-icon"><i class="fas fa-clone"></i></span><span class="fs-nav-text"><b>记忆卡牌</b><small>Memory</small></span><i class="fas fa-chevron-right fs-nav-arrow"></i></button>
+                            <button class="fs-nav-item" data-vh-parent="miniGameSubButtons" data-vh-type="wzq"><span class="fs-nav-icon"><i class="fas fa-chess-board"></i></span><span class="fs-nav-text"><b>五子棋</b><small>Gomoku</small></span><i class="fas fa-chevron-right fs-nav-arrow"></i></button>
+                            <button class="fs-nav-item" data-vh-parent="miniGameSubButtons" data-vh-type="fxq"><span class="fs-nav-icon"><i class="fas fa-jet-fighter"></i></span><span class="fs-nav-text"><b>飞行器</b><small>Shooter</small></span><i class="fas fa-chevron-right fs-nav-arrow"></i></button>
+                            <button class="fs-nav-item" data-vh-parent="miniGameSubButtons" data-vh-type="fkgame"><span class="fs-nav-icon"><i class="fas fa-cube"></i></span><span class="fs-nav-text"><b>点击方块</b><small>Click Blocks</small></span><i class="fas fa-chevron-right fs-nav-arrow"></i></button>
+                        </div>
+                    </nav>
+                    <div class="fs-sidebar-foot">
+                        <button class="fs-nav-item fs-nav-item-demo" id="demoModeNav" style="display: none;">
+                            <span class="fs-nav-icon"><i class="fas fa-play-circle"></i></span>
+                            <span class="fs-nav-text"><b>演示模式</b><small>开发者预览</small></span>
+                        </button>
+                        <p class="fs-sidebar-tip"><i class="fas fa-circle-info"></i> 点击大版本进入小版本列表，再点击版本卡片查看该版本的独立更新公告</p>
+                    </div>
+                </aside>
+                <main class="fs-main">
+                    <div class="fs-main-top">
+                        <nav class="fs-breadcrumb" id="vhBreadcrumb"></nav>
+                        <div class="fs-main-tools" id="vhMainTools"></div>
+                    </div>
+                    <div class="terms-main vh-main fs-main-scroll" id="vhMainScroll">
+                        <div class="terms-content fs-content" id="versionHistoryContent"></div>
+                    </div>
+                </main>
             </div>
             <div class="back-to-top-container">
                 <button class="back-to-top-btn" id="backToTopBtn" title="返回顶部">
@@ -10723,6 +10722,216 @@
             }
         }
         
+        // ==================== 更换字体（个人卡片入口） ====================
+        function openFontChangeModal() {
+            var oldModal = document.getElementById('fontChangeModal');
+            if (oldModal && oldModal.parentNode) oldModal.parentNode.removeChild(oldModal);
+
+            var modal = document.createElement('div');
+            modal.id = 'fontChangeModal';
+            modal.className = 'custom-alert';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="feedback-unified-card font-modal-card">
+                    <div class="feedback-unified-header">
+                        <h3><i class="fas fa-font"></i>更换字体</h3>
+                        <button type="button" class="feedback-unified-close" id="fontModalClose" title="关闭" aria-label="关闭">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <p class="feedback-unified-subtitle">
+                        导入自定义 TTF 字体后，启动器所有页面会同步应用。字体文件保存在本地，刷新或重启后依然生效。
+                    </p>
+                    <div class="font-dropzone" id="fontDropzone" tabindex="0" role="button" aria-label="选择或拖拽字体文件">
+                        <span class="font-dropzone-icon"><i class="fas fa-cloud-arrow-up"></i></span>
+                        <span class="font-dropzone-title">拖拽字体文件到这里</span>
+                        <span class="font-dropzone-desc">或 <em>浏览文件夹</em> · 仅支持 .ttf 格式</span>
+                        <input type="file" id="fontFileInput" accept=".ttf,font/ttf,application/x-font-ttf">
+                    </div>
+                    <p class="font-error" id="fontError" hidden></p>
+                    <div class="font-current">
+                        <div class="font-current-name"><i class="fas fa-font"></i><span id="fontCurrentName">当前使用：系统默认字体</span></div>
+                        <span class="font-current-size" id="fontCurrentSize">—</span>
+                    </div>
+                    <div class="font-preview-card">
+                        <div class="font-preview-head">
+                            <span>字体预览</span>
+                            <span class="font-preview-badge" id="fontPreviewBadge">默认字体</span>
+                        </div>
+                        <div class="font-preview-text">
+                            <p class="font-preview-lg">春风得意马蹄疾</p>
+                            <p class="font-preview-md">PRE Launcher · AaBbCc 0123456789</p>
+                            <p class="font-preview-sm">这是导入字体后的实际显示效果，所有页面都会同步应用。</p>
+                        </div>
+                    </div>
+                    <div class="font-modal-actions">
+                        <button type="button" class="feedback-leave-btn feedback-leave-cancel" id="fontRestoreBtn" style="display: none;">
+                            <i class="fas fa-rotate-left"></i>恢复默认字体
+                        </button>
+                    </div>
+                    <p class="feedback-unified-tip">
+                        <i class="fas fa-info-circle"></i>字体仅保存在当前设备，清除浏览器数据后会一并丢失。
+                    </p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+
+            var dropzone = document.getElementById('fontDropzone');
+            var fileInput = document.getElementById('fontFileInput');
+            var messageEl = document.getElementById('fontError');
+            var nameEl = document.getElementById('fontCurrentName');
+            var sizeEl = document.getElementById('fontCurrentSize');
+            var badgeEl = document.getElementById('fontPreviewBadge');
+            var restoreBtn = document.getElementById('fontRestoreBtn');
+            var busy = false;
+
+            function closeFontModal() {
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    if (modal.parentNode) modal.parentNode.removeChild(modal);
+                }, 300);
+            }
+
+            function formatFontSize(bytes) {
+                var value = Number(bytes) || 0;
+                if (value <= 0) return '0 B';
+                var units = ['B', 'KB', 'MB', 'GB'];
+                var index = 0;
+                while (value >= 1024 && index < units.length - 1) {
+                    value /= 1024;
+                    index++;
+                }
+                var digits = value >= 100 ? 0 : (value >= 10 ? 1 : 2);
+                return value.toFixed(digits) + ' ' + units[index];
+            }
+
+            function showFontMessage(text, isSuccess) {
+                messageEl.hidden = false;
+                messageEl.className = 'font-error' + (isSuccess ? ' is-success' : '');
+                messageEl.innerHTML = '<i class="fas ' + (isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation') + '"></i><span></span>';
+                messageEl.querySelector('span').textContent = text;
+            }
+
+            function hideFontMessage() {
+                messageEl.hidden = true;
+                messageEl.className = 'font-error';
+                messageEl.innerHTML = '';
+            }
+
+            function refreshFontState(record) {
+                if (record) {
+                    nameEl.textContent = '当前使用：' + (record.name || record.fileName || '自定义字体');
+                    sizeEl.textContent = formatFontSize(record.size || (record.blob && record.blob.size) || 0);
+                    badgeEl.textContent = record.name || '自定义字体';
+                    badgeEl.title = record.fileName || '';
+                    restoreBtn.style.display = 'inline-flex';
+                } else {
+                    nameEl.textContent = '当前使用：系统默认字体';
+                    sizeEl.textContent = '—';
+                    badgeEl.textContent = '默认字体';
+                    badgeEl.title = '';
+                    restoreBtn.style.display = 'none';
+                }
+            }
+
+            function processFontFile(file) {
+                if (!file || busy) return;
+                hideFontMessage();
+                if (!/\.ttf$/i.test(file.name || '')) {
+                    showFontMessage('不支持该字体格式，仅支持导入 .ttf 字体文件');
+                    return;
+                }
+                if (!window.CustomFont || typeof window.CustomFont.save !== 'function') {
+                    showFontMessage('字体组件未加载，请刷新页面后重试');
+                    return;
+                }
+                busy = true;
+                dropzone.classList.add('is-busy');
+                window.CustomFont.save(file).then(function(record) {
+                    busy = false;
+                    dropzone.classList.remove('is-busy');
+                    refreshFontState(record);
+                    showFontMessage('字体导入成功，所有页面已同步应用', true);
+                }).catch(function(err) {
+                    busy = false;
+                    dropzone.classList.remove('is-busy');
+                    if (err && err.code === 'unsupported-type') {
+                        showFontMessage('不支持该字体格式，仅支持导入 .ttf 字体文件');
+                    } else if (err && err.code === 'font-parse-failed') {
+                        showFontMessage('字体解析失败，请确认文件为有效的 TTF 字体文件');
+                    } else {
+                        showFontMessage('字体保存失败，请稍后重试');
+                    }
+                });
+            }
+
+            document.getElementById('fontModalClose').addEventListener('click', closeFontModal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeFontModal();
+            });
+
+            dropzone.addEventListener('click', function(e) {
+                if (e.target === fileInput) return;
+                fileInput.click();
+            });
+            dropzone.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileInput.click();
+                }
+            });
+            fileInput.addEventListener('change', function() {
+                var file = this.files && this.files[0];
+                this.value = '';
+                processFontFile(file);
+            });
+
+            ['dragenter', 'dragover'].forEach(function(type) {
+                dropzone.addEventListener(type, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('is-dragover');
+                });
+            });
+            ['dragleave', 'dragend'].forEach(function(type) {
+                dropzone.addEventListener(type, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('is-dragover');
+                });
+            });
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('is-dragover');
+                var files = e.dataTransfer && e.dataTransfer.files;
+                if (files && files.length) processFontFile(files[0]);
+            });
+
+            restoreBtn.addEventListener('click', function() {
+                if (!window.CustomFont || typeof window.CustomFont.clear !== 'function') return;
+                hideFontMessage();
+                window.CustomFont.clear().then(function() {
+                    refreshFontState(null);
+                    showFontMessage('已恢复系统默认字体', true);
+                }).catch(function() {
+                    showFontMessage('恢复默认字体失败，请稍后重试');
+                });
+            });
+
+            if (window.CustomFont && typeof window.CustomFont.get === 'function') {
+                window.CustomFont.get().then(refreshFontState).catch(function() {
+                    refreshFontState(null);
+                });
+            } else {
+                refreshFontState(null);
+            }
+        }
+
         function enableQuickLoginMode() {
             document.querySelector('.captcha-group').style.display = 'none';
             document.getElementById('passwordSection').style.display = 'none';
@@ -11232,7 +11441,13 @@
             if (typeof getVersion !== 'function') {
                 return;
             }
-            
+
+            // 新版本目录：直接定位并打开当前版本公告
+            if (typeof window.vhLocateCurrentVersion === 'function') {
+                window.vhLocateCurrentVersion();
+                return;
+            }
+
             var currentVersion = getVersion('login');
             var targetVersionId = currentVersion.replace(/\s/g, '');
             
@@ -30104,33 +30319,10 @@
             setTimeout(function() {
                 versionHistoryModal.classList.add('show');
                 
-                // 显示默认提示文本（包含等待图标）
-                var contentArea = document.querySelector('#versionHistoryModal .terms-content');
-                if (contentArea) {
-                    contentArea.innerHTML = `
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                            <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
-                                <i class="fas fa-inbox"></i>
-                            </div>
-                            <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">请选择要查看的功能更新</p>
-                        </div>
-                    `;
+                // 默认进入启动器功能更新的版本目录
+                if (typeof window.vhOpenSection === 'function') {
+                    window.vhOpenSection('featureSubButtons', 'launcher');
                 }
-                
-                // 重置 bar 按钮状态
-                document.querySelectorAll('#versionHistoryModal .vh-tab').forEach(function(tab) {
-                    tab.classList.remove('active');
-                });
-                // 激活查看功能更新按钮
-                var featureUpdateNav = document.getElementById('featureUpdateNav');
-                if (featureUpdateNav) {
-                    featureUpdateNav.classList.add('active');
-                }
-
-                // 收起所有多级下拉菜单
-                document.querySelectorAll('#versionHistoryModal .vh-dropdown').forEach(function(dropdown) {
-                    dropdown.classList.remove('open');
-                });
                 
                 // 检测开发者模式是否启用
                 var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -30143,87 +30335,20 @@
                     demoModeNav.style.display = isDevMode ? 'inline-flex' : 'none';
                 }
                 
-                // 为演示模式按钮添加点击事件
-                if (isDevMode && demoModeNav) {
+                // 为演示模式按钮添加点击事件（每个弹窗生命周期仅绑定一次）
+                if (isDevMode && demoModeNav && demoModeNav.dataset.vhDemoBound !== '1') {
+                    demoModeNav.dataset.vhDemoBound = '1';
                     demoModeNav.addEventListener('click', function(e) {
                         e.stopPropagation();
 
-                        // 重置 bar 按钮状态
-                        document.querySelectorAll('#versionHistoryModal .vh-tab').forEach(function(tab) {
-                            tab.classList.remove('active');
+                        // 重置侧边栏按钮状态
+                        document.querySelectorAll('#versionHistoryModal .fs-sidebar .fs-nav-item').forEach(function(item) {
+                            item.classList.remove('active');
                         });
                         demoModeNav.classList.add('active');
 
-                        // 收起所有多级下拉菜单
-                        document.querySelectorAll('#versionHistoryModal .vh-dropdown').forEach(function(dropdown) {
-                            dropdown.classList.remove('open');
-                        });
-                        
-                        // 显示演示模式内容
-                        var demoContent = {
-                            version: "Version 1.0.0 Demo",
-                            date: "NA/NA/NA",
-                            images: [
-                                "./images/text.png"
-                            ],
-                            features: [
-                                "TEXT ONLY",
-                                "- TEXT ONLY",
-                            ]
-                        };
-                        
-                        var contentArea = document.querySelector('#versionHistoryModal .terms-content');
-                        if (contentArea) {
-                            contentArea.innerHTML = '';
-                            
-                            var versionElement = document.createElement('div');
-                            versionElement.className = 'version-item';
-                            
-                            var versionHTML = `
-                                <div class="version-header">
-                                    <span class="version-number">${demoContent.version}</span>
-                                    <span class="version-tag normal">常规更新 Normal</span>
-                                    <span class="version-tag important">重要更新 Important</span>
-                                    <span class="version-tag major">重大更新 Major</span>
-                                    <span class="version-date">${demoContent.date}</span>
-                                </div>
-                                <div class="version-details">
-                            `;
-                            
-                            // 添加版本图片（如果有）
-                            if (demoContent.images && demoContent.images.length > 0) {
-                                versionHTML += `
-                                    <div class="version-images">
-                                `;
-                                demoContent.images.forEach(function(imageUrl) {
-                                    versionHTML += `
-                                        <img src="${imageUrl}" alt="版本更新图片" class="version-image">
-                                    `;
-                                });
-                                versionHTML += `
-                                    </div>
-                                `;
-                            }
-                            
-                            // 添加版本特性
-                            versionHTML += `
-                                <ul class="version-features">
-                            `;
-                            demoContent.features.forEach(function(feature) {
-                                versionHTML += `
-                                    <li>${feature}</li>
-                                `;
-                            });
-                            versionHTML += `
-                                </ul>
-                            `;
-                            
-                            versionHTML += `
-                                </div>
-                            `;
-                            
-                            versionElement.innerHTML = versionHTML;
-                            contentArea.appendChild(versionElement);
+                        if (typeof window.vhShowDemoPreview === 'function') {
+                            window.vhShowDemoPreview();
                         }
                     });
                 }
@@ -30321,7 +30446,7 @@
         
         // 快速返回顶部按钮功能
         document.getElementById('backToTopBtn').addEventListener('click', function() {
-            var termsMain = document.querySelector('.terms-main');
+            var termsMain = document.getElementById('vhMainScroll');
             if (termsMain) {
                 termsMain.scrollTo({
                     top: 0,
@@ -31770,8 +31895,8 @@
                     +     '<div class="about-row"><span class="about-row-label">像素密度</span><span class="about-row-value">' + env.pixelRatio + '</span></div>'
                     +     '<div class="about-row"><span class="about-row-label">浏览器语言</span><span class="about-row-value">' + env.language + '</span></div>'
                     +     '<div class="about-row"><span class="about-row-label">网络状态</span><span class="about-row-value about-online-value"><span class="about-online-dot ' + (env.online ? 'is-online' : 'is-offline') + '"></span>' + (env.online ? '在线' : '离线') + '</span></div>'
-                    +     '<div class="about-row"><span class="about-row-label">本地存储占用</span><span class="about-row-value" id="aboutStorageUsage">计算中…</span></div>'
                     + '</div>',
+                storage: '<div id="aboutStoragePage"></div>',
                 identity: ''
                     + '<div class="about-section">'
                     +     '<div class="about-row about-row-link" onclick="copyAboutIdentifier(\'account\')"><span class="about-row-label">账号标识符</span><span class="about-row-value about-mono about-id-value">' + accountId + '</span><i class="fas fa-copy about-row-action-icon" title="点击复制"></i></div>'
@@ -31795,12 +31920,13 @@
             var componentCount = (componentRowsHtml.match(/about-row-link/g) || []).length;
             var aboutCategories = [
                 { id: 'launcher', name: '启动器信息', icon: 'fas fa-rocket', meta: '版本 · 开发者' },
-                { id: 'runtime', name: '运行信息', icon: 'fas fa-microchip', meta: '环境 · 存储' },
+                { id: 'runtime', name: '运行信息', icon: 'fas fa-microchip', meta: '环境 · 网络' },
+                { id: 'storage', name: '存储空间', icon: 'fas fa-hard-drive', meta: '占用 · 占比' },
                 { id: 'identity', name: '标识信息', icon: 'fas fa-id-badge', meta: '账号 · 设备' },
                 { id: 'components', name: '组件版本', icon: 'fas fa-puzzle-piece', meta: componentCount + ' 个组件' },
                 { id: 'more', name: '更多信息', icon: 'fas fa-ellipsis-h', meta: '许可 · 链接' }
             ];
-            // 开发者调试入口：仅在开发者模式开启时显示为第 6 个块状按钮
+            // 开发者调试入口：仅在开发者模式开启时显示为第 7 个块状按钮
             if (typeof isDevModeEnabled === 'function' && isDevModeEnabled()) {
                 aboutCategories.push({ id: 'devtools', name: '开发者调试', icon: 'fas fa-bug', meta: '集中管理' });
             }
@@ -32010,23 +32136,389 @@
             };
         }
 
-        // 更新本地存储占用显示
-        function updateAboutStorageUsage() {
-            var el = document.getElementById('aboutStorageUsage');
-            if (!el) return;
-            if (navigator.storage && navigator.storage.estimate) {
-                navigator.storage.estimate().then(function(est) {
-                    if (!est || !est.quota) {
-                        el.textContent = '不可用';
-                        return;
-                    }
-                    el.textContent = formatAboutBytes(est.usage) + ' / ' + formatAboutBytes(est.quota);
+        // ==================== 存储空间（关于启动器） ====================
+        var __aboutStorageRequestId = 0;
+        var ABOUT_RING_RADIUS = 68;
+        var ABOUT_RING_CIRCUMFERENCE = 2 * Math.PI * ABOUT_RING_RADIUS;
+        // 可清理的存储类别（本地存储 / 会话存储 / 浏览器缓存受保护，避免账号数据丢失）
+        var ABOUT_CLEANABLE_KEYS = { background: true, audio: true, font: true };
+        var ABOUT_CLEAN_NAMES = { background: '背景图库', audio: '音乐资源', font: '自定义字体' };
+        var ABOUT_PROTECTED_HINTS = {
+            local: '含账号、设置与业务数据，已保护',
+            session: '当前登录会话数据，已保护',
+            cache: '启动器缓存，已保护',
+            other: '由浏览器统一管理，无法清除'
+        };
+
+        // 统计并展示启动器当前占用的全部空间
+        function renderAboutStorageView() {
+            var host = document.getElementById('aboutStoragePage');
+            if (!host) return;
+            var requestId = ++__aboutStorageRequestId;
+            host.innerHTML = buildAboutStorageSkeleton();
+            collectAboutStorage().then(function(data) {
+                if (requestId !== __aboutStorageRequestId) return;
+                var current = document.getElementById('aboutStoragePage');
+                if (!current) return;
+                current.innerHTML = buildAboutStorageHtml(data);
+                animateAboutStorage(data.total, current);
+            }).catch(function() {
+                if (requestId !== __aboutStorageRequestId) return;
+                var current = document.getElementById('aboutStoragePage');
+                if (current) current.innerHTML = '<div class="about-empty">存储空间信息获取失败</div>';
+            });
+        }
+
+        // 读取 localStorage / sessionStorage 的字符占用
+        function measureAboutWebStorage(store) {
+            var bytes = 0;
+            var count = 0;
+            try {
+                if (!store) return { bytes: 0, count: 0 };
+                for (var i = 0; i < store.length; i++) {
+                    var key = store.key(i);
+                    var value = store.getItem(key) || '';
+                    bytes += aboutBytesOfString(key) + aboutBytesOfString(value);
+                    count++;
+                }
+            } catch (e) { /* 隐私模式等场景下不可读 */ }
+            return { bytes: bytes, count: count };
+        }
+
+        function aboutBytesOfString(value) {
+            if (!value) return 0;
+            try {
+                if (typeof Blob !== 'undefined') return new Blob([String(value)]).size;
+            } catch (e) { /* 忽略 */ }
+            return String(value).length * 2;
+        }
+
+        function withAboutTimeout(promise, ms, fallback) {
+            return new Promise(function(resolve) {
+                var finished = false;
+                var timer = setTimeout(function() {
+                    if (finished) return;
+                    finished = true;
+                    resolve(fallback);
+                }, ms);
+                Promise.resolve(promise).then(function(value) {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    resolve(value);
                 }).catch(function() {
-                    el.textContent = '不可用';
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    resolve(fallback);
                 });
-            } else {
-                el.textContent = '不可用';
+            });
+        }
+
+        // 扫描 IndexedDB：数据库不存在时中止升级，避免凭空创建空库
+        function measureAboutIndexedDB(dbName, storeName, sizeOfRecord) {
+            if (!window.indexedDB) return Promise.resolve({ bytes: 0, count: 0 });
+            var task = new Promise(function(resolve) {
+                var settled = false;
+                var finish = function(result) {
+                    if (settled) return;
+                    settled = true;
+                    resolve(result || { bytes: 0, count: 0 });
+                };
+                var request;
+                try {
+                    request = indexedDB.open(dbName);
+                } catch (e) {
+                    return finish(null);
+                }
+                request.onupgradeneeded = function(event) {
+                    try { event.target.transaction.abort(); } catch (e) { /* 忽略 */ }
+                };
+                request.onerror = function() { finish(null); };
+                request.onblocked = function() { finish(null); };
+                request.onsuccess = function(event) {
+                    var db = event.target.result;
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        try { db.close(); } catch (e) { /* 忽略 */ }
+                        return finish(null);
+                    }
+                    try {
+                        var tx = db.transaction([storeName], 'readonly');
+                        var store = tx.objectStore(storeName);
+                        var bytes = 0;
+                        var count = 0;
+                        var cursorRequest = store.openCursor();
+                        cursorRequest.onsuccess = function(ev) {
+                            var cursor = ev.target.result;
+                            if (!cursor) return;
+                            try { bytes += Number(sizeOfRecord(cursor.value) || 0); } catch (e) { /* 忽略 */ }
+                            count++;
+                            cursor.continue();
+                        };
+                        cursorRequest.onerror = function() {
+                            try { db.close(); } catch (e) { /* 忽略 */ }
+                            finish({ bytes: bytes, count: count });
+                        };
+                        tx.oncomplete = function() {
+                            try { db.close(); } catch (e) { /* 忽略 */ }
+                            finish({ bytes: bytes, count: count });
+                        };
+                        tx.onerror = function() {
+                            try { db.close(); } catch (e) { /* 忽略 */ }
+                            finish({ bytes: bytes, count: count });
+                        };
+                    } catch (e) {
+                        try { db.close(); } catch (err) { /* 忽略 */ }
+                        finish(null);
+                    }
+                };
+            });
+            return withAboutTimeout(task, 8000, { bytes: 0, count: 0 });
+        }
+
+        // 扫描 Cache Storage（最多取样 200 条，避免大缓存阻塞界面）
+        function measureAboutCacheStorage() {
+            if (!window.caches || !caches.keys) return Promise.resolve({ bytes: 0, count: 0 });
+            var task = caches.keys().then(function(names) {
+                return Promise.all(names.map(function(name) {
+                    return caches.open(name).then(function(cache) {
+                        return cache.keys().then(function(requestList) {
+                            var bytes = 0;
+                            var sampled = requestList.slice(0, 200);
+                            return Promise.all(sampled.map(function(req) {
+                                return cache.match(req).then(function(res) {
+                                    return res ? res.blob() : null;
+                                }).then(function(blob) {
+                                    if (blob) bytes += blob.size;
+                                }).catch(function() { /* 忽略单条失败 */ });
+                            })).then(function() {
+                                return { bytes: bytes, count: requestList.length };
+                            });
+                        });
+                    }).catch(function() { return { bytes: 0, count: 0 }; });
+                }));
+            }).then(function(results) {
+                return results.reduce(function(acc, cur) {
+                    return { bytes: acc.bytes + cur.bytes, count: acc.count + cur.count };
+                }, { bytes: 0, count: 0 });
+            });
+            return withAboutTimeout(task, 10000, { bytes: 0, count: 0 });
+        }
+
+        function collectAboutStorage() {
+            var local = { bytes: 0, count: 0 };
+            var session = { bytes: 0, count: 0 };
+            try { local = measureAboutWebStorage(window.localStorage); } catch (e) { /* 忽略 */ }
+            try { session = measureAboutWebStorage(window.sessionStorage); } catch (e) { /* 忽略 */ }
+            var backgroundTask = measureAboutIndexedDB('backgroundStorage', 'backgrounds', function(record) {
+                return aboutBytesOfString(record && record.image);
+            });
+            var audioTask = measureAboutIndexedDB('soundtrackAudioStorage', 'audios', function(record) {
+                if (!record) return 0;
+                if (record.blob && typeof record.blob.size === 'number') return record.blob.size;
+                return aboutBytesOfString(JSON.stringify(record));
+            });
+            var cacheTask = measureAboutCacheStorage();
+            var fontTask = measureAboutIndexedDB('launcherFontStorage', 'fonts', function(record) {
+                if (!record) return 0;
+                if (record.blob && typeof record.blob.size === 'number') return record.blob.size;
+                return aboutBytesOfString(JSON.stringify(record));
+            });
+            var estimateTask;
+            try {
+                estimateTask = (navigator.storage && navigator.storage.estimate)
+                    ? withAboutTimeout(navigator.storage.estimate(), 8000, {})
+                    : Promise.resolve({});
+            } catch (e) {
+                estimateTask = Promise.resolve({});
             }
+
+            return Promise.all([backgroundTask, audioTask, cacheTask, fontTask, estimateTask]).then(function(res) {
+                var background = res[0];
+                var audio = res[1];
+                var cache = res[2];
+                var font = res[3];
+                var estimate = res[4] || {};
+                var measured = local.bytes + session.bytes + background.bytes + audio.bytes + cache.bytes + font.bytes;
+                var usage = Number(estimate.usage) || 0;
+                var quota = Number(estimate.quota) || 0;
+                var total = Math.max(measured, usage);
+                var other = Math.max(0, total - measured);
+
+                var items = [
+                    { key: 'local', name: '本地存储', icon: 'fas fa-database', color: '#d45d79', bytes: local.bytes, desc: local.count + ' 项设置与业务数据' },
+                    { key: 'session', name: '会话存储', icon: 'fas fa-bolt', color: '#e78d9b', bytes: session.bytes, desc: session.count + ' 项临时会话数据' },
+                    { key: 'background', name: '背景图库', icon: 'fas fa-image', color: '#eda55f', bytes: background.bytes, desc: background.count + ' 张自定义背景' },
+                    { key: 'audio', name: '音乐资源', icon: 'fas fa-music', color: '#6f8ee6', bytes: audio.bytes, desc: audio.count + ' 首导入音乐' },
+                    { key: 'font', name: '自定义字体', icon: 'fas fa-font', color: '#3fbf8f', bytes: font.bytes, desc: font.count + ' 款已导入字体' },
+                    { key: 'cache', name: '浏览器缓存', icon: 'fas fa-layer-group', color: '#8b74f2', bytes: cache.bytes, desc: cache.count + ' 个缓存条目' },
+                    { key: 'other', name: '其他数据', icon: 'fas fa-server', color: '#a6a6ad', bytes: other, desc: '浏览器统一管理的数据' }
+                ].filter(function(item) { return item.bytes > 0; });
+
+                items.sort(function(a, b) { return b.bytes - a.bytes; });
+                return { total: total, quota: quota, items: items };
+            });
+        }
+
+        function buildAboutStorageSkeleton() {
+            return '<div class="about-storage">'
+                + '<div class="abs-hero abs-skeleton">'
+                +   '<span class="abs-skeleton-ring"></span>'
+                +   '<span class="abs-skeleton-line" style="width: 42%"></span>'
+                +   '<span class="abs-skeleton-line" style="width: 26%"></span>'
+                + '</div>'
+                + '<div class="abs-list abs-skeleton-list">'
+                +   '<span class="abs-skeleton-row"></span>'
+                +   '<span class="abs-skeleton-row"></span>'
+                +   '<span class="abs-skeleton-row"></span>'
+                + '</div>'
+                + '</div>';
+        }
+
+        function aboutSharePercent(bytes, total) {
+            if (!total || total <= 0) return 0;
+            return Math.min(100, bytes / total * 100);
+        }
+
+        function aboutPercentLabel(percent) {
+            if (percent <= 0) return '0%';
+            if (percent >= 99.95) return '100%';
+            if (percent >= 10) return Math.round(percent) + '%';
+            if (percent >= 1) return percent.toFixed(1) + '%';
+            return '&lt;1%';
+        }
+
+        // 环形占比图：每个分类对应一段圆弧
+        function buildAboutStorageRing(items, total) {
+            var html = '<svg class="abs-ring" viewBox="0 0 160 160" aria-hidden="true">'
+                + '<circle class="abs-ring-track" cx="80" cy="80" r="' + ABOUT_RING_RADIUS + '"></circle>';
+            var cursor = 0;
+            items.forEach(function(item) {
+                var share = total > 0 ? item.bytes / total : 0;
+                var length = share * ABOUT_RING_CIRCUMFERENCE;
+                var gap = items.length > 1 ? Math.min(7, length * 0.2) : 0;
+                var visible = Math.max(0, length - gap);
+                if (visible > 0.2) {
+                    html += '<circle class="abs-ring-seg" cx="80" cy="80" r="' + ABOUT_RING_RADIUS + '"'
+                        + ' stroke="' + item.color + '"'
+                        + ' stroke-dasharray="0 ' + ABOUT_RING_CIRCUMFERENCE.toFixed(2) + '"'
+                        + ' stroke-dashoffset="' + (-cursor).toFixed(2) + '"'
+                        + ' data-len="' + visible.toFixed(2) + '"></circle>';
+                }
+                cursor += length;
+            });
+            html += '</svg>';
+            return html;
+        }
+
+        function buildAboutStorageHtml(data) {
+            var total = data.total || 0;
+            var items = data.items || [];
+            var usedText = formatAboutBytes(total);
+            var quota = data.quota || 0;
+            var quotaPercent = quota > 0 ? aboutSharePercent(total, quota) : 0;
+
+            if (!items.length) {
+                return '<div class="about-storage"><div class="abs-empty-state">'
+                    + '<span class="abs-empty-icon"><i class="fas fa-hard-drive"></i></span>'
+                    + '<p class="abs-empty-title">暂无存储占用</p>'
+                    + '<p class="abs-empty-desc">启动器尚未在本设备写入任何本地数据</p>'
+                    + '</div></div>';
+            }
+
+            var cleanableItems = items.filter(function(item) { return ABOUT_CLEANABLE_KEYS[item.key]; });
+            var cleanableBytes = cleanableItems.reduce(function(sum, item) { return sum + item.bytes; }, 0);
+
+            var html = '<div class="about-storage">'
+                + '<div class="abs-hero">'
+                +   '<div class="abs-ring-wrap">'
+                +     buildAboutStorageRing(items, total)
+                +     '<span class="abs-ring-glow"></span>'
+                +     '<div class="abs-ring-center">'
+                +       '<span class="abs-ring-value" id="absUsedValue">0 B</span>'
+                +       '<span class="abs-ring-label">启动器共占用</span>'
+                +     '</div>'
+                +   '</div>'
+                +   '<div class="abs-hero-caption">' + (quota > 0
+                        ? '浏览器配额 ' + formatAboutBytes(quota) + ' · 已占用 ' + aboutPercentLabel(quotaPercent)
+                        : '浏览器未提供配额数据')
+                +   '</div>'
+                +   '<div class="abs-legend">'
+                +     items.map(function(item) {
+                        return '<span class="abs-chip"><i style="background:' + item.color + '"></i>' + item.name + '</span>';
+                    }).join('')
+                +   '</div>'
+                + '</div>'
+                + '<div class="abs-bar-card">'
+                +   '<div class="abs-bar-head"><span>占用分布</span><strong>' + usedText + '</strong></div>'
+                +   '<div class="abs-bar">'
+                +     items.map(function(item) {
+                        return '<span class="abs-bar-seg" data-width="' + aboutSharePercent(item.bytes, total).toFixed(2) + '" style="background:' + item.color + '"></span>';
+                    }).join('')
+                +   '</div>'
+                + '</div>'
+                + '<button type="button" class="abs-clean-entry" onclick="openStorageCleanupModal()">'
+                +   '<span class="abs-clean-entry-icon"><i class="fas fa-broom"></i></span>'
+                +   '<span class="abs-clean-entry-text">'
+                +     '<strong>清理存储</strong>'
+                +     '<span>' + (cleanableItems.length
+                        ? '可清理 ' + cleanableItems.length + ' 项 · 最多释放 ' + formatAboutBytes(cleanableBytes)
+                        : '暂无可清理的占用项') + '</span>'
+                +   '</span>'
+                +   '<i class="fas fa-chevron-right abs-clean-entry-arrow"></i>'
+                + '</button>'
+                + '<div class="abs-list">'
+                +   items.map(function(item, index) {
+                        var percent = aboutSharePercent(item.bytes, total);
+                        return '<div class="abs-row" style="--abs-color:' + item.color + '; animation-delay:' + (index * 0.055).toFixed(3) + 's">'
+                            + '<span class="abs-row-icon"><i class="' + item.icon + '"></i></span>'
+                            + '<div class="abs-row-main">'
+                            +   '<div class="abs-row-top"><span class="abs-row-name">' + item.name + '</span><span class="abs-row-size">' + formatAboutBytes(item.bytes) + '</span></div>'
+                            +   '<div class="abs-row-desc">' + item.desc + '</div>'
+                            +   '<div class="abs-row-bar"><span class="abs-row-bar-fill" data-width="' + percent.toFixed(2) + '"></span></div>'
+                            + '</div>'
+                            + '<span class="abs-row-pct">' + aboutPercentLabel(percent) + '</span>'
+                            + '</div>';
+                    }).join('')
+                + '</div>'
+                + '<div class="abs-note"><i class="fas fa-info-circle"></i><span>统计包含本地存储、会话存储、背景图库、音乐资源、自定义字体与浏览器缓存，部分系统级数据由浏览器统一管理。</span></div>'
+                + '</div>';
+            return html;
+        }
+
+        function animateAboutStorage(total, page) {
+            if (!page) return;
+            var valueEl = page.querySelector('#absUsedValue');
+            var segments = page.querySelectorAll('.abs-ring-seg');
+            var bars = page.querySelectorAll('[data-width]');
+            var startTime = null;
+
+            var frame = function(now) {
+                if (!startTime) startTime = now;
+                var progress = Math.min(1, (now - startTime) / 900);
+                var eased = 1 - Math.pow(1 - progress, 3);
+
+                Array.prototype.forEach.call(segments, function(seg) {
+                    var length = parseFloat(seg.getAttribute('data-len')) || 0;
+                    seg.style.strokeDasharray = (length * eased).toFixed(2) + ' ' + ABOUT_RING_CIRCUMFERENCE.toFixed(2);
+                });
+                if (valueEl && valueEl.isConnected) {
+                    valueEl.textContent = progress >= 1 ? formatAboutBytes(total) : formatAboutBytes(total * eased);
+                }
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                }
+            };
+
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    Array.prototype.forEach.call(bars, function(bar) {
+                        var target = parseFloat(bar.getAttribute('data-width')) || 0;
+                        bar.style.width = target.toFixed(2) + '%';
+                    });
+                    requestAnimationFrame(frame);
+                });
+            });
         }
 
         function formatAboutBytes(bytes) {
@@ -32040,6 +32532,302 @@
                 i++;
             }
             return value.toFixed(value >= 100 ? 0 : 1) + ' ' + units[i];
+        }
+
+        // ==================== 清理存储（关于启动器 · 存储空间） ====================
+        function openStorageCleanupModal() {
+            var oldModal = document.getElementById('storageCleanupModal');
+            if (oldModal && oldModal.parentNode) oldModal.parentNode.removeChild(oldModal);
+
+            var modal = document.createElement('div');
+            modal.id = 'storageCleanupModal';
+            modal.className = 'custom-alert';
+            modal.style.display = 'flex';
+            modal.innerHTML =
+                '<div class="feedback-unified-card abs-clean-card">'
+                + '<div class="feedback-unified-header">'
+                +   '<h3><i class="fas fa-broom"></i>清理存储</h3>'
+                +   '<button type="button" class="feedback-unified-close" id="storageCleanupClose" title="关闭" aria-label="关闭"><i class="fas fa-times"></i></button>'
+                + '</div>'
+                + '<p class="feedback-unified-subtitle">勾选需要清除的占用项后点击「清理选中项」。会话存储、本地存储与启动器缓存包含账号数据，已默认保护，无法清除。</p>'
+                + '<div class="abs-clean-list" id="storageCleanupList">'
+                +   '<div class="abs-clean-empty"><i class="fas fa-spinner fa-spin"></i><span>正在读取存储占用…</span></div>'
+                + '</div>'
+                + '<div class="abs-clean-foot">'
+                +   '<span class="abs-clean-summary" id="storageCleanupSummary">已选择 0 项</span>'
+                +   '<span class="abs-clean-release" id="storageCleanupRelease">可释放 0 B</span>'
+                + '</div>'
+                + '<div class="abs-clean-actions">'
+                +   '<button type="button" class="feedback-leave-btn feedback-leave-cancel" id="storageCleanupCancel">取消</button>'
+                +   '<button type="button" class="feedback-leave-btn abs-clean-confirm" id="storageCleanupConfirm" disabled><i class="fas fa-trash-can"></i>清理选中项</button>'
+                + '</div>'
+                + '<p class="feedback-unified-tip"><i class="fas fa-shield-halved"></i>清理操作不可恢复，账号与设置数据不会被清除。</p>'
+                + '</div>';
+            document.body.appendChild(modal);
+
+            setTimeout(function() {
+                modal.classList.add('show');
+            }, 10);
+
+            var listEl = document.getElementById('storageCleanupList');
+            var summaryEl = document.getElementById('storageCleanupSummary');
+            var releaseEl = document.getElementById('storageCleanupRelease');
+            var confirmBtn = document.getElementById('storageCleanupConfirm');
+            var selected = {};
+            var latestItems = [];
+            var busy = false;
+
+            function closeModal() {
+                if (busy) return;
+                modal.classList.remove('show');
+                setTimeout(function() {
+                    if (modal.parentNode) modal.parentNode.removeChild(modal);
+                }, 300);
+            }
+
+            function updateSummary() {
+                var keys = Object.keys(selected);
+                var bytes = 0;
+                keys.forEach(function(key) {
+                    for (var i = 0; i < latestItems.length; i++) {
+                        if (latestItems[i].key === key) {
+                            bytes += latestItems[i].bytes;
+                            break;
+                        }
+                    }
+                });
+                summaryEl.textContent = '已选择 ' + keys.length + ' 项';
+                releaseEl.textContent = '可释放 ' + formatAboutBytes(bytes);
+                confirmBtn.disabled = busy || !keys.length;
+            }
+
+            function buildProtectedRow(item) {
+                return '<div class="abs-clean-item is-protected" style="--clean-color:' + item.color + '">'
+                    + '<span class="abs-clean-check is-lock"><i class="fas fa-lock"></i></span>'
+                    + '<span class="abs-clean-icon"><i class="' + item.icon + '"></i></span>'
+                    + '<span class="abs-clean-text">'
+                    +   '<span class="abs-clean-name">' + item.name + '</span>'
+                    +   '<span class="abs-clean-desc">' + (ABOUT_PROTECTED_HINTS[item.key] || '受保护，无法清除') + '</span>'
+                    + '</span>'
+                    + '<span class="abs-clean-size">' + formatAboutBytes(item.bytes) + '</span>'
+                    + '</div>';
+            }
+
+            function renderList(items) {
+                latestItems = items || [];
+                selected = {};
+                if (!latestItems.length) {
+                    listEl.innerHTML = '<div class="abs-clean-empty"><i class="fas fa-hard-drive"></i><span>暂无存储占用，无需清理</span></div>';
+                    updateSummary();
+                    return;
+                }
+
+                var cleanableItems = latestItems.filter(function(item) {
+                    return ABOUT_CLEANABLE_KEYS[item.key];
+                });
+                // 本地存储、会话存储与其他数据默认折叠，展开后才显示
+                var foldedKeys = { local: true, session: true, other: true };
+                var foldedItems = latestItems.filter(function(item) {
+                    return foldedKeys[item.key];
+                });
+                var visibleProtectedItems = latestItems.filter(function(item) {
+                    return !ABOUT_CLEANABLE_KEYS[item.key] && !foldedKeys[item.key];
+                });
+
+                var cleanableHtml;
+                if (cleanableItems.length) {
+                    cleanableHtml = cleanableItems.map(function(item) {
+                        return '<label class="abs-clean-item" data-clean-key="' + item.key + '" style="--clean-color:' + item.color + '">'
+                            + '<input type="checkbox" data-clean-key="' + item.key + '">'
+                            + '<span class="abs-clean-check"><i class="fas fa-check"></i></span>'
+                            + '<span class="abs-clean-icon"><i class="' + item.icon + '"></i></span>'
+                            + '<span class="abs-clean-text">'
+                            +   '<span class="abs-clean-name">' + item.name + '</span>'
+                            +   '<span class="abs-clean-desc">' + item.desc + '</span>'
+                            + '</span>'
+                            + '<span class="abs-clean-size">' + formatAboutBytes(item.bytes) + '</span>'
+                            + '</label>';
+                    }).join('');
+                } else {
+                    cleanableHtml = '<div class="abs-clean-empty compact"><i class="fas fa-broom"></i><span>暂无可清理的占用项</span></div>';
+                }
+
+                var foldHtml = '';
+                if (foldedItems.length) {
+                    var foldedBytes = 0;
+                    foldedItems.forEach(function(item) { foldedBytes += item.bytes; });
+                    foldHtml = '<div class="abs-clean-fold" id="storageCleanupProtectedFold">'
+                        + '<button type="button" class="abs-clean-fold-head" id="storageCleanupProtectedToggle" aria-expanded="false">'
+                        +   '<span class="abs-clean-check is-lock"><i class="fas fa-lock"></i></span>'
+                        +   '<span class="abs-clean-text">'
+                        +     '<span class="abs-clean-name">受保护的数据</span>'
+                        +     '<span class="abs-clean-desc">本地存储、会话存储与其他数据不可清除</span>'
+                        +   '</span>'
+                        +   '<span class="abs-clean-fold-meta">' + foldedItems.length + ' 项 · ' + formatAboutBytes(foldedBytes) + '</span>'
+                        +   '<i class="fas fa-chevron-down abs-clean-fold-arrow"></i>'
+                        + '</button>'
+                        + '<div class="abs-clean-fold-body" id="storageCleanupProtectedBody" hidden>' + foldedItems.map(buildProtectedRow).join('') + '</div>'
+                        + '</div>';
+                }
+
+                listEl.innerHTML = cleanableHtml + foldHtml + visibleProtectedItems.map(buildProtectedRow).join('');
+
+                var boxes = listEl.querySelectorAll('input[type="checkbox"][data-clean-key]');
+                Array.prototype.forEach.call(boxes, function(box) {
+                    box.addEventListener('change', function() {
+                        var key = this.getAttribute('data-clean-key');
+                        var row = this.closest ? this.closest('.abs-clean-item') : null;
+                        if (this.checked) {
+                            selected[key] = true;
+                            if (row) row.classList.add('is-checked');
+                        } else {
+                            delete selected[key];
+                            if (row) row.classList.remove('is-checked');
+                        }
+                        updateSummary();
+                    });
+                });
+
+                var foldToggle = document.getElementById('storageCleanupProtectedToggle');
+                var foldBody = document.getElementById('storageCleanupProtectedBody');
+                var foldWrap = document.getElementById('storageCleanupProtectedFold');
+                if (foldToggle && foldBody) {
+                    foldToggle.addEventListener('click', function() {
+                        var willExpand = foldBody.hasAttribute('hidden');
+                        if (willExpand) {
+                            foldBody.removeAttribute('hidden');
+                            foldToggle.setAttribute('aria-expanded', 'true');
+                            if (foldWrap) foldWrap.classList.add('is-open');
+                        } else {
+                            foldBody.setAttribute('hidden', 'hidden');
+                            foldToggle.setAttribute('aria-expanded', 'false');
+                            if (foldWrap) foldWrap.classList.remove('is-open');
+                        }
+                    });
+                }
+
+                updateSummary();
+            }
+
+            function runCleanup() {
+                var keys = Object.keys(selected);
+                if (!keys.length || busy) return;
+                busy = true;
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>正在清理…';
+
+                var names = [];
+                var tasks = keys.map(function(key) {
+                    names.push(ABOUT_CLEAN_NAMES[key] || key);
+                    return clearAboutStorageItem(key);
+                });
+
+                Promise.all(tasks).then(function() {
+                    busy = false;
+                    closeModal();
+                    renderAboutStorageView();
+                    if (typeof window.showToastSuccess === 'function') {
+                        window.showToastSuccess('已清理：' + names.join('、'), '存储空间');
+                    }
+                }).catch(function() {
+                    busy = false;
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-trash-can"></i>清理选中项';
+                    updateSummary();
+                    if (typeof window.showToastError === 'function') {
+                        window.showToastError('清理失败，请稍后重试', '存储空间');
+                    }
+                });
+            }
+
+            document.getElementById('storageCleanupClose').addEventListener('click', closeModal);
+            document.getElementById('storageCleanupCancel').addEventListener('click', closeModal);
+            confirmBtn.addEventListener('click', runCleanup);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeModal();
+            });
+
+            collectAboutStorage().then(function(data) {
+                if (!modal.parentNode) return;
+                renderList(data.items || []);
+            }).catch(function() {
+                if (!modal.parentNode) return;
+                listEl.innerHTML = '<div class="abs-clean-empty"><i class="fas fa-triangle-exclamation"></i><span>存储占用读取失败，请稍后重试</span></div>';
+            });
+        }
+
+        // 清空指定 IndexedDB 对象仓库（数据库或仓库不存在时不做任何创建）
+        function clearAboutIndexedDBStore(dbName, storeName) {
+            if (!window.indexedDB) return Promise.resolve(false);
+            var task = new Promise(function(resolve) {
+                var request;
+                try {
+                    request = indexedDB.open(dbName);
+                } catch (e) {
+                    return resolve(false);
+                }
+                request.onupgradeneeded = function(event) {
+                    try { event.target.transaction.abort(); } catch (e) { /* 忽略 */ }
+                };
+                request.onerror = function() { resolve(false); };
+                request.onblocked = function() { resolve(false); };
+                request.onsuccess = function(event) {
+                    var db = event.target.result;
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        try { db.close(); } catch (e) { /* 忽略 */ }
+                        return resolve(false);
+                    }
+                    try {
+                        var tx = db.transaction([storeName], 'readwrite');
+                        tx.objectStore(storeName).clear();
+                        tx.oncomplete = function() {
+                            try { db.close(); } catch (e) { /* 忽略 */ }
+                            resolve(true);
+                        };
+                        tx.onerror = function() {
+                            try { db.close(); } catch (e) { /* 忽略 */ }
+                            resolve(false);
+                        };
+                        tx.onabort = function() {
+                            try { db.close(); } catch (e) { /* 忽略 */ }
+                            resolve(false);
+                        };
+                    } catch (e) {
+                        try { db.close(); } catch (err) { /* 忽略 */ }
+                        resolve(false);
+                    }
+                };
+            });
+            return withAboutTimeout(task, 8000, false);
+        }
+
+        // 清除背景图库中的自定义背景图片
+        function clearAboutBackgroundStorage() {
+            return clearAboutIndexedDBStore('backgroundStorage', 'backgrounds');
+        }
+
+        // 清除导入的音乐音频与自定义播放列表元数据
+        function clearAboutAudioStorage() {
+            if (typeof window.clearSoundtrackImportedData === 'function') {
+                return withAboutTimeout(window.clearSoundtrackImportedData(), 10000, false);
+            }
+            try { localStorage.removeItem('soundtrack_playlists'); } catch (e) { /* 忽略 */ }
+            return clearAboutIndexedDBStore('soundtrackAudioStorage', 'audios');
+        }
+
+        // 清除已导入的自定义字体并恢复默认字体
+        function clearAboutFontStorage() {
+            if (window.CustomFont && typeof window.CustomFont.clear === 'function') {
+                return withAboutTimeout(window.CustomFont.clear(), 8000, false);
+            }
+            return clearAboutIndexedDBStore('launcherFontStorage', 'fonts');
+        }
+
+        function clearAboutStorageItem(key) {
+            if (key === 'background') return clearAboutBackgroundStorage();
+            if (key === 'audio') return clearAboutAudioStorage();
+            if (key === 'font') return clearAboutFontStorage();
+            return Promise.resolve(false);
         }
 
         // 复制账号/设备标识符
@@ -32148,7 +32936,7 @@
             document.getElementById('aboutCategoryBody').innerHTML = tpl;
             document.getElementById('aboutCategoryTitle').textContent = meta.name;
             document.getElementById('aboutCategoryIcon').className = meta.icon;
-            if (id === 'runtime') updateAboutStorageUsage();
+            if (id === 'storage') renderAboutStorageView();
             if (id === 'launcher') bindAboutDevTrigger();
             if (id === 'devtools') bindAboutDevTools();
         }
@@ -47861,5 +48649,6 @@ ID：${user ? user.userId : '---'}
         })();
     </script>
 
-    </body>
+        <script src="./js/customFont.js?v=1.1" defer></script>
+</body>
 </html>

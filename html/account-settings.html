@@ -566,20 +566,6 @@
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="two-factor-item">
-                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
-                                    <i class="fas fa-gauge-high" style="color: #0ea5e9; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
-                                    <div>
-                                        <h4 style="margin: 0;">网络测速</h4>
-                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"网络测速"按钮，可测试 Ping 延迟、下载与上传速度</p>
-                                    </div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="enableNetworkSpeedTest" onchange="toggleNetworkSpeedTestFeature()">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-
                             <div class="experimental-empty-state" id="experimentalEmptyState" style="display: none;">
                                 <div class="empty-icon">
                                     <i class="fas fa-inbox"></i>
@@ -1927,6 +1913,19 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
+                            <div class="two-factor-item">
+                                <div class="two-factor-info" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="fas fa-gauge-high" style="color: #0ea5e9; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <div>
+                                        <h4 style="margin: 0;">网络测速</h4>
+                                        <p style="margin: 5px 0 0; font-size: 13px; color: #666;">启用后，在游戏中心页面的"更多功能"中显示"网络测速"按钮，可测试 Ping 延迟、下载与上传速度</p>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableNetworkSpeedTest" onchange="toggleNetworkSpeedTestFeature()">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     
@@ -1998,21 +1997,6 @@
                                 <button class="two-factor-btn" id="importDataBtn">
                                     <i class="fas fa-upload"></i>
                                     导入
-                                </button>
-                            </div>
-                            <div class="two-factor-item">
-                                <div class="two-factor-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
-                                        <i class="fas fa-trash-alt" style="color: #3498db; font-size: 18px;"></i>
-                                        <div>
-                                            <h4 style="margin: 0;">清除缓存</h4>
-                                        </div>
-                                    </div>
-                                    <p style="margin: 0; font-size: 13px; color: #666;">清除本地缓存数据</p>
-                                </div>
-                                <button class="two-factor-btn" id="clearCacheBtn">
-                                    <i class="fas fa-trash-alt"></i>
-                                    清除
                                 </button>
                             </div>
                         </div>
@@ -2886,69 +2870,6 @@
         </div>
     </div>
 
-    <div id="clearCacheSelectModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 650px;">
-            <div class="alert-icon">
-                <i class="fas fa-exclamation-circle"></i>
-            </div>
-            <h3>清除缓存</h3>
-            <p>您想清除哪些数据内容？</p>
-            <div class="cache-options" style="max-height: none; overflow-y: visible;">
-                <div class="cache-category">
-                    <h4>常规清理</h4>
-                    <div class="cache-option-row">
-                        <label class="cache-option">
-                            <input type="checkbox" name="cacheOption" value="avatars">
-                            <span>清除账户自定义头像数据</span>
-                        </label>
-                        <label class="cache-option">
-                            <input type="checkbox" name="cacheOption" value="backgrounds">
-                            <span>清除账户自定义背景数据</span>
-                        </label>
-                    </div>
-                    <div class="cache-option-row">
-                        <label class="cache-option">
-                            <input type="checkbox" name="cacheOption" value="themes">
-                            <span>清除账户自定义主题数据</span>
-                        </label>
-                        <label class="cache-option">
-                            <input type="checkbox" name="cacheOption" value="loginHistory">
-                            <span>清除设备管理登录历史数据</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="cache-category">
-                    <h4>全部清理</h4>
-                    <div class="cache-option-row">
-                        <label class="cache-option">
-                            <input type="checkbox" name="cacheOption" value="all">
-                            <span class="danger-text">清除全部数据</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="clearCacheSelectCancel">取消</button>
-                <button class="alert-confirm" id="clearCacheSelectConfirm" style="background-color: #e53e3e;">确定</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="clearCacheConfirmModal" class="custom-alert">
-        <div class="alert-content" style="max-width: 550px;">
-            <div class="alert-icon">
-                <i class="fas fa-exclamation-circle"></i>
-            </div>
-            <h3>确认清除</h3>
-            <p>确定要清除以下数据吗？此操作不可撤销。</p>
-            <div id="selectedCacheOptionsList" class="selected-options-list"></div>
-            <div class="modal-buttons">
-                <button class="alert-confirm" id="clearCacheCancel">取消</button>
-                <button class="alert-confirm" id="clearCacheConfirm" style="background-color: #e53e3e;">确定</button>
-            </div>
-        </div>
-    </div>
-
     <div id="exportDataVerifyModal" class="custom-alert">
         <div class="alert-content" style="max-width: 450px;">
             <div class="alert-icon">
@@ -3174,9 +3095,9 @@
             '自定义背景': ['背景', '壁纸', '自定义背景', '背景图片', '预设背景', '上传背景', '自适应', '不透明度', '背景模糊', '应用背景', '墙纸'],
             '全局主题颜色': ['主题颜色', '主题色', '全局颜色', '主色调', '配色', '主题预览'],
             '语言设置': ['语言', '多语言', '中文', '英文', '英语', 'english', '日语', '韩语', 'language', '界面语言'],
-            '增强功能': ['增强功能', '隐藏ui', '页面时钟', '时钟', '日历', '关于启动器', '关于', '引导', '新手引导', 'ui比例', '缩放', '便签', '备忘录', '兑换码', '激活码', '礼包码', '天气', '组件'],
+            '增强功能': ['增强功能', '隐藏ui', '页面时钟', '时钟', '日历', '关于启动器', '关于', '引导', '新手引导', 'ui比例', '缩放', '便签', '备忘录', '兑换码', '激活码', '礼包码', '天气', '网络测速', '测速', 'ping', '下载速度', '上传速度', '组件'],
             '其他设置': ['组件信息', '显示组件信息', '其他设置', '组件版本'],
-            '数据管理': ['数据管理', '导出', '导入', '备份', '恢复', '还原', '清除缓存', '清理缓存', '缓存', '数据备份', '重置设置'],
+            '数据管理': ['数据管理', '导出', '导入', '备份', '恢复', '还原', '数据备份', '重置设置'],
             '危险区域': ['注销', '注销账号', '删除账号', '销户', '销毁账号', '危险操作', '重置'],
             '实验性功能': ['实验', '实验室', 'beta', '测试功能', '新功能', '尝鲜'],
             '实验性功能提示': ['实验', '注意事项', '实验室警告', '风险'],
@@ -3571,5 +3492,6 @@
         });
     })();
     </script>
+    <script src="../js/customFont.js?v=1.1" defer></script>
 </body>
 </html>

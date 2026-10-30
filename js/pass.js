@@ -25,10 +25,11 @@ var PASS_CONFIG = {
     bundlePrice: 12900,          // 通行证组合包原价（本体全部内容 + 立即豪礼）
     bundleDiscountRate: 0.8,     // 组合包优惠：未购买本体时直接购买享约 8 折优惠
     bundleDiscountPrice: 10368,  // 组合包优惠价（未购买本体时的实付价格）
-    exFreePrecoin: 50,           // EX 溢出：免费每级奖励 PRE Coin
-    exPremiumPrecoin: 100,       // EX 溢出：付费每级额外奖励 PRE Coin（+免费=150）
+    exFreeItem: 'rand_box_2',    // EX 溢出：免费每级奖励「随机物品箱 · 中级」×1
+    exPremiumItem: 'rand_box_3', // EX 溢出：付费每级额外奖励「随机物品箱 · 高级」×1
     startTime: '2026-09-30T20:00:00Z',   // 赛季起始时间 (UTC) = 2026-10-01 04:00 (UTC+8)
-    endTime: '2026-12-30T20:00:00Z'      // 赛季结束时间 (UTC) = 2026-12-31 04:00 (UTC+8)
+    endTime: '2026-12-30T20:00:00Z',     // 赛季结束时间 (UTC) = 2026-12-31 04:00 (UTC+8)
+    seasonLabel: '第一赛季'              // 赛季限定物品标记：等级奖励物品名称后缀与过期清空依据
 };
 
 // ==================== 奖励表生成 ====================
@@ -714,6 +715,23 @@ function _passCollectItem(bucket, itemId, qty) {
     bucket.push({ id: itemId, name: w.name, icon: w.icon, color: w.color, qty: qty });
 }
 
+// 发放赛季限定物品（通行证等级奖励专用，静默入账）：
+// 物品以「第一赛季」标记写入仓库限时条目，到期时间为赛季结束（PASS_CONFIG.endTime），
+// 赛季结束后自动过期清空；PRE Coin 等统一货币不走此接口，不受赛季限制
+function _passGrantSeasonItem(itemId, qty, source) {
+    var label = PASS_CONFIG.seasonLabel || '第一赛季';
+    if (typeof warehouseAddSeasonItem === 'function') {
+        warehouseAddSeasonItem(itemId, qty, source, label, PASS_CONFIG.endTime);
+    } else {
+        warehouseAddItem(itemId, qty, source, true);
+    }
+}
+
+// 通行证内物品显示名：赛季限定奖励名称后追加「第一赛季」后缀（如 经验值补给卡 Ⅰ「第一赛季」）
+function _passSeasonItemName(name) {
+    return name + '「' + (PASS_CONFIG.seasonLabel || '第一赛季') + '」';
+}
+
 // 领取等级奖励
 // 返回值：null = 失败（已弹错误提示）；对象 = 成功并附带本次奖励明细 { levels, items, precoin }
 function passClaimLevelReward(level) {
@@ -737,7 +755,7 @@ function passClaimLevelReward(level) {
     // 免费奖励（仅 1 件物品，不含 PRE 硬币）
     if (!data.levelRewardClaimed[level]) {
         data.levelRewardClaimed[level] = true;
-        warehouseAddItem(reward.freeItem.id, reward.freeItem.qty, '通行证 Lv.' + level + ' 免费奖励', true);
+        _passGrantSeasonItem(reward.freeItem.id, reward.freeItem.qty, '通行证 Lv.' + level + ' 免费奖励');
         _passCollectItem(result.items, reward.freeItem.id, reward.freeItem.qty);
         claimedAny = true;
     }
@@ -746,7 +764,7 @@ function passClaimLevelReward(level) {
     if (data.isPremium && !data.premiumRewardClaimed[level]) {
         data.premiumRewardClaimed[level] = true;
         reward.premiumItems.forEach(function(it) {
-            warehouseAddItem(it.id, it.qty, '通行证 Lv.' + level + ' 付费奖励', true);
+            _passGrantSeasonItem(it.id, it.qty, '通行证 Lv.' + level + ' 付费奖励');
             _passCollectItem(result.items, it.id, it.qty);
         });
         if (reward.premiumPrecoin) {
@@ -783,7 +801,7 @@ function passClaimAllLevelRewards() {
         // 免费奖励（仅 1 件物品，不含 PRE 硬币）
         if (!data.levelRewardClaimed[lv]) {
             data.levelRewardClaimed[lv] = true;
-            warehouseAddItem(reward.freeItem.id, reward.freeItem.qty, '通行证 Lv.' + lv + ' 免费奖励', true);
+            _passGrantSeasonItem(reward.freeItem.id, reward.freeItem.qty, '通行证 Lv.' + lv + ' 免费奖励');
             _passCollectItem(result.items, reward.freeItem.id, reward.freeItem.qty);
             got = true;
         }
@@ -791,7 +809,7 @@ function passClaimAllLevelRewards() {
         if (data.isPremium && !data.premiumRewardClaimed[lv]) {
             data.premiumRewardClaimed[lv] = true;
             reward.premiumItems.forEach(function(it) {
-                warehouseAddItem(it.id, it.qty, '通行证 Lv.' + lv + ' 付费奖励', true);
+                _passGrantSeasonItem(it.id, it.qty, '通行证 Lv.' + lv + ' 付费奖励');
                 _passCollectItem(result.items, it.id, it.qty);
             });
             if (reward.premiumPrecoin) {
@@ -1790,7 +1808,8 @@ function passDevResetAllTasks() {
     return true;
 }
 
-// 一键领取全部 EX 溢出奖励（每 10 溢出经验为 1 级，每级免费 +50、付费额外 +100 PRE Coin）
+// 一键领取全部 EX 溢出奖励（每 10 溢出经验为 1 级）
+// 每级免费档发「随机物品箱 · 中级」×1，付费档额外发「随机物品箱 · 高级」×1，全部自动存入仓库
 function passClaimExReward() {
     if (_isPassSeasonLocked()) {
         if (typeof showToast === 'function') showToast({ type: 'error', title: '通行证', message: _getPassLockedMessage('领取奖励') });
@@ -1810,23 +1829,22 @@ function passClaimExReward() {
     }
     var fromLevel = PASS_CONFIG.levelCap + data.exFreeClaimed + 1;   // 本次领取的起始 EX 等级
     var toLevel = PASS_CONFIG.levelCap + earnedFreeEx;               // 本次领取的结束 EX 等级
-    // 按可领等级数一次性发放
+    // 按可领等级数一次性发放（静默入账，汇总至结算弹窗）
     data.exFreeClaimed += pending;
-    var freeCoins = PASS_CONFIG.exFreePrecoin * pending;
-    addPreCoin(freeCoins, '通行证 EX 溢出免费奖励', true);
-    var total = freeCoins;
+    var items = [];
+    _passGrantSeasonItem(PASS_CONFIG.exFreeItem, pending, '通行证 EX 溢出免费奖励');
+    _passCollectItem(items, PASS_CONFIG.exFreeItem, pending);
     if (data.isPremium) {
         data.exPremiumClaimed += pending;
-        var premCoins = PASS_CONFIG.exPremiumPrecoin * pending;
-        addPreCoin(premCoins, '通行证 EX 溢出付费奖励', true);
-        total += premCoins;
+        _passGrantSeasonItem(PASS_CONFIG.exPremiumItem, pending, '通行证 EX 溢出付费奖励');
+        _passCollectItem(items, PASS_CONFIG.exPremiumItem, pending);
     }
     savePassData(data);
     _showPassExClaimResult({
         levels: pending,
         fromLevel: fromLevel,
         toLevel: toLevel,
-        precoin: total,
+        items: items,
         isPremium: !!data.isPremium
     });
     return true;
@@ -1834,9 +1852,12 @@ function passClaimExReward() {
 
 // 一键领取 EX 溢出奖励成功后展示（奖励弹窗，不使用提示横条）
 function _showPassExClaimResult(r) {
+    var W = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS : {};
+    var freeName = W[PASS_CONFIG.exFreeItem] ? W[PASS_CONFIG.exFreeItem].name : '随机物品箱 · 中级';
+    var premName = W[PASS_CONFIG.exPremiumItem] ? W[PASS_CONFIG.exPremiumItem].name : '随机物品箱 · 高级';
     var note = r.isPremium
-        ? '免费档位 +' + PASS_CONFIG.exFreePrecoin + ' × ' + r.levels + ' 级，付费档位 +' + PASS_CONFIG.exPremiumPrecoin + ' × ' + r.levels + ' 级'
-        : '免费档位 +' + PASS_CONFIG.exFreePrecoin + ' × ' + r.levels + ' 级，解锁付费通行证可获取每级额外 PRE Coin';
+        ? '免费档位「' + freeName + '」× ' + r.levels + '、付费档位「' + premName + '」× ' + r.levels + '，均已自动存入仓库'
+        : '免费档位「' + freeName + '」× ' + r.levels + ' 已自动存入仓库，解锁付费通行证可每级额外获得「' + premName + '」';
     _showPassRewardModal({
         medalIcon: 'fa-infinity',
         medalColor: '#4ecdc4',
@@ -1844,8 +1865,7 @@ function _showPassExClaimResult(r) {
         subtitle: r.levels === 1
             ? '已领取 Lv.' + r.fromLevel + '（EX 溢出等级）的溢出奖励'
             : '已一键领取 Lv.' + r.fromLevel + ' ~ Lv.' + r.toLevel + ' 共 ' + r.levels + ' 级 EX 溢出奖励',
-        items: [],
-        precoin: r.precoin,
+        items: r.items,
         note: note
     });
 }
@@ -2207,10 +2227,6 @@ function _buildPassHTML() {
                         <div class="pass-exp-glow"></div>
                     </div>
                     <div class="pass-exp-text" id="passExpText">0 / 10</div>
-                    <div class="pass-ex-info" id="passExInfo" style="display:none;">
-                        <i class="fas fa-infinity"></i> EX 溢出：<span id="passExVal">0</span> 级（每 10 经验 +1 级，无上限）
-                        <button class="pass-btn pass-btn-mini" id="passBtnClaimEx"><i class="fas fa-gift"></i> 一键领取</button>
-                    </div>
                 </div>
             </div>
             <div class="pass-hero-right">
@@ -2895,11 +2911,6 @@ function _bindPassEvents() {
     var seasonProgressClose = document.getElementById('passSeasonProgressClose');
     if (seasonProgressClose) seasonProgressClose.addEventListener('click', _closePassSeasonProgressModal);
 
-    // EX 奖励
-    document.getElementById('passBtnClaimEx').addEventListener('click', function() {
-        if (passClaimExReward()) renderPassUI();
-    });
-
     // 全部领取（一键领取所有可领取的等级奖励）
     document.getElementById('passBtnClaimAll').addEventListener('click', function() {
         var result = passClaimAllLevelRewards();
@@ -3546,7 +3557,7 @@ function _buildPremiumItemsHTML() {
         var it = itemMap[id];
         html += '<div class="pass-premium-item">' +
             _passItemIconHtml(it.icon, it.color) +
-            '<span class="pass-premium-item-name">' + it.name + '</span>' +
+            '<span class="pass-premium-item-name">' + _passSeasonItemName(it.name) + '</span>' +
             '<span class="pass-premium-item-qty">×' + it.totalQty + '</span>' +
             '</div>';
     });
@@ -3823,15 +3834,6 @@ function renderPassUI() {
         ? 'EX ' + prog.exInLevel + ' / ' + PASS_CONFIG.expPerLevel
         : data.exp + ' / ' + PASS_CONFIG.expPerLevel;
 
-    // EX 信息
-    var exInfo = document.getElementById('passExInfo');
-    if (prog.atCap) {
-        exInfo.style.display = 'inline-flex';
-        document.getElementById('passExVal').textContent = prog.exEarnedCount;
-    } else {
-        exInfo.style.display = 'none';
-    }
-
     // 满级后等级上限统计改为「∞ · EX 无上限」，正式等级段显示 levelCap
     var capStatNum = document.getElementById('passStatCap');
     if (capStatNum) {
@@ -3990,6 +3992,96 @@ function renderPassUI() {
     }
 }
 
+// ==================== EX 溢出等级卡片 ====================
+// 120 级卡片之后的专属 EX 卡片（与 120 级卡片之间以竖线分隔）
+// 亮起规则：满级后每溢出 1 级（每 10 溢出经验）即有点亮可领取；领取后回到未领取状态，下次溢出再次亮起，以此往复
+function _buildPassExCardHtml(data) {
+    var W = (typeof WAREHOUSE_ITEMS !== 'undefined') ? WAREHOUSE_ITEMS : {};
+    var freeBox = W[PASS_CONFIG.exFreeItem] || { name: '随机物品箱 · 中级', icon: 'fas fa-box-open', color: '#9b59b6' };
+    var premBox = W[PASS_CONFIG.exPremiumItem] || { name: '随机物品箱 · 高级', icon: 'fas fa-gifts', color: '#f39c12' };
+
+    var atCap = data.level >= PASS_CONFIG.levelCap;
+    var earnedEx = atCap ? Math.floor((data.expOverflow || 0) / PASS_CONFIG.expPerLevel) : 0;
+    var pending = Math.max(0, earnedEx - (data.exFreeClaimed || 0));
+    var canClaim = atCap && pending > 0;
+
+    var cardClass = 'pass-reward-card pass-reward-card-ex';
+    if (!atCap) cardClass += ' pass-card-locked';
+    else if (canClaim) cardClass += ' pass-card-claimable';
+    else cardClass += ' pass-card-ex-idle';
+
+    // 信息行：承接原顶部「EX 溢出」横条的信息展示
+    var infoText = atCap
+        ? '已溢出 ' + earnedEx + ' 级（每 ' + PASS_CONFIG.expPerLevel + ' 经验 +1 级，无上限）'
+        : '满级后每 ' + PASS_CONFIG.expPerLevel + ' 溢出经验 +1 级 EX 奖励';
+
+    // 挡位状态文案
+    function stateHtml(isPremTier) {
+        if (isPremTier && !data.isPremium) {
+            return '<span class="pass-tier-state"><i class="fas fa-gem"></i> 需解锁付费通行证</span>';
+        }
+        if (canClaim) {
+            return '<span class="pass-tier-state pass-tier-state-ready">可领取 ×' + pending + '</span>';
+        }
+        if (!atCap) {
+            return '<span class="pass-tier-state"><i class="fas fa-lock"></i> 满级后解锁</span>';
+        }
+        return earnedEx > 0
+            ? '<span class="pass-tier-state"><i class="fas fa-check"></i> 已全部领取</span>'
+            : '<span class="pass-tier-state">暂无溢出</span>';
+    }
+
+    // 物品槽遮罩：未满级锁 / 付费档未购买通行证
+    var freeMask = !atCap ? '<div class="pass-slot-locked-mask"><i class="fas fa-lock"></i></div>' : '';
+    var premMask = !atCap
+        ? '<div class="pass-slot-locked-mask"><i class="fas fa-lock"></i></div>'
+        : (!data.isPremium ? '<div class="pass-slot-locked-mask"><i class="fas fa-gem"></i></div>' : '');
+
+    // 底部按钮
+    var btnHtml;
+    if (canClaim) {
+        btnHtml = '<button class="pass-btn pass-btn-primary pass-reward-claim-ex"><i class="fas fa-gift"></i> 领取奖励（×' + pending + ' 级）</button>';
+    } else if (!atCap) {
+        btnHtml = '<button class="pass-btn pass-btn-disabled pass-reward-claim-ex" disabled><i class="fas fa-lock"></i> 满级后解锁</button>';
+    } else {
+        btnHtml = '<button class="pass-btn pass-btn-disabled pass-reward-claim-ex" disabled><i class="fas fa-hourglass-half"></i> 暂无可领取</button>';
+    }
+
+    return '' +
+    '<div class="pass-ex-divider" aria-hidden="true"></div>' +
+    '<div class="' + cardClass + '" data-level="ex">' +
+        '<div class="pass-level-badge pass-level-badge-ex"><i class="fas fa-infinity"></i> EX</div>' +
+        '<div class="pass-ex-card-info"><i class="fas fa-circle-info"></i> ' + infoText + '</div>' +
+        '<div class="pass-reward-tiers">' +
+            '<div class="pass-tier pass-tier-free ' + (canClaim ? 'pass-tier-claimable' : '') + '">' +
+                '<div class="pass-tier-head">' +
+                    '<span class="pass-tier-tag"><i class="fas fa-gift"></i> 免费</span>' +
+                    stateHtml(false) +
+                '</div>' +
+                '<div class="pass-slot pass-slot-clickable" data-item-id="' + PASS_CONFIG.exFreeItem + '" data-item-qty="1" title="点击查看物品详情">' +
+                    _passItemIconHtml(freeBox.icon, freeBox.color) +
+                    '<div class="pass-slot-name">' + _passSeasonItemName(freeBox.name) + '</div>' +
+                    '<div class="pass-slot-qty">×1/级</div>' +
+                    freeMask +
+                '</div>' +
+            '</div>' +
+            '<div class="pass-tier pass-tier-premium ' + (data.isPremium ? '' : 'pass-tier-locked') + ' ' + (canClaim && data.isPremium ? 'pass-tier-claimable' : '') + '">' +
+                '<div class="pass-tier-head">' +
+                    '<span class="pass-tier-tag"><i class="fas fa-gem"></i> 付费</span>' +
+                    stateHtml(true) +
+                '</div>' +
+                '<div class="pass-slot pass-slot-clickable" data-item-id="' + PASS_CONFIG.exPremiumItem + '" data-item-qty="1" title="点击查看物品详情">' +
+                    _passItemIconHtml(premBox.icon, premBox.color) +
+                    '<div class="pass-slot-name">' + _passSeasonItemName(premBox.name) + '</div>' +
+                    '<div class="pass-slot-qty">×1/级</div>' +
+                    premMask +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        btnHtml +
+    '</div>';
+}
+
 // ==================== 奖励网格渲染 ====================
 function _renderPassRewards(data) {
     var grid = document.getElementById('passRewardsGrid');
@@ -4082,7 +4174,7 @@ function _renderPassRewards(data) {
             </div>
             <div class="pass-slot pass-slot-clickable ${freeClaimed ? 'pass-slot-claimed' : ''}" data-item-id="${r.freeItem.id}" data-item-qty="${r.freeItem.qty}" title="点击查看物品详情">
                 ${_passItemIconHtml(r.freeItem.icon, r.freeItem.color)}
-                <div class="pass-slot-name">${r.freeItem.name}</div>
+                <div class="pass-slot-name">${_passSeasonItemName(r.freeItem.name)}</div>
                 <div class="pass-slot-qty">×${r.freeItem.qty}</div>
                 ${isLocked ? '<div class="pass-slot-locked-mask"><i class="fas fa-lock"></i></div>' : ''}
             </div>
@@ -4103,7 +4195,7 @@ function _renderPassRewards(data) {
                 return `
 <div class="pass-slot pass-slot-clickable ${premClaimed ? 'pass-slot-claimed' : ''}" data-item-id="${p.id}" data-item-qty="${p.qty}" title="点击查看物品详情">
     ${_passItemIconHtml(p.icon, p.color)}
-    <div class="pass-slot-name">${p.name}</div>
+    <div class="pass-slot-name">${_passSeasonItemName(p.name)}</div>
     <div class="pass-slot-qty">×${p.qty}</div>
     ${(isLocked || !data.isPremium) ? '<div class="pass-slot-locked-mask"><i class="fas ' + (isLocked ? 'fa-lock' : 'fa-gem') + '"></i></div>' : ''}
 </div>`;
@@ -4121,6 +4213,9 @@ function _renderPassRewards(data) {
     </button>
 </div>`;
     }
+
+    // 120 级之后追加 EX 溢出等级卡片（带竖线分隔）
+    html += _buildPassExCardHtml(data);
     grid.innerHTML = html;
 
     // 「全部领取」按钮状态
@@ -4148,6 +4243,17 @@ function _renderPassRewards(data) {
                 _animateRewardClaim(btn);
                 renderPassUI();
                 _showPassClaimResult(result);
+            }
+        });
+    });
+
+    // 绑定 EX 溢出卡片领取按钮（一键领取当前全部可领 EX 等级，结算弹窗在 passClaimExReward 内弹出）
+    grid.querySelectorAll('.pass-reward-claim-ex').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (this.disabled) return;
+            if (passClaimExReward()) {
+                _animateRewardClaim(btn);
+                renderPassUI();
             }
         });
     });
@@ -4184,9 +4290,16 @@ function _scrollPassRewardsToCurrentLevel(smooth) {
     var grid = document.getElementById('passRewardsGrid');
     if (!grid) return;
     var data = getPassData();
-    // 等级收敛到已渲染的卡片范围（1~levelCap）：0 级 → 首张卡，EX 溢出等级 → 末张卡
-    var lv = Math.max(1, Math.min(PASS_CONFIG.levelCap, data.level || 0));
-    var card = grid.querySelector('.pass-reward-card[data-level="' + lv + '"]');
+    // EX 溢出阶段（已满级且已溢出至少 1 级）：定位到 120 级后的 EX 卡片
+    var card = null;
+    if (data.level >= PASS_CONFIG.levelCap && Math.floor((data.expOverflow || 0) / PASS_CONFIG.expPerLevel) > 0) {
+        card = grid.querySelector('.pass-reward-card-ex');
+    }
+    if (!card) {
+        // 等级收敛到已渲染的卡片范围（1~levelCap）：0 级 → 首张卡，满级未溢出 → 末张卡（120 级）
+        var lv = Math.max(1, Math.min(PASS_CONFIG.levelCap, data.level || 0));
+        card = grid.querySelector('.pass-reward-card[data-level="' + lv + '"]');
+    }
     if (!card) return; // 赛季未开始 / 已结束等无等级卡片的场景
     // 用 offsetLeft 链取卡片相对网格内容的布局位置（不受入场动画 transform 影响）
     var left = 0, el = card;
@@ -5257,15 +5370,6 @@ function _injectPassCSS() {
     box-shadow: 0 0 12px rgba(255,107,157,0.5);
 }
 .pass-exp-text { font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 500; }
-.pass-ex-info {
-    display: none; align-items: center; gap: 10px;
-    background: linear-gradient(90deg, rgba(106,90,205,0.2), rgba(248,181,0,0.2));
-    border: 1px solid rgba(248,181,0,0.4);
-    padding: 8px 14px; border-radius: 10px;
-    font-size: 13px; color: #f8b500;
-    margin-top: 4px;
-}
-.pass-ex-info i { margin-right: 4px; }
 
 .pass-hero-right {
     display: flex; flex-direction: column; gap: 12px;
@@ -5840,6 +5944,46 @@ function _injectPassCSS() {
 }
 .pass-card-claimed:hover { background: linear-gradient(165deg, rgba(74,222,128,0.18), rgba(34,211,238,0.09)); }
 .pass-card-claimed .pass-reward-claim { background: rgba(74,222,128,0.18); color: #86efac; border-color: rgba(74,222,128,0.45); }
+
+/* ===== EX 溢出等级卡片（120 级之后，竖线分隔） ===== */
+.pass-ex-divider {
+    flex: 0 0 2px;
+    align-self: stretch;
+    margin: 8px 4px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(78,205,196,0) 0%, rgba(78,205,196,0.7) 18%, rgba(106,90,205,0.7) 82%, rgba(106,90,205,0) 100%);
+}
+.pass-reward-card-ex {
+    border-color: rgba(78,205,196,0.45);
+    background: linear-gradient(165deg, rgba(78,205,196,0.1), rgba(106,90,205,0.08));
+}
+.pass-reward-card-ex::before {
+    background: linear-gradient(90deg, #4ecdc4, #6a5acd);
+    opacity: 0.8;
+}
+/* 可领取（亮起）：青色呼吸光晕，与普通卡片的粉色光晕区分 */
+.pass-reward-card-ex.pass-card-claimable {
+    border-color: rgba(78,205,196,0.6);
+    box-shadow: 0 0 12px rgba(78,205,196,0.14);
+}
+.pass-reward-card-ex.pass-card-claimable::after {
+    box-shadow: 0 0 24px rgba(78,205,196,0.32), 0 0 8px rgba(78,205,196,0.2);
+}
+/* 已领取后回到未领取状态：轻微压暗但保持可读，等待下次溢出亮起 */
+.pass-card-ex-idle { opacity: 0.78; }
+.pass-level-badge.pass-level-badge-ex {
+    background: linear-gradient(135deg, #4ecdc4, #6a5acd);
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.pass-ex-card-info {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.55);
+    display: flex; align-items: center; gap: 6px;
+    min-height: 18px;
+    padding-right: 64px; /* 避开右上角 EX 徽章 */
+}
+.pass-ex-card-info i { color: #4ecdc4; flex-shrink: 0; }
+.pass-reward-card-ex .pass-reward-tiers { margin-top: 8px; }
 
 .pass-level-badge {
     position: absolute; top: 10px; right: 10px;

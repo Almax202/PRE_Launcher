@@ -5671,6 +5671,23 @@
         }
     };
 
+    // 供“清理存储”使用：清空导入音频与自定义播放列表元数据（保留播放器设置与内置曲目）
+    window.clearSoundtrackImportedData = function () {
+        if (initialized && state.playlists && state.playlists.length) {
+            try { performReset(['playlists']); } catch (e) { /* 忽略 */ }
+        }
+        try { localStorage.removeItem(STORAGE_KEY_PLAYLISTS); } catch (e) { /* 忽略 */ }
+        return openAudioDb().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction(['audios'], 'readwrite');
+                tx.objectStore('audios').clear();
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+                tx.onabort = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    };
+
     window.openSoundtrackPlayer = function () {
         initSoundtrackPlayer('soundtrackArea');
         if (typeof window.switchGameCenterSubPage === 'function') {

@@ -204,8 +204,6 @@ const AccountLangManager = (function() {
             exportHint: '下载您的账户数据副本',
             import: '导入数据',
             importHint: '从之前导出的数据文件恢复',
-            clearCache: '清除缓存',
-            clearCacheHint: '清除本地缓存数据',
             
             // 危险区域
             danger: '危险区域',
@@ -463,8 +461,6 @@ const AccountLangManager = (function() {
             exportHint: 'Download a copy of your account data',
             import: 'Import Data',
             importHint: 'Restore from previously exported data file',
-            clearCache: 'Clear Cache',
-            clearCacheHint: 'Clear local cache data',
             
             // 危险区域
             danger: 'Danger Zone',
@@ -722,8 +718,6 @@ const AccountLangManager = (function() {
             exportHint: 'アカウントデータのコピーをダウンロード',
             import: 'データをインポート',
             importHint: '以前にエクスポートしたデータファイルから復元',
-            clearCache: 'キャッシュをクリア',
-            clearCacheHint: 'ローカルキャッシュデータをクリア',
             
             // 危险区域
             danger: '危険ゾーン',
@@ -981,8 +975,6 @@ const AccountLangManager = (function() {
             exportHint: '계정 데이터 복사본 다운로드',
             import: '데이터 가져오기',
             importHint: '이전에 내보낸 데이터 파일에서 복원',
-            clearCache: '캐시 지우기',
-            clearCacheHint: '로컬 캐시 데이터 지우기',
             
             // 危险区域
             danger: '위험 구역',
@@ -1344,8 +1336,6 @@ const AccountLangManager = (function() {
             '下载您的账户数据副本': texts.exportHint,
             '导入数据': texts.import,
             '从之前导出的数据文件恢复': texts.importHint,
-            '清除缓存': texts.clearCache,
-            '清除本地缓存数据': texts.clearCacheHint,
             
             // 危险区域
             '危险区域': texts.danger,
@@ -1453,7 +1443,6 @@ const AccountLangManager = (function() {
             '重置背景': texts.resetBackground,
             '导出': texts.export,
             '导入': texts.import,
-            '清除': texts.clearCache,
             '注销账户': texts.deleteAccount,
             '退出登录': texts.logout,
             '重置所有设置': texts.resetSettings,

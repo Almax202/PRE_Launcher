@@ -721,71 +721,6 @@
             }, 100);
         });
         
-        document.getElementById('clearCacheBtn').addEventListener('click', function() {
-            // 重置选择状态
-            document.querySelectorAll('input[name="cacheOption"]').forEach(function(checkbox) {
-                checkbox.checked = false;
-                checkbox.disabled = false;
-            });
-            
-            // 显示选择模态窗口
-            document.getElementById('clearCacheSelectModal').style.display = 'flex';
-            setTimeout(function() {
-                document.getElementById('clearCacheSelectModal').classList.add('show');
-            }, 100);
-        });
-        
-        // 为清除全部数据选项添加事件监听器
-        document.querySelector('input[name="cacheOption"][value="all"]').addEventListener('change', function() {
-            var allCheckbox = this;
-            document.querySelectorAll('input[name="cacheOption"]').forEach(function(checkbox) {
-                if (checkbox.value !== 'all') {
-                    checkbox.disabled = allCheckbox.checked;
-                    if (allCheckbox.checked) {
-                        checkbox.checked = false;
-                    }
-                }
-            });
-        });
-        
-        // 为其他选项添加事件监听器，确保与清除全部数据选项的互斥
-        document.querySelectorAll('input[name="cacheOption"]').forEach(function(checkbox) {
-            if (checkbox.value !== 'all') {
-                checkbox.addEventListener('change', function() {
-                    var allCheckbox = document.querySelector('input[name="cacheOption"][value="all"]');
-                    if (this.checked) {
-                        allCheckbox.checked = false;
-                    }
-                    
-                    // 检查是否所有常规清理选项都被选中
-                    var regularOptions = ['avatars', 'backgrounds', 'themes', 'loginHistory'];
-                    var allRegularChecked = true;
-                    regularOptions.forEach(function(option) {
-                        var optionCheckbox = document.querySelector('input[name="cacheOption"][value="' + option + '"]');
-                        if (!optionCheckbox.checked) {
-                            allRegularChecked = false;
-                        }
-                    });
-                    
-                    // 如果所有常规清理选项都被选中，自动选中全部清理选项
-                    if (allRegularChecked) {
-                        allCheckbox.checked = true;
-                        // 禁用所有常规清理选项
-                        regularOptions.forEach(function(option) {
-                            var optionCheckbox = document.querySelector('input[name="cacheOption"][value="' + option + '"]');
-                            optionCheckbox.disabled = true;
-                        });
-                    } else {
-                        // 如果不是所有常规清理选项都被选中，启用所有常规清理选项
-                        regularOptions.forEach(function(option) {
-                            var optionCheckbox = document.querySelector('input[name="cacheOption"][value="' + option + '"]');
-                            optionCheckbox.disabled = false;
-                        });
-                    }
-                });
-            }
-        });
-        
         document.getElementById('deleteAccountBtn').addEventListener('click', function() {
             showDeleteAccountConfirmModal();
         });
@@ -5224,113 +5159,6 @@
         }
     }
     
-    function clearCache(options) {
-        var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-        var userIndex = users.findIndex(function(u) {
-            return u.username === currentUser.username;
-        });
-        
-        if (options.includes('all')) {
-            // 清除所有缓存数据，但保留用户账户数据
-            // 清除头像数据
-            localStorage.removeItem('currentUserAvatar');
-            if (userIndex !== -1 && users[userIndex].userProfile) {
-                delete users[userIndex].userProfile.avatar;
-                delete users[userIndex].userProfile.customAvatars;
-            }
-            
-            // 清除背景数据
-            localStorage.removeItem('customBackground');
-            if (userIndex !== -1 && users[userIndex].userProfile) {
-                delete users[userIndex].userProfile.background;
-                delete users[userIndex].userProfile.customBackgrounds;
-            }
-            
-            // 清除主题数据
-            if (userIndex !== -1 && users[userIndex].userProfile) {
-                users[userIndex].userProfile.theme = 'auto';
-                delete users[userIndex].userProfile.customTheme;
-            }
-            
-            // 清除登录历史数据
-            if (userIndex !== -1) {
-                delete users[userIndex].loginHistory;
-            }
-            
-            // 清除其他缓存数据
-            localStorage.removeItem('language');
-            localStorage.removeItem('darkMode');
-            localStorage.removeItem('glassMode');
-            localStorage.removeItem('fxqGamesPlayed');
-            localStorage.removeItem('fkGamesPlayed');
-            localStorage.removeItem('memoryGamesPlayed');
-            localStorage.removeItem('colorGamesPlayed');
-            localStorage.removeItem('achievements');
-            localStorage.removeItem('skipSecurityVerify');
-            localStorage.removeItem('skipSecurityVerifyExpire');
-            
-            // 保存更新后的用户数据
-            if (userIndex !== -1) {
-                localStorage.setItem('registeredUsers', JSON.stringify(users));
-            }
-            
-            showAlert('缓存已清除，请重新登录');
-            setTimeout(function() {
-                document.body.classList.add('page-transition-out');
-                setTimeout(function() {
-                    window.location.href = '../index.html';
-                }, 500);
-            }, 1500);
-        } else {
-            // 清除选定的数据
-            options.forEach(function(option) {
-                switch(option) {
-                    case 'avatars':
-                        // 清除头像数据
-                        localStorage.removeItem('currentUserAvatar');
-                        if (userIndex !== -1 && users[userIndex].userProfile) {
-                            delete users[userIndex].userProfile.avatar;
-                            delete users[userIndex].userProfile.customAvatars;
-                        }
-                        break;
-                    case 'backgrounds':
-                        // 清除背景数据
-                        localStorage.removeItem('customBackground');
-                        if (userIndex !== -1 && users[userIndex].userProfile) {
-                            delete users[userIndex].userProfile.background;
-                            delete users[userIndex].userProfile.customBackgrounds;
-                        }
-                        break;
-                    case 'themes':
-                        // 清除主题数据
-                        if (userIndex !== -1 && users[userIndex].userProfile) {
-                            users[userIndex].userProfile.theme = 'auto';
-                            delete users[userIndex].userProfile.customTheme;
-                        }
-                        break;
-                    case 'loginHistory':
-                        // 清除登录历史数据
-                        if (userIndex !== -1) {
-                            delete users[userIndex].loginHistory;
-                        }
-                        break;
-                }
-            });
-            
-            // 保存更新后的用户数据
-            if (userIndex !== -1) {
-                localStorage.setItem('registeredUsers', JSON.stringify(users));
-            }
-            
-            showAlert('选定的数据已清除');
-            // 刷新页面以应用更改
-            setTimeout(function() {
-                location.reload();
-            }, 1500);
-        }
-    }
-    
     function deleteAccount() {
         var users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
         var userIndex = users.findIndex(function(user) {
@@ -7944,83 +7772,6 @@
         }, 300);
     });
     
-    // 清除缓存选择模态窗口事件监听器
-    document.getElementById('clearCacheSelectCancel').addEventListener('click', function() {
-        document.getElementById('clearCacheSelectModal').classList.remove('show');
-        setTimeout(function() {
-            document.getElementById('clearCacheSelectModal').style.display = 'none';
-        }, 300);
-    });
-    
-    document.getElementById('clearCacheSelectConfirm').addEventListener('click', function() {
-        // 获取选中的选项
-        var selectedOptions = [];
-        document.querySelectorAll('input[name="cacheOption"]:checked').forEach(function(checkbox) {
-            selectedOptions.push(checkbox.value);
-        });
-        
-        if (selectedOptions.length === 0) {
-            showAlert('请至少选择一项要清除的数据');
-            return;
-        }
-        
-        // 隐藏选择模态窗口
-        document.getElementById('clearCacheSelectModal').classList.remove('show');
-        setTimeout(function() {
-            document.getElementById('clearCacheSelectModal').style.display = 'none';
-            
-            // 显示确认模态窗口
-            var selectedOptionsList = document.getElementById('selectedCacheOptionsList');
-            selectedOptionsList.innerHTML = '';
-            
-            if (selectedOptions.includes('all')) {
-                var allOption = document.createElement('div');
-                allOption.className = 'selected-option';
-                allOption.textContent = '清除全部数据';
-                selectedOptionsList.appendChild(allOption);
-            } else {
-                var optionNames = {
-                    'avatars': '清除账户自定义头像数据',
-                    'backgrounds': '清除账户自定义背景数据',
-                    'themes': '清除账户自定义主题数据',
-                    'loginHistory': '清除设备管理登录历史数据'
-                };
-                selectedOptions.forEach(function(option) {
-                    var optionElement = document.createElement('div');
-                    optionElement.className = 'selected-option';
-                    optionElement.textContent = optionNames[option];
-                    selectedOptionsList.appendChild(optionElement);
-                });
-            }
-            
-            // 保存选中的选项
-            window.selectedCacheOptions = selectedOptions;
-            
-            // 显示确认模态窗口
-            document.getElementById('clearCacheConfirmModal').style.display = 'flex';
-            setTimeout(function() {
-                document.getElementById('clearCacheConfirmModal').classList.add('show');
-            }, 100);
-        }, 300);
-    });
-    
-    // 清除缓存确认模态窗口事件监听器
-    document.getElementById('clearCacheCancel').addEventListener('click', function() {
-        document.getElementById('clearCacheConfirmModal').classList.remove('show');
-        setTimeout(function() {
-            document.getElementById('clearCacheConfirmModal').style.display = 'none';
-        }, 300);
-    });
-    
-    document.getElementById('clearCacheConfirm').addEventListener('click', function() {
-        document.getElementById('clearCacheConfirmModal').classList.remove('show');
-        setTimeout(function() {
-            document.getElementById('clearCacheConfirmModal').style.display = 'none';
-            // 调用清除缓存函数，传入选中的选项
-            clearCache(window.selectedCacheOptions);
-        }, 300);
-    });
-
     // 导出数据验证模态窗口事件监听器
     document.getElementById('exportDataVerifyCancel').addEventListener('click', function() {
         document.getElementById('exportDataVerifyModal').classList.remove('show');
@@ -10138,8 +9889,6 @@
             { id: 'toggleAchievementsConfirmModal', confirmBtn: 'toggleAchievementsConfirm', cancelBtn: 'toggleAchievementsCancel' },
             { id: 'gpuAccelerationModal', confirmBtn: 'gpuAccelerationConfirm', cancelBtn: 'gpuAccelerationCancel' },
             { id: 'exportDataConfirmModal', confirmBtn: 'exportDataConfirm', cancelBtn: 'exportDataCancel' },
-            { id: 'clearCacheSelectModal', confirmBtn: 'clearCacheSelectConfirm', cancelBtn: 'clearCacheSelectCancel' },
-            { id: 'clearCacheConfirmModal', confirmBtn: 'clearCacheConfirm', cancelBtn: 'clearCacheCancel' },
             { id: 'exportDataVerifyModal', confirmBtn: 'exportDataVerifyConfirm', cancelBtn: 'exportDataVerifyCancel' },
             { id: 'importDataModal', confirmBtn: 'importDataConfirm', cancelBtn: 'importDataCancel' },
             { id: 'presetBackgroundModal', confirmBtn: 'confirmPresetBtn', cancelBtn: 'cancelPresetBtn', closeBtn: 'closePresetModal' },

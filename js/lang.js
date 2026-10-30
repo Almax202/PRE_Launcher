@@ -1130,11 +1130,11 @@ const LangManager = (function() {
             if (officialOption) officialOption.textContent = texts.defaultServer;
         }
         
-        // 更新版本更新历史顶部 bar
-        var featureUpdatesNav = document.querySelector('#featureUpdateNav span');
+        // 更新版本更新历史侧边栏文案
+        var featureUpdatesNav = document.querySelector('#featureUpdateNav .fs-nav-text b');
         if (featureUpdatesNav) featureUpdatesNav.textContent = texts.featureUpdates;
 
-        var outdatedVersionsNav = document.querySelector('#earlyUpdateNav span');
+        var outdatedVersionsNav = document.querySelector('#earlyUpdateNav .fs-nav-text b');
         if (outdatedVersionsNav) outdatedVersionsNav.textContent = texts.outdatedVersions;
 
         var miniGameUpdatesNav = document.querySelector('#miniGameUpdateNav span');

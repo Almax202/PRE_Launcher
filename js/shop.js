@@ -4,7 +4,7 @@
 // 入口：顶部导航栏「商店」→ 全屏弹窗
 // 样式：完全自包含（wh-* 基础 + shop-* 扩展），不依赖仓库先打开
 
-var SHOP_DATA_VERSION = 4; // v4: 补齐 precoin_supply_1-4 商店上架条目（自选物品兑换卡可兑换）
+var SHOP_DATA_VERSION = 5; // v5: 鎏金幻彩降价+自动返还邮件、新增 3D 太空遨游背景
 
 // 物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
 function _shopItemIconHtml(icon, color) {
@@ -30,7 +30,7 @@ var SHOP_ITEM_PRICES = {
         stock: -1,
         stockType: 'none',
         enabled: true,
-        note: '经验获取 +5%，可与不同类型叠加（I+II+III+Ⅳ 组合可至 +100%）'
+        note: '经验获取 +5%，可与不同类型叠加（I+II+III+Ⅳ+V 组合可至 +175%）'
     },
     exp_boost_mid: {
         price: 600,
@@ -38,7 +38,7 @@ var SHOP_ITEM_PRICES = {
         stock: 1,
         stockType: 'daily',
         enabled: true,
-        note: '经验获取 +15%，每日限购 1 份，可叠加（I+II+III+Ⅳ 组合可至 +100%）'
+        note: '经验获取 +15%，每日限购 1 份，可叠加（I+II+III+Ⅳ+V 组合可至 +175%）'
     },
     exp_boost_large: {
         price: 1000,
@@ -46,7 +46,7 @@ var SHOP_ITEM_PRICES = {
         stock: 1,
         stockType: 'weekly',
         enabled: true,
-        note: '经验获取 +30%，每周限购 1 份，可叠加（I+II+III+Ⅳ 组合可至 +100%）'
+        note: '经验获取 +30%，每周限购 1 份，可叠加（I+II+III+Ⅳ+V 组合可至 +175%）'
     },
     exp_boost_premium: {
         price: 1800,
@@ -54,9 +54,8 @@ var SHOP_ITEM_PRICES = {
         stock: 2,
         stockType: 'total',
         enabled: true,
-        note: '经验获取 +50%，永久限购 2 份，可叠加（I+II+III+Ⅳ 同时激活可至 +100%）'
+        note: '经验获取 +50%，永久限购 2 份，可叠加（I+II+III+Ⅳ+V 同时激活可至 +175%）'
     },
-
     // ===== 消耗品：抽卡卷 =====
     gacha_single: {
         price: 130,
@@ -126,13 +125,12 @@ var SHOP_ITEM_PRICES = {
         stock: 3,
         stockType: 'total',
         enabled: true,
-        note: '永久限购 3 份，立即获得 2000 经验值（最高效）'
+        note: '永久限购 3 份，立即获得 2000 经验值'
     },
-
     // ===== 消耗品：每月限购特供（stockType: monthly，对应已有仓库道具 ID） =====
     exp_boost_large_monthly: {
         price: 1000,
-        discount: 10,
+        discount: 0,
         stock: 1,
         stockType: 'monthly',
         enabled: true,
@@ -141,7 +139,7 @@ var SHOP_ITEM_PRICES = {
     },
     exp_supply_4_monthly: {
         price: 2000,
-        discount: 10,              // ★ 90 折月度特供
+        discount: 0,              
         stock: 1,
         stockType: 'monthly',
         enabled: true,
@@ -150,7 +148,7 @@ var SHOP_ITEM_PRICES = {
     },
     gacha_ten_monthly: {
         price: 1300,
-        discount: 10,
+        discount: 0,
         stock: 3,
         stockType: 'monthly',
         enabled: true,
@@ -331,7 +329,7 @@ var SHOP_BUNDLES = {
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验补给包 Ⅳ，两张经验补给卡 Ⅳ（共4000 EXP），最高效经验来源（该组合包仅限购 1 份）'
+        note: '经验补给包 Ⅳ，两张经验补给卡 Ⅳ（共4000 EXP），获取经验的有效方式（该组合包仅限购 1 份）'
     },
     bundle_gacha01: {
         name: '提取补给包 Ⅰ',
@@ -376,7 +374,7 @@ var SHOP_BUNDLES = {
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验加成包 Ⅰ，两张经验加成卡 Ⅰ（各+5%），可与其他类型叠加至最高+50%（该组合包仅限购 1 份）'
+        note: '经验加成包 Ⅰ，内含两张经验加成卡 Ⅰ，可与其他类型叠加至最高+50%（该组合包仅限购 1 份）'
     },
     bundle_expup2: {
         name: '经验加成包 Ⅱ',
@@ -390,7 +388,7 @@ var SHOP_BUNDLES = {
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验加成包 Ⅱ，两张经验加成卡 Ⅱ（各+15%），可叠加（该组合包仅限购 1 份）'
+        note: '经验加成包 Ⅱ，内含两张经验加成卡 Ⅱ，可叠加（该组合包仅限购 1 份）'
     },
     bundle_expup3: {
         name: '经验加成包 Ⅲ',
@@ -404,8 +402,9 @@ var SHOP_BUNDLES = {
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '经验加成包 Ⅲ，两张经验加成卡 Ⅲ（各+30%），可叠加（该组合包仅限购 1 份）'
+        note: '经验加成包 Ⅲ，内含两张经验加成卡 Ⅲ，可叠加（该组合包仅限购 1 份）'
     },
+
     // 新增组合包：复制上方格式追加即可
     // bundle_xxx: {
     //     name: '包名',
@@ -449,10 +448,10 @@ var SHOP_BUNDLES = {
             { itemId: 'makeup_card', price: 500 },
         ],
         discount: 20,         // ★ 整包 8 折
-        stock: 2,
+        stock: 1,
         stockType: 'weekly',
         enabled: true,
-        note: '每周限购 2 份：经验补给卡Ⅱ + 经验加成卡Ⅱ + 补签卡 1 张（整包 80% 折）'
+        note: '每周限购 1 份：经验补给卡Ⅱ + 经验加成卡Ⅱ + 补签卡 1 张（整包 80% 折）'
     }
 };
 
@@ -474,10 +473,10 @@ var SHOP_SPECIAL_ITEMS = {
         name: '限定背景「鎏金幻彩」',
         icon: 'fas fa-image',
         color: '#e94560',
-        price: 5000,
+        price: 3000,
         enabled: true,
         desc: '曾随欢迎邮件发放的限定静态背景，深邃夜色与流光溢彩交织',
-        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往系统设置应用',
+        note: '限定返场 · 固定价 3000 PRE Coin（因非动态背景降价调整），不参与任何促销与折扣；购买后可前往系统设置应用',
         preview: {
             name: '鎏金幻彩',
             gradient: 'radial-gradient(circle at 10% 20%, rgba(255, 223, 0, 0.2) 0%, transparent 35%), radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.18) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.15) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 45%), radial-gradient(circle at 70% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 40%), linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 20%, #16213e 40%, #0f3460 60%, #533483 80%, #e94560 100%)'
@@ -567,6 +566,24 @@ var SHOP_SPECIAL_ITEMS = {
             dateText: '2026.09'
         }
     },
+    sp_bg_3d_space: {
+        kind: 'background',
+        targetId: 'bg-3d-space',
+        name: '限定背景「3D 太空遨游」',
+        icon: 'fas fa-rocket',
+        color: '#7c5cbf',
+        price: 5000,
+        enabled: true,
+        desc: '秋季签到活动第 8 天奖励 · 深邃太空配 3D 漂浮星球与流星轨迹',
+        note: '活动返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；已通过秋季签到活动领取过的用户无需再次购买',
+        preview: {
+            name: '3D 太空遨游',
+            gradient: 'radial-gradient(ellipse at 30% 20%, rgba(124, 92, 191, 0.35) 0%, transparent 45%), radial-gradient(ellipse at 75% 70%, rgba(59, 130, 246, 0.28) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.15) 0%, transparent 60%), linear-gradient(180deg, #0a0a1f 0%, #12123a 40%, #1a1a4e 70%, #262667 100%)',
+            isDynamic: true,
+            backgroundSize: '300% 300%',
+            particles: true
+        }
+    },
     sp_nc_star: {
         kind: 'namecard',
         targetId: 'card-style-special-autumn',
@@ -634,6 +651,7 @@ function getShopBundleSingleSum(bundleId) {
 
 // ==================== 商店分类 ====================
 var SHOP_CATEGORIES = [
+    { id: 'recommend',    name: '推荐',       icon: 'fas fa-thumbs-up' },
     { id: 'all',          name: '全部商品',   icon: 'fas fa-th-large' },
     { id: 'consumable',   name: '消耗品',     icon: 'fas fa-bolt' },
     { id: 'material',     name: '材料',       icon: 'fas fa-cubes' },
@@ -877,7 +895,8 @@ function _shopConfirmPurchaseItem(itemId, qty) {
 }
 
 // ==================== 全屏弹窗 ====================
-var _shopActiveCategory = 'all';
+// 每次进入商店固定落在「推荐」分类
+var _shopActiveCategory = 'recommend';
 
 function ensureShopModal() {
     var modal = document.getElementById('shopModal');
@@ -905,8 +924,15 @@ function ensureShopModal() {
                 <div class="wh-stats" id="shopStats"></div>
                 <button class="wh-close" id="shopCloseBtn" title="关闭"><i class="fas fa-times"></i></button>
             </div>
-            <div class="wh-toolbar shop-toolbar" id="shopToolbar"></div>
-            <div class="wh-content shop-content" id="shopContent"></div>
+            <div class="shop-content-outer">
+                <div class="shop-layout">
+                    <aside class="shop-sidebar" id="shopSidebar"></aside>
+                    <div class="shop-main">
+                        <div class="shop-main-bar" id="shopMainBar"></div>
+                        <div class="wh-content shop-content" id="shopContent"></div>
+                    </div>
+                </div>
+            </div>
             <div class="wh-footer">
                 <i class="fas fa-coins" style="color: #f39c12;"></i>
                 <span>使用 PRE Coin 兑换商品</span>
@@ -931,7 +957,13 @@ function showShopModal() {
     }
     if (typeof dailyTaskMarkProgress === 'function') dailyTaskMarkProgress('shop');
 
+    // 每次打开商店都做一次返还检查（有多重幂等保护，不会重复发邮件）
+    _shopRunPriceAdjustmentRefunds();
+
     var modal = ensureShopModal();
+    // 每次进入商店都固定展示「推荐」，并从第一件推荐商品开始
+    _shopActiveCategory = 'recommend';
+    _shopRecIndex = 0;
     renderShopUI();
     modal.style.display = 'flex';
     setTimeout(function() { modal.classList.add('show'); }, 10);
@@ -939,10 +971,102 @@ function showShopModal() {
 
 function closeShopModal() {
     if (_shopRefreshTimer) { clearInterval(_shopRefreshTimer); _shopRefreshTimer = null; }
+    _shopRecCleanup();
     var modal = document.getElementById('shopModal');
     if (!modal) return;
     modal.classList.remove('show');
     setTimeout(function() { modal.style.display = 'none'; }, 300);
+}
+
+// ==================== 价格调整自动返还（鎏金幻彩 5000 → 3000）====================
+// 逻辑：仅执行一次（每用户），在用户登录后首次打开商店 / 首次调用时触发。
+// 触发条件：
+//   1. 用户通过商店购买过 鎏金幻彩（shopData.purchases['special_sp_bg_liujin'].totalCount > 0）
+//   2. 返还金额 = 原价格 5000 − 新价格 3000 = 2000 PRE Coin
+// 返还方式：通过邮件系统 addMail 发送一封邮件，附件为 2000 PRE Coin，
+//   有效期为「用户此次更新后首次登录日 UTC+8 00:00 起 31 天，截止到最后一天凌晨 04:00」。
+// 幂等：检查 / 写入 <username>_shop_refunded_liujin_v1 标记，避免重复发放。
+var _shopRefundChecked = false; // 同一页内只跑一次
+
+function _shopRunPriceAdjustmentRefunds() {
+    if (_shopRefundChecked) return;
+    // 不在这里立即置 true：等 mailSystem 就绪且真的执行完才置，
+    // 避免页面加载时 mailSystem 尚未准备好 → 邮件没发成 → showShopModal 备份也被挡掉。
+
+    var username = _shopGetUsername();
+    if (!username || username === 'anonymous') { _shopRefundChecked = true; return; }
+
+    var flagKey = username + '_shop_refunded_liujin_v1';
+    if (localStorage.getItem(flagKey) === '1') { _shopRefundChecked = true; return; } // 已经执行过
+
+    // 1) 检查购买记录：商店数据里是否有 special_sp_bg_liujin 的购买记录
+    var shopData;
+    try { shopData = getShopData(); } catch (e) { _shopRefundChecked = true; return; }
+    var purchases = shopData && shopData.purchases ? shopData.purchases : {};
+    var rec = purchases['special_sp_bg_liujin'];
+    var boughtCount = (rec && rec.totalCount) ? rec.totalCount : 0;
+    if (boughtCount <= 0) {
+        // 没买过 → 也打上标记（没资格领），下次不再跑
+        localStorage.setItem(flagKey, '1');
+        _shopRefundChecked = true;
+        return;
+    }
+
+    // 2) 计算返还金额与有效期
+    var ORIG_PRICE = 5000, NEW_PRICE = 3000;
+    var refundPerUnit = ORIG_PRICE - NEW_PRICE; // 2000
+    var refundTotal = refundPerUnit * boughtCount;
+
+    // 有效期：以「用户此刻打开商店」作为此次更新后首次登录时间锚点
+    // expireTime = 登录日 UTC+8 00:00 + 30 整天 + 第 31 天凌晨 04:00（UTC 时间戳）
+    var now = new Date();
+    var now8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    // loginDayStart = 登录当天 UTC+8 00:00 对应的 UTC 时间戳（Date.UTC 返回 UTC 午夜 08:00 UTC+8，需 -8h）
+    var loginDayStart = Date.UTC(now8.getUTCFullYear(), now8.getUTCMonth(), now8.getUTCDate()) - 8 * 60 * 60 * 1000;
+    expireTimeUTC = loginDayStart + 30 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000;
+
+    // 3) mailSystem 必须就绪才能继续；否则让 showShopModal 下次打开再试
+    if (typeof mailSystem === 'undefined' || typeof mailSystem.addMail !== 'function') {
+        console.warn('[ShopRefund] mailSystem 未就绪，鎏金幻彩返还邮件暂未发送，下次打开商店将重试');
+        return;
+    }
+
+    var mailId = 'shop_refund_liujin_v1_' + username;
+    // 再次防护：邮箱里若已存在本 id 邮件就不再重复发
+    var existing = (typeof mailSystem.getMails === 'function') ? mailSystem.getMails() : [];
+    var alreadySent = existing.some(function(m) { return m && m.id === mailId; });
+    if (!alreadySent) {
+        mailSystem.addMail({
+            id: mailId,
+            title: '「鎏金幻彩」价格调整及其PRE Coin的返还',
+            sender: 'PRE Launcher',
+            content: '亲爱的用户：\n\n商店商品「鎏金幻彩」背景因属于静态背景，定价已于本次更新中由原 5000 PRE Coin 调整为 3000 PRE Coin，差额为 2000 PRE Coin / 件。\n\n您曾在商店中购买过该背景（共 ' + boughtCount + ' 件），系统已自动将对应差额 ' + refundTotal + ' PRE Coin 返还至本邮件附件。请在有效期内点击「领取」按钮完成返还。\n\n感谢您的理解与支持！\n\n— PRE Launcher 商店系统',
+            attachments: [
+                {
+                    name: 'PRE Coin 差价返还',
+                    type: 'precoin',
+                    count: refundTotal
+                }
+            ],
+            mailType: 'reward',
+            expireTime: expireTimeUTC
+        });
+    }
+
+    // 4) 标记已处理，防止下次再跑
+    localStorage.setItem(flagKey, '1');
+    _shopRefundChecked = true;
+}
+
+// 在 DOM ready 之后尽快挂入检查，但要等邮件系统就绪
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(_shopRunPriceAdjustmentRefunds, 800);
+        });
+    } else {
+        setTimeout(_shopRunPriceAdjustmentRefunds, 800);
+    }
 }
 
 // 促销商品统计（按最终生效折扣判定，含全局促销，供顶栏 tag 使用）
@@ -1267,44 +1391,35 @@ function _shopStartStockRefreshCountdown() {
     _shopRefreshTimer = setInterval(update, 1000);
 }
 
-// 渲染分类工具栏（含组合包隔离线 / dev 按钮）
+// 渲染左侧竖向分类侧边栏（含分类计数徽标 / 组合包隔离线）+ 主区顶部信息条（计数 / dev 按钮）
 function renderShopToolbar() {
-    var toolbar = document.getElementById('shopToolbar');
-    if (!toolbar) return;
+    var sidebar = document.getElementById('shopSidebar');
+    var mainBar = document.getElementById('shopMainBar');
+    if (!sidebar) return;
 
+    // —— 侧边栏：分类导航（每项附带在售数量徽标）——
+    var recEntries = _shopGetRecommendEntries();
     var tabsHtml = SHOP_CATEGORIES.map(function(cat) {
-        var sep = cat.separator ? '<span class="shop-toolbar-sep"></span>' : '';
-        return sep + '<button class="wh-tab' + (cat.id === _shopActiveCategory ? ' active' : '') + '" data-cat="' + cat.id + '">' +
-            '<i class="' + cat.icon + '"></i><span>' + cat.name + '</span></button>';
+        var catCount;
+        if (cat.id === 'recommend') {
+            catCount = recEntries.length;
+        } else {
+            var fc2 = _shopFilterByCategory(cat.id);
+            catCount = fc2.singles.length + fc2.bundles.length + (fc2.specials ? fc2.specials.length : 0);
+        }
+        var sep = cat.separator ? '<div class="shop-side-sep"></div>' : '';
+        var isRecommend = cat.id === 'recommend';
+        var html = sep + '<button class="shop-side-item' + (isRecommend ? ' shop-side-recommend' : '') +
+            (cat.id === _shopActiveCategory ? ' active' : '') + '" data-cat="' + cat.id + '">' +
+            '<i class="' + cat.icon + '"></i><span class="shop-side-name">' + cat.name + '</span>' +
+            '<em class="shop-side-count">' + catCount + '</em></button>';
+        // 「推荐」作为独立精选入口，与下方商品分类之间加一条分隔线
+        if (isRecommend) html += '<div class="shop-side-sep"></div>';
+        return html;
     }).join('');
+    sidebar.innerHTML = '<div class="shop-side-title"><i class="fas fa-bars-staggered"></i> 商品分类</div>' + tabsHtml;
 
-    // 动态计数：按当前类别过滤 singles + bundles + specials（背景/名片）
-    var fc = _shopFilterByCategory(_shopActiveCategory);
-    var singleCount = fc.singles.length + (fc.specials ? fc.specials.length : 0);
-    var hasS = singleCount > 0, hasB = fc.bundles.length > 0;
-    var countHtml;
-    if (_shopActiveCategory === 'bundle') {
-        countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
-    } else if (hasS && hasB) {
-        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + singleCount + '</b> 款、组合包 <b>' + fc.bundles.length + '</b> 款</span>';
-    } else if (hasB) {
-        countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
-    } else {
-        countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + singleCount + '</b> 款</span>';
-    }
-
-    // 开发者模式按钮：获取 PRE Coin / 重置购买状态
-    var devBtnHtml = isShopDevMode()
-        ? '<button class="shop-dev-btn" id="shopDevCoinBtn" title="调整 PRE Coin 持有数量"><i class="fas fa-coins"></i> 获取PRE Coin（dev）</button>'
-        : '';
-    var devResetBtnHtml = isShopDevMode()
-        ? '<button class="shop-dev-btn" id="shopDevResetBtn" title="重置所有物品/组合包的购买状态"><i class="fas fa-rotate-left"></i> 重置购买状态（dev）</button>'
-        : '';
-
-    toolbar.innerHTML = tabsHtml +
-        '<span class="shop-toolbar-right">' + countHtml + devBtnHtml + devResetBtnHtml + '</span>';
-
-    toolbar.querySelectorAll('.wh-tab').forEach(function(btn) {
+    sidebar.querySelectorAll('.shop-side-item').forEach(function(btn) {
         btn.addEventListener('click', function() {
             _shopActiveCategory = btn.getAttribute('data-cat');
             renderShopToolbar();
@@ -1312,14 +1427,51 @@ function renderShopToolbar() {
         });
     });
 
-    var devBtn = document.getElementById('shopDevCoinBtn');
-    if (devBtn) {
-        devBtn.addEventListener('click', openShopDevCoinModal);
-    }
+    // —— 主区顶部信息条：当前分类在售计数 + dev 按钮 ——
+    if (mainBar) {
+        // 动态计数：按当前类别过滤 singles + bundles + specials（背景/名片）
+        var fc = _shopFilterByCategory(_shopActiveCategory);
+        var singleCount = fc.singles.length + (fc.specials ? fc.specials.length : 0);
+        var hasS = singleCount > 0, hasB = fc.bundles.length > 0;
+        var countHtml;
+        if (_shopActiveCategory === 'recommend') {
+            countHtml = '<span class="shop-item-count shop-rec-count"><i class="fas fa-thumbs-up"></i> 精选推荐 <b>' + recEntries.length + '</b> 款</span>';
+        } else if (_shopActiveCategory === 'bundle') {
+            countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
+        } else if (hasS && hasB) {
+            countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + singleCount + '</b> 款、组合包 <b>' + fc.bundles.length + '</b> 款</span>';
+        } else if (hasB) {
+            countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
+        } else {
+            countHtml = '<span class="shop-item-count"><i class="fas fa-tag"></i> 在售商品 <b>' + singleCount + '</b> 款</span>';
+        }
 
-    var devResetBtn = document.getElementById('shopDevResetBtn');
-    if (devResetBtn) {
-        devResetBtn.addEventListener('click', openShopDevResetModal);
+        // 当前分类名称回显
+        var activeCat = SHOP_CATEGORIES.filter(function(c) { return c.id === _shopActiveCategory; })[0];
+        var catTitleHtml = activeCat
+            ? '<span class="shop-main-cat"><i class="' + activeCat.icon + '"></i> ' + activeCat.name + '</span>'
+            : '';
+
+        // 开发者模式按钮：获取 PRE Coin / 重置购买状态
+        var devBtnHtml = isShopDevMode()
+            ? '<button class="shop-dev-btn" id="shopDevCoinBtn" title="调整 PRE Coin 持有数量"><i class="fas fa-coins"></i> 获取PRE Coin（dev）</button>'
+            : '';
+        var devResetBtnHtml = isShopDevMode()
+            ? '<button class="shop-dev-btn" id="shopDevResetBtn" title="重置所有物品/组合包的购买状态"><i class="fas fa-rotate-left"></i> 重置购买状态（dev）</button>'
+            : '';
+
+        mainBar.innerHTML = catTitleHtml +
+            '<span class="shop-toolbar-right">' + countHtml + devBtnHtml + devResetBtnHtml + '</span>';
+
+        var devBtn = document.getElementById('shopDevCoinBtn');
+        if (devBtn) {
+            devBtn.addEventListener('click', openShopDevCoinModal);
+        }
+
+        var devResetBtn = document.getElementById('shopDevResetBtn');
+        if (devResetBtn) {
+            devResetBtn.addEventListener('click', openShopDevResetModal);
+        }
     }
 }
 
@@ -1475,6 +1627,8 @@ function renderShopUI() {
     var statsEl = document.getElementById('shopStats');
     if (!content) return;
 
+    _shopRecCleanup();
+    content.classList.remove('shop-content-rec');
     renderShopToolbar();
 
     var coinBalance = typeof getPreCoinBalance === 'function' ? getPreCoinBalance() : 0;
@@ -1521,6 +1675,12 @@ function renderShopUI() {
             '<span class="wh-stat"><i class="fas fa-receipt"></i> 累计购买 <b>' + shopData.totalPurchased + '</b> 件</span>';
 
         _shopStartStockRefreshCountdown();
+    }
+
+    // ★ 「推荐」为独立精选轮播视图，不参与普通分类过滤
+    if (_shopActiveCategory === 'recommend') {
+        _shopRenderRecommendView(content);
+        return;
     }
 
     // ★ 统一过滤（singles + bundles + specials）
@@ -1658,6 +1818,422 @@ function renderShopUI() {
             });
         }
     });
+}
+
+// ==================== 「推荐」精选轮播 ====================
+// 逻辑：从当前在售单品 / 组合包 / 限定外观中按「稀有度 + 折扣 + 价值」综合评分挑选 7 款，
+//      以 3D 斜向叠放卡片 + 鼠标跟随倾斜展示，支持圆点 / 滚轮 / 方向键 / 左右箭头切换与自动轮播。
+var _shopRecIndex = 0;
+var _shopRecEntries = [];
+var _shopRecAutoTimer = null;
+var _shopRecWheelLockUntil = 0;
+var _shopRecHover = false;
+var _shopRecAutoDelay = 7000;
+var _shopRecMaxCount = 7;
+
+function _shopRecHexRgb(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+    if (!m) return '192, 57, 43';
+    return parseInt(m[1].slice(0, 2), 16) + ', ' + parseInt(m[1].slice(2, 4), 16) + ', ' + parseInt(m[1].slice(4, 6), 16);
+}
+
+// 汇总当前可售卖的推荐条目（已售罄 / 已拥有 / 活动锁定的特殊商品不进入推荐）
+function _shopGetRecommendEntries() {
+    var entries = [];
+    var rarityScore = { legendary: 100, epic: 70, rare: 45, common: 20 };
+    var catLabels = { consumable: '消耗品', material: '材料', badge: '徽章' };
+
+    Object.keys(SHOP_ITEM_PRICES).forEach(function(id) {
+        var cfg = SHOP_ITEM_PRICES[id];
+        if (!cfg || !cfg.enabled) return;
+        var wid = _shopResolveWarehouseId(id);
+        if (typeof WAREHOUSE_ITEMS === 'undefined' || !WAREHOUSE_ITEMS[wid]) return;
+        var item = WAREHOUSE_ITEMS[wid];
+        if (getShopStockRemaining(id) <= 0) return;
+
+        var discount = getShopItemEffectiveDiscount(id);
+        var price = getShopItemFinalPrice(id);
+        var rarity = item.rarity || 'common';
+        var meta = (typeof WAREHOUSE_RARITY !== 'undefined' && WAREHOUSE_RARITY[rarity])
+            ? WAREHOUSE_RARITY[rarity] : { name: '普通', color: '#9aa0a6' };
+
+        entries.push({
+            kind: 'item',
+            id: id,
+            name: item.name,
+            desc: item.desc || '',
+            icon: item.icon,
+            color: item.color || '#c0392b',
+            rarityName: meta.name,
+            rarityColor: meta.color,
+            kindLabel: catLabels[item.category] || '道具',
+            price: price,
+            originalPrice: (discount > 0 && discount < 100) ? cfg.price : null,
+            discount: discount,
+            score: (rarityScore[rarity] || 10) + Math.min(30, price / 200) + discount * 1.5
+        });
+    });
+
+    Object.keys(SHOP_BUNDLES).forEach(function(id) {
+        var cfg = SHOP_BUNDLES[id];
+        if (!cfg || !cfg.enabled) return;
+        if (getShopBundleStockRemaining(id) <= 0) return;
+        var price = getShopBundleFinalPrice(id);
+        var original = getShopBundleSingleSum(id);
+        var discount = cfg.discount || 0;
+        entries.push({
+            kind: 'bundle',
+            id: id,
+            name: cfg.name,
+            desc: cfg.note || '',
+            icon: cfg.icon || 'fas fa-gift',
+            color: cfg.color || '#e67e22',
+            rarityName: '组合',
+            rarityColor: '#e67e22',
+            kindLabel: '组合包',
+            price: price,
+            originalPrice: original > price ? original : null,
+            discount: discount,
+            score: 55 + Math.min(30, price / 200) + discount * 1.5
+        });
+    });
+
+    Object.keys(SHOP_SPECIAL_ITEMS).forEach(function(id) {
+        var cfg = SHOP_SPECIAL_ITEMS[id];
+        if (!cfg || !cfg.enabled) return;
+        if (_shopIsSpecialOwned(id) || _shopIsSpecialBlockedByEvent(id)) return;
+        var price = getShopSpecialPrice(id);
+        entries.push({
+            kind: 'special',
+            id: id,
+            name: cfg.name,
+            desc: cfg.desc || '',
+            icon: cfg.icon,
+            color: cfg.color || '#f39c12',
+            rarityName: '限定',
+            rarityColor: '#f39c12',
+            kindLabel: cfg.kind === 'background' ? '限定背景' : '限定名片',
+            price: price,
+            originalPrice: null,
+            discount: 0,
+            score: 70 + Math.min(30, price / 200)
+        });
+    });
+
+    entries.sort(function(a, b) {
+        if (b.score !== a.score) return b.score - a.score;
+        return b.price - a.price;
+    });
+    entries = entries.slice(0, _shopRecMaxCount);
+
+    entries.forEach(function(e) {
+        if (e.kind === 'bundle' && e.originalPrice && e.originalPrice > e.price) {
+            e.tag = '超值组合';
+            e.reason = '单买合计 ' + e.originalPrice.toLocaleString() + '，打包立省 ' + (e.originalPrice - e.price).toLocaleString() + ' PRE Coin';
+        } else if (e.discount > 0 && e.discount < 100) {
+            e.tag = '限时特惠';
+            e.reason = '当前享受 ' + e.discount + '% 折扣，入手正当时';
+        } else if (e.kind === 'special') {
+            e.tag = '限定返场';
+            e.reason = '限定外观返场，收藏与展示价值兼备';
+        } else if (e.rarityName === '传说') {
+            e.tag = '稀世珍品';
+            e.reason = '传说级稀有道具，人气与实用度兼具';
+        } else {
+            e.tag = '人气之选';
+            e.reason = '高性价比之选，适合日常补给';
+        }
+        e.stockText = _shopRecStockText(e);
+    });
+
+    return entries;
+}
+
+function _shopRecStockText(entry) {
+    if (entry.kind === 'special') return '每账号限购 1 件';
+    var cfg = entry.kind === 'bundle' ? SHOP_BUNDLES[entry.id] : SHOP_ITEM_PRICES[entry.id];
+    if (!cfg) return '';
+    var remaining = entry.kind === 'bundle' ? getShopBundleStockRemaining(entry.id) : getShopStockRemaining(entry.id);
+    if (cfg.stockType === 'daily') return '今日剩余 ' + remaining + ' 件';
+    if (cfg.stockType === 'weekly') return '本周剩余 ' + remaining + ' 件';
+    if (cfg.stockType === 'monthly') return '本月剩余 ' + remaining + ' 件';
+    if (cfg.stockType === 'total') return '限购剩余 ' + remaining + ' 件';
+    return '不限量供应';
+}
+
+function _shopRecStopAuto() {
+    if (_shopRecAutoTimer) {
+        clearInterval(_shopRecAutoTimer);
+        _shopRecAutoTimer = null;
+    }
+}
+
+function _shopRecStartAuto() {
+    _shopRecStopAuto();
+    if (_shopRecHover || _shopRecEntries.length < 2) return;
+    _shopRecRestartProgress();
+    _shopRecAutoTimer = setInterval(function() {
+        if (document.hidden || _shopRecHover) return;
+        _shopRecIndex = (_shopRecIndex + 1) % _shopRecEntries.length;
+        _shopRecPaint();
+    }, _shopRecAutoDelay);
+}
+
+function _shopRecRestartProgress() {
+    var bar = document.querySelector('#shopRecStage .shop-rec-progress > span');
+    if (!bar) return;
+    bar.style.animation = 'none';
+    void bar.offsetWidth;
+    bar.style.animation = '';
+}
+
+// 离开推荐页 / 关闭商店时清理定时器与键盘监听
+function _shopRecCleanup() {
+    _shopRecStopAuto();
+    _shopRecHover = false;
+    if (typeof document !== 'undefined' && typeof _shopRecKeyHandler === 'function') {
+        document.removeEventListener('keydown', _shopRecKeyHandler);
+    }
+}
+
+function _shopRecKeyHandler(e) {
+    if (!document.getElementById('shopRecStage')) return;
+    var t = e.target;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        _shopRecGoTo(_shopRecIndex + 1);
+    } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        _shopRecGoTo(_shopRecIndex - 1);
+    }
+}
+
+function _shopRecGoTo(nextIndex) {
+    if (!_shopRecEntries.length) return;
+    var len = _shopRecEntries.length;
+    _shopRecIndex = ((nextIndex % len) + len) % len;
+    _shopRecPaint();
+    if (!_shopRecHover) _shopRecStartAuto();
+}
+
+// 单张 3D 玻璃卡片：仅渲染当前推荐商品，配合舞台透视与鼠标跟随倾斜
+function _shopRecBuildLayers(entry) {
+    var plainIcon = _shopItemIconHtml(entry.icon);
+    var coloredIcon = _shopItemIconHtml(entry.icon, entry.color);
+    return '<div class="shop-rec-layer is-front" style="z-index:20;">' +
+        '<div class="shop-rec-card">' +
+            '<span class="shop-rec-card-sheen"></span>' +
+            '<div class="shop-rec-icon3d">' +
+                '<span class="shop-rec-icon-copy c1">' + plainIcon + '</span>' +
+                '<span class="shop-rec-icon-copy c2">' + plainIcon + '</span>' +
+                '<span class="shop-rec-icon-main">' + coloredIcon + '</span>' +
+            '</div>' +
+            '<div class="shop-rec-card-chips">' +
+                '<span class="shop-rec-chip" style="color:' + entry.rarityColor + ';border-color:' + entry.rarityColor + ';">' + entry.rarityName + '</span>' +
+                '<span class="shop-rec-chip">' + entry.kindLabel + '</span>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+}
+
+// 点击波纹：从鼠标位置向外扩散的玻璃光斑
+function _shopRecSpawnRipple(stage, clientX, clientY) {
+    var rect = stage.getBoundingClientRect();
+    var ripple = document.createElement('span');
+    ripple.className = 'shop-rec-ripple';
+    ripple.style.left = (clientX - rect.left) + 'px';
+    ripple.style.top = (clientY - rect.top) + 'px';
+    stage.appendChild(ripple);
+    setTimeout(function() {
+        if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+    }, 820);
+}
+
+function _shopRecInfoHtml(entry) {
+    var kindIcon = entry.kind === 'bundle' ? 'fas fa-gift' : (entry.kind === 'special' ? 'fas fa-gem' : 'fas fa-tag');
+    var priceHtml = '<div class="shop-rec-price">' +
+        '<b>' + entry.price.toLocaleString() + '</b>' +
+        '<span class="unit">PRE Coin</span>' +
+        (entry.originalPrice ? '<s>' + entry.originalPrice.toLocaleString() + '</s>' : '') +
+        '</div>';
+    var ctaLabel = entry.kind === 'bundle' ? '查看组合包' : '立即购买';
+    return '<div class="shop-rec-info-main">' +
+            '<div class="shop-rec-kicker">' +
+                '<span class="shop-rec-tag">' + entry.tag + '</span>' +
+                '<span class="shop-rec-kind"><i class="' + kindIcon + '"></i> ' + entry.kindLabel + '</span>' +
+                '<span class="shop-rec-stock"><i class="fas fa-cubes"></i> ' + entry.stockText + '</span>' +
+            '</div>' +
+            '<h3 class="shop-rec-title">' + entry.name + '</h3>' +
+            '<p class="shop-rec-desc">' + entry.desc + '</p>' +
+            '<div class="shop-rec-reason"><i class="fas fa-lightbulb"></i><span>' + entry.reason + '</span></div>' +
+        '</div>' +
+        '<div class="shop-rec-buy">' + priceHtml +
+            '<button class="shop-rec-cta" data-kind="' + entry.kind + '" data-id="' + entry.id + '">' +
+                '<i class="' + (entry.kind === 'bundle' ? 'fas fa-eye' : 'fas fa-shopping-cart') + '"></i> ' + ctaLabel +
+            '</button>' +
+        '</div>';
+}
+
+function _shopRecBuy(entry) {
+    if (!entry) return;
+    if (entry.kind === 'bundle') {
+        openShopBundleModal(entry.id);
+    } else if (entry.kind === 'special') {
+        shopPurchaseSpecialItem(entry.id);
+    } else {
+        shopPurchaseItem(entry.id, 1);
+    }
+}
+
+function _shopRecPaint() {
+    var stage = document.getElementById('shopRecStage');
+    var ensemble = document.getElementById('shopRecEnsemble');
+    var info = document.getElementById('shopRecInfo');
+    if (!stage || !ensemble || !info) return;
+    if (!_shopRecEntries.length) return;
+    if (_shopRecIndex >= _shopRecEntries.length) _shopRecIndex = 0;
+    if (_shopRecIndex < 0) _shopRecIndex = _shopRecEntries.length - 1;
+
+    var entry = _shopRecEntries[_shopRecIndex];
+    stage.style.setProperty('--rec-accent', entry.color);
+    stage.style.setProperty('--rec-accent-rgb', _shopRecHexRgb(entry.color));
+
+    ensemble.innerHTML = _shopRecBuildLayers(entry);
+    info.innerHTML = _shopRecInfoHtml(entry);
+
+    var idxEl = stage.querySelector('.shop-rec-index');
+    if (idxEl) {
+        idxEl.textContent = ('0' + (_shopRecIndex + 1)).slice(-2) + ' / ' + ('0' + _shopRecEntries.length).slice(-2);
+    }
+
+    stage.querySelectorAll('.shop-rec-dot').forEach(function(dot, i) {
+        var active = i === _shopRecIndex;
+        dot.classList.toggle('active', active);
+        dot.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+
+    // 重置进度条动画，让每张卡片重新计时
+    _shopRecRestartProgress();
+
+    var cta = info.querySelector('.shop-rec-cta');
+    if (cta) {
+        cta.addEventListener('click', function() { _shopRecBuy(entry); });
+    }
+}
+
+function _shopRenderRecommendView(content) {
+    _shopRecEntries = _shopGetRecommendEntries();
+    content.classList.add('shop-content-rec');
+    if (!_shopRecEntries.length) {
+        content.innerHTML = '<div class="wh-empty"><i class="fas fa-thumbs-up"></i><p>暂无推荐商品</p>' +
+            '<span>当前没有可推荐的在售商品，稍后再来看看吧</span></div>';
+        return;
+    }
+    if (_shopRecIndex >= _shopRecEntries.length) _shopRecIndex = 0;
+
+    var first = _shopRecEntries[_shopRecIndex];
+    var dotsHtml = _shopRecEntries.map(function(e, i) {
+        return '<button class="shop-rec-dot" data-rec-index="' + i + '" role="tab" aria-selected="false" title="' + e.name + '"></button>';
+    }).join('');
+
+    content.innerHTML =
+        '<div class="shop-rec">' +
+            '<div class="shop-rec-stage" id="shopRecStage" style="--rec-accent:' + first.color + ';--rec-accent-rgb:' + _shopRecHexRgb(first.color) + ';">' +
+                '<div class="shop-rec-grid"></div>' +
+                '<div class="shop-rec-glow"></div>' +
+                '<div class="shop-rec-progress"><span></span></div>' +
+                '<div class="shop-rec-eyebrow"><i class="fas fa-thumbs-up"></i> PRE SELECT · 精选推荐</div>' +
+                '<div class="shop-rec-index">01 / ' + ('0' + _shopRecEntries.length).slice(-2) + '</div>' +
+                '<div class="shop-rec-tilt"><div class="shop-rec-ensemble" id="shopRecEnsemble"></div></div>' +
+                '<button class="shop-rec-arrow prev" data-rec-dir="-1" title="上一个推荐"><i class="fas fa-chevron-left"></i></button>' +
+                '<button class="shop-rec-arrow next" data-rec-dir="1" title="下一个推荐"><i class="fas fa-chevron-right"></i></button>' +
+                '<div class="shop-rec-hint"><i class="fas fa-computer-mouse"></i> 滚轮切换</div>' +
+                '<div class="shop-rec-dots" role="tablist">' + dotsHtml + '</div>' +
+            '</div>' +
+            '<div class="shop-rec-info" id="shopRecInfo"></div>' +
+        '</div>';
+
+    var stage = content.querySelector('#shopRecStage');
+    if (!stage) return;
+
+    stage.querySelectorAll('.shop-rec-dot').forEach(function(dot) {
+        dot.addEventListener('click', function(e) {
+            e.stopPropagation();
+            _shopRecGoTo(parseInt(dot.getAttribute('data-rec-index'), 10) || 0);
+        });
+    });
+
+    stage.querySelectorAll('.shop-rec-arrow').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dir = parseInt(btn.getAttribute('data-rec-dir'), 10) || 1;
+            _shopRecGoTo(_shopRecIndex + dir);
+        });
+    });
+
+    // 鼠标移动 → 整体 3D 跟随倾斜 + 光斑跟随
+    stage.addEventListener('mousemove', function(e) {
+        var rect = stage.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        var px = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+        var py = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+        stage.style.setProperty('--rx', ((0.5 - py) * 9).toFixed(2) + 'deg');
+        stage.style.setProperty('--ry', ((px - 0.5) * 13).toFixed(2) + 'deg');
+        stage.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+        stage.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+    });
+    stage.addEventListener('mouseleave', function() {
+        stage.style.setProperty('--rx', '0deg');
+        stage.style.setProperty('--ry', '0deg');
+        stage.style.setProperty('--gx', '52%');
+        stage.style.setProperty('--gy', '42%');
+    });
+
+    // 悬停暂停自动轮播与进度条
+    stage.addEventListener('mouseenter', function() {
+        _shopRecHover = true;
+        _shopRecStopAuto();
+        stage.classList.add('is-paused');
+    });
+    stage.addEventListener('mouseleave', function() {
+        _shopRecHover = false;
+        stage.classList.remove('is-paused');
+        _shopRecStartAuto();
+    });
+
+    // 滚轮切换（节流 420ms，避免触控板惯性一次跳过多个）
+    stage.addEventListener('wheel', function(e) {
+        if (Math.abs(e.deltaY) < 4 && Math.abs(e.deltaX) < 4) return;
+        e.preventDefault();
+        var now = Date.now();
+        if (now < _shopRecWheelLockUntil) return;
+        _shopRecWheelLockUntil = now + 420;
+        var delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+        _shopRecGoTo(_shopRecIndex + (delta > 0 ? 1 : -1));
+    }, { passive: false });
+
+    // 点击玻璃卡片：按压下沉 + 波纹光斑（圆点/箭头不触发）
+    stage.addEventListener('pointerdown', function(e) {
+        if (e.button !== 0) return;
+        var t = e.target;
+        if (t && t.closest && t.closest('.shop-rec-dot, .shop-rec-arrow')) return;
+        var card = stage.querySelector('.shop-rec-card');
+        if (card) card.classList.add('is-pressed');
+        _shopRecSpawnRipple(stage, e.clientX, e.clientY);
+        var release = function() {
+            if (card) card.classList.remove('is-pressed');
+            document.removeEventListener('pointerup', release);
+            document.removeEventListener('pointercancel', release);
+        };
+        document.addEventListener('pointerup', release);
+        document.addEventListener('pointercancel', release);
+    });
+
+    document.addEventListener('keydown', _shopRecKeyHandler);
+
+    _shopRecPaint();
+    _shopRecStartAuto();
 }
 
 function _shopUpdateTotalPrice(itemId, qty) {
@@ -1884,13 +2460,41 @@ function buildShopBundleCardHTML(bundleId) {
         limitHtml = '<div class="shop-stock shop-stock-total"><i class="fas fa-infinity"></i> 总限购 ' + cfg.stock + '，剩余 ' + remaining + '</div>';
     }
 
+    // —— 卡片 3D 叠放堆（与详情弹窗同款的立体堆叠视觉，最多展示 4 件，超出以 +N 标记）——
+    var pileItems = cfg.items.slice(0, 4).map(function(it) {
+        var sub = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[it.itemId])
+            ? WAREHOUSE_ITEMS[it.itemId] : { name: it.itemId, icon: 'fas fa-box', color: '#999' };
+        return { name: sub.name, icon: sub.icon, color: sub.color, qty: it.qty || 1 };
+    });
+    var extraCount = Math.max(0, cfg.items.length - pileItems.length);
+    var pileOffsets = [
+        { tx: 0,   ty: 0,   rot: -8,  z: 3 },
+        { tx: 12,  ty: -13, rot: -2,  z: 4 },
+        { tx: 20,  ty: 11,  rot: 6,   z: 5 },
+        { tx: -9,  ty: 18,  rot: 10,  z: 6 }
+    ];
+    var pileHtml = '<div class="shop-card-pile-bg" style="background:linear-gradient(135deg,' + hexToRgbaShop(cfg.color, 0.2) + ' 0%,' + hexToRgbaShop(cfg.color, 0.05) + ' 100%);">' +
+        '<div class="shop-card-pile">' +
+        pileItems.map(function(it, idx) {
+            var o = pileOffsets[idx] || pileOffsets[0];
+            return '<div class="shop-card-pile-item" style="' +
+                'background:' + hexToRgbaShop(it.color, 0.92) + ';' +
+                'transform:translate(' + o.tx + 'px,' + o.ty + 'px) rotate(' + o.rot + 'deg);' +
+                'z-index:' + o.z + ';' +
+                'box-shadow:0 5px 14px ' + hexToRgbaShop(it.color, 0.35) + ', 0 2px 5px rgba(0,0,0,0.15);' +
+                '" title="' + it.name + (it.qty > 1 ? ' ×' + it.qty : '') + '">' +
+                _shopItemIconHtml(it.icon) +
+                '</div>';
+        }).join('') +
+        '</div>' +
+        (extraCount > 0 ? '<div class="shop-card-pile-more">+' + extraCount + '</div>' : '') +
+        '</div>';
+
     return `
         <div class="wh-item-card shop-bundle-card ${isSoldOut ? 'shop-sold-out' : ''}" data-id="${bundleId}">
             ${priceTagHtml}
             <span class="wh-type-tag shop-bundle-type">组合包</span>
-            <div class="wh-item-icon shop-bundle-icon" style="background: ${hexToRgbaShop(cfg.color, 0.15)};">
-                ${_shopItemIconHtml(cfg.icon, cfg.color)}
-            </div>
+            ${pileHtml}
             <div class="wh-item-name">${cfg.name}</div>
             <div class="shop-bundle-count"><i class="fas fa-boxes-stacked"></i> 含 ${cfg.items.length} 件商品${savings > 0 ? ' · 立省 ' + savings + ' PRE Coin' : ''}</div>
             <div class="wh-item-desc">${cfg.note || ''}</div>
@@ -2458,13 +3062,14 @@ function getShopStyleCSS() {
             border-color: transparent; color: white;
         }
         #shopModal .wh-content {
-            flex: 1; overflow-y: auto; padding: 24px 40px;
+            flex: 1; overflow-y: auto; padding: 20px 24px;
             display: block; /* 让 .shop-grid 成为真正的网格容器 */
+            min-height: 0;
         }
         /* ★ 统一网格容器：单类商品/组合包 均用此 class */
         #shopModal .shop-grid {
             display: grid; gap: 16px; align-content: start;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
         }
         /* ★ 分组 subsection（weekly/monthly/total 混排 singles + bundles 时） */
         #shopModal .shop-subsection { margin-bottom: 18px; }
@@ -2568,14 +3173,28 @@ function getShopStyleCSS() {
 
     // ====== 响应式 ======
     var responsiveCSS = `
-        @media (max-width: 1400px) { #shopModal .shop-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 1100px) { #shopModal .shop-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 800px)  { #shopModal .shop-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 1500px) { #shopModal .shop-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 1100px) { #shopModal .shop-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px)  {
+            /* 窄屏：侧边栏转为矩形顶部横向滚动条 */
+            #shopModal .shop-layout { flex-direction: column; }
+            #shopModal .shop-sidebar {
+                flex: 0 0 auto; width: 100%; max-width: none;
+                flex-direction: row; align-items: center;
+                overflow-x: auto; overflow-y: hidden;
+                border-right: none; border-bottom: 1px solid rgba(0,0,0,0.07);
+                padding: 10px 14px; gap: 8px;
+            }
+            #shopModal .shop-side-title { display: none; }
+            #shopModal .shop-side-item { flex: 0 0 auto; width: auto; padding: 7px 12px; }
+            #shopModal .shop-side-sep { width: 1px; height: 20px; margin: 0 2px; }
+        }
+        @media (max-width: 700px)  { #shopModal .shop-grid { grid-template-columns: repeat(1, 1fr); } }
         @media (max-width: 600px)  {
-            #shopModal .wh-header, #shopModal .wh-toolbar, #shopModal .wh-footer { padding: 14px 16px !important; }
+            #shopModal .wh-header, #shopModal .wh-footer { padding: 14px 16px !important; }
             #shopModal .wh-stats { display: none; }
-            #shopModal .wh-content { padding: 16px; }
-            #shopModal .shop-grid { grid-template-columns: repeat(1, 1fr); }
+            #shopModal .shop-content-outer { padding: 12px; }
+            #shopModal .wh-content { padding: 14px 12px; }
         }
     `;
 
@@ -2585,6 +3204,152 @@ function getShopStyleCSS() {
             width: 100%; height: 100%;
             display: flex; flex-direction: column;
             background: #f5f6fa; overflow: hidden;
+        }
+
+        /* ====== 内容区大矩形（左侧边栏 1/6 + 右侧内容 5/6） ====== */
+        #shopModal .shop-content-outer {
+            flex: 1; min-height: 0;
+            display: flex; padding: 22px 40px;
+        }
+        #shopModal .shop-layout {
+            flex: 1; min-height: 0; min-width: 0;
+            display: flex; background: white;
+            border-radius: 20px; border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        /* —— 左侧竖向侧边栏（约 1/6） —— */
+        #shopModal .shop-sidebar {
+            flex: 0 0 16.6%; min-width: 168px; max-width: 230px;
+            display: flex; flex-direction: column; gap: 4px;
+            padding: 18px 12px; overflow-y: auto; overflow-x: hidden;
+            background: linear-gradient(180deg, #fafbfc 0%, #f4f5f7 100%);
+            border-right: 1px solid rgba(0,0,0,0.07);
+            scrollbar-width: thin;
+        }
+        #shopModal .shop-sidebar::-webkit-scrollbar { width: 6px; }
+        #shopModal .shop-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(192,57,43,0.25); border-radius: 6px;
+        }
+        #shopModal .shop-side-title {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+            color: #9aa0a6; text-transform: uppercase;
+            padding: 0 10px 10px; flex-shrink: 0;
+        }
+        #shopModal .shop-side-title i { color: #c0392b; font-size: 11px; }
+        #shopModal .shop-side-item {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 11px 12px; border: none; border-radius: 12px;
+            background: transparent; color: #555;
+            font-size: 13.5px; font-weight: 600; cursor: pointer;
+            transition: all 0.22s ease; text-align: left;
+            position: relative; flex-shrink: 0;
+        }
+        #shopModal .shop-side-item i {
+            width: 30px; height: 30px; flex-shrink: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 9px; font-size: 13px;
+            background: rgba(0,0,0,0.05); color: #777;
+            transition: all 0.22s ease;
+        }
+        #shopModal .shop-side-item .shop-side-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #shopModal .shop-side-count {
+            font-style: normal; font-size: 10.5px; font-weight: 700;
+            min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.06); color: #999; flex-shrink: 0;
+            transition: all 0.22s ease;
+        }
+        #shopModal .shop-side-item:hover {
+            background: rgba(192, 57, 43, 0.07); color: #c0392b;
+        }
+        #shopModal .shop-side-item:hover i { background: rgba(192,57,43,0.12); color: #c0392b; }
+        #shopModal .shop-side-item.active {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+        }
+        #shopModal .shop-side-item.active i { background: rgba(255,255,255,0.2); color: white; }
+        #shopModal .shop-side-item.active .shop-side-count { background: rgba(255,255,255,0.25); color: white; }
+        #shopModal .shop-side-sep {
+            height: 1px; margin: 8px 10px; flex-shrink: 0;
+            background: rgba(0,0,0,0.08);
+        }
+        /* —— 右侧主内容区（约 5/6） —— */
+        #shopModal .shop-main {
+            flex: 1; min-width: 0; min-height: 0;
+            display: flex; flex-direction: column;
+        }
+        #shopModal .shop-main-bar {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            padding: 14px 24px; flex-shrink: 0;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            background: rgba(0,0,0,0.015);
+        }
+        #shopModal .shop-main-cat {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 15px; font-weight: 700; color: #2c3e50;
+        }
+        #shopModal .shop-main-cat i { color: #c0392b; font-size: 14px; }
+
+        /* —— 组合包卡片 3D 叠放堆 —— */
+        #shopModal .shop-card-pile-bg {
+            position: relative; width: 100%; aspect-ratio: 16/10;
+            border-radius: 14px; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #shopModal .shop-card-pile {
+            position: relative; width: 74px; height: 74px;
+            transform-style: preserve-3d; perspective: 420px;
+            transition: transform 0.3s ease;
+        }
+        #shopModal .shop-bundle-card:hover .shop-card-pile { transform: translateY(-4px) scale(1.05); }
+        #shopModal .shop-card-pile-item {
+            position: absolute; left: 50%; top: 50%;
+            width: 62%; aspect-ratio: 1/1; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; margin-left: -31%; margin-top: -31%;
+            animation: shopCardPileIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        #shopModal .shop-card-pile-item i { color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+        @keyframes shopCardPileIn {
+            0% { transform: translate(0,0) rotate(0) scale(0.6); opacity: 0; }
+            100% { opacity: 1; }
+        }
+        #shopModal .shop-card-pile-more {
+            position: absolute; right: 8px; bottom: 8px;
+            min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px;
+            background: rgba(0,0,0,0.2); color: white; font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        /* 暗色模式 —— 布局 / 侧边栏 / 3D 堆 */
+        body.dark-mode #shopModal .shop-layout {
+            background: #20203a; border-color: rgba(255,255,255,0.08);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        body.dark-mode #shopModal .shop-sidebar {
+            background: linear-gradient(180deg, #1c1c32 0%, #181828 100%);
+            border-right-color: rgba(255,255,255,0.08);
+        }
+        body.dark-mode #shopModal .shop-side-title { color: #777; }
+        body.dark-mode #shopModal .shop-side-item { color: #aaa; }
+        body.dark-mode #shopModal .shop-side-item i { background: rgba(255,255,255,0.07); color: #999; }
+        body.dark-mode #shopModal .shop-side-count { background: rgba(255,255,255,0.08); color: #888; }
+        body.dark-mode #shopModal .shop-side-item:hover { background: rgba(231,76,60,0.12); color: #e74c3c; }
+        body.dark-mode #shopModal .shop-side-item:hover i { background: rgba(231,76,60,0.18); color: #e74c3c; }
+        body.dark-mode #shopModal .shop-side-item.active { color: white; }
+        body.dark-mode #shopModal .shop-side-item.active i { background: rgba(255,255,255,0.2); color: white; }
+        body.dark-mode #shopModal .shop-side-item.active .shop-side-count { background: rgba(255,255,255,0.25); color: white; }
+        body.dark-mode #shopModal .shop-side-sep { background: rgba(255,255,255,0.1); }
+        body.dark-mode #shopModal .shop-main-bar {
+            border-bottom-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);
+        }
+        body.dark-mode #shopModal .shop-main-cat { color: #e8e8e8; }
+        body.dark-mode #shopModal .shop-card-pile-item i { color: white; }
+        @media (max-width: 900px) {
+            body.dark-mode #shopModal .shop-sidebar { border-bottom-color: rgba(255,255,255,0.1); }
         }
         #shopModal .shop-item-count {
             display: inline-flex; align-items: center; gap: 6px;
@@ -3350,5 +4115,407 @@ function getShopStyleCSS() {
 
     `;
 
-    return warehouseBaseCSS + warehouseDarkCSS + responsiveCSS + shopExtCSS + devCoinCSS + devResetCSS + bundleCSS;
+    // ====== 「推荐」精选轮播 ======
+    var recommendCSS = `
+        /* —— 侧边栏「推荐」条目：激活后持续流动 + 大拇指摆动 —— */
+        #shopModal .shop-side-item.shop-side-recommend { overflow: hidden; }
+        #shopModal .shop-side-item.shop-side-recommend > i { color: #d35400; background: rgba(243,156,18,0.14); }
+        #shopModal .shop-side-item.shop-side-recommend:hover > i { color: #c0392b; }
+        #shopModal .shop-side-item.shop-side-recommend.active {
+            background: linear-gradient(120deg, #b83227 0%, #e74c3c 35%, #f39c12 65%, #e74c3c 100%);
+            background-size: 240% 240%;
+            animation: shopRecSidebarFlow 5s ease infinite, shopRecSidebarPulse 2.4s ease-in-out infinite;
+        }
+        #shopModal .shop-side-item.shop-side-recommend.active::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,0.45) 50%, transparent 75%);
+            transform: translateX(-130%);
+            animation: shopRecSidebarShine 2.4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        #shopModal .shop-side-item.shop-side-recommend.active > i {
+            animation: shopRecThumbRock 1.8s ease-in-out infinite;
+            background: rgba(255,255,255,0.22); color: #fff;
+        }
+        @keyframes shopRecSidebarFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        @keyframes shopRecSidebarPulse {
+            0%, 100% { box-shadow: 0 4px 14px rgba(192,57,43,0.38); }
+            50% { box-shadow: 0 6px 24px rgba(243,156,18,0.5); }
+        }
+        @keyframes shopRecSidebarShine {
+            0% { transform: translateX(-130%); }
+            55%, 100% { transform: translateX(130%); }
+        }
+        @keyframes shopRecThumbRock {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.08); }
+            60% { transform: rotate(8deg) scale(1.05); }
+        }
+
+        /* —— 推荐视图：右侧大长方形 + 外侧左下角图文 —— */
+        #shopModal .wh-content.shop-content-rec {
+            display: flex; flex-direction: column;
+            padding: 22px 26px; overflow: hidden;
+        }
+        #shopModal .shop-rec {
+            display: flex; flex-direction: column; gap: 18px;
+            flex: 1 1 auto; height: auto; min-height: 0;
+        }
+        #shopModal .shop-rec-stage {
+            position: relative; flex: 1 1 auto; min-height: 320px;
+            border-radius: 26px; overflow: hidden;
+            background:
+                radial-gradient(circle at 18% 18%, rgba(var(--rec-accent-rgb), 0.30) 0%, transparent 46%),
+                radial-gradient(circle at 86% 82%, rgba(var(--rec-accent-rgb), 0.16) 0%, transparent 44%),
+                linear-gradient(135deg, #1b2230 0%, #121722 55%, #0b0f17 100%);
+            border: 1px solid rgba(255,255,255,0.09);
+            box-shadow: 0 18px 46px rgba(15,23,42,0.28);
+            perspective: 1300px;
+            --rx: 0deg; --ry: 0deg; --gx: 52%; --gy: 42%;
+            isolation: isolate; user-select: none;
+        }
+        #shopModal .shop-rec-grid {
+            position: absolute; inset: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.055) 1px, transparent 1px);
+            background-size: 52px 52px;
+            -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0%, transparent 78%);
+            mask-image: radial-gradient(circle at 50% 50%, #000 0%, transparent 78%);
+            opacity: 0.8;
+        }
+        #shopModal .shop-rec-glow {
+            position: absolute; inset: -20%; pointer-events: none;
+            background: radial-gradient(circle at var(--gx) var(--gy), rgba(var(--rec-accent-rgb), 0.30) 0%, rgba(var(--rec-accent-rgb), 0.08) 26%, transparent 55%);
+            transition: background 0.18s linear;
+            z-index: 1;
+        }
+        #shopModal .shop-rec-stage::before {
+            content: ''; position: absolute; left: 50%; top: 50%; width: 620px; height: 620px;
+            margin: -310px 0 0 -310px; border-radius: 50%;
+            border: 1px solid rgba(var(--rec-accent-rgb), 0.22);
+            box-shadow: 0 0 0 90px rgba(var(--rec-accent-rgb), 0.035), inset 0 0 80px rgba(var(--rec-accent-rgb), 0.05);
+            pointer-events: none; z-index: 0;
+        }
+        #shopModal .shop-rec-stage::after {
+            content: ''; position: absolute; left: 50%; bottom: -46%;
+            width: 78%; height: 62%; transform: translateX(-50%) rotateX(62deg);
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%, rgba(var(--rec-accent-rgb), 0.24), transparent 68%);
+            filter: blur(18px); pointer-events: none; z-index: 0;
+        }
+        #shopModal .shop-rec-progress {
+            position: absolute; left: 0; right: 0; top: 0; height: 3px;
+            background: rgba(255,255,255,0.08); z-index: 30;
+        }
+        #shopModal .shop-rec-progress > span {
+            display: block; height: 100%; width: 0;
+            background: linear-gradient(90deg, rgba(var(--rec-accent-rgb), 0.45), var(--rec-accent));
+            border-radius: 0 3px 3px 0;
+            animation: shopRecProgress 7s linear forwards;
+            box-shadow: 0 0 10px rgba(var(--rec-accent-rgb), 0.75);
+        }
+        #shopModal .shop-rec-stage.is-paused .shop-rec-progress > span { animation-play-state: paused; }
+        @keyframes shopRecProgress { from { width: 0; } to { width: 100%; } }
+        #shopModal .shop-rec-eyebrow {
+            position: absolute; left: 22px; top: 20px; z-index: 25;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 14px; border-radius: 999px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+            color: #f1f5f9; font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #shopModal .shop-rec-eyebrow i { color: var(--rec-accent); }
+        #shopModal .shop-rec-index {
+            position: absolute; right: 24px; top: 22px; z-index: 25;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.16em;
+            color: rgba(255,255,255,0.55);
+        }
+        #shopModal .shop-rec-index::before {
+            content: ''; display: inline-block; width: 22px; height: 1px;
+            background: rgba(var(--rec-accent-rgb), 0.8); vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        /* —— 单张 3D 玻璃卡片（鼠标跟随倾斜） —— */
+        #shopModal .shop-rec-tilt {
+            position: absolute; left: 50%; top: 49%; z-index: 10;
+            transform: translate(-50%, -50%) rotateX(var(--rx)) rotateY(var(--ry));
+            transform-style: preserve-3d;
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        #shopModal .shop-rec-ensemble {
+            position: relative; width: 280px; height: 340px;
+            transform-style: preserve-3d;
+            animation: shopRecFloat 7s ease-in-out infinite;
+        }
+        #shopModal .shop-rec-layer {
+            position: absolute; left: 50%; top: 50%; width: 264px; height: 336px;
+            margin: -168px 0 0 -132px;
+            transform-style: preserve-3d;
+            animation: shopRecLayerIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        #shopModal .shop-rec-layer.is-front { width: 264px; height: 336px; margin: -168px 0 0 -132px; }
+        @keyframes shopRecLayerIn {
+            from { opacity: 0; filter: blur(8px); }
+            to { filter: blur(0); }
+        }
+        #shopModal .shop-rec-card {
+            position: relative; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 18px; border-radius: 28px; overflow: hidden;
+            background:
+                radial-gradient(120% 90% at 14% 0%, rgba(255,255,255,0.36) 0%, rgba(255,255,255,0.10) 40%, transparent 64%),
+                radial-gradient(85% 65% at 88% 102%, rgba(var(--rec-accent-rgb), 0.26) 0%, transparent 66%),
+                linear-gradient(158deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.07) 52%, rgba(255,255,255,0.03) 100%);
+            border: 1px solid rgba(255,255,255,0.32);
+            box-shadow:
+                0 34px 64px rgba(0,0,0,0.46),
+                inset 0 1px 1px rgba(255,255,255,0.55),
+                inset 0 -22px 34px rgba(0,0,0,0.24),
+                inset 0 0 0 1px rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px) saturate(168%);
+            -webkit-backdrop-filter: blur(20px) saturate(168%);
+            transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, filter 0.22s ease;
+        }
+        /* 玻璃上沿的高光棱线 */
+        #shopModal .shop-rec-card::before {
+            content: ''; position: absolute; left: 7%; right: 7%; top: 0; height: 1.5px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.92) 50%, transparent 100%);
+            opacity: 0.85; pointer-events: none; z-index: 3;
+        }
+        #shopModal .shop-rec-layer.is-front .shop-rec-card {
+            border-color: rgba(var(--rec-accent-rgb), 0.5);
+            box-shadow:
+                0 36px 72px rgba(0,0,0,0.52),
+                0 0 0 1px rgba(var(--rec-accent-rgb), 0.2),
+                0 0 78px rgba(var(--rec-accent-rgb), 0.32),
+                inset 0 1px 1px rgba(255,255,255,0.6),
+                inset 0 -24px 38px rgba(0,0,0,0.26),
+                inset 0 0 0 1px rgba(255,255,255,0.1);
+        }
+        /* 按压：玻璃轻微下沉 + 内部提亮 + 光晕收紧 */
+        #shopModal .shop-rec-layer.is-front .shop-rec-card.is-pressed {
+            transform: translateY(3px) scale(0.976);
+            filter: brightness(1.1) saturate(1.12);
+            box-shadow:
+                0 14px 26px rgba(0,0,0,0.4),
+                0 0 0 1px rgba(var(--rec-accent-rgb), 0.35),
+                0 0 46px rgba(var(--rec-accent-rgb), 0.5),
+                inset 0 2px 10px rgba(0,0,0,0.28),
+                inset 0 1px 1px rgba(255,255,255,0.5);
+        }
+        #shopModal .shop-rec-card-sheen {
+            position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+            background:
+                radial-gradient(circle at 28% 18%, rgba(255,255,255,0.46) 0%, transparent 40%),
+                linear-gradient(135deg, transparent 38%, rgba(255,255,255,0.24) 50%, transparent 62%);
+            opacity: 0.8;
+        }
+        #shopModal .shop-rec-card-sheen::after {
+            content: ''; position: absolute; top: -70%; left: -45%; width: 46%; height: 240%;
+            background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%);
+            transform: rotate(16deg) translateX(-130%);
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #shopModal .shop-rec-card:hover .shop-rec-card-sheen::after {
+            transform: rotate(16deg) translateX(360%);
+        }
+        /* 点击波纹：从鼠标位置扩散的玻璃光斑 */
+        #shopModal .shop-rec-ripple {
+            position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px;
+            border-radius: 50%; pointer-events: none; z-index: 22;
+            background: radial-gradient(circle, rgba(255,255,255,0.92) 0%, rgba(var(--rec-accent-rgb), 0.55) 42%, transparent 72%);
+            box-shadow: 0 0 24px rgba(var(--rec-accent-rgb), 0.55);
+            animation: shopRecRipple 0.78s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        @keyframes shopRecRipple {
+            0% { transform: scale(0.6); opacity: 0.95; }
+            100% { transform: scale(24); opacity: 0; }
+        }
+        #shopModal .shop-rec-icon3d {
+            position: relative; width: 160px; height: 160px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 96px; line-height: 1; color: var(--rec-accent);
+            transform: translateZ(50px);
+            filter: drop-shadow(0 16px 26px rgba(var(--rec-accent-rgb), 0.45));
+            animation: shopRecIconFloat 5.6s ease-in-out infinite;
+        }
+        #shopModal .shop-rec-icon-copy,
+        #shopModal .shop-rec-icon-main {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #shopModal .shop-rec-icon-copy > i,
+        #shopModal .shop-rec-icon-main > i {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1em; height: 1em; font-size: 1em; line-height: 1;
+        }
+        #shopModal .shop-rec-icon-copy.c1 { color: rgba(0,0,0,0.34); transform: translate(6px, 7px); }
+        #shopModal .shop-rec-icon-copy.c2 { color: rgba(0,0,0,0.2); transform: translate(12px, 14px); filter: blur(1px); }
+        #shopModal .shop-rec-icon-main {
+            color: var(--rec-accent);
+            filter: drop-shadow(0 0 22px rgba(var(--rec-accent-rgb), 0.65));
+        }
+        @keyframes shopRecIconFloat {
+            0%, 100% { transform: translateZ(50px) translateY(0); }
+            50% { transform: translateZ(50px) translateY(-9px); }
+        }
+        #shopModal .shop-rec-card-chips {
+            display: flex; gap: 8px; position: relative; z-index: 2;
+            transform: translateZ(35px);
+        }
+        #shopModal .shop-rec-chip {
+            display: inline-flex; align-items: center;
+            padding: 3px 11px; border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(10,14,22,0.32);
+            color: #e2e8f0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+            backdrop-filter: blur(4px);
+        }
+        @keyframes shopRecFloat {
+            0%, 100% { transform: translateY(0) rotateZ(-0.4deg); }
+            50% { transform: translateY(-12px) rotateZ(0.4deg); }
+        }
+
+        /* —— 左右切换箭头 —— */
+        #shopModal .shop-rec-arrow {
+            position: absolute; top: 50%; transform: translateY(-50%); z-index: 28;
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(9,13,20,0.42); color: rgba(255,255,255,0.75);
+            font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px); transition: all 0.25s ease;
+        }
+        #shopModal .shop-rec-arrow.prev { left: 18px; }
+        #shopModal .shop-rec-arrow.next { right: 18px; }
+        #shopModal .shop-rec-arrow:hover {
+            background: var(--rec-accent); border-color: transparent; color: #10141c;
+            transform: translateY(-50%) scale(1.08);
+            box-shadow: 0 0 22px rgba(var(--rec-accent-rgb), 0.55);
+        }
+        #shopModal .shop-rec-hint {
+            position: absolute; left: 22px; bottom: 20px; z-index: 25;
+            display: inline-flex; align-items: center; gap: 7px;
+            font-size: 11px; color: rgba(255,255,255,0.5);
+        }
+        #shopModal .shop-rec-hint i { color: rgba(255,255,255,0.65); }
+
+        /* —— 大长方形右下角圆点（可点击 / 滚轮切换） —— */
+        #shopModal .shop-rec-dots {
+            position: absolute; right: 20px; bottom: 15px; z-index: 30;
+            display: flex; align-items: center; gap: 7px;
+            padding: 9px 13px; border-radius: 999px;
+            background: rgba(8,12,20,0.52); border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #shopModal .shop-rec-dot {
+            width: 7px; height: 7px; padding: 0; border-radius: 999px;
+            border: none; background: rgba(255,255,255,0.34); cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        #shopModal .shop-rec-dot:hover { background: rgba(255,255,255,0.72); transform: scale(1.25); }
+        #shopModal .shop-rec-dot.active {
+            width: 22px; background: var(--rec-accent);
+            box-shadow: 0 0 10px rgba(var(--rec-accent-rgb), 0.85);
+        }
+
+        /* —— 大长方形外侧左下角：标题 / 图文 / 推荐理由 / 价格与购买 —— */
+        #shopModal .shop-rec-info {
+            flex: 0 0 auto; display: flex; align-items: flex-end; justify-content: space-between;
+            gap: 28px; padding: 0 6px 2px;
+        }
+        #shopModal .shop-rec-info-main { min-width: 0; flex: 1; }
+        #shopModal .shop-rec-kicker {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 7px;
+        }
+        #shopModal .shop-rec-tag {
+            display: inline-flex; align-items: center;
+            padding: 3px 11px; border-radius: 999px;
+            background: linear-gradient(135deg, #c0392b, #e67e22);
+            color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+            box-shadow: 0 3px 10px rgba(192,57,43,0.3);
+        }
+        #shopModal .shop-rec-kind,
+        #shopModal .shop-rec-stock {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: #8a919a;
+        }
+        #shopModal .shop-rec-kind i { color: #c0392b; font-size: 11px; }
+        #shopModal .shop-rec-stock i { color: #7f8c8d; font-size: 11px; }
+        #shopModal .shop-rec-title {
+            margin: 0 0 6px; font-size: 22px; line-height: 1.25; color: #2c3e50;
+            font-weight: 800; letter-spacing: 0.01em;
+        }
+        #shopModal .shop-rec-desc {
+            margin: 0; max-width: 860px; font-size: 13px; line-height: 1.7; color: #7f8c8d;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        #shopModal .shop-rec-reason {
+            display: flex; align-items: center; gap: 7px; margin-top: 8px;
+            font-size: 12px; color: #b9770e;
+        }
+        #shopModal .shop-rec-reason i { color: #f39c12; }
+        #shopModal .shop-rec-buy {
+            flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+        }
+        #shopModal .shop-rec-price { display: flex; align-items: baseline; gap: 8px; color: #c0392b; }
+        #shopModal .shop-rec-price b { font-size: 26px; font-weight: 800; line-height: 1; }
+        #shopModal .shop-rec-price .unit { font-size: 12px; color: #999; }
+        #shopModal .shop-rec-price s { font-size: 12px; color: #b0b6bd; }
+        #shopModal .shop-rec-cta {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            min-width: 168px; padding: 12px 24px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 6px 18px rgba(192,57,43,0.32);
+            transition: all 0.25s ease;
+        }
+        #shopModal .shop-rec-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(192,57,43,0.42);
+            filter: brightness(1.04);
+        }
+        #shopModal .shop-rec-cta:active { transform: translateY(0) scale(0.98); }
+
+        /* —— 暗色模式 —— */
+        body.dark-mode #shopModal .shop-rec-title { color: #e8e8e8; }
+        body.dark-mode #shopModal .shop-rec-desc { color: #98a0aa; }
+        body.dark-mode #shopModal .shop-rec-kind,
+        body.dark-mode #shopModal .shop-rec-stock { color: #8a919a; }
+        body.dark-mode #shopModal .shop-rec-price s { color: #666; }
+
+        /* —— 响应式 —— */
+        @media (max-width: 1100px) {
+            #shopModal .shop-rec-stage { min-height: 300px; }
+            #shopModal .shop-rec-ensemble { width: 240px; height: 300px; }
+            #shopModal .shop-rec-layer { width: 210px; height: 274px; margin: -137px 0 0 -105px; }
+            #shopModal .shop-rec-layer.is-front { width: 228px; height: 296px; margin: -148px 0 0 -114px; }
+            #shopModal .shop-rec-icon3d { width: 136px; height: 136px; font-size: 78px; }
+            #shopModal .shop-rec-title { font-size: 19px; }
+        }
+        @media (max-width: 900px) {
+            #shopModal .shop-rec-stage { min-height: 260px; }
+            #shopModal .shop-rec-ensemble { width: 210px; height: 260px; }
+            #shopModal .shop-rec-layer { width: 180px; height: 236px; margin: -118px 0 0 -90px; }
+            #shopModal .shop-rec-layer.is-front { width: 196px; height: 254px; margin: -127px 0 0 -98px; }
+            #shopModal .shop-rec-icon3d { width: 118px; height: 118px; font-size: 66px; }
+            #shopModal .shop-rec-info { flex-direction: column; align-items: stretch; gap: 14px; }
+            #shopModal .shop-rec-buy { flex-direction: row; align-items: center; justify-content: space-between; }
+            #shopModal .shop-rec-eyebrow { left: 14px; top: 14px; padding: 5px 10px; font-size: 10px; }
+            #shopModal .shop-rec-index { right: 16px; top: 18px; font-size: 11px; }
+            #shopModal .shop-rec-arrow { width: 34px; height: 34px; }
+            #shopModal .shop-rec-arrow.prev { left: 10px; }
+            #shopModal .shop-rec-arrow.next { right: 10px; }
+            #shopModal .shop-rec-hint { display: none; }
+        }
+    `;
+
+    return warehouseBaseCSS + warehouseDarkCSS + responsiveCSS + shopExtCSS + devCoinCSS + devResetCSS + bundleCSS + recommendCSS;
 }

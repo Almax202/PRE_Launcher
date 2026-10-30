@@ -37,35 +37,35 @@ var WAREHOUSE_ITEMS = {
     exp_boost_small: {
         name: '经验值加成卡 Ⅰ', icon: 'fas fa-gauge', color: '#3498db',
         category: 'consumable', rarity: 'common', showSource: true,
-        desc: '使用后30分钟内，经验获取提升5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。',
+        desc: '使用后30分钟内，经验获取提升5%。（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。）',
         flavorText: '一张微微泛着蓝色光芒的卡片，握在手中时，仿佛连时间的流速都变得更有价值。\n——是谁研发出的这张卡片呢？也许这是一个新的开始。',
         source: '活动奖励 / 商店兑换', usable: true, _boostType: 'small', _boostPercent: 5
     },
     exp_boost_mid: {
         name: '经验值加成卡 Ⅱ', icon: 'fas fa-chart-line', color: '#9b59b6',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '使用后30分钟内，经验获取提升15%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。',
+        desc: '使用后30分钟内，经验获取提升15%。（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。）',
         flavorText: '一张微微泛着紫色光芒的卡片，激活它的人会感到思维前所未有地敏捷。\n——或许这张卡片内含的可能性远比你想象的更多。',
         source: '活动奖励 / 商店兑换', usable: true, _boostType: 'mid', _boostPercent: 15
     },
     exp_boost_large: {
         name: '经验值加成卡 Ⅲ', icon: 'fas fa-rocket', color: '#f39c12',
         category: 'consumable', rarity: 'epic', showSource: true,
-        desc: '使用后30分钟内，经验获取提升30%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。',
+        desc: '使用后30分钟内，经验获取提升30%。（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。）',
         flavorText: '一张微微泛着黄色光芒的卡片，仿佛下一秒就要升空 \n——所谓效率的极限，本来就是用来被突破的。',
         source: '特殊活动奖励', usable: true, _boostType: 'large', _boostPercent: 30
     },
     exp_boost_premium: {
         name: '经验值加成卡 Ⅳ', icon: 'fas fa-fire', color: '#c0392b',
         category: 'consumable', rarity: 'legendary', showSource: true,
-        desc: '使用后30分钟内，经验获取提升50%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。',
+        desc: '使用后30分钟内，经验获取提升50%。（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。）',
         flavorText: '一张微微泛着红色光芒的卡片，炽红烈焰沿卡缘燃起，连空气都被蒸腾出涟漪 \n——这是经验加成的极致形态，令人难以直视。',
         source: '高级活动奖励 / 商店兑换', usable: true, _boostType: 'premium', _boostPercent: 50
     },
     exp_boost_5: {
         name: '经验值加成卡 V', icon: 'fas fa-bolt', color: '#ff2d55',
         category: 'consumable', rarity: 'legendary', showSource: true,
-        desc: '使用后30分钟内，经验获取提升75%（可与不同类型加成卡叠加，同类型不可叠加，最多同时5张）。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。仅在阶段突破·极限模式（121级后）可用。',
+        desc: '使用后30分钟内，经验获取提升75%。（该卡仅在阶段突破·极限模式（121级后）可用；可与不同类型加成卡叠加，同类型不可叠加，最多同时5张。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。）',
         flavorText: '一道撕裂天穹的猩红闪电，将经验加成的极限推向了又一个顶峰 \n——当雷霆落下，所有的天花板都不过是一地碎片。',
         source: '阶段突破·极限里程碑奖励（暂不上架商店）', usable: true, _boostType: 'extreme', _boostPercent: 75, _requireExtreme: true
     },
@@ -86,42 +86,42 @@ var WAREHOUSE_ITEMS = {
     makeup_card: {
         name: '补签卡', icon: 'fas fa-calendar-plus', color: '#e67e22',
         category: 'consumable', rarity: 'rare', showSource: true,
-        desc: '在每日签到中可进行补签（每日最多两次），在部分签到活动中可使用该补签卡解锁未被签到的奖励卡，并领取该天奖励。',
+        desc: '在每日签到中可进行补签。在部分签到活动中可使用该补签卡解锁未被签到的奖励卡，并领取该天奖励。（在每日签到中最多补签两次）',
         flavorText: '错过的时光终究无法倒流，但这张卡可以为你轻轻补上那一天的印记。\n——认真对待每一天的人，也值得被每一天温柔以待。',
         source: '活动奖励 / 邮件附件', usable: false
     },
     luck_coin: {
         name: '幸运币', icon: 'fas fa-dice-five', color: '#f1c40f',
         category: 'material', rarity: 'rare', showSource: true,
-        desc: '可在幸运抽奖机投币口投入（效果与「幸运币 · 普通」一致）：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%。（自新版起不再对抽卡模拟器生效）',
+        desc: '可在幸运抽奖机投币口投入：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%。（该幸运币效果与「幸运币 · 普通」一致，并自新版起不再对抽卡模拟器生效）',
         flavorText: '把它轻轻抛起的那一刻，仿佛连概率女神都忍不住多看了你一眼。\n——所谓幸运，不过是机会恰好遇见了相信它的人。',
         source: '商店 / 新手组合包', usable: false
     },
     luck_coin_common: {
         name: '幸运币 · 普通', icon: 'fas fa-coins', color: '#95a5a6',
         category: 'material', rarity: 'common', showSource: true,
-        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%（超出部分无效）。',
+        desc: '可在幸运抽奖机中使用：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%（超出部分无效）。',
         flavorText: '一枚朴素的银色硬币，却能让平凡的时刻悄悄偏向你。\n——幸运从不喧哗，它只是站在你这边。',
         source: '签到（前半月）/ 通行证 1-30 级 / 自选兑换卡', usable: false
     },
     luck_coin_rare: {
         name: '幸运币 · 稀有', icon: 'fas fa-coins', color: '#f1c40f',
         category: 'material', rarity: 'rare', showSource: true,
-        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时稀有奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；稀有档位奖励合计概率上限 65%（超出部分无效）。',
+        desc: '可在幸运抽奖机中使用：下一次抽取时稀有奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；稀有档位奖励合计概率上限 65%（超出部分无效）。',
         flavorText: '金色纹路在币面上流转，命运的天平开始微微倾斜。\n——它会记得每一次被投入投币口的瞬间。',
         source: '签到（后半月）/ 通行证 31-60 级 / 自选兑换卡', usable: false
     },
     luck_coin_epic: {
         name: '幸运币 · 史诗', icon: 'fas fa-coins', color: '#9b59b6',
         category: 'material', rarity: 'epic', showSource: true,
-        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时史诗奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；史诗档位奖励合计概率上限 40%（超出部分无效）。',
+        desc: '可在幸运抽奖机中使用：下一次抽取时史诗奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；史诗档位奖励合计概率上限 40%（超出部分无效）。',
         flavorText: '紫色的微光自币心升起，那是对更高处的一次郑重邀请。\n——史诗从不轻易现身，除非你足够诚心。',
         source: '通行证 61-90 级 / 自选兑换卡', usable: false
     },
     luck_coin_legend: {
         name: '幸运币 · 传说', icon: 'fas fa-coins', color: '#e67e22',
         category: 'material', rarity: 'legendary', showSource: true,
-        desc: '可在幸运抽奖机中使用（投币口投入）：下一次抽取时传说奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；传说档位奖励合计概率上限 25%（超出部分无效）。',
+        desc: '可在幸运抽奖机中使用：下一次抽取时传说奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；传说档位奖励合计概率上限 25%（超出部分无效）。',
         flavorText: '炽金的光晕包裹着这枚传说中的硬币，投下的刹那，整台抽奖机都会为之震颤。\n——传说的门槛很高，但幸运女神此刻正注视着你。',
         source: '通行证 91-120 级 / 自选兑换卡', usable: false
     },
@@ -129,58 +129,80 @@ var WAREHOUSE_ITEMS = {
     luck_bag_common: {
         name: '一袋幸运币 · 普通', icon: 'fas fa-shopping-bag', color: '#95a5a6',
         category: 'material', rarity: 'common', showSource: true,
-        desc: '使用后随机开出 3~5 枚「幸运币 · 普通」。幸运币可在幸运抽奖机投币口投入：下一次抽取时普通奖品概率提升（普通档位合计概率上限 75%）。',
+        desc: '使用后随机开出 3~5 枚「幸运币 · 普通」。',
         flavorText: '沉甸甸的一小袋银币，倒出来时叮当作响。\n——幸运这东西，有时候也论袋卖。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_common', min: 3, max: 5 }
     },
     luck_bag_rare: {
         name: '一袋幸运币 · 稀有', icon: 'fas fa-shopping-bag', color: '#f1c40f',
         category: 'material', rarity: 'rare', showSource: true,
-        desc: '使用后随机开出 3~5 枚「幸运币 · 稀有」。幸运币可在幸运抽奖机投币口投入：下一次抽取时稀有奖品概率提升（稀有档位合计概率上限 65%）。',
+        desc: '使用后随机开出 3~5 枚「幸运币 · 稀有」。',
         flavorText: '袋口微微透出金光，掂一掂就知道今天手气不错。\n——好运成串而来时，记得接稳。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_rare', min: 3, max: 5 }
     },
     luck_bag_epic: {
         name: '一袋幸运币 · 史诗', icon: 'fas fa-shopping-bag', color: '#9b59b6',
         category: 'material', rarity: 'epic', showSource: true,
-        desc: '使用后随机开出 3~5 枚「幸运币 · 史诗」。幸运币可在幸运抽奖机投币口投入：下一次抽取时史诗奖品概率提升（史诗档位合计概率上限 40%）。',
+        desc: '使用后随机开出 3~5 枚「幸运币 · 史诗」。',
         flavorText: '紫色的雾气从袋口的缝隙里溢出来，隐约有雷鸣般的低吟。\n——史诗的分量，从来压不住袋口的绳结。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_epic', min: 3, max: 5 }
     },
     luck_bag_legend: {
         name: '一袋幸运币 · 传说', icon: 'fas fa-shopping-bag', color: '#e67e22',
         category: 'material', rarity: 'legendary', showSource: true,
-        desc: '使用后随机开出 3~5 枚「幸运币 · 传说」。幸运币可在幸运抽奖机投币口投入：下一次抽取时传说奖品概率提升（传说档位合计概率上限 25%）。',
+        desc: '使用后随机开出 3~5 枚「幸运币 · 传说」。',
         flavorText: '据说这袋硬币在铸造时曾浸入流星坠落的余烬。\n——解开绳结的瞬间，连时间都会屏住呼吸。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_legend', min: 3, max: 5 }
     },
     luck_box_common: {
         name: '一盒幸运币 · 普通', icon: 'fas fa-box-open', color: '#95a5a6',
         category: 'material', rarity: 'common', showSource: true,
-        desc: '使用后随机开出 10~30 枚「幸运币 · 普通」。幸运币可在幸运抽奖机投币口投入：下一次抽取时普通奖品概率提升（普通档位合计概率上限 75%）。',
+        desc: '使用后随机开出 10~30 枚「幸运币 · 普通」。',
         flavorText: '整整齐齐码放的一盒银币，开盖时像是打开了一小片星空。\n——量变引起质变，幸运也不例外。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_common', min: 10, max: 30 }
     },
     luck_box_rare: {
         name: '一盒幸运币 · 稀有', icon: 'fas fa-box-open', color: '#f1c40f',
         category: 'material', rarity: 'rare', showSource: true,
-        desc: '使用后随机开出 10~30 枚「幸运币 · 稀有」。幸运币可在幸运抽奖机投币口投入：下一次抽取时稀有奖品概率提升（稀有档位合计概率上限 65%）。',
+        desc: '使用后随机开出 10~30 枚「幸运币 · 稀有」。',
         flavorText: '盒盖开启的刹那，金色的反光晃得人睁不开眼。\n——这不是钱，这是排面。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_rare', min: 10, max: 30 }
     },
     luck_box_epic: {
         name: '一盒幸运币 · 史诗', icon: 'fas fa-box-open', color: '#9b59b6',
         category: 'material', rarity: 'epic', showSource: true,
-        desc: '使用后随机开出 10~30 枚「幸运币 · 史诗」。幸运币可在幸运抽奖机投币口投入：下一次抽取时史诗奖品概率提升（史诗档位合计概率上限 40%）。',
+        desc: '使用后随机开出 10~30 枚「幸运币 · 史诗」。',
         flavorText: '盒子很轻，分量却压手——紫电在币面上游走不散。\n——雷雨天请勿开启（开玩笑的）。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_epic', min: 10, max: 30 }
     },
     luck_box_legend: {
         name: '一盒幸运币 · 传说', icon: 'fas fa-box-open', color: '#e67e22',
         category: 'material', rarity: 'legendary', showSource: true,
-        desc: '使用后随机开出 10~30 枚「幸运币 · 传说」。幸运币可在幸运抽奖机投币口投入：下一次抽取时传说奖品概率提升（传说档位合计概率上限 25%）。',
+        desc: '使用后随机开出 10~30 枚「幸运币 · 传说」。',
         flavorText: '传说中，抽奖机曾为这一盒硬币单独亮过一次整排的灯。\n——打开它，然后去改写概率。',
         source: '特殊活动奖励（暂未投放）', usable: true, _luckPack: { coinId: 'luck_coin_legend', min: 10, max: 30 }
+    },
+    // ---- 随机物品箱（开箱型道具：固定 PRE Coin + 奖池随机抽取，可重复；暂不加入自选物品兑换卡）----
+    rand_box_1: {
+        name: '随机物品箱 · 初级', icon: 'fas fa-box', color: '#3498db',
+        category: 'consumable', rarity: 'rare', showSource: true,
+        desc: '使用后开出 3 件物品：固定包含 PRE Coin（10~30 枚），另有 2 件从「经验值补给卡 Ⅰ/Ⅱ、经验值加成卡 Ⅰ/Ⅱ、一袋幸运币（稀有及以下）」中随机抽取（可重复），开出的物品将自动存入仓库。（通过赛季通行证 EX 奖励获取的本物品箱，开出的全部物品均视为「赛季」限定物品（PRE Coin 除外））。',
+        flavorText: '一只朴素的蓝色小箱，摇一摇，里面传来叮叮当当的声响。\n——小小的箱子里，也可能装着刚刚好需要的东西。',
+        source: '活动奖励', usable: true, _randBox: { tier: 1 }
+    },
+    rand_box_2: {
+        name: '随机物品箱 · 中级', icon: 'fas fa-box-open', color: '#9b59b6',
+        category: 'consumable', rarity: 'epic', showSource: true,
+        desc: '使用后开出 4 件物品：固定包含 PRE Coin（20~40 枚），另有 3 件从「经验值补给卡 Ⅰ/Ⅱ/Ⅲ、经验值加成卡 Ⅰ/Ⅱ/Ⅲ、一袋幸运币（史诗及以下）、补签卡」中随机抽取（可重复），开出的物品将自动存入仓库。（通过通行证 EX 奖励获取的本物品箱，开出的全部物品均视为「赛季」限定物品（PRE Coin 除外））。',
+        flavorText: '紫色箱盖上刻着细密的星纹，开锁的瞬间仿佛能听见概率在低语。\n——中级的分量，是连开箱都值得郑重其事的。',
+        source: '通行证 EX 溢出免费奖励', usable: true, _randBox: { tier: 2 }
+    },
+    rand_box_3: {
+        name: '随机物品箱 · 高级', icon: 'fas fa-gifts', color: '#f39c12',
+        category: 'consumable', rarity: 'legendary', showSource: true,
+        desc: '使用后开出 5 件物品：固定包含 PRE Coin（30~50 枚），另有 4 件从「经验值补给卡 Ⅱ/Ⅲ/Ⅳ、经验值加成卡 Ⅱ/Ⅲ/Ⅳ、一袋幸运币（传说及以下）、补签卡」中随机抽取（可重复），开出的物品将自动存入仓库。（通过通行证 EX 奖励获取的本物品箱，开出的全部物品均视为「赛季」限定物品（PRE Coin 除外））。',
+        flavorText: '金色的箱身流转着熔岩般的光泽，据说每一只高级箱都封存着一小段好运的峰值。\n——打开它的人，请做好被惊喜淹没的准备。',
+        source: '通行证 EX 溢出付费奖励', usable: true, _randBox: { tier: 3 }
     },
     exp_supply_1: {
         name: '经验值补给卡 Ⅰ', icon: 'fas fa-star', color: '#3498db',
@@ -213,7 +235,7 @@ var WAREHOUSE_ITEMS = {
     exp_supply_5: {
         name: '经验值补给卡 V', icon: 'fas fa-meteor', color: '#ff2d55',
         category: 'consumable', rarity: 'legendary', showSource: true,
-        desc: '使用后获得3000点经验值，将立即对账户等级生效。仅在阶段突破·极限模式（121级后）可用。',
+        desc: '使用后获得3000点经验值，将立即对账户等级生效。（仅在阶段突破·极限模式（121级后）可用。）',
         flavorText: '一颗从极限深处坠落的猩红陨星，其蕴含的经验密度已超越常理极限 \n——它只向那些敢于踏入极限领域的人展露真容。',
         source: '阶段突破·极限里程碑奖励（暂不上架商店）', usable: true, _expGain: 3000, _requireExtreme: true
     },
@@ -249,7 +271,7 @@ var WAREHOUSE_ITEMS = {
     exchange_card: {
         name: '自选物品兑换卡', icon: 'fas fa-gift', color: '#16a085',
         category: 'consumable', rarity: 'legendary', showSource: true,
-        desc: '使用该兑换卡后可以任选一个当前版本可兑换的物品并获取到仓库。（包括未来新加入的物品（不含特殊物品）；该兑换卡不包含也不能兑换商店内所有的组合包）',
+        desc: '使用该兑换卡后可以任选一个当前版本可兑换的物品并获取到仓库。（该卡可兑换未来新加入的物品（不含特殊物品）；该兑换卡不包含也不能兑换商店内所有的组合包）',
         flavorText: '「你想要什么？」——这一次，选择权完全握在你自己手中。\n——世间最珍贵的从来不是礼物本身，而是握在手中的选择权。',
         source: '特殊补偿 / 活动奖励', usable: true, _exchangeCard: true
     },
@@ -374,6 +396,7 @@ function getWarehouseData() {
                     migrated = true;
                 }
                 if (migrated) saveWarehouseData(data); // 迁移结果立即落盘
+                mergeSeasonTimedItems(data); // 合并重复的赛季限定物品条目
                 return data;
             }
         } catch (e) {}
@@ -403,6 +426,45 @@ function cleanExpiredTimedItems(data) {
         data.timedItems = valid;
         saveWarehouseData(data);
     }
+}
+
+// 合并相同赛季物品：同一 itemId、同一赛季、同一到期时间的多条限时条目合并为一条，数量累加
+// 仅处理带 season 标记的赛季限定物品，普通限时物品（签到奖励等）保持独立条目
+function mergeSeasonTimedItems(data) {
+    if (!data.timedItems || !data.timedItems.length) return false;
+    var groups = {};
+    var merged = [];
+    var changed = false;
+    data.timedItems.forEach(function(t) {
+        if (!t || !t.season) {
+            merged.push(t);
+            return;
+        }
+        var key = t.itemId + '|' + t.season + '|' + (t.expiresAt ? new Date(t.expiresAt).getTime() : 0);
+        if (groups[key]) {
+            groups[key].qty = (groups[key].qty || 0) + (t.qty || 0);
+            if (t.obtainedAt && (!groups[key].obtainedAt || t.obtainedAt < groups[key].obtainedAt)) {
+                groups[key].obtainedAt = t.obtainedAt;
+            }
+            changed = true;
+        } else {
+            groups[key] = {
+                uid: t.uid,
+                itemId: t.itemId,
+                qty: t.qty || 0,
+                obtainedAt: t.obtainedAt,
+                expiresAt: t.expiresAt,
+                source: t.source || '',
+                season: t.season
+            };
+            merged.push(groups[key]);
+        }
+    });
+    if (changed) {
+        data.timedItems = merged;
+        saveWarehouseData(data);
+    }
+    return changed;
 }
 
 // 获取当前有效的限时物品列表（自动清理过期项）
@@ -481,6 +543,52 @@ function warehouseAddTimedItems(items, source, expiryDays, silent) {
         if (uid) uids.push(uid);
     });
     return uids;
+}
+
+// ==================== 赛季限定物品（通行证等级奖励专用） ====================
+// 与限时物品共用 timedItems 存储，条目附加 season（赛季名）标记：
+// - 到期时间固定为赛季结束时间，赛季结束后由 cleanExpiredTimedItems 自动过期清空
+// - 仓库卡片 / 详情以「XX赛季」文本标记替代剩余天数倒计时
+// - 仅通行证等级奖励（含 EX 溢出）发放的物品使用此接口；PRE Coin 等统一货币与其他获取途径不受影响
+// warehouseAddSeasonItem('exp_supply_1', 1, '通行证 Lv.10 免费奖励', '第一赛季', '2026-12-30T20:00:00Z')
+function warehouseAddSeasonItem(itemId, qty, source, seasonLabel, expiresAt) {
+    if (!WAREHOUSE_ITEMS[itemId]) return false;
+    qty = Math.max(1, parseInt(qty, 10) || 1);
+    var expireMs = expiresAt ? new Date(expiresAt).getTime() : 0;
+    if (!expireMs || isNaN(expireMs)) return false;
+    var data = getWarehouseData();
+    cleanExpiredTimedItems(data);
+    var now = Date.now();
+    var season = seasonLabel || '第一赛季';
+    // 已存在相同赛季、相同道具、相同到期时间的条目时直接累加数量，避免产生重复卡片
+    for (var i = 0; i < data.timedItems.length; i++) {
+        var existing = data.timedItems[i];
+        if (existing.season === season && existing.itemId === itemId &&
+            new Date(existing.expiresAt).getTime() === expireMs) {
+            existing.qty = (existing.qty || 0) + qty;
+            if (source && !existing.source) existing.source = source;
+            saveWarehouseData(data);
+            return existing.uid;
+        }
+    }
+    var uid = 'ti_' + now + '_' + Math.floor(Math.random() * 1e6);
+    data.timedItems.push({
+        uid: uid,
+        itemId: itemId,
+        qty: qty,
+        obtainedAt: new Date(now).toISOString(),
+        expiresAt: new Date(expireMs).toISOString(),
+        source: source || '',
+        season: season
+    });
+    saveWarehouseData(data);
+    return uid;
+}
+
+// 赛季限定物品显示名：带 season 标记的限时条目在基础名后追加「XX赛季」后缀
+function _whSeasonItemName(item, timedEntry) {
+    if (timedEntry && timedEntry.season) return item.name + '「' + timedEntry.season + '」';
+    return item.name;
 }
 
 // ==================== 仓库操作 API（供其他模块调用） ====================
@@ -885,8 +993,8 @@ var WAREHOUSE_CATEGORY_META = {
     material: { name: '材料', icon: 'fas fa-cubes' },
     badge: { name: '徽章', icon: 'fas fa-id-badge' }
 };
-// 系列展示顺序：经验值补给卡 → 经验值加成卡 → PRE Coin 补给包 → 一袋/一盒幸运币 → 幸运币 → 抽卡卷 → 补签卡 → 兑换卡
-var WAREHOUSE_SERIES_ORDER = ['exp_supply', 'exp_boost', 'precoin_supply', 'luck_bag', 'luck_box', 'luck_coin', 'gacha_ticket', 'makeup', 'exchange'];
+// 系列展示顺序：经验值补给卡 → 经验值加成卡 → PRE Coin 补给包 → 一袋/一盒幸运币 → 随机物品箱 → 幸运币 → 抽卡卷 → 补签卡 → 兑换卡
+var WAREHOUSE_SERIES_ORDER = ['exp_supply', 'exp_boost', 'precoin_supply', 'luck_bag', 'luck_box', 'rand_box', 'luck_coin', 'gacha_ticket', 'makeup', 'exchange'];
 var WAREHOUSE_TIER_MAP = { common: 1, rare: 2, epic: 3, legend: 4, small: 1, mid: 2, large: 3, premium: 4 };
 
 // 返回 { series: 系列key, tier: 系列内档位 }
@@ -897,6 +1005,7 @@ function getWarehouseSeriesInfo(itemId, item) {
     if ((m = itemId.match(/^precoin_supply_(\d+)$/))) return { series: 'precoin_supply', tier: parseInt(m[1], 10) || 0 };
     if ((m = itemId.match(/^luck_bag_(common|rare|epic|legend)$/))) return { series: 'luck_bag', tier: WAREHOUSE_TIER_MAP[m[1]] || 9 };
     if ((m = itemId.match(/^luck_box_(common|rare|epic|legend)$/))) return { series: 'luck_box', tier: WAREHOUSE_TIER_MAP[m[1]] || 9 };
+    if ((m = itemId.match(/^rand_box_(\d+)$/))) return { series: 'rand_box', tier: parseInt(m[1], 10) || 0 };
     if (itemId === 'luck_coin') return { series: 'luck_coin', tier: 0 };
     if ((m = itemId.match(/^luck_coin_(common|rare|epic|legend)$/))) return { series: 'luck_coin', tier: WAREHOUSE_TIER_MAP[m[1]] || 9 };
     if (itemId === 'gacha_single') return { series: 'gacha_ticket', tier: 1 };
@@ -1021,6 +1130,11 @@ function renderWarehouseItems() {
         return;
     }
 
+    // 详情弹窗左右切换列表：与当前展示顺序一致（分类/搜索/排序过滤后）
+    _whDetailNavList = cards.map(function(c) {
+        return { id: c.itemId, timedUid: (c.kind === 'timed' && c.timedMeta) ? c.timedMeta.uid : null };
+    });
+
     // 组装卡片：全部视图下按分类分组展示，分组之间用虚线分隔（徽章固定最底部）
     var buildCard = function(c) {
         return buildWarehouseCardHTML(c.itemId, c.entry, WAREHOUSE_REMOVE_MODE, c.kind === 'timed' ? c.timedMeta : null);
@@ -1063,7 +1177,12 @@ function renderWarehouseItems() {
             var id = card.getAttribute('data-item-id');
             if (!id) return;
             var tuid = card.getAttribute('data-timed-uid');
-            showWarehouseItemDetail(id, { timedUid: tuid || null });
+            // 记录当前卡片在展示列表中的位置，供详情弹窗左右切换使用
+            var navIdx = -1;
+            for (var ni = 0; ni < _whDetailNavList.length; ni++) {
+                if (_whDetailNavList[ni].id === id && (_whDetailNavList[ni].timedUid || null) === (tuid || null)) { navIdx = ni; break; }
+            }
+            showWarehouseItemDetail(id, { timedUid: tuid || null, navIndex: navIdx });
         });
     });
 
@@ -1095,10 +1214,14 @@ function buildWarehouseCardHTML(itemId, entry, removeMode, timedMeta) {
     var isTimed = !!timedMeta;
 
     // 限时物品：名称后缀（限时）、描述追加时效提示
+    // 赛季限定物品：名称追加「XX赛季」后缀，右上角以「XX赛季」文本标记替代剩余天数倒计时
     var displayName = item.name;
     var displayDesc = item.desc;
     var timedTagHtml = '';
-    if (isTimed && timedMeta.expiresAt) {
+    if (isTimed && timedMeta.season) {
+        displayName = _whSeasonItemName(item, timedMeta);
+        timedTagHtml = '<span class="wh-timed-tag" style="background:#6a5acd;color:#fff;" title="该物品为「' + timedMeta.season + '」物品，赛季结束后将自动过期并清除">「' + timedMeta.season + '」</span>';
+    } else if (isTimed && timedMeta.expiresAt) {
         displayName = item.name + '（限时）';
         displayDesc = item.desc + '（该物品具有时效性，有效期为14天）';
         // 计算剩余天数
@@ -1156,6 +1279,63 @@ function buildWarehouseCardHTML(itemId, entry, removeMode, timedMeta) {
 function getWarehouseCategoryLabel(category) {
     var labels = { consumable: '消耗品', material: '材料', badge: '徽章' };
     return labels[category] || '道具';
+}
+
+// ==================== 随机物品箱 ====================
+// 奖池配置：固定 PRE Coin（区间内随机）+ 从奖池随机抽取 picks 件（允许重复，同 id 自动合并）
+var RAND_BOX_CONFIG = {
+    // 初级：共 3 件 = PRE Coin(10~30) + 随机 2 件（经验值补给卡Ⅰ/Ⅱ、经验值加成卡Ⅰ/Ⅱ、一袋幸运币 稀有及以下）
+    1: { coinMin: 10, coinMax: 30, picks: 2, pool: ['exp_supply_1', 'exp_supply_2', 'exp_boost_small', 'exp_boost_mid', 'luck_bag_common', 'luck_bag_rare'] },
+    // 中级：共 4 件 = PRE Coin(20~40) + 随机 3 件（补给卡Ⅰ/Ⅱ/Ⅲ、加成卡Ⅰ/Ⅱ/Ⅲ、一袋幸运币 史诗及以下、补签卡）
+    // 该档位仅由通行证 EX 溢出奖励发放，开箱所得物品按第一赛季物品处理（PRE Coin 除外）
+    2: { coinMin: 20, coinMax: 40, picks: 3, pool: ['exp_supply_1', 'exp_supply_2', 'exp_supply_3', 'exp_boost_small', 'exp_boost_mid', 'exp_boost_large', 'luck_bag_common', 'luck_bag_rare', 'luck_bag_epic', 'makeup_card'], passExSeason: true },
+    // 高级：共 5 件 = PRE Coin(30~50) + 随机 4 件（补给卡Ⅱ/Ⅲ/Ⅳ、加成卡Ⅱ/Ⅲ/Ⅳ、一袋幸运币 传说及以下、补签卡）
+    // 该档位仅由通行证 EX 溢出奖励发放，开箱所得物品按第一赛季物品处理（PRE Coin 除外）
+    3: { coinMin: 30, coinMax: 50, picks: 4, pool: ['exp_supply_2', 'exp_supply_3', 'exp_supply_4', 'exp_boost_mid', 'exp_boost_large', 'exp_boost_premium', 'luck_bag_common', 'luck_bag_rare', 'luck_bag_epic', 'luck_bag_legend', 'makeup_card'], passExSeason: true }
+};
+
+// 通行证 EX 随机物品箱开出的物品所附带的赛季标记与赛季结束时间（用于按赛季限定物品入仓）
+function _whRandBoxSeasonInfo(item, entrySeason) {
+    var label = entrySeason || null;
+    var cfg = (item && item._randBox) ? RAND_BOX_CONFIG[item._randBox.tier] : null;
+    if (!label && cfg && cfg.passExSeason) {
+        label = (typeof PASS_CONFIG !== 'undefined' && PASS_CONFIG.seasonLabel) ? PASS_CONFIG.seasonLabel : '第一赛季';
+    }
+    if (!label) return null;
+    var expiresAt = (typeof PASS_CONFIG !== 'undefined' && PASS_CONFIG.endTime) ? PASS_CONFIG.endTime : '2026-12-30T20:00:00Z';
+    return { label: label, expiresAt: expiresAt };
+}
+
+// 开箱抽取一次：返回 { precoin, items: [{ id, qty }] }（同 id 已合并）
+function _whRollRandBox(tier) {
+    var cfg = RAND_BOX_CONFIG[tier];
+    if (!cfg) return null;
+    var precoin = cfg.coinMin + Math.floor(Math.random() * (cfg.coinMax - cfg.coinMin + 1));
+    var merged = {};
+    for (var i = 0; i < cfg.picks; i++) {
+        var id = cfg.pool[Math.floor(Math.random() * cfg.pool.length)];
+        merged[id] = (merged[id] || 0) + 1;
+    }
+    var items = Object.keys(merged).map(function(id) { return { id: id, qty: merged[id] }; });
+    return { precoin: precoin, items: items };
+}
+
+// 发放一次开箱所得（PRE Coin 入账 + 物品入仓库，全程静默，由结果弹窗统一展示）
+// entrySeason：所使用物品箱条目的赛季标记；通行证 EX 随机物品箱开出的物品按第一赛季物品入仓
+function _whGrantRandBoxRoll(item, roll, batch, entrySeason) {
+    var srcLabel = '仓库道具' + (batch ? '（批量）' : '') + '：' + item.name;
+    var seasonInfo = _whRandBoxSeasonInfo(item, entrySeason);
+    if (roll.precoin > 0 && typeof addPreCoin === 'function') {
+        addPreCoin(roll.precoin, srcLabel, true);
+    }
+    roll.items.forEach(function(g) {
+        // PRE Coin 不受赛季限制；其余物品在赛季箱中按赛季限定物品写入限时条目
+        if (seasonInfo && typeof warehouseAddSeasonItem === 'function') {
+            warehouseAddSeasonItem(g.id, g.qty, srcLabel, seasonInfo.label, seasonInfo.expiresAt);
+        } else {
+            warehouseAddItem(g.id, g.qty, srcLabel, true);
+        }
+    });
 }
 
 // 使用道具（支持限时物品：传入 timedUid 指定扣减 timedItems 中的条目）
@@ -1311,6 +1491,19 @@ function useWarehouseItem(itemId, timedUid) {
         // 结果弹窗（替代提示横条，防止用户忽略或提示消失过快）
         if (typeof _whShowLuckPackModal === 'function') {
             _whShowLuckPackModal(item, 1, coinItem, [openN]);
+        }
+        renderWarehouseItems();
+        return true;
+    }
+
+    // 随机物品箱：固定 PRE Coin + 奖池随机物品，全部自动入账/入仓库
+    if (item._randBox) {
+        var rbRoll = _whRollRandBox(item._randBox.tier);
+        if (rbRoll) {
+            var rbSeason = timedEntry ? timedEntry.season : null;
+            _whGrantRandBoxRoll(item, rbRoll, false, rbSeason);
+            // 「使用结果」弹窗：展示本次开出的全部物品
+            _whShowRandBoxModal(item, 1, [rbRoll], rbSeason);
         }
         renderWarehouseItems();
         return true;
@@ -1473,8 +1666,18 @@ function showWarehouseBatchUseModal(itemId, timedUid, maxQty) {
         setTimeout(function() { modal.style.display = 'none'; }, 250);
     }
 
+    // 解析限时条目的赛季限定标记（赛季物品名称追加「XX赛季」后缀）
+    var _batchSeasonMeta = null;
+    if (timedUid) {
+        var _batchData = getWarehouseData();
+        cleanExpiredTimedItems(_batchData);
+        for (var _bi = 0; _bi < (_batchData.timedItems || []).length; _bi++) {
+            if (_batchData.timedItems[_bi].uid === timedUid) { _batchSeasonMeta = _batchData.timedItems[_bi]; break; }
+        }
+    }
+
     // 填充物品信息（弹窗标题/描述使用 class 选择器，与上方 innerHTML 模板一致）
-    modal.querySelector('.wh-batch-name').textContent = item.name;
+    modal.querySelector('.wh-batch-name').textContent = _whSeasonItemName(item, _batchSeasonMeta);
     modal.querySelector('.wh-batch-desc').textContent = item.desc;
     modal.querySelector('#whBatchMax').textContent = maxQty;
 
@@ -1497,10 +1700,14 @@ function showWarehouseBatchUseModal(itemId, timedUid, maxQty) {
         if (item._expGain) parts.push((item._expGain * n) + ' 点经验值');
         if (item._precoinGain) parts.push((item._precoinGain * n) + ' PRE Coin');
         if (item._luckPack) parts.push('随机开出 ' + (item._luckPack.min * n) + '~' + (item._luckPack.max * n) + ' 枚幸运币');
+        if (item._randBox) {
+            var rcfg = RAND_BOX_CONFIG[item._randBox.tier];
+            if (rcfg) parts.push('每箱开出 PRE Coin（' + rcfg.coinMin + '~' + rcfg.coinMax + ' 枚）与随机物品 ×' + rcfg.picks);
+        }
         if (parts.length > 0) {
             preview.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> 预计效果：使用 ' + n + ' 次后获得 ' + parts.join('，');
         } else {
-            preview.innerHTML = '<i class="fas fa-check-circle"></i> 将使用 ' + n + ' 次「' + item.name + '」';
+            preview.innerHTML = '<i class="fas fa-check-circle"></i> 将使用 ' + n + ' 次「' + _whSeasonItemName(item, _batchSeasonMeta) + '」';
         }
     }
 
@@ -1547,7 +1754,19 @@ function showWarehouseBatchUseModal(itemId, timedUid, maxQty) {
 function _doBatchUse(itemId, timedUid, useCount, item) {
     var totalExpGain = 0, totalPrecoinGain = 0, totalLuckCoins = 0;
     var luckRolls = []; // 每次开出的幸运币数量（幸运币袋/盒专用）
+    var randBoxRolls = []; // 每次开箱的完整结果（随机物品箱专用）
     var actualUsed = 0;
+    // 记录所使用批次的赛季标记（通行证 EX 随机物品箱开出的物品按赛季限定物品入仓）
+    var batchSeasonLabel = null;
+    if (timedUid) {
+        var _batchInitData = getWarehouseData();
+        for (var _bi0 = 0; _bi0 < (_batchInitData.timedItems || []).length; _bi0++) {
+            if (_batchInitData.timedItems[_bi0].uid === timedUid) {
+                batchSeasonLabel = _batchInitData.timedItems[_bi0].season || null;
+                break;
+            }
+        }
+    }
     var _expBefore = (typeof _whGetLevelSnapshot === 'function') ? _whGetLevelSnapshot() : null;
 
     for (var i = 0; i < useCount; i++) {
@@ -1600,6 +1819,14 @@ function _doBatchUse(itemId, timedUid, useCount, item) {
             totalLuckCoins += nB;
             luckRolls.push(nB);
         }
+        if (item._randBox) {
+            // 随机物品箱：每次独立开箱，结果入 rolls 供弹窗合并展示
+            var rbB = _whRollRandBox(item._randBox.tier);
+            if (rbB) {
+                _whGrantRandBoxRoll(item, rbB, true, batchSeasonLabel);
+                randBoxRolls.push(rbB);
+            }
+        }
     }
 
     // 幸运币袋/盒：结果弹窗（替代汇总提示横条，防止用户忽略或提示消失过快）
@@ -1608,6 +1835,13 @@ function _doBatchUse(itemId, timedUid, useCount, item) {
         if (typeof _whShowLuckPackModal === 'function') {
             _whShowLuckPackModal(item, actualUsed, coinItemB, luckRolls);
         }
+        renderWarehouseItems();
+        return;
+    }
+
+    // 随机物品箱：「使用结果」弹窗（合并展示本次批量开箱的全部所得）
+    if (actualUsed > 0 && item._randBox && randBoxRolls.length > 0) {
+        _whShowRandBoxModal(item, actualUsed, randBoxRolls, batchSeasonLabel);
         renderWarehouseItems();
         return;
     }
@@ -1867,6 +2101,216 @@ function _whShowLuckPackModal(item, usedCount, coinItem, rolls) {
     }, 350);
 }
 
+// ==================== 随机物品箱「使用结果」弹窗 ====================
+// 使用「随机物品箱」系列道具后弹出：以物品卡片网格展示本次开出的全部物品
+// 单次使用 rolls 长度为 1；批量使用时合并全部开箱所得一并展示
+// seasonLabel：所选物品箱条目的赛季标记（通行证 EX 随机物品箱开出的物品按赛季限定展示）
+function _whShowRandBoxModal(item, usedCount, rolls, seasonLabel) {
+    rolls = rolls || [];
+    var seasonInfo = _whRandBoxSeasonInfo(item, seasonLabel);
+    var seasonName = seasonInfo ? seasonInfo.label : null;
+    var fmt = function(n) { return n.toLocaleString('zh-CN'); };
+    var boxColor = item.color || '#9b59b6';
+    var boxIcon = item.icon || 'fas fa-box-open';
+
+    // 合并全部开箱结果：PRE Coin 求和，物品按 id 合并数量
+    var totalPrecoin = 0;
+    var merged = {}; // id -> qty
+    var order = [];  // 保持首次出现顺序
+    rolls.forEach(function(r) {
+        totalPrecoin += r.precoin || 0;
+        (r.items || []).forEach(function(g) {
+            if (merged[g.id] === undefined) order.push(g.id);
+            merged[g.id] = (merged[g.id] || 0) + g.qty;
+        });
+    });
+
+    var modal = document.getElementById('warehouseRandBoxModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'custom-alert';
+        modal.id = 'warehouseRandBoxModal';
+        modal.style.display = 'none';
+        modal.style.zIndex = 100002; // 覆盖物品详情弹窗（100001）
+        modal.innerHTML =
+            '<div class="wrbox-box" role="dialog" aria-modal="true">' +
+                '<div class="wrbox-icon" id="wrboxIcon"><i class="fas fa-box-open"></i></div>' +
+                '<h3 class="wrbox-title">使用结果</h3>' +
+                '<p class="wrbox-sub" id="wrboxSub"></p>' +
+                '<div class="wrbox-grid" id="wrboxGrid"></div>' +
+                '<p class="wrbox-note" id="wrboxNote"><i class="fas fa-warehouse"></i> 物品已自动存入仓库，PRE Coin 已入账</p>' +
+                '<div class="wrbox-actions"><button class="wrbox-ok" id="wrboxOkBtn" type="button">确定</button></div>' +
+            '</div>';
+        document.body.appendChild(modal);
+        modal.querySelector('#wrboxOkBtn').addEventListener('click', function() {
+            modal.classList.remove('show');
+            setTimeout(function() { modal.style.display = 'none'; }, 250);
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.querySelector('#wrboxOkBtn').click();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                e.stopPropagation();
+                modal.querySelector('#wrboxOkBtn').click();
+            }
+        }, true);
+    }
+
+    // 填充内容
+    var iconEl = modal.querySelector('#wrboxIcon');
+    iconEl.innerHTML = _whItemIconHtml(boxIcon, boxColor);
+    iconEl.style.background = hexToRgba(boxColor, 0.15);
+    modal.querySelector('#wrboxSub').textContent = '「' + item.name + '」' + (usedCount > 1 ? '× ' + usedCount + ' ' : '') + '已使用，本次共开出：';
+    var noteEl = modal.querySelector('#wrboxNote');
+    if (noteEl) {
+        noteEl.innerHTML = seasonName
+            ? '<i class="fas fa-warehouse"></i> 物品已按「' + seasonName + '」限定存入仓库，赛季结束后自动过期；PRE Coin 已入账'
+            : '<i class="fas fa-warehouse"></i> 物品已自动存入仓库，PRE Coin 已入账';
+    }
+
+    // 物品卡片：PRE Coin 金色卡固定居首，其余按开出顺序
+    var html = '';
+    if (totalPrecoin > 0) {
+        html += '<div class="wrbox-card wrbox-card-coin">' +
+            '<div class="wrbox-card-icon" style="background:rgba(255,215,0,0.14);color:#e6a800;">' + _whItemIconHtml('fas fa-coins', '#e6a800') + '</div>' +
+            '<div class="wrbox-card-name">PRE Coin</div>' +
+            '<div class="wrbox-card-qty">+' + fmt(totalPrecoin) + '</div>' +
+        '</div>';
+    }
+    order.forEach(function(id) {
+        var w = WAREHOUSE_ITEMS[id];
+        if (!w) return;
+        html += '<div class="wrbox-card">' +
+            '<div class="wrbox-card-icon" style="background:' + hexToRgba(w.color, 0.14) + ';color:' + w.color + ';">' + _whItemIconHtml(w.icon, w.color) + '</div>' +
+            '<div class="wrbox-card-name">' + w.name + (seasonName ? '「' + seasonName + '」' : '') + '</div>' +
+            '<div class="wrbox-card-qty">×' + fmt(merged[id]) + '</div>' +
+        '</div>';
+    });
+    modal.querySelector('#wrboxGrid').innerHTML = html;
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+// ==================== 随机物品箱「概率详情」弹窗 ====================
+// 展示对应档位奖池内每种物品的单次抽取概率与期望数量，并包含固定产出的 PRE Coin
+function openRandBoxProbabilityModal(tier) {
+    var cfg = RAND_BOX_CONFIG[tier];
+    if (!cfg) return;
+
+    // 反查该档位对应的物品箱（用于标题与配色）
+    var boxItem = null;
+    Object.keys(WAREHOUSE_ITEMS).forEach(function(id) {
+        var it = WAREHOUSE_ITEMS[id];
+        if (!boxItem && it && it._randBox && it._randBox.tier === tier) boxItem = it;
+    });
+    var boxColor = boxItem ? (boxItem.color || '#9b59b6') : '#9b59b6';
+    var boxIcon = boxItem ? (boxItem.icon || 'fas fa-box') : 'fas fa-box';
+
+    var modal = document.getElementById('randBoxProbModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'custom-alert';
+        modal.id = 'randBoxProbModal';
+        modal.style.display = 'none';
+        modal.style.zIndex = 100002; // 覆盖物品详情弹窗（100001）
+        modal.innerHTML =
+            '<div class="wrprob-box" role="dialog" aria-modal="true" aria-labelledby="wrprobTitle">' +
+                '<button class="wrprob-close" id="wrprobCloseBtn" type="button" aria-label="关闭"><i class="fas fa-times"></i></button>' +
+                '<div class="wrprob-head">' +
+                    '<div class="wrprob-box-icon" id="wrprobBoxIcon"><i class="fas fa-box"></i></div>' +
+                    '<div class="wrprob-head-text">' +
+                        '<h3 class="wrprob-title" id="wrprobTitle">概率详情</h3>' +
+                        '<p class="wrprob-sub" id="wrprobSub"></p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="wrprob-summary" id="wrprobSummary"></div>' +
+                '<div class="wrprob-list" id="wrprobList"></div>' +
+                '<p class="wrprob-note"><i class="fas fa-circle-info"></i> 每次抽取相互独立、允许重复，同种物品自动合并数量</p>' +
+                '<div class="wrprob-actions"><button class="wrprob-ok" id="wrprobOkBtn" type="button">知道了</button></div>' +
+            '</div>';
+        document.body.appendChild(modal);
+
+        modal.querySelector('#wrprobCloseBtn').addEventListener('click', closeRandBoxProbabilityModal);
+        modal.querySelector('#wrprobOkBtn').addEventListener('click', closeRandBoxProbabilityModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeRandBoxProbabilityModal();
+        });
+        // ESC 在 window 捕获阶段处理：优先于下层详情弹窗的 document 监听，避免两个弹窗同时关闭
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                closeRandBoxProbabilityModal();
+            }
+        }, true);
+    }
+
+    // 奖池概率：每次从奖池中独立等概率抽取
+    var poolLen = cfg.pool.length;
+    var perProb = poolLen ? (100 / poolLen) : 0;
+    var perExpect = poolLen ? (cfg.picks / poolLen) : 0;
+
+    modal.querySelector('#wrprobBoxIcon').innerHTML = _whItemIconHtml(boxIcon, boxColor);
+    modal.querySelector('#wrprobBoxIcon').style.background = hexToRgba(boxColor, 0.15);
+    modal.querySelector('#wrprobTitle').textContent = '概率详情';
+    modal.querySelector('#wrprobSub').textContent = (boxItem ? '「' + boxItem.name + '」' : '随机物品箱 · ' + tier) + ' 奖池一览';
+    modal.querySelector('#wrprobSummary').innerHTML =
+        '<span><i class="fas fa-box-open"></i> 共开出 <b>' + (cfg.picks + 1) + '</b> 件（含 PRE Coin）</span>' +
+        '<span><i class="fas fa-dice"></i> 随机 <b>' + cfg.picks + '</b> 件 · 奖池 <b>' + poolLen + '</b> 种</span>';
+
+    var html = '';
+    // PRE Coin：固定产出，概率 100%
+    html += '<div class="wrprob-row wrprob-row-coin">' +
+        '<div class="wrprob-icon" style="background:rgba(255,215,0,0.16);color:#e6a800;">' + _whItemIconHtml('fas fa-coins', '#e6a800') + '</div>' +
+        '<div class="wrprob-main">' +
+            '<div class="wrprob-name">PRE Coin<span class="wrprob-tag wrprob-tag-coin">固定</span></div>' +
+            '<div class="wrprob-bar"><span class="wrprob-bar-fill" style="width:100%;background:linear-gradient(90deg,#f5c542,#e6a800);"></span></div>' +
+            '<div class="wrprob-meta">每次固定获得 ' + cfg.coinMin + '~' + cfg.coinMax + ' 枚 · 期望约 ' + ((cfg.coinMin + cfg.coinMax) / 2) + ' 枚</div>' +
+        '</div>' +
+        '<div class="wrprob-val">100%</div>' +
+    '</div>';
+
+    cfg.pool.forEach(function(id) {
+        var w = WAREHOUSE_ITEMS[id];
+        if (!w) return;
+        var rar = (typeof WAREHOUSE_RARITY !== 'undefined' && WAREHOUSE_RARITY[w.rarity])
+            ? WAREHOUSE_RARITY[w.rarity]
+            : { name: '普通', color: '#9aa0a6' };
+        var barW = Math.max(perProb, 3);
+        html += '<div class="wrprob-row">' +
+            '<div class="wrprob-icon" style="background:' + hexToRgba(w.color || '#9aa0a6', 0.14) + ';color:' + (w.color || '#9aa0a6') + ';">' +
+                _whItemIconHtml(w.icon || 'fas fa-gift', w.color || '#9aa0a6') +
+            '</div>' +
+            '<div class="wrprob-main">' +
+                '<div class="wrprob-name">' + w.name +
+                    '<span class="wrprob-tag" style="color:' + rar.color + ';border-color:' + rar.color + ';">' + rar.name + '</span>' +
+                '</div>' +
+                '<div class="wrprob-bar"><span class="wrprob-bar-fill" style="width:' + barW.toFixed(2) + '%;background:linear-gradient(90deg,' + (w.color || '#9aa0a6') + ',#b06bff);"></span></div>' +
+                '<div class="wrprob-meta">单次抽取 ' + perProb.toFixed(2) + '% · 期望 ' + perExpect.toFixed(2) + ' 件</div>' +
+            '</div>' +
+            '<div class="wrprob-val">' + perProb.toFixed(2) + '%</div>' +
+        '</div>';
+    });
+
+    var listEl = modal.querySelector('#wrprobList');
+    listEl.innerHTML = html;
+    listEl.scrollTop = 0;
+
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+function closeRandBoxProbabilityModal() {
+    var modal = document.getElementById('randBoxProbModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(function() {
+        if (!modal.classList.contains('show')) modal.style.display = 'none';
+    }, 250);
+}
+
 // ==================== PRE Coin 补给结果弹窗 ====================
 // 使用「PRE Coin 补给包」系列道具后弹出：醒目展示本次共获得多少 PRE Coin（含数字滚动动画）
 // 单次使用 usedCount 为 1；批量使用时展示累计获得总额
@@ -1955,21 +2399,34 @@ function ensureWarehouseItemDetailModal() {
     modal.id = 'warehouseItemDetailModal';
     modal.style.display = 'none';
     modal.innerHTML =
-        '<div class="wh-detail-box" role="dialog" aria-modal="true" aria-labelledby="whDetailName">' +
-            '<button class="wh-detail-close" id="whDetailCloseBtn" type="button" aria-label="关闭"><i class="fas fa-times"></i></button>' +
-            '<div class="wh-detail-main">' +
-                '<div class="wh-detail-icon-panel" id="whDetailIconPanel"></div>' +
-                '<div class="wh-detail-info">' +
-                    '<h3 class="wh-detail-name" id="whDetailName"></h3>' +
-                    '<p class="wh-detail-desc" id="whDetailDesc"></p>' +
-                    '<div class="wh-detail-flavor" id="whDetailFlavor"></div>' +
+        '<div class="wh-detail-wrap">' +
+            '<button class="wh-detail-nav wh-detail-nav-left" id="whDetailNavPrev" type="button" aria-label="上一个物品"><i class="fas fa-chevron-left"></i></button>' +
+            '<div class="wh-detail-box" role="dialog" aria-modal="true" aria-labelledby="whDetailName">' +
+                '<button class="wh-detail-close" id="whDetailCloseBtn" type="button" aria-label="关闭"><i class="fas fa-times"></i></button>' +
+                '<div class="wh-detail-main" id="whDetailMain">' +
+                    '<div class="wh-detail-icon-panel" id="whDetailIconPanel"></div>' +
+                    '<div class="wh-detail-info">' +
+                        '<h3 class="wh-detail-name" id="whDetailName"></h3>' +
+                        '<p class="wh-detail-desc" id="whDetailDesc"></p>' +
+                        '<div class="wh-detail-notes" id="whDetailNotes"></div>' +
+                        '<div class="wh-detail-flavor" id="whDetailFlavor"></div>' +
+                    '</div>' +
                 '</div>' +
+                '<div class="wh-detail-footer" id="whDetailFooter"></div>' +
             '</div>' +
-            '<div class="wh-detail-footer" id="whDetailFooter"></div>' +
+            '<button class="wh-detail-nav wh-detail-nav-right" id="whDetailNavNext" type="button" aria-label="下一个物品"><i class="fas fa-chevron-right"></i></button>' +
         '</div>';
     document.body.appendChild(modal);
 
     modal.querySelector('#whDetailCloseBtn').addEventListener('click', closeWarehouseItemDetailModal);
+    modal.querySelector('#whDetailNavPrev').addEventListener('click', function(e) {
+        e.stopPropagation();
+        _whDetailNavigate(-1);
+    });
+    modal.querySelector('#whDetailNavNext').addEventListener('click', function(e) {
+        e.stopPropagation();
+        _whDetailNavigate(1);
+    });
     modal.addEventListener('click', function(e) {
         if (e.target === modal) closeWarehouseItemDetailModal();
     });
@@ -1990,6 +2447,44 @@ function closeWarehouseItemDetailModal() {
     setTimeout(function() { modal.style.display = 'none'; }, 280);
 }
 
+// ==================== 物品详情弹窗：左右切换与描述尾注提取 ====================
+// 详情弹窗左右切换列表：由仓库渲染时写入（与当前分类/搜索过滤后的展示顺序一致）
+var _whDetailNavList = [];   // [{ id, timedUid }]
+var _whDetailNavIndex = -1;  // 当前展示条目在列表中的下标；-1 表示无导航上下文（隐藏左右切换）
+
+// 左右切换：dir = 1 下一个（从右侧滑入）/ -1 上一个（从左侧滑入），到末尾后循环
+function _whDetailNavigate(dir) {
+    if (_whDetailNavIndex < 0 || _whDetailNavList.length === 0) return;
+    var len = _whDetailNavList.length;
+    var next = (_whDetailNavIndex + dir + len) % len;
+    var target = _whDetailNavList[next];
+    showWarehouseItemDetail(target.id, {
+        timedUid: target.timedUid || null,
+        navIndex: next,
+        slideDir: dir > 0 ? 'left' : 'right'
+    });
+}
+
+// 从描述末尾提取独立的（...）尾注块（可连续多段），返回 { main, notes }
+// 嵌在句子中间的括号不属于尾注，保留在正文中；提取出的内容不带外层括号
+function _whSplitDescNotes(desc) {
+    var s = String(desc || '').trim();
+    var notes = [];
+    for (var guard = 0; guard < 8; guard++) {
+        if (s.charAt(s.length - 1) !== '）') break;
+        var depth = 0, start = -1;
+        for (var i = s.length - 1; i >= 0; i--) {
+            var ch = s.charAt(i);
+            if (ch === '）') depth++;
+            else if (ch === '（') { depth--; if (depth === 0) { start = i; break; } }
+        }
+        if (start < 0) break;
+        notes.unshift(s.slice(start + 1, s.length - 1).trim());
+        s = s.slice(0, start).replace(/[；;\s]+$/, '');
+    }
+    return { main: s, notes: notes };
+}
+
 function showWarehouseItemDetail(itemId, options) {
     options = options || {};
     var item = WAREHOUSE_ITEMS[itemId];
@@ -1997,6 +2492,9 @@ function showWarehouseItemDetail(itemId, options) {
 
     var modal = ensureWarehouseItemDetailModal();
     var categoryLabel = getWarehouseCategoryLabel(item.category);
+
+    // 导航上下文：仅仓库列表打开时提供左右切换（索引由调用方传入；预览/邮件打开无列表上下文）
+    _whDetailNavIndex = (typeof options.navIndex === 'number') ? options.navIndex : -1;
 
     // 解析持有数量、来源与限时信息
     var timedUid = options.timedUid || null;
@@ -2027,8 +2525,12 @@ function showWarehouseItemDetail(itemId, options) {
         ownedQty = options.qty;
     }
 
-    var displayName = item.name + (timedMeta ? '（限时）' : '');
-    var displayDesc = item.desc + (timedMeta ? '（该物品具有时效性，有效期为14天）' : '');
+    // 赛季限定物品：名称追加「XX赛季」后缀，描述写明赛季过期规则，不显示剩余天数
+    var isSeasonItem = !!(timedMeta && timedMeta.season);
+    var displayName = item.name + (timedMeta ? (isSeasonItem ? '' : '（限时）') : '');
+    var displayDesc = item.desc + (timedMeta ? (isSeasonItem
+        ? '（该物品为「' + timedMeta.season + '」物品，赛季结束后将自动过期并清除）'
+        : '（该物品具有时效性，有效期为14天）') : '');
 
     // ---- 左侧图标区 ----
     var iconPanel = modal.querySelector('#whDetailIconPanel');
@@ -2038,7 +2540,9 @@ function showWarehouseItemDetail(itemId, options) {
     var tagsHtml = '<span class="wh-detail-tag" style="color:' + tagColor + ';border-color:' + tagColor + ';">' + categoryLabel + '</span>';
 
     var timedTagHtml = '';
-    if (timedMeta && timedMeta.expiresAt) {
+    if (isSeasonItem) {
+        timedTagHtml = '<span class="wh-detail-tag wh-detail-season-tag" title="赛季结束后将自动过期并清除">「' + timedMeta.season + '」</span>';
+    } else if (timedMeta && timedMeta.expiresAt) {
         var nowMs = Date.now();
         var expireMs = new Date(timedMeta.expiresAt).getTime();
         var daysLeft = Math.ceil((expireMs - nowMs) / (24 * 60 * 60 * 1000));
@@ -2058,7 +2562,19 @@ function showWarehouseItemDetail(itemId, options) {
 
     // ---- 右侧文本区 ----
     modal.querySelector('#whDetailName').textContent = displayName;
-    modal.querySelector('#whDetailDesc').textContent = displayDesc;
+
+    // 描述尾注提取：描述末尾的（...）注释块移入 flavor 注释区（去括号、以 ；分隔），句中括号保留在正文
+    var notesSplit = _whSplitDescNotes(displayDesc);
+    modal.querySelector('#whDetailDesc').textContent = notesSplit.main;
+    var notesEl = modal.querySelector('#whDetailNotes');
+    if (notesSplit.notes.length) {
+        notesEl.style.display = '';
+        notesEl.innerHTML = '<i class="fas fa-circle-info wh-detail-notes-label" title="flavor"></i><span class="wh-detail-notes-text"></span>';
+        notesEl.querySelector('.wh-detail-notes-text').textContent = notesSplit.notes.join('；');
+    } else {
+        notesEl.style.display = 'none';
+        notesEl.innerHTML = '';
+    }
 
     var flavorEl = modal.querySelector('#whDetailFlavor');
     if (item.flavorText) {
@@ -2071,16 +2587,30 @@ function showWarehouseItemDetail(itemId, options) {
         flavorEl.innerHTML = '';
     }
 
-    // ---- 底部：来源 + 使用按钮 ----
+    // ---- 底部：来源 + 概率详情 / 使用按钮 ----
     var footer = modal.querySelector('#whDetailFooter');
     var canUse = !previewOnly && item.usable && ownedQty > 0;
+    var actionBtns = '';
+    if (item._randBox) {
+        actionBtns += '<button class="wh-detail-prob-btn" type="button"><i class="fas fa-percent"></i> 概率详情</button>';
+    }
+    if (canUse) {
+        actionBtns += '<button class="wh-detail-use-btn" type="button"><i class="fas fa-hand-sparkles"></i> 使用该物品</button>';
+    }
     footer.innerHTML =
         '<div class="wh-detail-source">' +
             (sourceText ? '<i class="fas fa-link"></i><span></span>' : '') +
         '</div>' +
-        (canUse ? '<button class="wh-detail-use-btn" type="button"><i class="fas fa-hand-sparkles"></i> 使用该物品</button>' : '');
+        (actionBtns ? '<div class="wh-detail-actions">' + actionBtns + '</div>' : '');
     var sourceSpan = footer.querySelector('.wh-detail-source span');
     if (sourceSpan) sourceSpan.textContent = sourceText;
+
+    var probBtn = footer.querySelector('.wh-detail-prob-btn');
+    if (probBtn) {
+        probBtn.onclick = function() {
+            openRandBoxProbabilityModal(item._randBox.tier);
+        };
+    }
 
     var useBtn = footer.querySelector('.wh-detail-use-btn');
     if (useBtn) {
@@ -2089,6 +2619,19 @@ function showWarehouseItemDetail(itemId, options) {
             // 使用成功（含打开兑换卡选择弹窗）后关闭详情；失败（如加成叠加被拒）则保留弹窗
             if (ok !== false) closeWarehouseItemDetailModal();
         };
+    }
+
+    // 左右切换按钮：仅仓库列表打开且列表多于 1 项时显示（预览/邮件打开时隐藏）
+    var hasNav = !previewOnly && _whDetailNavIndex >= 0 && _whDetailNavList.length > 1;
+    modal.querySelector('#whDetailNavPrev').style.display = hasNav ? 'flex' : 'none';
+    modal.querySelector('#whDetailNavNext').style.display = hasNav ? 'flex' : 'none';
+
+    // 左右切换滑入动效：切换到下一个内容从右侧滑入，切换到上一个从左侧滑入
+    var boxEl = modal.querySelector('.wh-detail-box');
+    boxEl.classList.remove('wh-detail-slide-left', 'wh-detail-slide-right');
+    if (options.slideDir) {
+        void boxEl.offsetWidth; // 强制回流以重启动画
+        boxEl.classList.add(options.slideDir === 'left' ? 'wh-detail-slide-left' : 'wh-detail-slide-right');
     }
 
     modal.style.display = 'flex';
@@ -2460,7 +3003,7 @@ function showPrecoinDescription(amount, context) {
                         '<li><i class="fas fa-hand-holding-dollar"></i> 赛季通行证付费档位：每级固定 +40，6 的倍数等级额外 +10</li>' +
                         '<li><i class="fas fa-box-open"></i> 使用「PRE Coin 补给包」系列仓库道具</li>' +
                         '<li><i class="fas fa-calendar-check"></i> 每日签到、特殊活动奖励、邮件附件</li>' +
-                        '<li><i class="fas fa-layer-group"></i> 通行证 EX 溢出奖励：免费每 10 经验 +50，付费额外 +100</li>' +
+                        '<li><i class="fas fa-layer-group"></i> 通行证 EX 溢出奖励：每级可领取随机物品箱，开箱必得 PRE Coin</li>' +
                     '</ul>' +
                 '</div>' +
                 '<div class="wh-precoin-section">' +
@@ -3911,6 +4454,287 @@ function getWarehouseStyleCSS() {
         body.dark-mode .wluck-roll-row b { color: #ffd93d; }
         body.dark-mode .wluck-note { color: #777; }
 
+        /* ==================== 随机物品箱「使用结果」弹窗 ==================== */
+        .wrbox-box {
+            position: relative;
+            width: min(92vw, 480px);
+            background: white;
+            border-radius: 18px;
+            padding: 26px 26px 22px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            text-align: center;
+            animation: wesupPop 0.28s ease;
+        }
+
+        .wrbox-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin: 0 auto 12px;
+        }
+
+        .wrbox-title {
+            margin: 0 0 4px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .wrbox-sub {
+            margin: 0 0 12px;
+            font-size: 12.5px;
+            color: #999;
+        }
+
+        .wrbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding: 2px;
+        }
+
+        .wrbox-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 6px 9px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .wrbox-card-coin {
+            border-color: rgba(230, 168, 0, 0.35);
+            background: rgba(255, 215, 0, 0.06);
+        }
+
+        .wrbox-card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+        }
+
+        .wrbox-card-name {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #555;
+            line-height: 1.3;
+            word-break: break-all;
+        }
+
+        .wrbox-card-qty {
+            font-size: 13px;
+            font-weight: bold;
+            color: #e6a800;
+        }
+
+        .wrbox-note {
+            margin: 14px 0 0;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .wrbox-note i {
+            margin-right: 4px;
+            color: #d45d79;
+        }
+
+        .wrbox-actions {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wrbox-ok {
+            padding: 9px 42px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #b06bff 0%, #6a5acd 100%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(106, 90, 205, 0.35);
+        }
+
+        .wrbox-ok:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(106, 90, 205, 0.45);
+        }
+
+        /* ==================== 随机物品箱「概率详情」弹窗 ==================== */
+        .wrprob-box {
+            position: relative;
+            width: min(92vw, 520px);
+            max-height: 86vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 18px;
+            padding: 22px 24px 18px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            text-align: left;
+            animation: wesupPop 0.28s ease;
+        }
+
+        .wrprob-close {
+            position: absolute; top: 12px; right: 12px;
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            border: none; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.06);
+            color: #888; font-size: 13px; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wrprob-close:hover { background: rgba(0, 0, 0, 0.12); color: #555; }
+
+        .wrprob-head {
+            display: flex; align-items: center; gap: 12px;
+            padding-right: 34px;
+            flex-shrink: 0;
+        }
+
+        .wrprob-box-icon {
+            width: 48px; height: 48px; flex-shrink: 0;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 21px;
+        }
+
+        .wrprob-head-text { min-width: 0; }
+        .wrprob-title { margin: 0 0 2px; font-size: 18px; font-weight: bold; color: #333; }
+        .wrprob-sub { margin: 0; font-size: 12.5px; color: #999; }
+
+        .wrprob-summary {
+            display: flex; flex-wrap: wrap; gap: 8px 16px;
+            margin: 14px 0 12px; padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(106, 90, 205, 0.07);
+            font-size: 12px; color: #777;
+            flex-shrink: 0;
+        }
+
+        .wrprob-summary b { color: #6a5acd; }
+        .wrprob-summary i { margin-right: 4px; color: #b06bff; }
+
+        .wrprob-list {
+            display: flex; flex-direction: column; gap: 8px;
+            flex: 1 1 auto;
+            overflow-y: auto; min-height: 0; padding-right: 4px;
+        }
+
+        .wrprob-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.07);
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .wrprob-row-coin {
+            border-color: rgba(230, 168, 0, 0.35);
+            background: rgba(255, 215, 0, 0.07);
+        }
+
+        .wrprob-icon {
+            width: 38px; height: 38px; flex-shrink: 0;
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+        }
+
+        .wrprob-main { flex: 1; min-width: 0; }
+
+        .wrprob-name {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 600; color: #444;
+        }
+
+        .wrprob-tag {
+            flex-shrink: 0;
+            padding: 1px 7px; border-radius: 999px;
+            border: 1px solid currentColor;
+            font-size: 10.5px; font-weight: 600; line-height: 1.5;
+        }
+
+        .wrprob-tag-coin { color: #e6a800; }
+
+        .wrprob-bar {
+            height: 5px; margin: 6px 0 4px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+        }
+
+        .wrprob-bar-fill {
+            display: block; height: 100%;
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .wrprob-meta { font-size: 11px; color: #999; }
+
+        .wrprob-val {
+            flex-shrink: 0;
+            font-size: 15px; font-weight: bold; color: #6a5acd;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .wrprob-row-coin .wrprob-val { color: #e6a800; }
+
+        .wrprob-note { margin: 12px 0 0; font-size: 11.5px; color: #999; flex-shrink: 0; }
+        .wrprob-note i { margin-right: 4px; color: #b06bff; }
+
+        .wrprob-actions { margin-top: 14px; display: flex; justify-content: center; flex-shrink: 0; }
+
+        .wrprob-ok {
+            padding: 9px 42px;
+            border: none; border-radius: 999px;
+            background: linear-gradient(135deg, #b06bff 0%, #6a5acd 100%);
+            color: white; font-size: 14px; font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(106, 90, 205, 0.35);
+        }
+
+        .wrprob-ok:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(106, 90, 205, 0.45);
+        }
+
+        body.dark-mode .wrprob-box { background: #1e1e2e; }
+        body.dark-mode .wrprob-close { background: rgba(255, 255, 255, 0.08); color: #bbb; }
+        body.dark-mode .wrprob-title { color: #eee; }
+        body.dark-mode .wrprob-sub,
+        body.dark-mode .wrprob-meta,
+        body.dark-mode .wrprob-note { color: #888; }
+        body.dark-mode .wrprob-summary { background: rgba(176, 107, 255, 0.1); color: #aaa; }
+        body.dark-mode .wrprob-row { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08); }
+        body.dark-mode .wrprob-row-coin { background: rgba(255, 215, 0, 0.08); border-color: rgba(230, 168, 0, 0.4); }
+        body.dark-mode .wrprob-name { color: #ddd; }
+        body.dark-mode .wrprob-bar { background: rgba(255, 255, 255, 0.1); }
+
+        body.dark-mode .wrbox-box { background: #1e1e2e; }
+        body.dark-mode .wrbox-title { color: #eee; }
+        body.dark-mode .wrbox-sub { color: #888; }
+        body.dark-mode .wrbox-card { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.1); }
+        body.dark-mode .wrbox-card-coin { background: rgba(255, 215, 0, 0.08); border-color: rgba(230, 168, 0, 0.4); }
+        body.dark-mode .wrbox-card-name { color: #ccc; }
+        body.dark-mode .wrbox-card-qty { color: #ffd93d; }
+        body.dark-mode .wrbox-note { color: #777; }
+
         /* ==================== PRE Coin 补给结果弹窗 ==================== */
         .wpc-box {
             position: relative;
@@ -4064,8 +4888,9 @@ function getWarehouseStyleCSS() {
 
         .wh-detail-box {
             position: relative;
-            width: 780px;
-            max-width: 92vw;
+            width: 820px;
+            max-width: 94vw;
+            height: 480px;
             max-height: 86vh;
             display: flex;
             flex-direction: column;
@@ -4104,6 +4929,87 @@ function getWarehouseStyleCSS() {
             background: #d45d79;
             color: white;
             transform: rotate(90deg);
+        }
+
+        /* 弹窗包裹层：承载弹窗主体与外侧左右切换按钮（flex 水平排列，按钮与弹窗保持间距） */
+        .wh-detail-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            max-width: 94vw;
+        }
+
+        /* 左右切换按钮：位于弹窗外侧，点击快速切换上/下一个物品 */
+        .wh-detail-nav {
+            flex-shrink: 0;
+            width: 46px;
+            height: 46px;
+            margin: 0 22px;
+            border: none;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #667eea;
+            font-size: 17px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            transition: background 0.22s ease, color 0.22s ease, transform 0.22s ease;
+            z-index: 3;
+        }
+
+        .wh-detail-nav:hover {
+            background: #667eea;
+            color: #ffffff;
+            transform: scale(1.08);
+        }
+
+        body.dark-mode .wh-detail-nav {
+            background: #3a3f5c;
+            color: #aeb8ff;
+        }
+
+        body.dark-mode .wh-detail-nav:hover {
+            background: #667eea;
+            color: #ffffff;
+        }
+
+        /* 窄屏下空间不足，切换按钮收回弹窗内侧悬浮 */
+        @media (max-width: 1000px) {
+            .wh-detail-nav {
+                position: absolute;
+                margin: 0;
+            }
+
+            .wh-detail-nav-left {
+                left: 12px;
+            }
+
+            .wh-detail-nav-right {
+                right: 12px;
+            }
+        }
+
+        /* 左右切换滑入动效：下一个从右侧滑入，上一个从左侧滑入 */
+        .wh-detail-box.wh-detail-slide-left .wh-detail-main,
+        .wh-detail-box.wh-detail-slide-left .wh-detail-footer {
+            animation: whDetailSlideLeft 0.32s ease;
+        }
+
+        .wh-detail-box.wh-detail-slide-right .wh-detail-main,
+        .wh-detail-box.wh-detail-slide-right .wh-detail-footer {
+            animation: whDetailSlideRight 0.32s ease;
+        }
+
+        @keyframes whDetailSlideLeft {
+            from { opacity: 0; transform: translateX(34px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes whDetailSlideRight {
+            from { opacity: 0; transform: translateX(-34px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .wh-detail-main {
@@ -4167,6 +5073,12 @@ function getWarehouseStyleCSS() {
             background: #f39c12;
         }
 
+        .wh-detail-tag.wh-detail-season-tag {
+            color: #ffffff !important;
+            border-color: #6a5acd !important;
+            background: #6a5acd;
+        }
+
         /* 右侧文本区：名称 / 详细介绍 / 风味文本 */
         .wh-detail-info {
             flex: 1;
@@ -4175,6 +5087,30 @@ function getWarehouseStyleCSS() {
             flex-direction: column;
             padding: 34px 34px 24px;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea transparent;
+        }
+
+        /* 详情弹窗文本区自定义滚动条（与仓库内容区样式一致） */
+        .wh-detail-info::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .wh-detail-info::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .wh-detail-info::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .wh-detail-info::-webkit-scrollbar-thumb:hover {
+            background: #8fa0ff;
+        }
+
+        body.dark-mode .wh-detail-info::-webkit-scrollbar-thumb {
+            background: #8fa0ff;
         }
 
         .wh-detail-name {
@@ -4191,6 +5127,34 @@ function getWarehouseStyleCSS() {
             font-size: 14px;
             line-height: 1.85;
             color: #666;
+        }
+
+        /* flavor 注释区：存放描述末尾括号内提取的注释内容（位于风味文本上方） */
+        .wh-detail-notes {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(102, 126, 234, 0.08);
+            border-left: 3px solid #667eea;
+            font-size: 12.5px;
+            line-height: 1.75;
+            color: #555c6e;
+        }
+
+        .wh-detail-notes-label {
+            margin-right: 6px;
+            color: #667eea;
+            font-size: 13px;
+            vertical-align: -1px;
+        }
+
+        body.dark-mode .wh-detail-notes {
+            background: rgba(102, 126, 234, 0.14);
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        body.dark-mode .wh-detail-notes-label {
+            color: #aeb8ff;
         }
 
         /* 风味文本区：该区域内所有文本均以斜体显示 */
@@ -4242,6 +5206,40 @@ function getWarehouseStyleCSS() {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .wh-detail-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        /* 随机物品箱：使用按钮左侧的「概率详情」按钮 */
+        .wh-detail-prob-btn {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            border: 1px solid rgba(106, 90, 205, 0.35);
+            border-radius: 22px;
+            background: rgba(106, 90, 205, 0.08);
+            color: #6a5acd;
+            font-size: 13.5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .wh-detail-prob-btn:hover {
+            background: rgba(106, 90, 205, 0.16);
+            border-color: rgba(106, 90, 205, 0.55);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(106, 90, 205, 0.22);
         }
 
         .wh-detail-use-btn {
@@ -4334,6 +5332,17 @@ function getWarehouseStyleCSS() {
             border-color: rgba(255, 255, 255, 0.08);
         }
 
+        body.dark-mode .wh-detail-prob-btn {
+            color: #c7bfff;
+            border-color: rgba(176, 107, 255, 0.4);
+            background: rgba(176, 107, 255, 0.12);
+        }
+
+        body.dark-mode .wh-detail-prob-btn:hover {
+            background: rgba(176, 107, 255, 0.22);
+            border-color: rgba(176, 107, 255, 0.6);
+        }
+
         body.dark-mode .wh-detail-source {
             color: #777777;
         }
@@ -4393,6 +5402,7 @@ function getWarehouseStyleCSS() {
         /* 物品详情弹窗窄屏适配 */
         @media (max-width: 768px) {
             .wh-detail-box {
+                height: auto;
                 max-height: 92vh;
             }
 
@@ -4439,6 +5449,24 @@ function getWarehouseStyleCSS() {
             .wh-detail-use-btn {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .wh-detail-actions {
+                width: 100%;
+                margin-left: 0;
+                gap: 8px;
+            }
+
+            .wh-detail-actions .wh-detail-prob-btn {
+                flex: 1 1 auto;
+                justify-content: center;
+                padding: 10px 14px;
+            }
+
+            .wh-detail-actions .wh-detail-use-btn {
+                width: auto;
+                flex: 1.4 1 auto;
+                padding: 10px 16px;
             }
         }
 

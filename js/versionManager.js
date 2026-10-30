@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 3.0.3.10 (c4)",
+    login: "RC 3.0.4.0 (c4)",
 
     // 点击方块游戏版本号
     fkgame: "RC 1.3.1",
@@ -23,7 +23,7 @@ const versionInfo = {
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20261026.30310.c4.146.l6",
+    launcher: "20261030.3040.c4.147.l6",
     
     // 主题版本信息
     // status字段可选值说明：
@@ -218,20 +218,20 @@ const versionInfo = {
             icon: "fas fa-gauge-high",
             iconBg: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
             iconColor: "#ffffff",
-            version: "Beta 0.1.0.0",
+            version: "1.0.0.0",
             releaseDate: "2026-09-29",
-            updateDate: "2026-09-29",
-            status: "公开测试版",
+            updateDate: "2026-10-30",
+            status: "正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
-            description: "实验性网络测速组件，通过 Cloudflare 全球测速节点测量网络 Ping 延迟、下载速度与上传速度，每个阶段持续不少于 10 秒，并以仪表盘实时展示测速数据",
+            description: "通过 Cloudflare 全球测速节点测量网络 Ping 延迟、下载速度与上传速度，每个阶段持续不少于 10 秒，并以仪表盘实时展示测速数据",
             features: [
                 "Ping 延迟测试：连续采样不少于 10 秒，给出平均延迟、最小延迟与抖动数据",
                 "下载速度测试：多连接并行下载测速节点数据流，持续不少于 10 秒，结果以 Mbps 显示",
                 "上传速度测试：多连接并行上传数据，持续不少于 10 秒，结果以 Mbps 显示",
                 "实时仪表盘：指针式仪表盘直观展示当前测速数值，并随速度自动切换量程",
                 "三阶段自动进行：Ping → 下载 → 上传依次执行，支持随时停止与重新测试",
-                "测速入口需在系统设置 → 实验性功能中手动开启后，于更多功能中使用"
+                "测速入口需在系统设置 → 增强功能中手动开启后，于更多功能中使用"
             ]
         }
     }
@@ -241,8 +241,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),    
-    buildDate: "2026-10-04",
-    patchDate: "2026-10-26",
+    buildDate: "2026-10-30",
+    patchDate: "2026-10-30",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",
@@ -554,11 +554,11 @@ if (document.readyState === 'loading') {
 }
 
 /* =====================================================================
- * 网络测速组件（实验性功能）
+ * 网络测速组件
  * ---------------------------------------------------------------------
  * 1. 组件信息注册于 versionInfo.components.networkSpeedTest
- * 2. 入口：系统设置 → 实验性功能 → 网络测速（localStorage 开关
- *    networkSpeedTestEnabled，受实验性功能总开关 experimentalFeaturesDisabled 约束）
+ * 2. 入口：系统设置 → 增强功能 → 网络测速（localStorage 开关
+ *    networkSpeedTestEnabled，受增强功能总开关约束）
  * 3. 开启后在登录页「更多功能」弹窗（桌面端 + 移动端）显示「网络测速」按钮
  * 4. 测速阶段：Ping → 下载 → 上传，每阶段持续不少于 10 秒（NST_PHASE_MS）
  * 5. 测速节点：Cloudflare Speed Test 公开端点（CORS 开放）
@@ -598,7 +598,6 @@ if (document.readyState === 'loading') {
     /* ---------------- 开关状态 ---------------- */
     function isNetworkSpeedTestEnabled() {
         try {
-            if (localStorage.getItem('experimentalFeaturesDisabled') === 'true') return false;
             return localStorage.getItem(NST_STORAGE_KEY) === 'true';
         } catch (e) {
             return false;

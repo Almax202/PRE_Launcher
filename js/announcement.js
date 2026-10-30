@@ -586,6 +586,57 @@ const announcementData = {
     // 开发日志
     devLogs: [
         {
+            id: "devlog-20261030",
+            title: "RC 3.0.4.0 开发日志",
+            date: "2026-10-30",
+            tag: "update",
+            tagText: "公告",
+            author: "GPY Games Studio - PREAlmax",
+            category: "launcher",
+            images: [],
+            content: [
+                "今天我们发布了 RC 3.0.4.0 (c4) 重大版本更新！本次更新带来通行证「EX」等级卡片与溢出奖励全面改版——溢出等级奖励由 PRE Coin 改为随机物品箱（免费档中级箱、付费档高级箱），并新增第一赛季限定机制；仓库系统迎来随机物品箱系列三件物品与「使用结果」弹窗，物品详情弹窗升级左右切换与 flavor 注释区；商店界面全面重构为面板侧边栏布局，新增「推荐」分类与精选轮播、组合包 3D 叠放堆、价格调整差额自动返还与概率详情弹窗；与此同时，关于启动器新增存储空间、更换字体与清理存储三大功能，版本更新记录与开发者公告窗口重构为全屏侧边栏三级浏览样式，并对启动器整体配色与细节体验进行了统一打磨！",
+                "[color:#d45d79]【新增功能】[/color]",
+                "• 通行证等级列表新增「EX」等级卡片：120 级卡片之后追加 EX 卡片，两张卡片之间以青紫渐变竖线条格挡分隔；EX 卡片带 ∞ 徽章与溢出信息行——满级后显示「已溢出 N 级（每 10 经验 +1 级，无上限）」，未满级显示开启说明；每次等级溢出时卡片亮起进入可领取状态（青色呼吸光晕 + 「领取奖励（×N 级）」按钮），EX 奖励领取后回落为「暂无可领取」的未领取状态，以此往复；未满级时卡片锁定（锁遮罩 + 「满级后解锁」）",
+                "• 通行证 EX 溢出奖励全面改版：溢出等级奖励不再直接发放 PRE Coin，改为发放全新物品——免费档位每级 EX 奖励为「随机物品箱 · 中级」×1，付费档位为「随机物品箱 · 高级」×1；一键领取全部待领 EX 级数后弹出结算弹窗，展示本次获得的物品箱清单；同时移除顶部 Hero 区经验条下方的金色「EX 溢出」横条，溢出等级信息由 EX 卡片信息行承接",
+                "• 通行证等级奖励物品新增「第一赛季」限定机制：通过通行证领取的每个等级物品（免费/付费档位物品与 EX 溢出等级的随机物品箱）均为赛季限定——获取后名称统一追加「第一赛季」后缀，赛季结束（2026-12-31 04:00，UTC+8）后自动过期清空；PRE Coin 等统一货币不受赛季限制",
+                "• 仓库新增「随机物品箱」系列三件物品：随机物品箱 · 初级（稀有）/ 中级（史诗）/ 高级（传说），均为可使用的消耗品；初级箱必得 PRE Coin（10~30 枚）并随机附带 2 件，中级箱必得 PRE Coin（20~40 枚）并随机附带 3 件，高级箱必得 PRE Coin（30~50 枚）并随机附带 4 件；随机抽取允许重复，相同物品自动合并数量",
+                "• 仓库使用随机物品箱后新增「使用结果」弹窗：以物品卡片网格展示本次开出的全部物品——PRE Coin 金色卡片居首显示累计获得枚数，其余物品卡片按首现顺序展示图标、名称与 ×N 数量；批量使用时自动合并全部箱子的开出结果（PRE Coin 求和、物品按种类合并）；支持确定按钮、遮罩点击与 Esc 键关闭",
+                "• 仓库物品详情弹窗全新升级：弹窗左右两侧新增「＜」「＞」圆形切换按钮，无需关闭弹窗即可在当前分类/搜索结果内快速切换上一个/下一个物品（到末尾循环，仅从仓库列表打开时提供）；每次切换附带向左/向右滑入动效；右侧文本区在风味文本上方新增「flavor」注释区，自动将物品描述末尾的括号注释提取至此展示",
+                "• 商店界面布局全面重构：打开商店后内容区居中呈现一整块大长方形面板（圆角 20px + 柔和投影），面板内部按 1:5 左右分栏——左侧约 1/6 宽度为竖向侧边栏集中陈列全部分类，右侧约 5/6 宽度为主内容区，顶部新增轻量信息条回显当前分类名称与在售数量；商品网格列数按可用宽度自适应为 4 → 3 → 2 → 1 列，窄屏（≤900px）时侧边栏自动转为顶部横向滚动",
+                "• 商店组合包卡片新增 3D 叠放堆视觉：每张组合包卡片的头图位置不再展示单一礼盒图标，改为立体叠放堆——最多取包内前 4 件物品按预设位移与旋转角错位层叠为带彩色投影的圆角方块，并逐张以弹性曲线弹入；超过 4 件的组合包在右下角以「+N」圆形徽标提示剩余件数",
+                "• 商店新增「推荐」分类与精选轮播视图：推荐分类位于分类列表最上方，条目激活期间持续播放流动渐变、脉冲光晕与扫光动效；右侧内容区为一块大长方形舞台（深色渐变、透视网格、环形装饰与跟随光斑，顶部带 7 秒进度条），舞台中央展示单张 3D 玻璃商品卡片，鼠标在舞台内移动时卡片整体随鼠标倾斜",
+                "• 商店新增「价格调整差额自动返还」机制：当限定商品发生官方降价时，系统自动向曾购买过该商品的用户发放差价返还邮件，无需用户申诉或手动登记；首发应用于「鎏金幻彩」背景（5000 → 3000 PRE Coin），按购买件数 × 2000 PRE Coin 计算返还总额",
+                "• 随机物品箱物品详情新增「概率详情」按钮与概率弹窗：三档随机物品箱的物品详情弹窗内可查看对应档位奖池一览——顶部概览开出的总件数、随机件数与奖池种数，列表展示每件物品的图标、名称、稀有度标签、单次抽取概率、期望件数与概率进度条",
+                "• 关于启动器新增「存储空间」功能块：类安卓风格的存储占用详情展示，含已用空间总量、各模块占用明细与占比，配合动效呈现；同时移除原「运行信息」中的本地存储占用条目，关于启动器内块状按钮统一调整为一行四个排版",
+                "• 个人卡片 UI 编辑新增「更换字体」功能：支持拖拽或浏览导入 ttf 字体文件，通过 IndexedDB 持久化保存避免刷新丢失；弹窗内含字体预览区，导入成功后全页面字体同步应用，并在存储空间占用详情中新增字体文件条目",
+                "• 关于启动器新增「清理存储」功能：可选择性清除各功能模块占用数据，明确保护会话存储、本地存储与启动器缓存，避免账号数据丢失；弹窗内其他数据、本地存储、会话存储三类默认折叠，仅显示「暂无可清理的占用项」",
+                "• 版本更新记录与开发者公告窗口全面重构为全屏侧边栏样式：左侧导航 + 右侧内容区布局，新增大版本 → 小版本 → 单版本公告三级浏览，每个版本独立显示更新公告；三大分区（新增功能 / 优化改进 / 修复问题）采用独立配色与渐变分界线，进入与返回附带流畅滑入动效",
+                "[color:#4ecdc4]【优化改进】[/color]",
+                "• 系统设置调整：账户管理中移除「清除缓存」功能，实验室中的「网络测速」迁入「增强功能」，结束其实验性测试",
+                "• 版本更新记录配色统一：三大分区由绿 / 蓝 / 橙调整为玫粉 / 紫罗兰 / 暖珊瑚主题色系，分类计数 chip 与状态徽标同步收敛至主题粉色家族，整体视觉更协调",
+                "• 大版本卡片按次版本号（3.0 / 3.1）分组，小版本列表内再按修订号（3.0.1 / 3.0.2）进一步子分组，层级更清晰",
+                "• 版本更新侧边栏滚动条改为自定义主题粉色渐变样式，含轨道与悬停态过渡",
+                "• 「功能更新」分组中移除「主页面更新」入口，「过时版本」保留不变",
+                "• 版本公告详情页仅保留顶部工具条的「返回小版本列表」按钮，移除公告头部的重复按钮",
+                "• 公告条目仅保留单个圆点标记，移除外圈光晕环，避免视觉上出现两个标记点",
+                "• 仓库赛季物品与限时物品的时效标识区分优化：赛季物品统一使用紫色「第一赛季」标签，限时物品保持橙色「限时 · 剩X天」标签，两类时效物品一眼可辨",
+                "• 限定背景「鎏金幻彩」定价由 5000 下调至 3000 PRE Coin：因其为静态背景（非动态背景），与 5000 价位的动态背景拉开价格梯度；差额部分由自动返还机制按件补偿给已购用户",
+                "• 商店「推荐」名单改为动态精选：自动从全部在售单品、组合包与无主限定商品中按「稀有度 + 折扣力度 + 价格」综合评分排序取前 7 款，并自动排除售罄、已拥有及活动锁定的商品",
+                "[color:#ff6b6b]【修复问题】[/color]",
+                "• 修复冬季签到活动全部奖励领取后「已结束」标签自动变回「进行中」的问题",
+                "• 修复仓库中多个相同第一赛季物品重复单独显示的问题，现自动合并相同物品并显示持有量",
+                "• 修复贪吃蛇与五子棋更新公告侧边栏图标未显示的问题：原 fa-worm / fa-circle-nodes 不属于 Font Awesome 6.0.0，替换为 fa-bug / fa-chess-board",
+                "• 修复通行证 EX 等级卡片 ∞ 徽章青紫渐变未生效的问题：改用双类选择器 `.pass-level-badge.pass-level-badge-ex` 提升特异性后，徽章渐变按预期呈现",
+                "• 修复价格调整返还邮件有效期截止时间计算偏差的问题：原逻辑以 `Date.UTC` 取当日零点后累加导致截止时间晚 16 小时，现改为先取得登录日 UTC+8 00:00 真实时间戳再累加，精确落在「第 31 天凌晨 04:00（UTC+8）」",
+                "• 修复页面加载阶段邮件系统尚未就绪导致差价返还邮件漏发且不再重试的问题：现改为仅在真正完成发放后才置位检查标记，`mailSystem` 未就绪时保留重试机会，确保既不重复发放也不会漏发",
+                "[color:#d45d79]【感谢支持】[/color]",
+                "感谢您对 PRE Launcher 的持续关注和支持！本次更新是通行证系统与仓库、商店的一次深度联动升级——通行证 EX 溢出奖励改为随机物品箱、第一赛季限定机制登场，仓库随机物品箱系列与使用结果弹窗带来全新开箱体验，商店界面全面重构并新增推荐轮播与价格差额自动返还。与此同时，关于启动器新增存储空间、更换字体与清理存储三大功能，版本更新记录与开发者公告重构为全屏侧边栏三级浏览，整体配色与细节体验也做了统一打磨。我们将继续优化每一处交互，为您带来更稳定、更丰富的启动器体验。",
+                "如果您在使用过程中发现任何问题，或有任何想法和建议，欢迎通过 Github 仓库提交 Issue 与我们进行沟通。",
+                "[color:black]© 2014-2026 PREAlmax. All rights reserved.[/color]"
+            ]
+        },
+        {
             id: "devlog-20261023",
             title: "RC 3.0.3.10 开发日志",
             date: "2026-10-26",
@@ -3237,25 +3288,214 @@ const announcementData = {
 var currentAnnouncementContext = null;
 
 // 初始化公告顶部 bar 导航
+// 公告中心：页面标题 / 统计 / 文本解析等共享辅助
+var amCurrentTitle = '重要公告';
+
+function amEsc(text) {
+    return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function amSetPage(title, metaText) {
+    var titleEl = document.getElementById('amPageTitle');
+    if (titleEl && title) titleEl.textContent = title;
+    var metaEl = document.getElementById('amPageMeta');
+    if (metaEl) metaEl.textContent = metaText || '';
+}
+
+function amSetStat(total) {
+    var statEl = document.getElementById('amStatTotal');
+    if (statEl) statEl.textContent = total;
+}
+
+function amInline(text) {
+    var out = amEsc(text);
+    out = out.replace(/\[color:([^\]]+)\]([^\[]+)\[\/color\]/g, '<span style="color:$1;">$2</span>');
+    out = out.replace(/\[link:([^\]]+)\]([^\[]+)\[\/link\]/g, function (match, path, label) {
+        return '<a href="' + path + '" class="am-inline-link">' + label + '</a>';
+    });
+    return out;
+}
+
+function amBodyHtml(content) {
+    var blocks = [];
+    var bullets = [];
+    function flush() {
+        if (!bullets.length) return;
+        blocks.push(
+            '<div class="am-detail-section">' +
+                '<div class="am-detail-section-head"><i class="fas fa-list-ul"></i><h5>要点</h5></div>' +
+                '<div class="am-detail-section-body"><ul class="vh-section-list">' +
+                    bullets.map(function (item) { return '<li>' + amInline(item) + '</li>'; }).join('') +
+                '</ul></div>' +
+            '</div>'
+        );
+        bullets = [];
+    }
+    (content || []).forEach(function (raw, index) {
+        var text = String(raw == null ? '' : raw).trim();
+        if (!text) return;
+        if (/^[-•]\s+/.test(text)) {
+            bullets.push(text.replace(/^[-•]\s+/, ''));
+            return;
+        }
+        flush();
+        blocks.push('<p' + (index === 0 ? ' class="am-lead"' : '') + '>' + amInline(text) + '</p>');
+    });
+    flush();
+    return blocks.join('');
+}
+
+function amAnimClass(anim) {
+    return anim === 'back' ? 'vh-anim-back' : 'vh-anim-forward';
+}
+
+function amReplayAnim(contentArea, anim) {
+    if (!contentArea) return;
+    contentArea.classList.remove('vh-anim-forward', 'vh-anim-back');
+    void contentArea.offsetWidth;
+    contentArea.classList.add(amAnimClass(anim));
+    var scrollEl = document.getElementById('amMainScroll');
+    if (scrollEl) scrollEl.scrollTop = 0;
+}
+
+function amBuildCard(announcement, list) {
+    var viewed = typeof isAnnouncementViewed === 'function' ? isAnnouncementViewed(announcement.id) : true;
+    var tagCls = '';
+    if (announcement.tag === 'important') tagCls = 'important';
+    else if (announcement.tag === 'update') tagCls = 'update';
+    else if (announcement.tag === 'notice') tagCls = 'notice';
+    var paragraphCount = (announcement.content || []).length;
+    var imageCount = (announcement.images || []).length;
+
+    var card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'am-card';
+    card.innerHTML =
+        '<div class="am-card-top">' +
+            (announcement.tag ? '<span class="am-card-tag ' + tagCls + '">' + amEsc(announcement.tagText) + '</span>' : '<span class="am-card-tag">公告</span>') +
+            (viewed ? '' : '<span class="vh-unread-badge">未读</span>') +
+        '</div>' +
+        '<h5 class="am-card-title">' + amEsc(announcement.title) + '</h5>' +
+        '<div class="am-card-meta">' +
+            '<span><i class="fas fa-calendar-day"></i> ' + amEsc(announcement.date) + '</span>' +
+            '<span><i class="fas fa-user"></i> ' + amEsc(announcement.author) + '</span>' +
+        '</div>' +
+        '<div class="am-card-foot">' +
+            '<span>' + paragraphCount + ' 段内容' + (imageCount ? ' · ' + imageCount + ' 张图' : '') + '</span>' +
+            '<span class="am-open">查看公告 <i class="fas fa-arrow-right"></i></span>' +
+        '</div>';
+
+    card.addEventListener('click', function () {
+        if (typeof markAnnouncementAsViewed === 'function') markAnnouncementAsViewed(announcement.id);
+        if (typeof updateAnnouncementNotificationDot === 'function') updateAnnouncementNotificationDot();
+        showAnnouncementDetail(announcement, list);
+    });
+    return card;
+}
+
+function amRenderList(announcements, options) {
+    options = options || {};
+    var contentArea = document.getElementById('announcementContent');
+    if (!contentArea) return;
+
+    var sorted = (announcements || []).slice().sort(function (a, b) {
+        return new Date(b.date) - new Date(a.date);
+    });
+
+    var total = sorted.length;
+    var unread = sorted.filter(function (a) {
+        return typeof isAnnouncementViewed === 'function' ? !isAnnouncementViewed(a.id) : false;
+    }).length;
+
+    var title = options.title || amCurrentTitle || '公告列表';
+    var metaText = options.filterName
+        ? ('已筛选：' + options.filterName + ' · 共 ' + total + ' 条')
+        : ('共 ' + total + ' 条 · 未读 ' + unread);
+    amSetPage(title, metaText);
+
+    if (total === 0) {
+        contentArea.innerHTML =
+            '<div class="fs-empty">' +
+                '<div class="fs-empty-icon"><i class="fas fa-inbox"></i></div>' +
+                '<p class="fs-empty-title">暂无公告</p>' +
+                '<p class="fs-empty-desc">当前分类或筛选条件下没有内容</p>' +
+            '</div>';
+        amReplayAnim(contentArea, options.anim);
+        return;
+    }
+
+    var overview =
+        '<div class="am-overview">' +
+            '<div class="am-overview-main">' +
+                '<div class="am-overview-icon"><i class="fas fa-bullhorn"></i></div>' +
+                '<div class="am-overview-text">' +
+                    '<h4>' + amEsc(title) + '</h4>' +
+                    '<p>' + (options.filterName ? '筛选结果仅展示符合条件的公告' : '按月份归档，点击卡片查看完整公告内容') + '</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="am-overview-stats">' +
+                '<div class="vh-stat-box"><strong>' + total + '</strong><span>公告</span></div>' +
+                '<div class="vh-stat-box"><strong>' + unread + '</strong><span>未读</span></div>' +
+                '<div class="vh-stat-box"><strong>' + (total - unread) + '</strong><span>已读</span></div>' +
+            '</div>' +
+        '</div>';
+
+    var grouped = groupAnnouncementsByMonth(sorted);
+    var body = grouped.map(function (group) {
+        return '<div class="am-month"><span>' + amEsc(group.monthName) + ' · ' + group.announcements.length + ' 条</span></div>' +
+            '<div class="am-grid"></div>';
+    }).join('');
+
+    contentArea.innerHTML = '';
+    var wrapper = document.createElement('div');
+    wrapper.className = 'am-view';
+    wrapper.innerHTML = overview + body;
+    contentArea.appendChild(wrapper);
+
+    // 逐月填充卡片（保留事件绑定）
+    var grids = wrapper.querySelectorAll('.am-grid');
+    grouped.forEach(function (group, index) {
+        var gridEl = grids[index];
+        if (!gridEl) return;
+        group.announcements.forEach(function (announcement) {
+            gridEl.appendChild(amBuildCard(announcement, sorted));
+        });
+    });
+
+    amReplayAnim(contentArea, options.anim);
+}
+
+// 初始化公告侧边栏导航
 function initializeAnnouncementNavigation() {
     var modalEl = document.getElementById('announcementModal');
     var toolbar = document.getElementById('announcementToolbar');
+    if (!modalEl) return;
 
-    // 关闭某个下拉内部的二级子菜单并复位箭头
+    // 统计公告总数
+    var statTotal = 0;
+    ['importantAnnouncements', 'normalAnnouncements', 'devLogs'].forEach(function (key) {
+        statTotal += (announcementData[key] || []).length;
+    });
+    amSetStat(statTotal);
+    amSetPage(amCurrentTitle, '');
+
     function closeFilterSubmenus(dd) {
         if (!dd) return;
-        dd.querySelectorAll('.vh-filter-submenu').forEach(function(sm) {
+        dd.querySelectorAll('.vh-filter-submenu').forEach(function (sm) {
             sm.classList.remove('open');
         });
-        dd.querySelectorAll('.vh-filter-parent').forEach(function(p) {
+        dd.querySelectorAll('.vh-filter-parent').forEach(function (p) {
             var arrow = p.querySelector('.vh-sub-arrow');
             if (arrow) arrow.style.transform = 'rotate(0deg)';
         });
     }
 
-    // 关闭所有多级下拉菜单（except 除外）
     function closeAnnouncementDropdowns(except) {
-        modalEl.querySelectorAll('.vh-dropdown').forEach(function(dd) {
+        modalEl.querySelectorAll('.vh-dropdown').forEach(function (dd) {
             if (dd !== except) {
                 dd.classList.remove('open');
                 closeFilterSubmenus(dd);
@@ -3263,69 +3503,70 @@ function initializeAnnouncementNavigation() {
         });
     }
 
-    // 重置 bar 中所有按钮的激活状态
     function resetAnnouncementTabs() {
-        modalEl.querySelectorAll('.vh-tab').forEach(function(tab) {
+        modalEl.querySelectorAll('.fs-nav-item').forEach(function (item) {
+            item.classList.remove('active');
+        });
+        modalEl.querySelectorAll('.vh-tab').forEach(function (tab) {
             tab.classList.remove('active');
         });
     }
 
-    // 内容区显示"请选择"提示
     function showAnnouncementNavHint(text) {
-        var contentArea = document.querySelector('#announcementModal .terms-content');
+        var contentArea = document.getElementById('announcementContent');
         if (!contentArea) return;
-        contentArea.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
-                    <i class="fas fa-inbox"></i>
-                </div>
-                <p class="select-hint" style="font-style: normal; color: black; text-align: center; padding: 0; margin: 0;">${text}</p>
-            </div>
-        `;
+        contentArea.innerHTML =
+            '<div class="fs-empty">' +
+                '<div class="fs-empty-icon"><i class="fas fa-inbox"></i></div>' +
+                '<p class="fs-empty-title">' + amEsc(text) + '</p>' +
+                '<p class="fs-empty-desc">从左侧分类或下拉菜单中选择要查看的内容</p>' +
+            '</div>';
     }
 
-    // 重要公告：单条内容，直接加载
     var importantNav = document.getElementById('importantNav');
     if (importantNav) {
-        importantNav.addEventListener('click', function(e) {
+        importantNav.addEventListener('click', function (e) {
             e.stopPropagation();
             closeAnnouncementDropdowns();
             resetAnnouncementTabs();
             this.classList.add('active');
+            amCurrentTitle = '重要公告';
             loadAnnouncementList(announcementData.importantAnnouncements);
         });
     }
 
-    // 普通公告：单条内容，直接加载
     var normalNav = document.getElementById('normalNav');
     if (normalNav) {
-        normalNav.addEventListener('click', function(e) {
+        normalNav.addEventListener('click', function (e) {
             e.stopPropagation();
             closeAnnouncementDropdowns();
             resetAnnouncementTabs();
             this.classList.add('active');
+            amCurrentTitle = '普通公告';
             loadAnnouncementList(announcementData.normalAnnouncements);
         });
     }
 
-    // 开发日志：点击按钮弹出多级菜单
     var devLogNav = document.getElementById('devLogNav');
     var devLogDropdown = document.getElementById('devLogDropdown');
     if (devLogNav && devLogDropdown) {
-        devLogNav.addEventListener('click', function(e) {
+        devLogNav.addEventListener('click', function (e) {
             e.stopPropagation();
             var willOpen = !devLogDropdown.classList.contains('open');
             closeAnnouncementDropdowns(devLogDropdown);
             devLogDropdown.classList.toggle('open', willOpen);
             resetAnnouncementTabs();
             devLogNav.classList.add('active');
-            if (willOpen) showAnnouncementNavHint('请选择要查看的开发日志');
+            if (willOpen) {
+                amCurrentTitle = '开发日志';
+                amSetPage('开发日志', '请选择要查看的模块');
+                showAnnouncementNavHint('请选择要查看的开发日志');
+            }
         });
     }
 
-    // 开发日志多级菜单子条目点击：加载对应内容
     if (devLogDropdown) {
-        devLogDropdown.addEventListener('click', function(e) {
+        devLogDropdown.addEventListener('click', function (e) {
             var item = e.target.closest('.vh-dropdown-item[data-type]');
             if (!item || !devLogDropdown.contains(item)) return;
             e.stopPropagation();
@@ -3333,19 +3574,18 @@ function initializeAnnouncementNavigation() {
             closeAnnouncementDropdowns();
             resetAnnouncementTabs();
             if (devLogNav) devLogNav.classList.add('active');
+            amCurrentTitle = type === 'dev_game_hall' ? '开发日志 · 主页面更新' : '开发日志 · 启动器更新';
             loadAnnouncementByType(type);
         });
     }
 
-    // ===== 筛选：点击按钮弹出多级菜单 =====
     var filterNav = document.getElementById('announcementFilterNav');
     var filterDropdown = document.getElementById('announcementFilterDropdown');
     var monthSubmenu = document.getElementById('monthFilterSubmenu');
     var versionSubmenu = document.getElementById('versionFilterSubmenu');
 
     if (filterNav && filterDropdown) {
-        // 筛选按钮：仅展开/收起菜单，不改变当前分类
-        filterNav.addEventListener('click', function(e) {
+        filterNav.addEventListener('click', function (e) {
             e.stopPropagation();
             var willOpen = !filterDropdown.classList.contains('open');
             closeAnnouncementDropdowns(filterDropdown);
@@ -3353,8 +3593,7 @@ function initializeAnnouncementNavigation() {
             if (!willOpen) closeFilterSubmenus(filterDropdown);
         });
 
-        // 一级菜单项（按月份 / 按版本）与二级菜单条目的委托处理
-        filterDropdown.addEventListener('click', function(e) {
+        filterDropdown.addEventListener('click', function (e) {
             var parentItem = e.target.closest('.vh-filter-parent');
             if (parentItem) {
                 e.stopPropagation();
@@ -3363,8 +3602,7 @@ function initializeAnnouncementNavigation() {
                 var willOpenSub = !targetSubmenu.classList.contains('open');
                 otherSubmenu.classList.remove('open');
                 targetSubmenu.classList.toggle('open', willOpenSub);
-                // 箭头方向
-                filterDropdown.querySelectorAll('.vh-filter-parent').forEach(function(p) {
+                filterDropdown.querySelectorAll('.vh-filter-parent').forEach(function (p) {
                     var arrow = p.querySelector('.vh-sub-arrow');
                     if (arrow) arrow.style.transform = 'rotate(0deg)';
                 });
@@ -3388,7 +3626,6 @@ function initializeAnnouncementNavigation() {
                 return;
             }
 
-            // 清除筛选：沿用原有逻辑（回到开发日志列表）
             if (e.target.closest('#announcementFilterClearBtn')) {
                 e.stopPropagation();
                 closeAnnouncementDropdowns();
@@ -3397,20 +3634,19 @@ function initializeAnnouncementNavigation() {
         });
     }
 
-    // 点击菜单外部或按 Esc：关闭多级菜单
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!e.target.closest('#announcementModal .vh-dropdown')) {
             var am = document.getElementById('announcementModal');
-            if (am) am.querySelectorAll('.vh-dropdown').forEach(function(dd) {
+            if (am) am.querySelectorAll('.vh-dropdown').forEach(function (dd) {
                 dd.classList.remove('open');
                 closeFilterSubmenus(dd);
             });
         }
     });
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             var am = document.getElementById('announcementModal');
-            if (am) am.querySelectorAll('.vh-dropdown').forEach(function(dd) {
+            if (am) am.querySelectorAll('.vh-dropdown').forEach(function (dd) {
                 dd.classList.remove('open');
                 closeFilterSubmenus(dd);
             });
@@ -3448,28 +3684,14 @@ function loadAnnouncementByType(type) {
 }
 
 // 加载公告列表（显示选择按钮）
+// 加载公告列表
 function loadAnnouncementList(announcements) {
-    var contentArea = document.querySelector('#announcementModal .terms-content');
-    if (!contentArea) return;
-    
-    contentArea.innerHTML = '';
-    
-    if (announcements.length === 0) {
-        currentAnnouncementContext = announcements;
-        refreshAnnouncementFilterOptions(announcements);
-        contentArea.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                <div style="font-size: 48px; margin-bottom: 20px; color: #999;">
-                    <i class="fas fa-inbox"></i>
-                </div>
-                <p style="font-style: normal; text-align: center; padding: 0; margin: 0; color: #999;">暂无公告</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // 显示公告选择按钮界面
-    showAnnouncementSelection(announcements);
+    currentAnnouncementContext = announcements || [];
+    refreshAnnouncementFilterOptions(currentAnnouncementContext);
+    amRenderList(currentAnnouncementContext, {
+        anim: 'forward',
+        title: amCurrentTitle
+    });
 }
 
 // 按月份分组公告
@@ -3500,175 +3722,13 @@ function groupAnnouncementsByMonth(announcements) {
 }
 
 // 显示公告选择按钮界面
-function showAnnouncementSelection(announcements) {
-    var contentArea = document.querySelector('#announcementModal .terms-content');
-    if (!contentArea) return;
-    
-    contentArea.innerHTML = '';
-    
-    // 添加提示文本
-    var hintContainer = document.createElement('div');
-    hintContainer.style.cssText = `
-        padding: 20px 20px 10px;
-        margin-bottom: 10px;
-    `;
-    
-    var isDarkMode = document.body.classList.contains('dark-mode');
-    
-    var hintText = document.createElement('p');
-    hintText.className = 'announcement-selection-hint';
-    hintText.style.cssText = `
-        font-style: normal;
-        font-size: 16px;
-        color: ${isDarkMode ? '#e0e0e0' : '#333'};
-        margin: 0;
-    `;
-    hintText.textContent = '请选择要查看的公告';
-    hintContainer.appendChild(hintText);
-    contentArea.appendChild(hintContainer);
-    
-    // 记录当前展示的公告集合，并刷新 bar 内筛选菜单的可选条目
-    currentAnnouncementContext = announcements;
-    refreshAnnouncementFilterOptions(announcements);
-    
-    // 按日期倒序排序公告
-    var sortedAnnouncements = [...announcements].sort(function(a, b) {
-        return new Date(b.date) - new Date(a.date);
-    });
-    
-    // 按月份分组
-    var groupedAnnouncements = groupAnnouncementsByMonth(sortedAnnouncements);
-    
-    // 创建月份分组
-    groupedAnnouncements.forEach(function(group) {
-        // 创建月份标题
-        var monthHeader = document.createElement('div');
-        monthHeader.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 20px;
-            margin-bottom: 12px;
-        `;
-        
-        var monthLine = document.createElement('div');
-        monthLine.style.cssText = `
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(212, 93, 121, 0.3), transparent);
-        `;
-        
-        var monthTitle = document.createElement('span');
-        monthTitle.style.cssText = `
-            font-size: 14px;
-            font-weight: bold;
-            color: #d45d79;
-            white-space: nowrap;
-        `;
-        monthTitle.textContent = group.monthName + '（共' + group.announcements.length + '条）';
-        
-        monthHeader.appendChild(monthLine);
-        monthHeader.appendChild(monthTitle);
-        monthHeader.appendChild(monthLine.cloneNode(true));
-        contentArea.appendChild(monthHeader);
-        
-        // 创建该月份的公告按钮网格容器
-        var buttonsContainer = document.createElement('div');
-        buttonsContainer.className = 'announcement-buttons-container';
-        buttonsContainer.style.cssText = `
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        `;
-        contentArea.appendChild(buttonsContainer);
-        
-        // 创建该月份的公告按钮
-        group.announcements.forEach(function(announcement) {
-        var button = document.createElement('button');
-        button.className = 'announcement-select-button';
-        
-        var isDarkMode = document.body.classList.contains('dark-mode');
-        var bgColor = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
-        var borderColor = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
-        var shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.06)';
-        var titleColor = isDarkMode ? '#e67e8a' : '#d45d79';
-        var textColor1 = isDarkMode ? '#e0e0e0' : '#666';
-        var textColor2 = isDarkMode ? '#ccc' : '#888';
-        
-        button.style.cssText = `
-            position: relative;
-            padding: 20px 16px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: ${bgColor};
-            border: 2px solid ${borderColor};
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-height: 100px;
-            box-shadow: 0 2px 10px ${shadowColor};
-        `;
-        
-        // 添加鼠标悬浮效果
-        button.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-3px)';
-            this.style.boxShadow = '0 8px 20px rgba(212, 93, 121, 0.2)';
-            this.style.borderColor = '#d45d79';
-        });
-        
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.06)';
-            this.style.borderColor = 'rgba(212, 93, 121, 0.3)';
-        });
-        
-        // 添加点击效果
-        button.addEventListener('mousedown', function() {
-            this.style.transform = 'translateY(-1px) scale(0.99)';
-        });
-        
-        button.addEventListener('mouseup', function() {
-            this.style.transform = 'translateY(-3px)';
-        });
-        
-        // 确定标签颜色
-        var tagColor = '#999';
-        if (announcement.tag === 'important') {
-            tagColor = '#f44336';
-        } else if (announcement.tag === 'update') {
-            tagColor = '#4CAF50';
-        } else if (announcement.tag === 'notice') {
-            tagColor = '#2196F3';
-        }
-        
-        // 检查公告是否已查看
-        var isViewed = isAnnouncementViewed(announcement.id);
-        
-        // 设置按钮内容
-        button.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3; flex: 1; min-width: 0; word-break: break-word; overflow-wrap: anywhere;">${announcement.title}</span>
-                ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: ${tagColor}; color: white; flex-shrink: 0;">${announcement.tagText}</span>` : ''}
-            </div>
-            <div style="font-size: 14px; color: ${textColor1};"><i class="fas fa-calendar"></i> ${announcement.date}</div>
-            <div style="font-size: 13px; color: ${textColor2};"><i class="fas fa-user"></i> ${announcement.author}</div>
-            ${!isViewed ? `<span class="notification-dot">1<span class="notification-tooltip">存在未查看的更新</span></span>` : ''}
-        `;
-        
-        // 添加点击事件，显示公告详情
-        button.addEventListener('click', function() {
-            // 标记公告为已查看
-            markAnnouncementAsViewed(announcement.id);
-            showAnnouncementDetail(announcement, sortedAnnouncements);
-        });
-        
-        buttonsContainer.appendChild(button);
-        });
+// 显示公告列表（月份分组 + 卡片网格）
+function showAnnouncementSelection(announcements, anim) {
+    currentAnnouncementContext = announcements || [];
+    refreshAnnouncementFilterOptions(currentAnnouncementContext);
+    amRenderList(currentAnnouncementContext, {
+        anim: anim || 'forward',
+        title: amCurrentTitle
     });
 }
 
@@ -3774,290 +3834,85 @@ function filterAnnouncementsByVersion(version, allAnnouncements) {
 }
 
 // 显示筛选后的公告
+// 显示筛选后的公告
 function showFilteredAnnouncements(filtered, filterName, filterType) {
-    var contentArea = document.querySelector('#announcementModal .terms-content');
-    if (!contentArea) return;
-    
-    contentArea.innerHTML = '';
-    
-    var isDarkMode = document.body.classList.contains('dark-mode');
-    var hintColor = isDarkMode ? '#e0e0e0' : '#333';
-    
-    // 添加提示文本区域
-    var hintContainer = document.createElement('div');
-    hintContainer.style.cssText = `
-        padding: 20px 20px 10px;
-        margin-bottom: 10px;
-    `;
-    
-    var hintText = document.createElement('p');
-    hintText.className = 'announcement-selection-hint';
-    hintText.style.cssText = `
-        font-style: normal;
-        font-size: 16px;
-        color: ${hintColor};
-        margin: 0;
-    `;
-    hintText.textContent = '已筛选：' + filterName + '（共' + filtered.length + '条）';
-    hintContainer.appendChild(hintText);
-    contentArea.appendChild(hintContainer);
-    
-    // 筛选状态同步到 bar：筛选按钮高亮，菜单内显示"清除筛选"条目
     var filterNav = document.getElementById('announcementFilterNav');
     var clearBtn = document.getElementById('announcementFilterClearBtn');
     if (filterNav) filterNav.classList.add('filtering');
     if (clearBtn) clearBtn.style.display = 'block';
-    
-    if (filtered.length === 0) {
-        var emptyMessage = document.createElement('div');
-        emptyMessage.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            color: #999;
-        `;
-        emptyMessage.innerHTML = `
-            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: #d45d79;"></i>
-            <p style="margin: 0;">该筛选条件下没有公告</p>
-        `;
-        contentArea.appendChild(emptyMessage);
-        return;
-    }
-    
-    // 按日期倒序排序
-    var sortedAnnouncements = [...filtered].sort(function(a, b) {
-        return new Date(b.date) - new Date(a.date);
-    });
-    
-    // 按月份分组
-    var groupedAnnouncements = groupAnnouncementsByMonth(sortedAnnouncements);
-    
-    // 创建月份分组和公告按钮
-    groupedAnnouncements.forEach(function(group) {
-        var monthHeader = document.createElement('div');
-        monthHeader.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 20px;
-            margin-bottom: 12px;
-        `;
-        
-        var monthLine = document.createElement('div');
-        monthLine.style.cssText = `
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(212, 93, 121, 0.3), transparent);
-        `;
-        
-        var monthTitle = document.createElement('span');
-        monthTitle.style.cssText = `
-            font-size: 14px;
-            font-weight: bold;
-            color: #d45d79;
-            white-space: nowrap;
-        `;
-        monthTitle.textContent = group.monthName + '（共' + group.announcements.length + '条）';
-        
-        monthHeader.appendChild(monthLine);
-        monthHeader.appendChild(monthTitle);
-        monthHeader.appendChild(monthLine.cloneNode(true));
-        contentArea.appendChild(monthHeader);
-        
-        var buttonsContainer = document.createElement('div');
-        buttonsContainer.className = 'announcement-buttons-container';
-        buttonsContainer.style.cssText = `
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        `;
-        contentArea.appendChild(buttonsContainer);
-        
-        group.announcements.forEach(function(announcement) {
-            var button = document.createElement('button');
-            button.className = 'announcement-select-button';
-            
-            var isDarkMode = document.body.classList.contains('dark-mode');
-            var bgColor = isDarkMode ? 'rgba(50, 50, 70, 0.95)' : 'white';
-            var borderColor = isDarkMode ? 'rgba(212, 93, 121, 0.4)' : 'rgba(212, 93, 121, 0.3)';
-            var shadowColor = isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.06)';
-            var titleColor = isDarkMode ? '#e67e8a' : '#d45d79';
-            var textColor1 = isDarkMode ? '#e0e0e0' : '#666';
-            var textColor2 = isDarkMode ? '#ccc' : '#888';
-            
-            button.style.cssText = `
-                position: relative;
-                padding: 20px 16px;
-                border: none;
-                border-radius: 12px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                background: ${bgColor};
-                border: 2px solid ${borderColor};
-                text-align: left;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                min-height: 100px;
-                box-shadow: 0 2px 10px ${shadowColor};
-            `;
-            
-            button.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px)';
-                this.style.boxShadow = '0 8px 20px rgba(212, 93, 121, 0.2)';
-                this.style.borderColor = '#d45d79';
-            });
-            
-            button.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 2px 10px ' + shadowColor;
-                this.style.borderColor = borderColor;
-            });
-            
-            var tagColor = '#999';
-            if (announcement.tag === 'important') {
-                tagColor = '#f44336';
-            } else if (announcement.tag === 'update') {
-                tagColor = '#4CAF50';
-            } else if (announcement.tag === 'notice') {
-                tagColor = '#2196F3';
-            }
-            
-            var isViewed = isAnnouncementViewed(announcement.id);
-            
-            button.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                    <span style="font-size: 16px; font-weight: bold; color: ${titleColor}; line-height: 1.3; flex: 1; min-width: 0; word-break: break-word; overflow-wrap: anywhere;">${announcement.title}</span>
-                    ${announcement.tag ? `<span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background-color: transparent; border: 1.5px solid ${tagColor}; color: ${tagColor}; flex-shrink: 0;">${announcement.tagText}</span>` : ''}
-                </div>
-                <div style="font-size: 14px; color: ${textColor1};"><i class="fas fa-calendar"></i> ${announcement.date}</div>
-                <div style="font-size: 13px; color: ${textColor2};"><i class="fas fa-user"></i> ${announcement.author}</div>
-                ${!isViewed ? `<span class="notification-dot">1<span class="notification-tooltip">存在未查看的更新</span></span>` : ''}
-            `;
-            
-            button.addEventListener('click', function() {
-                markAnnouncementAsViewed(announcement.id);
-                showAnnouncementDetail(announcement, filtered);
-            });
-            
-            buttonsContainer.appendChild(button);
-        });
+
+    amCurrentTitle = '筛选结果';
+    amRenderList(filtered, {
+        anim: 'forward',
+        title: '筛选结果',
+        filterName: filterName
     });
 }
 
 // 显示公告详情
+// 显示公告详情
 function showAnnouncementDetail(announcement, allAnnouncements) {
-    var contentArea = document.querySelector('#announcementModal .terms-content');
+    var contentArea = document.getElementById('announcementContent');
     if (!contentArea) return;
-    
-    contentArea.innerHTML = '';
-    
-    // 添加返回按钮
-    var backButton = document.createElement('button');
-    backButton.className = 'announcement-back-button';
-    backButton.style.cssText = `
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 20px;
-    `;
-    
-    // 添加鼠标悬浮效果
-    backButton.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-3px)';
-        this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-    });
-    
-    backButton.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-    });
-    
-    backButton.innerHTML = '<i class="fas fa-arrow-left"></i> 返回公告列表';
-    
-    // 返回按钮点击事件
-    backButton.addEventListener('click', function() {
-        showAnnouncementSelection(allAnnouncements);
-    });
-    
-    contentArea.appendChild(backButton);
-    
-    // 创建公告详情元素
-    var announcementElement = document.createElement('div');
-    announcementElement.className = 'announcement-item';
-    
-    var announcementHTML = `
-        <div class="announcement-header">
-            <h3 class="announcement-title">${announcement.title}</h3>
-            <div class="announcement-meta">
-                ${announcement.tag ? `<span class="announcement-tag ${announcement.tag}">${announcement.tagText}</span>` : ''}
-                <span class="announcement-date"><i class="fas fa-calendar"></i> ${announcement.date}</span>
-                <span class="announcement-author"><i class="fas fa-user"></i> ${announcement.author}</span>
-                <span class="announcement-id">ID: ${announcement.id}</span>
-            </div>
-        </div>
-        <div class="announcement-content">
-    `;
-    
-    // 添加公告图片
-    if (announcement.images && announcement.images.length > 0) {
-        var isSingleImage = announcement.images.length === 1;
-        announcementHTML += `
-            <div class="announcement-images ${isSingleImage ? 'single-image' : ''}">
-        `;
-        announcement.images.forEach(function(image) {
-            announcementHTML += `
-                <div class="image-container ${isSingleImage ? 'single-image-container' : ''}">
-                    <img src="${image}" alt="公告图片" class="announcement-image ${isSingleImage ? 'single-image-item' : ''}" draggable="false">
-                    <div class="image-tooltip">点击查看大图</div>
-                </div>
-            `;
+
+    var tagCls = '';
+    if (announcement.tag === 'important') tagCls = 'important';
+    else if (announcement.tag === 'update') tagCls = 'update';
+    else if (announcement.tag === 'notice') tagCls = 'notice';
+
+    var paragraphs = (announcement.content || []).length;
+    var imageCount = (announcement.images || []).length;
+
+    var imagesHtml = '';
+    if (imageCount > 0) {
+        var single = imageCount === 1;
+        imagesHtml = '<div class="announcement-images ' + (single ? 'single-image' : '') + '">';
+        announcement.images.forEach(function (image) {
+            imagesHtml += '<div class="image-container ' + (single ? 'single-image-container' : '') + '">' +
+                '<img src="' + amEsc(image) + '" alt="公告图片" class="announcement-image ' + (single ? 'single-image-item' : '') + '" draggable="false">' +
+                '<div class="image-tooltip">点击查看大图</div></div>';
         });
-        announcementHTML += `
-            </div>
-        `;
+        imagesHtml += '</div>';
     }
-    
-    // 添加公告内容
-    announcement.content.forEach(function(paragraph) {
-        // 解析颜色格式 [color:颜色]文本[/color]
-        let formattedParagraph = paragraph;
-        const colorRegex = /\[color:([^\]]+)\]([^\[]+)\[\/color\]/g;
-        formattedParagraph = formattedParagraph.replace(colorRegex, '<span style="color: $1;">$2</span>');
 
-        // 解析链接格式 [link:路径]文本[/link] —— 渲染为与主题色一致的内联按钮
-        const linkRegex = /\[link:([^\]]+)\]([^\[]+)\[\/link\]/g;
-        formattedParagraph = formattedParagraph.replace(linkRegex, function(match, path, text) {
-            return '<a href="' + path + '" style="display: inline-block; padding: 3px 12px; margin: 0 4px; background: linear-gradient(135deg, #d45d79 0%, #e67e8a 100%); color: #fff; text-decoration: none; border-radius: 6px; font-size: 0.95em; font-weight: 500; box-shadow: 0 2px 6px rgba(212, 93, 121, 0.3); transition: all 0.25s ease; vertical-align: middle;" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 10px rgba(212, 93, 121, 0.4)\';" onmouseout="this.style.transform=\'translateY(0)\';this.style.boxShadow=\'0 2px 6px rgba(212, 93, 121, 0.3)\';">' + text + '</a>';
+    var html =
+        '<div class="am-detail">' +
+            '<div class="am-detail-hero">' +
+                '<div class="am-detail-hero-main">' +
+                    '<span class="am-detail-eyebrow"><i class="fas fa-newspaper"></i> 开发者公告</span>' +
+                    '<h2 class="am-detail-title">' + amEsc(announcement.title) + '</h2>' +
+                    '<div class="am-detail-meta">' +
+                        (announcement.tag ? '<span class="announcement-tag ' + tagCls + '">' + amEsc(announcement.tagText) + '</span>' : '') +
+                        '<span><i class="fas fa-calendar-day"></i> ' + amEsc(announcement.date) + '</span>' +
+                        '<span><i class="fas fa-user"></i> ' + amEsc(announcement.author) + '</span>' +
+                        '<span><i class="fas fa-fingerprint"></i> ' + amEsc(announcement.id) + '</span>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="am-detail-side">' +
+                    '<div class="vh-detail-stats">' +
+                        '<div class="vh-stat-box"><strong>' + paragraphs + '</strong><span>段内容</span></div>' +
+                        '<div class="vh-stat-box"><strong>' + imageCount + '</strong><span>张图片</span></div>' +
+                    '</div>' +
+                    '<button type="button" class="fs-tool-btn solid" id="amDetailBackBtn"><i class="fas fa-arrow-left"></i><span>返回公告列表</span></button>' +
+                '</div>' +
+            '</div>' +
+            imagesHtml +
+            '<div class="am-detail-body">' + amBodyHtml(announcement.content) + '</div>' +
+        '</div>';
+
+    contentArea.innerHTML = html;
+    amReplayAnim(contentArea, 'forward');
+
+    amSetPage('公告详情', (announcement.tagText ? announcement.tagText + ' · ' : '') + announcement.date);
+
+    var backBtn = document.getElementById('amDetailBackBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', function () {
+            showAnnouncementSelection(allAnnouncements, 'back');
         });
+    }
 
-        announcementHTML += `
-            <p>${formattedParagraph}</p>
-        `;
-    });
-    
-    announcementHTML += `
-        </div>
-    `;
-    
-    announcementElement.innerHTML = announcementHTML;
-    contentArea.appendChild(announcementElement);
-    
-    // 为图片添加点击事件
-    initAnnouncementImageClick();
+    if (typeof initAnnouncementImageClick === 'function') initAnnouncementImageClick();
 }
 
 // 为公告图片添加点击事件
@@ -4260,75 +4115,113 @@ function capitalizeFirstLetter(string) {
 function generateAnnouncementModal() {
     var modal = document.createElement('div');
     modal.id = 'announcementModal';
-    modal.className = 'custom-alert';
+    modal.className = 'custom-alert fs-window-modal';
     modal.style.display = 'none';
     
     modal.innerHTML = `
-        <div class="alert-content terms-modal-content">
-            <div class="header-container">
-                <div class="alert-icon">
-                    <i class="fas fa-newspaper"></i>
-                </div>
-                <h3>开发者公告</h3>
-                <button class="about-desktop-close" id="announcementCloseBtn" title="关闭">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="vh-toolbar" id="announcementToolbar">
-                <button class="vh-tab active" id="importantNav">
-                    <i class="fas fa-exclamation-circle"></i><span>重要公告</span>
-                </button>
-                <button class="vh-tab" id="normalNav">
-                    <i class="fas fa-info-circle"></i><span>普通公告</span>
-                </button>
-                <div class="vh-dropdown" id="devLogDropdown">
-                    <button class="vh-tab" id="devLogNav">
-                        <i class="fas fa-code"></i><span>开发日志</span>
-                        <i class="fas fa-chevron-down vh-caret"></i>
-                    </button>
-                    <div class="vh-dropdown-menu">
-                        <button class="vh-dropdown-item" data-type="dev_launcher">启动器更新</button>
-                        <button class="vh-dropdown-item" data-type="dev_game_hall">主页面更新</button>
+        <div class="alert-content terms-modal-content fs-window-content">
+            <header class="fs-window-header">
+                <div class="fs-window-title">
+                    <div class="alert-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="fs-window-heading">
+                        <h3>开发者公告</h3>
+                        <p>重要通知、版本说明与开发日志集中查阅</p>
                     </div>
                 </div>
-                <span class="vh-toolbar-right">
-                    <div class="vh-dropdown" id="announcementFilterDropdown">
-                        <button class="vh-tab" id="announcementFilterNav" type="button">
-                            <i class="fas fa-filter"></i><span>筛选</span>
-                            <i class="fas fa-chevron-down vh-caret"></i>
-                        </button>
-                        <div class="vh-dropdown-menu vh-filter-menu">
-                            <button class="vh-dropdown-item vh-filter-clear" id="announcementFilterClearBtn" type="button" style="display: none;">
-                                <i class="fas fa-times-circle"></i>&nbsp;<span>清除筛选</span>
-                            </button>
-                            <div class="vh-dropdown-item vh-filter-parent" data-submenu="month">
-                                <span>仅显示以下月份的所有公告</span>
-                                <i class="fas fa-chevron-right vh-sub-arrow"></i>
-                            </div>
-                            <div class="vh-dropdown-item vh-filter-parent" data-submenu="version">
-                                <span>仅显示以下版本内的所有公告</span>
-                                <i class="fas fa-chevron-right vh-sub-arrow"></i>
-                            </div>
-                        </div>
-                        <div class="vh-filter-submenu" id="monthFilterSubmenu"></div>
-                        <div class="vh-filter-submenu" id="versionFilterSubmenu"></div>
-                    </div>
+                <div class="fs-window-actions">
                     <button class="mark-all-read-btn" id="markAllAnnouncementReadBtn">
                         <i class="fas fa-check-double"></i>
                         <span>一键已读</span>
                     </button>
-                </span>
-            </div>
-            <div class="terms-main vh-main">
-                <div class="terms-content" id="announcementContent">
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;">
-                        <div style="font-size: 48px; margin-bottom: 20px; color: #d45d79;">
-                            <i class="fas fa-newspaper"></i>
-                        </div>
-                        <p style="font-style: normal; text-align: center; padding: 0; margin: 0;">欢迎查看开发者公告</p>
-                        <p style="font-style: normal; text-align: center; padding: 0; margin: 10px 0 0; color: #999; font-size: 14px;">选择上方分类查看详细内容</p>
-                    </div>
+                    <button class="about-desktop-close" id="announcementCloseBtn" title="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
+            </header>
+            <div class="fs-window-body">
+                <aside class="fs-sidebar">
+                    <div class="fs-sidebar-head">
+                        <span class="fs-sidebar-eyebrow">公告中心</span>
+                        <div class="fs-sidebar-stat">
+                            <strong id="amStatTotal">0</strong>
+                            <span>条公告与日志</span>
+                        </div>
+                    </div>
+                    <nav class="fs-sidebar-nav" id="announcementToolbar">
+                        <div class="fs-nav-group">
+                            <div class="fs-nav-group-title"><i class="fas fa-bullhorn"></i>公告分类</div>
+                            <button class="fs-nav-item active" id="importantNav">
+                                <span class="fs-nav-icon"><i class="fas fa-exclamation-circle"></i></span>
+                                <span class="fs-nav-text"><b>重要公告</b><small>必须了解的关键信息</small></span>
+                                <i class="fas fa-chevron-right fs-nav-arrow"></i>
+                            </button>
+                            <button class="fs-nav-item" id="normalNav">
+                                <span class="fs-nav-icon"><i class="fas fa-info-circle"></i></span>
+                                <span class="fs-nav-text"><b>普通公告</b><small>常规说明与通知</small></span>
+                                <i class="fas fa-chevron-right fs-nav-arrow"></i>
+                            </button>
+                            <div class="fs-nav-dropdown vh-dropdown" id="devLogDropdown">
+                                <button class="fs-nav-item" id="devLogNav">
+                                    <span class="fs-nav-icon"><i class="fas fa-code"></i></span>
+                                    <span class="fs-nav-text"><b>开发日志</b><small>按模块查看开发记录</small></span>
+                                    <i class="fas fa-chevron-down vh-caret"></i>
+                                </button>
+                                <div class="vh-dropdown-menu">
+                                    <button class="vh-dropdown-item" data-type="dev_launcher">启动器更新</button>
+                                    <button class="vh-dropdown-item" data-type="dev_game_hall">主页面更新</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fs-nav-group">
+                            <div class="fs-nav-group-title"><i class="fas fa-filter"></i>公告筛选</div>
+                            <div class="fs-nav-dropdown vh-dropdown" id="announcementFilterDropdown">
+                                <button class="fs-nav-item" id="announcementFilterNav" type="button">
+                                    <span class="fs-nav-icon"><i class="fas fa-sliders"></i></span>
+                                    <span class="fs-nav-text"><b>筛选公告</b><small>按月份或版本过滤</small></span>
+                                    <i class="fas fa-chevron-down vh-caret"></i>
+                                </button>
+                                <div class="vh-dropdown-menu vh-filter-menu">
+                                    <button class="vh-dropdown-item vh-filter-clear" id="announcementFilterClearBtn" type="button" style="display: none;">
+                                        <i class="fas fa-times-circle"></i>&nbsp;<span>清除筛选</span>
+                                    </button>
+                                    <div class="vh-dropdown-item vh-filter-parent" data-submenu="month">
+                                        <span>仅显示以下月份的所有公告</span>
+                                        <i class="fas fa-chevron-right vh-sub-arrow"></i>
+                                    </div>
+                                    <div class="vh-dropdown-item vh-filter-parent" data-submenu="version">
+                                        <span>仅显示以下版本内的所有公告</span>
+                                        <i class="fas fa-chevron-right vh-sub-arrow"></i>
+                                    </div>
+                                </div>
+                                <div class="vh-filter-submenu" id="monthFilterSubmenu"></div>
+                                <div class="vh-filter-submenu" id="versionFilterSubmenu"></div>
+                            </div>
+                        </div>
+                    </nav>
+                    <div class="fs-sidebar-foot">
+                        <p class="fs-sidebar-tip"><i class="fas fa-circle-info"></i> 点击公告卡片进入详情，详情页左上角可返回公告列表</p>
+                    </div>
+                </aside>
+                <main class="fs-main">
+                    <div class="fs-main-top">
+                        <div class="fs-main-heading">
+                            <span class="fs-main-eyebrow">公告中心</span>
+                            <h4 id="amPageTitle">重要公告</h4>
+                        </div>
+                        <div class="fs-main-meta" id="amPageMeta"></div>
+                    </div>
+                    <div class="terms-main vh-main fs-main-scroll" id="amMainScroll">
+                        <div class="terms-content fs-content" id="announcementContent">
+                            <div class="fs-empty">
+                                <div class="fs-empty-icon"><i class="fas fa-newspaper"></i></div>
+                                <p class="fs-empty-title">欢迎查看开发者公告</p>
+                                <p class="fs-empty-desc">从左侧选择分类，查看详细内容</p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
             </div>
             <div class="back-to-top-container">
                 <button class="back-to-top-btn" id="announcementBackToTopBtn" title="返回顶部">
@@ -4348,9 +4241,9 @@ function generateAnnouncementModal() {
     
     // 添加返回顶部按钮事件
     document.getElementById('announcementBackToTopBtn').addEventListener('click', function() {
-        var contentArea = document.querySelector('#announcementModal .terms-main');
+        var contentArea = document.getElementById('amMainScroll');
         if (contentArea) {
-            contentArea.scrollTop = 0;
+            contentArea.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
     

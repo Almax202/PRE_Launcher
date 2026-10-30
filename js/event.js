@@ -131,7 +131,7 @@ var eventAnnouncementData = {
             startTime: SEASON_PASS_EVENT.startTime,
             endTime: SEASON_PASS_EVENT.endTime,
             description: '全新赛季通行证系统即将登场！第一赛季「初始化」将于 2026年10月1日 04:00（UTC+8）正式开启，120 级奖励长线等你解锁。',
-            content: '<h2>第一赛季「初始化」即将上线</h2><p>全新<span style="color:#d45d79;font-weight:600;">赛季通行证系统</span>即将登场！第一赛季以<span style="color:#d45d79;font-weight:600;">「初始化」(Season 1 - Initialize)</span>为主题——一切伟大航程的起点，都从这里开始。</p><h3>上线时间</h3><p>开启时间：2026年10月1日 04:00（UTC+8）<br>结束时间：2026年12月31日 04:00（UTC+8）</p><h3>赛季亮点</h3><ul><li><strong>120 级奖励长线：</strong>免费/付费双档位奖励，含单次抽券、十连抽券、经验值补给卡、PRE Coin 补给包、经验值加成卡与每级 PRE 硬币奖励（全赛季合计 5000 枚）</li><li><strong>三层任务系统：</strong>日常 / 周常 / 赛季任务，签到、商店兑换、仓库管理等日常行为自动累积通行证经验</li><li><strong>EX 溢出奖励：</strong>满级后继续获取经验，按溢出节奏领取额外 PRE Coin</li><li><strong>通行证组合包：</strong>内含本体全部付费内容，购买后立即获得 10 级、经验值补给卡Ⅳ×2、PRE Coin 补给包Ⅳ×1 与限定「第一赛季纪念徽章」（可展示在用户名片个人荣勋）</li></ul><h3>购买方式</h3><p>通行证本体：6480 PRE Coin<br>通行证组合包：原价 12900 PRE Coin，未购买本体时直接购买可享优惠价 10368 PRE Coin</p><h3>温馨提示</h3><p>赛季开启前无法购买等级、解锁付费通行证或累积任务进度；赛季开启后相关功能将自动解禁。即刻开始囤积 PRE Coin，抢先领跑新赛季！</p><h3>公告发布时间</h3><p>2026年09月23日（UTC+8）</p>',
+            content: '<h2>第一赛季「初始化」即将上线</h2><p>全新<span style="color:#d45d79;font-weight:600;">赛季通行证系统</span>即将登场！第一赛季以<span style="color:#d45d79;font-weight:600;">「初始化」(Season 1 - Initialize)</span>为主题——一切伟大航程的起点，都从这里开始。</p><h3>上线时间</h3><p>开启时间：2026年10月1日 04:00（UTC+8）<br>结束时间：2026年12月31日 04:00（UTC+8）</p><h3>赛季亮点</h3><ul><li><strong>120 级奖励长线：</strong>免费/付费双档位奖励，含单次抽券、十连抽券、经验值补给卡、PRE Coin 补给包、经验值加成卡与每级 PRE 硬币奖励（全赛季合计 5000 枚）</li><li><strong>三层任务系统：</strong>日常 / 周常 / 赛季任务，签到、商店兑换、仓库管理等日常行为自动累积通行证经验</li><li><strong>EX 溢出奖励：</strong>满级后继续获取经验，按溢出节奏领取随机物品箱</li><li><strong>通行证组合包：</strong>内含本体全部付费内容，购买后立即获得 10 级、经验值补给卡Ⅳ×2、PRE Coin 补给包Ⅳ×1 与限定「第一赛季纪念徽章」（可展示在用户名片个人荣勋）</li></ul><h3>购买方式</h3><p>通行证本体：6480 PRE Coin<br>通行证组合包：原价 12900 PRE Coin，未购买本体时直接购买可享优惠价 10368 PRE Coin</p><h3>温馨提示</h3><p>赛季开启前无法购买等级、解锁付费通行证或累积任务进度；赛季开启后相关功能将自动解禁。即刻开始囤积 PRE Coin，抢先领跑新赛季！</p><h3>公告发布时间</h3><p>2026年09月23日（UTC+8）</p>',
             banner: ''
         },
     ]
@@ -152,7 +152,7 @@ var passAnnouncementData = {
             category: 'system',
             title: '第一赛季通行证「初始化」正式上线',
             date: '2026-10-01',
-            content: '<h2>第一赛季通行证「初始化」正式上线</h2><p>全新<span style="color:#ff9dc0;font-weight:600;">赛季通行证系统</span>正式登场！第一赛季以<span style="color:#ff9dc0;font-weight:600;">「初始化」(Season 1 - Initialize)</span>为主题——一切伟大航程的起点，都从这里开始。</p><h3>赛季时间</h3><p>开启时间：2026年10月1日 04:00（UTC+8）<br>结束时间：2026年12月31日 04:00（UTC+8）<br>赛季共计 91 天</p><h3>赛季亮点</h3><ul><li><strong>120 级奖励长线：</strong>免费/付费双档位奖励，含单次抽券、十连抽券、经验值补给卡、PRE Coin 补给包、经验值加成卡与每级 PRE 硬币奖励（全赛季合计 5000 枚）</li><li><strong>三层任务系统：</strong>日常 / 周常 / 赛季任务，签到、商店兑换、仓库管理等日常行为自动累积通行证经验</li><li><strong>EX 溢出奖励：</strong>满级后继续获取经验，按溢出节奏领取额外 PRE Coin</li><li><strong>通行证组合包：</strong>内含本体全部付费内容，购买后立即获得 10 级、经验值补给卡Ⅳ×2、PRE Coin 补给包Ⅳ×1 与限定「第一赛季纪念徽章」（可展示在用户名片个人荣勋）</li></ul><h3>购买方式</h3><p>通行证本体：6480 PRE Coin<br>通行证组合包：原价 12900 PRE Coin，未购买本体时直接购买可享优惠价 10368 PRE Coin</p><h3>温馨提示</h3><p>赛季期间可随时通过通行证窗口左上角的「切换」按钮查看赛季信息；赛季结束未领取的等级奖励将无法补领，请及时领取。</p><h3>公告发布时间</h3><p>2026年10月1日（UTC+8）</p>'
+            content: '<h2>第一赛季通行证「初始化」正式上线</h2><p>全新<span style="color:#ff9dc0;font-weight:600;">赛季通行证系统</span>正式登场！第一赛季以<span style="color:#ff9dc0;font-weight:600;">「初始化」(Season 1 - Initialize)</span>为主题——一切伟大航程的起点，都从这里开始。</p><h3>赛季时间</h3><p>开启时间：2026年10月1日 04:00（UTC+8）<br>结束时间：2026年12月31日 04:00（UTC+8）<br>赛季共计 91 天</p><h3>赛季亮点</h3><ul><li><strong>120 级奖励长线：</strong>免费/付费双档位奖励，含单次抽券、十连抽券、经验值补给卡、PRE Coin 补给包、经验值加成卡与每级 PRE 硬币奖励（全赛季合计 5000 枚）</li><li><strong>三层任务系统：</strong>日常 / 周常 / 赛季任务，签到、商店兑换、仓库管理等日常行为自动累积通行证经验</li><li><strong>EX 溢出奖励：</strong>满级后继续获取经验，按溢出节奏领取随机物品箱</li><li><strong>通行证组合包：</strong>内含本体全部付费内容，购买后立即获得 10 级、经验值补给卡Ⅳ×2、PRE Coin 补给包Ⅳ×1 与限定「第一赛季纪念徽章」（可展示在用户名片个人荣勋）</li></ul><h3>购买方式</h3><p>通行证本体：6480 PRE Coin<br>通行证组合包：原价 12900 PRE Coin，未购买本体时直接购买可享优惠价 10368 PRE Coin</p><h3>温馨提示</h3><p>赛季期间可随时通过通行证窗口左上角的「切换」按钮查看赛季信息；赛季结束未领取的等级奖励将无法补领，请及时领取。</p><h3>公告发布时间</h3><p>2026年10月1日（UTC+8）</p>'
         },
         {
             id: 'pass_ann_task_guide',
@@ -172,8 +172,8 @@ var passAnnouncementData = {
             id: 'pass_ann_ex_overflow',
             category: 'rules',
             title: 'EX 溢出奖励机制说明',
-            date: '2026-10-10',
-            content: '<h2>EX 溢出奖励机制说明</h2><p>通行证等级达到 120 级上限后，继续获取的通行证经验将进入<span style="color:#ff9dc0;font-weight:600;">EX 溢出阶段</span>，持续为您提供 PRE Coin 收益。</p><h3>溢出规则</h3><ul><li>通行证等级达到 120 级后，超出部分的经验按每级 10 点继续累积，转化为 EX 溢出等级（121 级起）</li><li>EX 溢出等级不再提供物品奖励，改为发放 PRE Coin</li><li>EX 溢出等级无上限，赛季期间可持续累积</li></ul><h3>溢出奖励</h3><ul><li><strong>免费档位：</strong>每提升 1 级 EX 溢出等级，获得 <strong>50 PRE Coin</strong></li><li><strong>付费档位：</strong>每提升 1 级 EX 溢出等级，额外获得 <strong>100 PRE Coin</strong>（与免费合计 150 枚/级）</li></ul><h3>温馨提示</h3><p>EX 溢出奖励即时发放，点击一键领取按钮即可领取溢出的EX奖励；赛季结束后 EX 等级与未结算经验将清零，不会累计至下个赛季。</p><h3>公告发布时间</h3><p>2026年10月10日（UTC+8）</p>'
+            date: '2026-10-30',
+            content: '<h2>EX 溢出奖励机制说明</h2><p>通行证等级达到 120 级上限后，继续获取的通行证经验将进入<span style="color:#ff9dc0;font-weight:600;">EX 溢出阶段</span>，持续为您提供随机物品箱收益。</p><h3>溢出规则</h3><ul><li>通行证等级达到 120 级后，超出部分的经验按每级 10 点继续累积，转化为 EX 溢出等级（121 级起）</li><li>等级列表在 120 级之后新增「EX」卡片（以竖线格挡与 120 级卡片分隔）：每当产生新的溢出等级时 EX 卡片亮起进入可领取状态，奖励领取后回到未领取状态，以此往复</li><li>EX 溢出等级无上限，赛季期间可持续累积</li></ul><h3>溢出奖励</h3><ul><li><strong>免费档位：</strong>每提升 1 级 EX 溢出等级，获得 <strong>随机物品箱 · 中级</strong> ×1</li><li><strong>付费档位：</strong>每提升 1 级 EX 溢出等级，额外获得 <strong>随机物品箱 · 高级</strong> ×1</li><li>随机物品箱为仓库消耗品，使用后必得 PRE Coin 并随机开出若干物品：<strong>初级箱</strong>共 3 件（PRE Coin 10~30 枚）、<strong>中级箱</strong>共 4 件（PRE Coin 20~40 枚）、<strong>高级箱</strong>共 5 件（PRE Coin 30~50 枚），随机物品可重复；开出物品涵盖经验值补给卡、经验值加成卡、一袋幸运币与补签卡，全部自动存入仓库</li></ul><h3>温馨提示</h3><p>EX 溢出奖励即时发放，在等级列表的 EX 卡片上点击「领取奖励」按钮即可一键领取全部溢出的EX奖励；赛季结束后 EX 等级与未结算经验将清零，不会累计至下个赛季。</p><h3>公告发布时间</h3><p>2026年10月30日（UTC+8）</p>'
         },
         {
             id: 'pass_ann_weekly12_guide',
@@ -368,10 +368,22 @@ function getEventStatusText(status) {
 // 依据起止时间自动调整活动/公告的状态与分类（结束后归入已结束类别），返回是否有变化
 function applyTimedEventStates() {
     var changed = false;
+    // 已领完全部奖励并迁移至已结束的活动，始终保持已结束状态，避免被时间状态回写为进行中
+    var migratedIds = getMigratedEventIds();
+    var migratedAnnIds = [];
+    migratedIds.forEach(function(eventId) {
+        var migratedEvt = eventCenterData.events.find(function(e) { return e.id === eventId; });
+        migratedAnnIds.push(migratedEvt && migratedEvt.announcementId ? migratedEvt.announcementId : eventId);
+    });
     // 通行证 Dev「全部解禁」开启时，赛季通行证活动/公告视为进行中
     var devUnlockActive = (window.pass && typeof window.pass.isDevUnlockAll === 'function' && window.pass.isDevUnlockAll());
 
     eventCenterData.events.forEach(function(evt) {
+        if (migratedIds.indexOf(evt.id) !== -1) {
+            if (evt.status !== 'ended') { evt.status = 'ended'; changed = true; }
+            if (evt.category !== 'ended') { evt.category = 'ended'; changed = true; }
+            return;
+        }
         if (!evt.startTime && !evt.endTime) return;
         var state = getEventTimeState(evt.startTime, evt.endTime);
         // 赛季通行证活动：Dev 全部解禁时强制视为进行中
@@ -387,6 +399,10 @@ function applyTimedEventStates() {
     // 公告分类跟随时间：即将到来 → 当前活动 → 已结束
     var annCatMap = { upcoming: 'upcoming', active: 'current', ended: 'ended' };
     eventAnnouncementData.announcements.forEach(function(ann) {
+        if (migratedAnnIds.indexOf(ann.id) !== -1) {
+            if (ann.category !== 'ended') { ann.category = 'ended'; changed = true; }
+            return;
+        }
         if (!ann.startTime && !ann.endTime) return;
         var state = getEventTimeState(ann.startTime, ann.endTime);
         // 赛季通行证公告：Dev 全部解禁时强制视为当前活动（进行中）
