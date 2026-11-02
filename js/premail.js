@@ -1302,6 +1302,62 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 31,
+            date: "2026-11-02",
+            mails: [
+                {
+                    id: 'monthly_mail_november',
+                    title: '十一月限定动态背景',
+                    sender: 'PRE Launcher',
+                    content: '十一月限定动态背景「十一月霜宵」已发放！点击"领取"按钮即可获得这一专属背景。\n\n该背景以暮秋霜夜与初冬初寒为主题，采用霜青、暮蓝与枯金交织的渐变配色，缀以清寒流转的霜白光晕，右下角带有年月数字显示和动态星粒子效果，为您的桌面带来霜露初凝、静谧清冷的十一月暮秋氛围。\n\n时维十一月，秋辞冬至，霜露渐重，万物收藏。愿这抹清冽的霜色为您洗去疲惫，带来沉静与安宁，祝您在渐冷的时节里温暖常伴、顺遂安康。\n\n该动态背景领取有效期截止至 2026-12-01 04:00:00 (UTC+8)，请及时领取！领取后可前往 系统设置 → 个性化 → 特殊获取 中查看与应用。\n\n祝您使用愉快！',
+                    attachments: [
+                        {
+                            name: '十一月霜宵',
+                            type: 'background',
+                            gradient: 'radial-gradient(circle at 22% 18%, rgba(150, 190, 220, 0.28) 0%, transparent 40%), radial-gradient(circle at 80% 76%, rgba(120, 155, 195, 0.24) 0%, transparent 45%), radial-gradient(circle at 50% 42%, rgba(200, 175, 110, 0.14) 0%, transparent 50%), radial-gradient(circle at 12% 72%, rgba(75, 95, 135, 0.22) 0%, transparent 50%), radial-gradient(circle at 76% 24%, rgba(165, 145, 95, 0.12) 0%, transparent 45%), linear-gradient(135deg, #0c1320 0%, #141e2c 15%, #1d2b3a 30%, #2a3d4c 45%, #445566 60%, #687888 72%, #8a8068 88%, #2a2a28 100%)',
+                            isDynamic: true,
+                            backgroundSize: '300% 300%',
+                            animation: 'novemberShift 23s ease infinite',
+                            particles: true,
+                            showDate: true,
+                            dateText: '2026.11'
+                        }
+                    ],
+                    startTime: "2026-11-02 09:00:00",
+                    endTime: "2026-12-01 04:00:00"
+                }
+            ]
+        },
+        {
+            version: 32,
+            date: "2026-11-02",
+            mails: [
+                {
+                    id: 'compensation_mail_20261102',
+                    title: '2026-11-02 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。在 2026-11-02 推送的 RC 3.0.4.1 (c4) 重要版本更新中，我们为启动器带来了首款长线肉鸽游戏「深渊回响」（Echoes of the Abyss）正式上线——回合制 Roguelike 玩法横跨腐化地窟、幽影回廊、熔火深渊、虚空王座四大生物群系共 12 层基础深渊，并配套轮回难度（最高 15 级）、灵魂圣所永久成长（9 项魂尘强化）、开局增益、极限模式（深红深渊，探索上限 20 层）、每周加成与通行证经验联动、37 项成就全面打通启动器等一整套长线成长体系；同时对游戏内交互进行了全面升级，并对极限模式冒险期锁定、提示样式统一、存档同步加固等多项体验进行了优化与修复。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上经验值补给卡 Ⅰ ×1 与经验值加成卡 Ⅰ ×1 作为版本更新补偿。经验值补给卡 Ⅰ 使用后获得 300 点经验值，将立即对您的账户等级生效；经验值加成卡 Ⅰ 使用后 30 分钟内经验获取提升 5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时 5 张）。领取后物品将发放至您的仓库。\n\n本邮件发放对象为 2026-11-02 09:00:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-11-10 04:00:00 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您在深渊回响中探索愉快，使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        },
+                        {
+                            name: '经验值加成卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_boost_small',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-11-02 09:00:00",
+                    endTime: "2026-11-10 04:00:00",
+                    requireRegisteredBefore: "2026-11-02 09:00:00"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {

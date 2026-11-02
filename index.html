@@ -1,3 +1,27 @@
+<!--
+////////////////////////////////////////////////////////////////////
+//                            _ooOoo_                             //
+//                           o8888888o                            //
+//                           88" . "88                            //
+//                           (| ^_^ |)                            //
+//                           O\  =  /O                            //
+//                        ____/`---'\____                         //
+//                      .'  \\|     |//  `.                       //
+//                     /  \\|||  :  |||//  \                      //
+//                    /  _||||| -:- |||||-  \                     //
+//                    |   | \\\  -  /// |   |                     //
+//                    | \_|  ''\---/''  |   |                     //
+//                    \  .-\__  `-`  ___/-. /                     //
+//                  ___`. .'  /--.--\  `. . ___                   //
+//                ."" '<  `.___\_<|>_/___.'  >'"".                //
+//              | | :  `- \`.;`\ _ /`;.`/ - ` : | |               //
+//              \  \ `-.   \_ __\ /__ _/   .-` /  /               //
+//        ========`-.____`-.___\_____/___.-`____.-'========       //
+//                             `=---='                            //
+//        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      //
+//        佛祖保佑             永无BUG              永不修改        //
+////////////////////////////////////////////////////////////////////
+-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -21,7 +45,7 @@
     <script src="./js/lib/lucide.min.js" defer onerror="console.warn('Lucide 加载失败')"></script>
     <script src="./js/lucide-bridge.js?v=1.2" defer></script>
     <script src="./js/settings.js" defer></script>
-    <script src="./js/versionHistory.js?v=3.0.3.11" defer></script>
+    <script src="./js/versionHistory.js?v=3.0.4.1" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
     <script src="./js/warehouse.js?v=4.5" defer></script>
     <script src="./js/pass.js?v=3.14" defer></script>
@@ -319,6 +343,15 @@
                         40% { background-position: 100% 45%; }
                         60% { background-position: 60% 85%; }
                         80% { background-position: 20% 65%; }
+                        100% { background-position: 0% 50%; }
+                    }
+
+                    @keyframes novemberShift {
+                        0% { background-position: 0% 50%; }
+                        20% { background-position: 40% 22%; }
+                        40% { background-position: 100% 48%; }
+                        60% { background-position: 55% 82%; }
+                        80% { background-position: 22% 62%; }
                         100% { background-position: 0% 50%; }
                     }
 
@@ -12436,6 +12469,36 @@
                                     </div>
                                 </div>
                                 
+                                <!-- 深渊回响 Roguelike 卡片 -->
+                                <div class="game-card" data-game-id="game_abyss">
+                                    <button class="game-card-menu-btn" aria-label="更多选项">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <div class="game-card-menu">
+                                        <div class="menu-item favorite-toggle">
+                                            <i class="fas fa-heart"></i>
+                                            <span>设为收藏</span>
+                                        </div>
+                                        <div class="menu-item view-stats">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>游戏统计</span>
+                                        </div>
+                                    </div>
+                                    <div class="game-card-content">
+                                        <h2>深渊回响 <span class="favorite-tag" style="display:none">已收藏</span></h2>
+                                        <p>回合制 Roguelike 冒险，在十五重轮回中深入深渊，收集装备、习得技能、击败首领。</p>
+                                    </div>
+                                    <div class="game-card-actions">
+                                        <button class="play-btn" data-url="html/abyss-echoes.html">Go!</button>
+                                        <div class="weekly-buff-tag" id="abyssWeeklyTag" style="display:none">
+                                            <i class="fas fa-gift"></i><span>有每周加成未使用</span>
+                                        </div>
+                                    </div>
+                                    <div class="game-logo game-logo-abyss">
+                                        <i class="fas fa-moon"></i>
+                                    </div>
+                                </div>
+                                
                                 <!-- 预留其他游戏卡片 -->
                                 <div class="game-card disabled-card" data-game-id="game_coming">
                                     <div class="game-card-content">
@@ -14131,6 +14194,11 @@
                     box-shadow: 0 4px 18px rgba(34, 197, 94, 0.45);
                 }
                 
+                .game-logo-abyss {
+                    background: linear-gradient(135deg, #2b2350 0%, #5a3b8c 45%, #d45d79 100%);
+                    box-shadow: 0 4px 18px rgba(90, 59, 140, 0.45);
+                }
+                
                 .game-logo-coming {
                     background: linear-gradient(135deg, #9f7aea 0%, #7c4dff 100%);
                 }
@@ -14207,6 +14275,41 @@
                     background: #ccc;
                     cursor: not-allowed;
                     transform: none;
+                }
+
+                /* 游戏卡片操作区（按钮 + 提示标签） */
+                .game-card-actions {
+                    grid-area: button;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                    align-self: end;
+                }
+
+                .game-card-actions .play-btn {
+                    grid-area: auto;
+                    align-self: center;
+                    justify-self: auto;
+                }
+
+                .weekly-buff-tag {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    padding: 4px 10px;
+                    border-radius: 999px;
+                    font-size: 11.5px;
+                    font-weight: 600;
+                    color: #b45309;
+                    background: linear-gradient(135deg, #fff6e8 0%, #ffe4c0 100%);
+                    border: 1px solid #f3c98a;
+                    white-space: nowrap;
+                    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18);
+                }
+
+                .weekly-buff-tag i {
+                    color: #f59e0b;
                 }
                 
                 .disabled-card {
@@ -20357,6 +20460,47 @@
                 });
             });
             
+            // ==================== 深渊回响 · 每周加成提示标签 ====================
+            // 与游戏内保持一致：每周一凌晨 4 点（UTC+8）刷新
+            function abyssWeekKeyNow() {
+                var d = new Date(Date.now() - 4 * 3600 * 1000);
+                var utc8 = new Date(d.getTime() + 8 * 3600 * 1000);
+                var day = utc8.getUTCDay();
+                var diff = day === 0 ? 6 : day - 1;
+                var ws = new Date(Date.UTC(utc8.getUTCFullYear(), utc8.getUTCMonth(), utc8.getUTCDate() - diff, 4, 0, 0) - 8 * 3600 * 1000);
+                var u = new Date(ws.getTime() + 8 * 3600 * 1000);
+                var t = new Date(Date.UTC(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate()));
+                var wd = t.getUTCDay() || 7;
+                t.setUTCDate(t.getUTCDate() + 4 - wd);
+                var y = t.getUTCFullYear();
+                var wk = Math.ceil(((t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7);
+                return y + '-W' + wk;
+            }
+
+            function refreshAbyssWeeklyTag() {
+                var tag = document.getElementById('abyssWeeklyTag');
+                if (!tag) return;
+                var show = false;
+                try {
+                    var save = JSON.parse(localStorage.getItem('echoes_of_abyss_v1') || 'null');
+                    // 极限模式（轮回难度 ≥ 10）解锁后才可实际使用加成，才提示
+                    if (save && save.meta && save.meta.passWeekly && (save.meta.ngPlus || 0) >= 10) {
+                        var pw = save.meta.passWeekly;
+                        // 跨周后游戏内会重置为 3 次，存档里的旧周数据按满次数处理
+                        var bonusLeft = pw.week === abyssWeekKeyNow() ? (pw.bonusLeft || 0) : 3;
+                        show = bonusLeft > 0;
+                    }
+                } catch (e) { show = false; }
+                tag.style.display = show ? 'inline-flex' : 'none';
+            }
+
+            window.refreshAbyssWeeklyTag = refreshAbyssWeeklyTag;
+            refreshAbyssWeeklyTag();
+            document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshAbyssWeeklyTag(); });
+            window.addEventListener('focus', refreshAbyssWeeklyTag);
+            window.addEventListener('storage', function (e) { if (!e || e.key === 'echoes_of_abyss_v1') refreshAbyssWeeklyTag(); });
+            setInterval(refreshAbyssWeeklyTag, 60000);
+
             // ==================== 游戏卡片菜单与统计系统 ====================
             
             // 游戏信息映射
@@ -20368,7 +20512,8 @@
                 'game_memory': { name: '记忆卡牌', icon: 'fa-images', color: '#f48fb1' },
                 'game_color': { name: '颜色匹配', icon: 'fa-palette', color: '#ff9800' },
                 'game_cube3d': { name: '光影冲刺', icon: 'fa-cube', color: '#f0a050' },
-                'game_dino': { name: '光影恐龙', icon: 'fa-bone', color: '#22c55e' }
+                'game_dino': { name: '光影恐龙', icon: 'fa-bone', color: '#22c55e' },
+                'game_abyss': { name: '深渊回响', icon: 'fa-moon', color: '#5a3b8c' }
             };
             
             // 游戏数据管理
@@ -34160,7 +34305,7 @@
             }
             
             // 计算成就完成度
-            var totalAchievements = 88; // 10+10+10+10+10+10+10+10 + 8特殊成就(含光影恐龙)
+            var totalAchievements = 125; // 10+10+10+10+10+10+10+10 + 8特殊成就(含光影恐龙) + 深渊回响37
             var completedAchievements = 0;
             
             // 从用户的gameData中获取成就数据
@@ -34206,6 +34351,13 @@
             // 光影恐龙成就
             var dinoAchievements = user && user.gameData && user.gameData.dinoAchievements ? user.gameData.dinoAchievements : [];
             completedAchievements += dinoAchievements.length;
+            
+            // 深渊回响成就
+            var abyssAchievements = user && user.gameData && user.gameData.abyssAchievements ? user.gameData.abyssAchievements : [];
+            if (abyssAchievements.length === 0 && typeof getAbyssAchievementsFromSave === 'function') {
+                abyssAchievements = getAbyssAchievementsFromSave();
+            }
+            completedAchievements += abyssAchievements.length;
             
             // 特殊成就
             var specialAchievements = 0;
@@ -34260,7 +34412,8 @@
                 'game_memory': { name: '记忆卡牌', icon: 'fa-images', color: '#f48fb1' },
                 'game_color': { name: '颜色匹配', icon: 'fa-palette', color: '#ff9800' },
                 'game_cube3d': { name: '光影冲刺', icon: 'fa-cube', color: '#f0a050' },
-                'game_dino': { name: '光影恐龙', icon: 'fa-bone', color: '#22c55e' }
+                'game_dino': { name: '光影恐龙', icon: 'fa-bone', color: '#22c55e' },
+                'game_abyss': { name: '深渊回响', icon: 'fa-moon', color: '#5a3b8c' }
             };
             
             // 获取游戏收藏
@@ -35094,6 +35247,18 @@
                                                                         <div class="game-achievement-progress-fill" style="width: ${(dinoAchievements.length/10)*100}%;"></div>
                                                                     </div>
                                                                     <span class="game-achievement-count">${dinoAchievements.length}/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="game-achievement-card" data-game="abyss" onclick="showGameAchievement('abyss')">
+                                                                <div class="game-achievement-icon" style="background: linear-gradient(135deg, #2b2350 0%, #5a3b8c 45%, #d45d79 100%);">
+                                                                    <i class="fas fa-moon"></i>
+                                                                </div>
+                                                                <div class="game-achievement-info">
+                                                                    <span class="game-achievement-name">深渊回响</span>
+                                                                    <div class="game-achievement-progress-bar">
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(abyssAchievements.length/37)*100}%;"></div>
+                                                                    </div>
+                                                                    <span class="game-achievement-count">${abyssAchievements.length}/37</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -41338,6 +41503,17 @@ ID：${user ? user.userId : '---'}
             }
         });
         
+        // 深渊回响存档兜底读取：当启动器侧的 gameData 尚未写入时，直接读取游戏自身存档
+        function getAbyssAchievementsFromSave() {
+            try {
+                var save = JSON.parse(localStorage.getItem('echoes_of_abyss_v1') || 'null');
+                if (save && save.ach) {
+                    return Object.keys(save.ach).filter(function(k) { return save.ach[k]; });
+                }
+            } catch (e) {}
+            return [];
+        }
+
         // 显示游戏成就详情（名片内联版本，点击游戏卡片后在下方展示条目）
         function showGameAchievement(gameCode) {
             // 游戏基础信息配置（成就ID必须与account-settings.js中一致）
@@ -41493,6 +41669,52 @@ ID：${user ? user.userId : '---'}
                         { id: 'dino_dodger', name: '躲避大师', desc: '单局躲避50个障碍', icon: 'fas fa-shield' },
                         { id: 'dino_survivor', name: '生存大师', desc: '单局存活超过60秒', icon: 'fas fa-clock' }
                     ]
+                },
+                'abyss': {
+                    name: '深渊回响',
+                    icon: 'fas fa-moon',
+                    iconBg: 'linear-gradient(135deg, #2b2350 0%, #5a3b8c 45%, #d45d79 100%)',
+                    total: 37,
+                    dataKey: 'abyssAchievements',
+                    achievements: [
+                        { id: 'first_run', name: '初次坠落', desc: '完成第一次冒险（无论成败）', icon: 'fas fa-seedling' },
+                        { id: 'depth5', name: '深潜者', desc: '抵达第 5 层', icon: 'fas fa-pickaxe' },
+                        { id: 'depth10', name: '无光之处', desc: '抵达第 10 层', icon: 'fas fa-moon' },
+                        { id: 'boss1', name: '地窟征服者', desc: '击败地窟领主 · 格拉姆', icon: 'fas fa-shield' },
+                        { id: 'boss2', name: '影之猎手', desc: '击败幽影君主 · 维尔', icon: 'fas fa-user-secret' },
+                        { id: 'boss3', name: '熔火克星', desc: '击败熔火巨兽 · 伊格尼斯', icon: 'fas fa-fire' },
+                        { id: 'boss4', name: '深渊之主', desc: '击败深渊之主 · 涅赫', icon: 'fas fa-skull' },
+                        { id: 'win', name: '破晓者', desc: '首次完整通关深渊', icon: 'fas fa-sun' },
+                        { id: 'kill50', name: '击溃者', desc: '累计击杀 50 个敌人', icon: 'fas fa-swords' },
+                        { id: 'kill200', name: '屠戮者', desc: '累计击杀 200 个敌人', icon: 'fas fa-biohazard' },
+                        { id: 'kill500', name: '深渊收割者', desc: '累计击杀 500 个敌人', icon: 'fas fa-skull-crossbones' },
+                        { id: 'rich', name: '富甲一方', desc: '单局持有 800 金币', icon: 'fas fa-coins' },
+                        { id: 'collector', name: '收藏家', desc: '累计购买 30 件商品', icon: 'fas fa-shopping-cart' },
+                        { id: 'legendary', name: '神话装备', desc: '装备一件传说品质物品', icon: 'fas fa-star' },
+                        { id: 'fullset', name: '全身武装', desc: '同时装备三件装备', icon: 'fas fa-tshirt' },
+                        { id: 'crit100', name: '百步穿杨', desc: '累计暴击 100 次', icon: 'fas fa-bullseye' },
+                        { id: 'flawless', name: '毫发无伤', desc: '无伤击败一个精英敌人', icon: 'fas fa-shield-alt' },
+                        { id: 'potions', name: '药罐子', desc: '累计使用 40 瓶药水', icon: 'fas fa-flask' },
+                        { id: 'skills', name: '技能大师', desc: '累计释放 150 次技能', icon: 'fas fa-book' },
+                        { id: 'bigHit', name: '一击必杀', desc: '单次造成 250 点伤害', icon: 'fas fa-bomb' },
+                        { id: 'healer', name: '生命之泉', desc: '累计治疗 1500 点生命', icon: 'fas fa-heart' },
+                        { id: 'explorer', name: '探索者', desc: '累计经历 20 个事件', icon: 'fas fa-compass' },
+                        { id: 'death10', name: '与死共舞', desc: '累计死亡 10 次', icon: 'fas fa-cross' },
+                        { id: 'allboss', name: '深渊终结', desc: '击败全部四位首领', icon: 'fas fa-crown' },
+                        { id: 'dust500', name: '灵魂富翁', desc: '累计获得 500 魂尘', icon: 'fas fa-sparkles' },
+                        { id: 'nopotion', name: '纯粹主义者', desc: '通关一局且从未使用药水', icon: 'fas fa-ban' },
+                        { id: 'ng1', name: '轮回者', desc: '开启轮回难度 1', icon: 'fas fa-redo' },
+                        { id: 'elite20', name: '精英猎手', desc: '累计击杀 20 个精英敌人', icon: 'fas fa-trident' },
+                        { id: 'items30', name: '拾荒之王', desc: '累计拾取 30 件装备', icon: 'fas fa-gift' },
+                        { id: 'depth14', name: '触界者', desc: '抵达第 14 层', icon: 'fas fa-fire' },
+                        { id: 'depth20', name: '极限之地', desc: '抵达第 20 层', icon: 'fas fa-mountain' },
+                        { id: 'extreme_clear', name: '极限征服者', desc: '完整通过一次极限模式', icon: 'fas fa-burst' },
+                        { id: 'xelite10', name: '极限猎人', desc: '在极限模式中击杀 10 个精英敌人', icon: 'fas fa-dragon' },
+                        { id: 'xboss1', name: '裂痕终结', desc: '击败深渊裂痕 · 卡俄斯', icon: 'fas fa-hurricane' },
+                        { id: 'xboss2', name: '无光终焉', desc: '击败无光之祖 · 乌尔', icon: 'fas fa-circle-notch' },
+                        { id: 'xboss3', name: '极限主宰', desc: '击败极限之主 · 绝', icon: 'fas fa-chess-king' },
+                        { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 36 项成就，加冕为深渊之主', icon: 'fas fa-gem' }
+                    ]
                 }
             };
             
@@ -41516,6 +41738,10 @@ ID：${user ? user.userId : '---'}
             var unlockedIds = [];
             if (user && user.gameData) {
                 unlockedIds = user.gameData[config.dataKey] || [];
+            }
+            // 深渊回响：启动器侧无数据时回退读取游戏存档
+            if (gameCode === 'abyss' && unlockedIds.length === 0) {
+                unlockedIds = getAbyssAchievementsFromSave();
             }
 
             var completedCount = unlockedIds.length;

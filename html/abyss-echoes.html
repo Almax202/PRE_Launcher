@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/abyss.css">
+<title>深渊回响 · Echoes of the Abyss</title>
+</head>
+<body data-biome="0">
+<div id="embers-canvas"><canvas id="embers"></canvas></div>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <span class="brand-txt">深渊回响<em>ECHOES OF THE ABYSS</em></span>
+      <span class="brand-tag" id="game-version"></span>
+    </div>
+    <div class="res">
+      <div class="res-item" id="res-dust"><span>✨</span><b>0</b></div>
+      <div class="res-item hidden" id="res-gold"><span>💰</span><b>0</b></div>
+      <div class="res-item hidden" id="res-depth"><span>⛏️</span><b>0</b></div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="btn-sound" title="音效开关">🔊</button>
+      <button class="icon-btn hidden" id="btn-home" title="返回圣所">🏠</button>
+    </div>
+  </header>
+  <main>
+    <section id="screen-title" class="screen active"></section>
+    <section id="screen-hub" class="screen"></section>
+    <section id="screen-run" class="screen"></section>
+    <section id="screen-battle" class="screen"></section>
+  </main>
+</div>
+<div id="modal-root"></div>
+
+<!-- 版本管理（统一版本号来源） -->
+<script src="../js/versionManager.js"></script>
+<!-- 游戏主脚本 -->
+<script src="../js/abyss.js"></script>
+</body>
+</html>

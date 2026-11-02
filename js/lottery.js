@@ -6,7 +6,8 @@
 //   - 月度抽取：每月 1 日 UTC+8 凌晨 04:00 刷新，每月 5 次
 // 奖池：仓库目录全部道具（排除：勋章 / 自选物品兑换卡 / PRE Coin 补给包系列；
 //       组合包仅存在于商店目录，仓库目录天然不含，无需排除；
-//       一袋/一盒幸运币系列（luck_bag_/luck_box_）为开箱型道具，已自奖池排除避免奖池过杂）
+//       一袋/一盒幸运币系列（luck_bag_/luck_box_）为开箱型道具，已自奖池排除避免奖池过杂；
+//       随机物品箱系列（rand_box_ 初级 / 中级 / 高级）已自奖池排除，不可抽取）
 // 概率：按物品价值分档（低档易出、高档难出但不至于渺茫），「概率详情」弹窗完整公示
 // 历史：「获奖历史」弹窗保存最近 90 日记录，可按每日 / 每周 / 月度筛选
 // 子弹窗：复用启动器通用弹窗骨架（milestone-modal-overlay / milestone-modal）
@@ -62,6 +63,7 @@ function _ltItemIconHtml(icon, color) {
             if (id === 'exchange_card') return;                 // 排除自选物品兑换卡
             if (id.indexOf('precoin_supply_') === 0) return;    // 排除 PRE Coin 补给包系列
             if (id.indexOf('luck_bag_') === 0 || id.indexOf('luck_box_') === 0) return; // 排除一袋/一盒幸运币系列（避免奖池过杂）
+            if (id.indexOf('rand_box_') === 0) return;          // 排除随机物品箱系列（初级 / 中级 / 高级）——不可从抽奖机抽取
             _ltPool.push({
                 id: id,
                 item: it,

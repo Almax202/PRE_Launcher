@@ -6175,6 +6175,18 @@
         return defaultValue;
     }
     
+    // 深渊回响存档兜底：启动器侧 gameData 未写入时直接读取游戏自身存档
+    function getAbyssAchievementsFromSave() {
+        try {
+            var save = JSON.parse(localStorage.getItem('echoes_of_abyss_v1') || 'null');
+            if (save && save.ach) {
+                return Object.keys(save.ach).filter(function(k) {
+                    return save.ach[k];
+                });
+            }
+        } catch (e) {}
+        return [];
+    }
     var currentGame = 'all';
     
     function loadGameStats() {
@@ -6218,9 +6230,14 @@
         var dinoTotalJumps = getUserGameData('dinoTotalJumps', 0);
         var dinoTotalDodges = getUserGameData('dinoTotalDodges', 0);
 
+        var abyssGamesPlayed = getUserGameData('abyssGamesPlayed', 0);
+        var abyssAchievements = getUserGameData('abyssAchievements', []);
+        if (abyssAchievements.length === 0) abyssAchievements = getAbyssAchievementsFromSave();
+        var abyssMaxDepth = getUserGameData('abyssMaxDepth', 0);
+
         var totalGames = fkGamesPlayed + fxqGamesPlayed + wzqGamesPlayed + snakeGamesPlayed + memoryGamesPlayed + colorGamesPlayed + cube3dGamesPlayed + dinoGamesPlayed;
         var totalScore = fkHighScore + fxqHighScore + wzqWins * 100 + snakeTotalScore + memoryHighScore + colorTotalScore + cube3dHighScore + dinoTotalScore;
-        var totalWins = fkAchievements.length + fxqAchievements.length + wzqAchievements.length + snakeAchievements.length + memoryAchievements.length + colorAchievements.length + cube3dAchievements.length + dinoAchievements.length;
+        var totalWins = fkAchievements.length + fxqAchievements.length + wzqAchievements.length + snakeAchievements.length + memoryAchievements.length + colorAchievements.length + cube3dAchievements.length + dinoAchievements.length + abyssAchievements.length;
         var totalPlayTime = Math.floor(totalGames * 0.5);
 
         // 更新已存在的统计元素（部分可能已移除）
@@ -6235,7 +6252,7 @@
 
         loadCheckinStats();
 
-        var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements);
+        var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements, abyssAchievements);
         updateGameProgress(fkAchievements, 10, 'fk');
         updateGameProgress(fxqAchievements, 10, 'fxq');
         updateGameProgress(wzqAchievements, 10, 'wzq');
@@ -6244,7 +6261,8 @@
         updateGameProgress(colorAchievements, 10, 'color');
         updateGameProgress(cube3dAchievements, 10, 'cube3d');
         updateGameProgress(dinoAchievements, 10, 'dino');
-        updateGameProgress(allAchievements, 80, 'all');
+        updateGameProgress(abyssAchievements, 37, 'abyss');
+        updateGameProgress(allAchievements, 117, 'all');
 
         fkAchievements.forEach(function(achievementId) {
             saveAchievementTime(achievementId);
@@ -6268,6 +6286,9 @@
             saveAchievementTime(achievementId);
         });
         dinoAchievements.forEach(function(achievementId) {
+            saveAchievementTime(achievementId);
+        });
+        abyssAchievements.forEach(function(achievementId) {
             saveAchievementTime(achievementId);
         });
 
@@ -6298,7 +6319,7 @@
         }
         updateGameProgress(specialAchievements, 8, 'special');
 
-        updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialAchievements);
+        updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialAchievements, abyssAchievements, abyssGamesPlayed, abyssMaxDepth);
 
         setupGameSelector();
     }
@@ -6331,6 +6352,7 @@
             'color': '颜色匹配',
             'cube3d': '光影冲刺',
             'dino': '光影恐龙',
+            'abyss': '深渊回响',
             'special': '特殊成就'
         };
         return gameNames[gameCode] || gameCode;
@@ -6447,7 +6469,12 @@
                 var dinoTotalJumps = getUserGameData('dinoTotalJumps', 0);
                 var dinoTotalDodges = getUserGameData('dinoTotalDodges', 0);
 
-                var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements);
+                var abyssGamesPlayed = getUserGameData('abyssGamesPlayed', 0);
+                var abyssAchievements = getUserGameData('abyssAchievements', []);
+                if (abyssAchievements.length === 0) abyssAchievements = getAbyssAchievementsFromSave();
+                var abyssMaxDepth = getUserGameData('abyssMaxDepth', 0);
+
+                var allAchievements = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements, abyssAchievements);
                 updateGameProgress(fkAchievements, 10, 'fk');
                 updateGameProgress(fxqAchievements, 10, 'fxq');
                 updateGameProgress(wzqAchievements, 10, 'wzq');
@@ -6456,7 +6483,8 @@
                 updateGameProgress(colorAchievements, 10, 'color');
                 updateGameProgress(cube3dAchievements, 10, 'cube3d');
                 updateGameProgress(dinoAchievements, 10, 'dino');
-                updateGameProgress(allAchievements, 80, 'all');
+                updateGameProgress(abyssAchievements, 37, 'abyss');
+                updateGameProgress(allAchievements, 117, 'all');
 
                 var specialAchievements = [];
                 if (fkAchievements.length >= 10) {
@@ -6485,14 +6513,17 @@
                 }
                 updateGameProgress(specialAchievements, 8, 'special');
 
-                updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialAchievements);
+                updateAchievements(fkAchievements, fkGamesPlayed, fkHighScore, fxqAchievements, fxqGamesPlayed, fxqHighScore, wzqAchievements, wzqGamesPlayed, wzqWins, snakeAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryAchievements, memoryGamesPlayed, memoryHighScore, colorAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialAchievements, abyssAchievements, abyssGamesPlayed, abyssMaxDepth);
             });
         });
         
         gameSelectorInitialized = true;
     }
     
-    function updateAchievements(fkUnlockedAchievements, fkGamesPlayed, fkHighScore, fxqUnlockedAchievements, fxqGamesPlayed, fxqHighScore, wzqUnlockedAchievements, wzqGamesPlayed, wzqWins, snakeUnlockedAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryUnlockedAchievements, memoryGamesPlayed, memoryHighScore, colorUnlockedAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dUnlockedAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoUnlockedAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialUnlockedAchievements) {
+    function updateAchievements(fkUnlockedAchievements, fkGamesPlayed, fkHighScore, fxqUnlockedAchievements, fxqGamesPlayed, fxqHighScore, wzqUnlockedAchievements, wzqGamesPlayed, wzqWins, snakeUnlockedAchievements, snakeGamesPlayed, snakeHighScore, snakeTotalScore, memoryUnlockedAchievements, memoryGamesPlayed, memoryHighScore, colorUnlockedAchievements, colorGamesPlayed, colorHighScore, colorTotalScore, colorMaxCombo, cube3dUnlockedAchievements, cube3dGamesPlayed, cube3dHighScore, cube3dMaxOrbs, cube3dMaxTime, dinoUnlockedAchievements, dinoGamesPlayed, dinoHighScore, dinoTotalScore, dinoTotalJumps, dinoTotalDodges, specialUnlockedAchievements, abyssUnlockedAchievements, abyssGamesPlayed, abyssMaxDepth) {
+        abyssUnlockedAchievements = abyssUnlockedAchievements || [];
+        abyssGamesPlayed = abyssGamesPlayed || 0;
+        abyssMaxDepth = abyssMaxDepth || 0;
         var allAchievements = [
             {
                 id: 'fk_complete',
@@ -7197,10 +7228,48 @@
                 icon: 'fa-clock',
                 game: 'dino',
                 condition: () => false
-            }
+            },
+            /* ============ 深渊回响 ============ */
+            { id: 'first_run', name: '初次坠落', desc: '完成第一次冒险（无论成败）', icon: 'fa-seedling', game: 'abyss', condition: () => abyssGamesPlayed >= 1 },
+            { id: 'depth5', name: '深潜者', desc: '抵达第 5 层', icon: 'fa-arrow-down', game: 'abyss', condition: () => abyssMaxDepth >= 5 },
+            { id: 'depth10', name: '无光之处', desc: '抵达第 10 层', icon: 'fa-moon', game: 'abyss', condition: () => abyssMaxDepth >= 10 },
+            { id: 'boss1', name: '地窟征服者', desc: '击败地窟领主 · 格拉姆', icon: 'fa-shield-halved', game: 'abyss', condition: () => false },
+            { id: 'boss2', name: '影之猎手', desc: '击败幽影君主 · 维尔', icon: 'fa-user-secret', game: 'abyss', condition: () => false },
+            { id: 'boss3', name: '熔火克星', desc: '击败熔火巨兽 · 伊格尼斯', icon: 'fa-fire', game: 'abyss', condition: () => false },
+            { id: 'boss4', name: '深渊之主', desc: '击败深渊之主 · 涅赫', icon: 'fa-skull', game: 'abyss', condition: () => false },
+            { id: 'win', name: '破晓者', desc: '首次完整通关深渊', icon: 'fa-sun', game: 'abyss', condition: () => false },
+            { id: 'kill50', name: '击溃者', desc: '累计击杀 50 个敌人', icon: 'fa-crosshairs', game: 'abyss', condition: () => false },
+            { id: 'kill200', name: '屠戮者', desc: '累计击杀 200 个敌人', icon: 'fa-biohazard', game: 'abyss', condition: () => false },
+            { id: 'kill500', name: '深渊收割者', desc: '累计击杀 500 个敌人', icon: 'fa-skull-crossbones', game: 'abyss', condition: () => false },
+            { id: 'rich', name: '富甲一方', desc: '单局持有 800 金币', icon: 'fa-coins', game: 'abyss', condition: () => false },
+            { id: 'collector', name: '收藏家', desc: '累计购买 30 件商品', icon: 'fa-shopping-cart', game: 'abyss', condition: () => false },
+            { id: 'legendary', name: '神话装备', desc: '装备一件传说品质物品', icon: 'fa-star', game: 'abyss', condition: () => false },
+            { id: 'fullset', name: '全身武装', desc: '同时装备三件装备', icon: 'fa-shirt', game: 'abyss', condition: () => false },
+            { id: 'crit100', name: '百步穿杨', desc: '累计暴击 100 次', icon: 'fa-bullseye', game: 'abyss', condition: () => false },
+            { id: 'flawless', name: '毫发无伤', desc: '无伤击败一个精英敌人', icon: 'fa-shield', game: 'abyss', condition: () => false },
+            { id: 'potions', name: '药罐子', desc: '累计使用 40 瓶药水', icon: 'fa-flask', game: 'abyss', condition: () => false },
+            { id: 'skills', name: '技能大师', desc: '累计释放 150 次技能', icon: 'fa-book', game: 'abyss', condition: () => false },
+            { id: 'bigHit', name: '一击必杀', desc: '单次造成 250 点伤害', icon: 'fa-bomb', game: 'abyss', condition: () => false },
+            { id: 'healer', name: '生命之泉', desc: '累计治疗 1500 点生命', icon: 'fa-heart', game: 'abyss', condition: () => false },
+            { id: 'explorer', name: '探索者', desc: '累计经历 20 个事件', icon: 'fa-compass', game: 'abyss', condition: () => false },
+            { id: 'death10', name: '与死共舞', desc: '累计死亡 10 次', icon: 'fa-skull', game: 'abyss', condition: () => false },
+            { id: 'allboss', name: '深渊终结', desc: '击败全部四位首领', icon: 'fa-crown', game: 'abyss', condition: () => false },
+            { id: 'dust500', name: '灵魂富翁', desc: '累计获得 500 魂尘', icon: 'fa-gem', game: 'abyss', condition: () => false },
+            { id: 'nopotion', name: '纯粹主义者', desc: '通关一局且从未使用药水', icon: 'fa-ban', game: 'abyss', condition: () => false },
+            { id: 'ng1', name: '轮回者', desc: '开启轮回难度 1', icon: 'fa-rotate', game: 'abyss', condition: () => false },
+            { id: 'elite20', name: '精英猎手', desc: '累计击杀 20 个精英敌人', icon: 'fa-dragon', game: 'abyss', condition: () => false },
+            { id: 'items30', name: '拾荒之王', desc: '累计拾取 30 件装备', icon: 'fa-gift', game: 'abyss', condition: () => false },
+            { id: 'depth14', name: '触界者', desc: '抵达第 14 层', icon: 'fa-fire', game: 'abyss', condition: () => abyssMaxDepth >= 14 },
+            { id: 'depth20', name: '极限之地', desc: '抵达第 20 层', icon: 'fa-mountain', game: 'abyss', condition: () => abyssMaxDepth >= 20 },
+            { id: 'extreme_clear', name: '极限征服者', desc: '完整通过一次极限模式', icon: 'fa-burst', game: 'abyss', condition: () => false },
+            { id: 'xelite10', name: '极限猎人', desc: '在极限模式中击杀 10 个精英敌人', icon: 'fa-dragon', game: 'abyss', condition: () => false },
+            { id: 'xboss1', name: '裂痕终结', desc: '击败深渊裂痕 · 卡俄斯', icon: 'fa-hurricane', game: 'abyss', condition: () => false },
+            { id: 'xboss2', name: '无光终焉', desc: '击败无光之祖 · 乌尔', icon: 'fa-circle-notch', game: 'abyss', condition: () => false },
+            { id: 'xboss3', name: '极限主宰', desc: '击败极限之主 · 绝', icon: 'fa-chess-king', game: 'abyss', condition: () => false },
+            { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 36 项成就，加冕为深渊之主', icon: 'fa-crown', game: 'abyss', condition: () => abyssUnlockedAchievements.length >= 36 }
         ];
 
-        var allUnlocked = fkUnlockedAchievements.concat(fxqUnlockedAchievements, wzqUnlockedAchievements, snakeUnlockedAchievements, memoryUnlockedAchievements, colorUnlockedAchievements, cube3dUnlockedAchievements, dinoUnlockedAchievements);
+        var allUnlocked = fkUnlockedAchievements.concat(fxqUnlockedAchievements, wzqUnlockedAchievements, snakeUnlockedAchievements, memoryUnlockedAchievements, colorUnlockedAchievements, cube3dUnlockedAchievements, dinoUnlockedAchievements, abyssUnlockedAchievements);
         if (specialUnlockedAchievements) {
             allUnlocked = allUnlocked.concat(specialUnlockedAchievements);
         }
@@ -7385,6 +7454,24 @@
             } else if (achievement.id === 'dino_complete') {
                 progressPercent = Math.min((dinoUnlockedAchievements.length / 10) * 100, 100);
                 progressText = dinoUnlockedAchievements.length + '/10';
+            } else if (achievement.id === 'first_run') {
+                progressPercent = abyssGamesPlayed >= 1 ? 100 : 0;
+                progressText = abyssGamesPlayed >= 1 ? '1/1' : '0/1';
+            } else if (achievement.id === 'depth5') {
+                progressPercent = Math.min((abyssMaxDepth / 5) * 100, 100);
+                progressText = abyssMaxDepth + '/5';
+            } else if (achievement.id === 'depth10') {
+                progressPercent = Math.min((abyssMaxDepth / 10) * 100, 100);
+                progressText = abyssMaxDepth + '/10';
+            } else if (achievement.id === 'depth14') {
+                progressPercent = Math.min((abyssMaxDepth / 14) * 100, 100);
+                progressText = abyssMaxDepth + '/14';
+            } else if (achievement.id === 'depth20') {
+                progressPercent = Math.min((abyssMaxDepth / 20) * 100, 100);
+                progressText = abyssMaxDepth + '/20';
+            } else if (achievement.game === 'abyss') {
+                progressPercent = isCompleted ? 100 : 0;
+                progressText = isCompleted ? '已完成' : '未完成';
             } else {
                 progressPercent = isCompleted ? 100 : 0;
                 progressText = isCompleted ? '已完成' : '未完成';
@@ -7894,6 +7981,8 @@
             achievementArrayName = 'cube3dAchievements';
         } else if (game === 'dino') {
             achievementArrayName = 'dinoAchievements';
+        } else if (game === 'abyss') {
+            achievementArrayName = 'abyssAchievements';
         } else if (game === 'special') {
             achievementArrayName = 'specialAchievements';
         }
@@ -7978,8 +8067,9 @@
         var colorAchievements = user.gameData && user.gameData.colorAchievements ? user.gameData.colorAchievements : [];
         var cube3dAchievements = user.gameData && user.gameData.cube3dAchievements ? user.gameData.cube3dAchievements : [];
         var dinoAchievements = user.gameData && user.gameData.dinoAchievements ? user.gameData.dinoAchievements : [];
+        var abyssAchievements = user.gameData && user.gameData.abyssAchievements ? user.gameData.abyssAchievements : [];
 
-        var allUnlocked = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements);
+        var allUnlocked = fkAchievements.concat(fxqAchievements, wzqAchievements, snakeAchievements, memoryAchievements, colorAchievements, cube3dAchievements, dinoAchievements, abyssAchievements);
 
         var allFkAchievements = ['first_game', 'score_100', 'score_200', 'games_10', 'combo_master', 'speed_king', 'perfect_start', 'total_score_1000', 'games_100', 'extreme_challenge'];
         var allFxqAchievements = ['fxq_first_game', 'fxq_score_50', 'fxq_score_100', 'fxq_score_200', 'fxq_games_5', 'fxq_games_10', 'fxq_easy_master', 'fxq_hard_master', 'fxq_nightmare_survivor', 'fxq_perfect_score'];
@@ -7989,8 +8079,9 @@
         var allColorAchievements = ['color_first_game', 'color_score_100', 'color_score_200', 'color_games_10', 'color_perfect_match', 'color_speed_master', 'color_total_score_1000', 'color_games_50', 'color_games_100', 'color_total_score_2000'];
         var allCube3dAchievements = ['cube3d_first_game', 'cube3d_score_100', 'cube3d_score_300', 'cube3d_score_600', 'cube3d_games_5', 'cube3d_games_15', 'cube3d_orbs_10', 'cube3d_orbs_25', 'cube3d_survivor_30', 'cube3d_survivor_60'];
         var allDinoAchievements = ['dino_first_game', 'dino_score_100', 'dino_score_300', 'dino_score_500', 'dino_games_5', 'dino_games_10', 'dino_jumps_100', 'dino_total_1000', 'dino_dodger', 'dino_survivor'];
+        var allAbyssAchievements = ['first_run', 'depth5', 'depth10', 'boss1', 'boss2', 'boss3', 'boss4', 'win', 'kill50', 'kill200', 'kill500', 'rich', 'collector', 'legendary', 'fullset', 'crit100', 'flawless', 'potions', 'skills', 'bigHit', 'healer', 'explorer', 'death10', 'allboss', 'dust500', 'nopotion', 'ng1', 'elite20', 'items30', 'depth14', 'depth20', 'extreme_clear', 'xelite10', 'xboss1', 'xboss2', 'xboss3', 'abyss_ruler'];
 
-        var totalAchievements = allFkAchievements.length + allFxqAchievements.length + allWzqAchievements.length + allSnakeAchievements.length + allMemoryAchievements.length + allColorAchievements.length + allCube3dAchievements.length + allDinoAchievements.length;
+        var totalAchievements = allFkAchievements.length + allFxqAchievements.length + allWzqAchievements.length + allSnakeAchievements.length + allMemoryAchievements.length + allColorAchievements.length + allCube3dAchievements.length + allDinoAchievements.length + allAbyssAchievements.length;
 
         if (allUnlocked.length >= totalAchievements) {
             user.gameData.achievements = [];
@@ -8027,6 +8118,9 @@
             user.gameData.dinoTotalScore = 0;
             user.gameData.dinoTotalJumps = 0;
             user.gameData.dinoTotalDodges = 0;
+            user.gameData.abyssAchievements = [];
+            user.gameData.abyssGamesPlayed = 0;
+            user.gameData.abyssMaxDepth = 0;
             showAlert('所有成就已关闭');
         } else {
             user.gameData.achievements = allFkAchievements;
@@ -8037,6 +8131,7 @@
             user.gameData.colorAchievements = allColorAchievements;
             user.gameData.cube3dAchievements = allCube3dAchievements;
             user.gameData.dinoAchievements = allDinoAchievements;
+            user.gameData.abyssAchievements = allAbyssAchievements;
 
             // 计算特殊成就
             var specialAchievements = [];
@@ -8903,6 +8998,21 @@
             unlockSource: 'monthly_mail_october',
             showDate: true,
             dateText: '2026.10',
+            particles: true
+        },
+        {
+            id: 'monthly-bg-november',
+            name: '十一月霜宵',
+            gradient: 'radial-gradient(circle at 22% 18%, rgba(150, 190, 220, 0.28) 0%, transparent 40%), radial-gradient(circle at 80% 76%, rgba(120, 155, 195, 0.24) 0%, transparent 45%), radial-gradient(circle at 50% 42%, rgba(200, 175, 110, 0.14) 0%, transparent 50%), radial-gradient(circle at 12% 72%, rgba(75, 95, 135, 0.22) 0%, transparent 50%), radial-gradient(circle at 76% 24%, rgba(165, 145, 95, 0.12) 0%, transparent 45%), linear-gradient(135deg, #0c1320 0%, #141e2c 15%, #1d2b3a 30%, #2a3d4c 45%, #445566 60%, #687888 72%, #8a8068 88%, #2a2a28 100%)',
+            backgroundSize: '300% 300%',
+            animation: 'novemberShift 23s ease infinite',
+            isDynamic: true,
+            category: 'special',
+            locked: true,
+            unlockType: 'mail',
+            unlockSource: 'monthly_mail_november',
+            showDate: true,
+            dateText: '2026.11',
             particles: true
         },
         {

@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 3.0.4.0 (c4)",
+    login: "RC 3.0.4.1 (c4)",
 
     // 点击方块游戏版本号
     fkgame: "RC 1.3.1",
@@ -21,9 +21,12 @@ const versionInfo = {
     // 颜色匹配游戏版本号
     colormatchgame: "RC 1.2.0",
 
+    // 深渊回响（回合制 Roguelike）版本号
+    abyss: "RC 1.0.1",
+
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20261030.3040.c4.147.l6",
+    launcher: "20261101.3041.c4.148.l6",
     
     // 主题版本信息
     // status字段可选值说明：
@@ -151,26 +154,26 @@ const versionInfo = {
                 "数据本地持久化，自动保存不丢失"
             ]
         },
-        uiSwitching: {
-            name: "UI切换",
-            icon: "fas fa-layer-group",
-            iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            iconColor: "#ffffff",
-            version: "RC 0",
-            releaseDate: "2026-07-30",
-            updateDate: "2026-07-30",
-            status: "停用优化中",
-            developer: "PREAlmax",
-            copyright: "© 2014-2026 PREAlmax, All rights reserved.",
-            description: "界面风格切换组件，支持在系统默认UI与简约设计UI之间切换，UI设计采用简约风格顶部导航栏布局",
-            features: [
-                "支持系统默认UI（侧边栏布局）和简约设计UI（顶部导航栏布局）切换",
-                "UI设计采用简约风格顶部导航栏，左上角启动器Logo和名称",
-                "右上角账户显示，中间区域更现代化的登录样式",
-                "切换UI后自动保存设置，下次访问自动应用",
-                "支持版本信息查看，了解组件更新历史"
-            ]
-        },
+        // uiSwitching: {
+        //     name: "UI切换",
+        //     icon: "fas fa-layer-group",
+        //     iconBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        //     iconColor: "#ffffff",
+        //     version: "RC 0",
+        //     releaseDate: "2026-07-30",
+        //     updateDate: "2026-07-30",
+        //     status: "停用优化中",
+        //     developer: "PREAlmax",
+        //     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
+        //     description: "界面风格切换组件，支持在系统默认UI与简约设计UI之间切换，UI设计采用简约风格顶部导航栏布局",
+        //     features: [
+        //         "支持系统默认UI（侧边栏布局）和简约设计UI（顶部导航栏布局）切换",
+        //         "UI设计采用简约风格顶部导航栏，左上角启动器Logo和名称",
+        //         "右上角账户显示，中间区域更现代化的登录样式",
+        //         "切换UI后自动保存设置，下次访问自动应用",
+        //         "支持版本信息查看，了解组件更新历史"
+        //     ]
+        // },
         soundtrack: {
             name: "音乐播放器",
             icon: "fas fa-music",
@@ -218,10 +221,10 @@ const versionInfo = {
             icon: "fas fa-gauge-high",
             iconBg: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
             iconColor: "#ffffff",
-            version: "1.0.0.0",
+            version: "RC 1.0.0",
             releaseDate: "2026-09-29",
             updateDate: "2026-10-30",
-            status: "正式版",
+            status: "公开正式版",
             developer: "PREAlmax",
             copyright: "© 2014-2026 PREAlmax, All rights reserved.",
             description: "通过 Cloudflare 全球测速节点测量网络 Ping 延迟、下载速度与上传速度，每个阶段持续不少于 10 秒，并以仪表盘实时展示测速数据",
@@ -241,8 +244,8 @@ const launcherInfo = {
     name: "PRE Launcher",
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),    
-    buildDate: "2026-10-30",
-    patchDate: "2026-10-30",
+    buildDate: "2026-11-01",
+    patchDate: "2026-11-01",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",
