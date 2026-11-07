@@ -1358,6 +1358,35 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 33,
+            date: "2026-11-07",
+            mails: [
+                {
+                    id: 'compensation_mail_20261107',
+                    title: '2026-11-07 版本更新补偿',
+                    sender: 'PRE Launcher',
+                    content: '亲爱的用户，您好！\n\n感谢您一直以来对 PRE Launcher 的支持与厚爱。在 2026-11-07 推送的 RC 3.0.4.2 (c4) 常规版本更新中，我们对启动器进行了多项功能扩展与体验优化——「深渊回响」成就体系由 36 项扩展至 52 项并新增轮回难度、装备持有量与属性峰值等数值成就；装备系统重构为武器 / 护甲 / 饰品多件并存叠加，灵魂圣所新增武器与技能图鉴、饰品栏新增背包弹窗；商店新增「PRE 月卡」订阅系统与限定动态背景「十月枫华」返场；同时对结算弹窗双栏布局、结算数据持久化、装备对比提示、经验值加成卡每日限购等多项体验进行了优化与修复。\n\n为感谢您在本次版本更新前已完成账户注册，我们特为您奉上经验值补给卡 Ⅰ ×1 与经验值加成卡 Ⅰ ×1 作为版本更新补偿。经验值补给卡 Ⅰ 使用后获得 300 点经验值，将立即对您的账户等级生效；经验值加成卡 Ⅰ 使用后 30 分钟内经验获取提升 5%（可与不同类型加成卡叠加，同类型不可叠加，最多同时 5 张）。领取后物品将发放至您的仓库。\n\n本邮件发放对象为 2026-11-07 22:00:00 (UTC+8) 之前完成注册的账户；\n领取有效期截至 2026-11-15 04:00:00 (UTC+8)，逾期未领取将无法补发，请及时领取。\n\n祝您在深渊回响中探索愉快，使用愉快！',
+                    attachments: [
+                        {
+                            name: '经验值补给卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_supply_1',
+                            count: 1
+                        },
+                        {
+                            name: '经验值加成卡 Ⅰ',
+                            type: 'warehouse',
+                            itemId: 'exp_boost_small',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-11-07 22:00:00",
+                    endTime: "2026-11-15 04:00:00",
+                    requireRegisteredBefore: "2026-11-07 22:00:00"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {
@@ -1517,6 +1546,9 @@ function initMailSystem() {
     } else {
         console.log('[MailSystem] No user logged in, skipping mail data initialization');
     }
+
+    // 启动月卡每日邮件调度（登录/聚焦/每分钟自动校验当天是否已发放）
+    initMonthlyCardDailyMailScheduler();
 }
 
 function bindMailEventListeners() {
@@ -1535,6 +1567,104 @@ function bindMailEventListeners() {
     
     // 模态框内的按钮事件现在由事件委托处理
     // 事件委托在 showMailModal 和 showMailHistoryModal 中设置
+}
+
+// ==================== PRE 月卡：每日奖励邮件发放 ====================
+// 规则：
+//   - 月卡生效期间，用户当天登录启动器时发放当日奖励邮件
+//   - 当日未登录启动器则不发放，且不可补领（只发当天，不回补历史日期）
+//   - 邮件有效期 7 天，截至一周后的凌晨 04:00
+var _MONTHLY_CARD_MAIL_TITLE = '「PRE 月卡」每日发放';
+var _MONTHLY_CARD_MAIL_SENDER = 'PRE Launcher';
+var _monthlyCardMailTimer = null;
+
+// 以每日 04:00 为分界线的日期键（YYYY-MM-DD）
+function _monthlyCardMailDateKey(ts) {
+    var d = new Date((ts || Date.now()) + 8 * 60 * 60 * 1000 - 4 * 60 * 60 * 1000);
+    var p2 = function(n) { return (n < 10 ? '0' : '') + n; };
+    return d.getUTCFullYear() + '-' + p2(d.getUTCMonth() + 1) + '-' + p2(d.getUTCDate());
+}
+
+// 邮件有效期：发放日次日 04:00 起算 7 天 → 一周后的凌晨 04:00
+function _monthlyCardMailExpireTime(ts) {
+    var d = new Date((ts || Date.now()) + 8 * 60 * 60 * 1000);
+    var dayStartUTC = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - 8 * 60 * 60 * 1000;
+    return dayStartUTC + 7 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000;
+}
+
+// 由商店月卡配置生成邮件附件（配置缺失时使用固定兜底）
+function _monthlyCardMailAttachments() {
+    var cfg = (typeof PRE_MONTHLY_CARD !== 'undefined') ? PRE_MONTHLY_CARD : null;
+    var rewards = cfg ? cfg.dailyRewards : [
+        { type: 'precoin', name: 'PRE Coin', count: 120 },
+        { type: 'warehouse', itemId: 'rand_box_1', count: 1 },
+        { type: 'warehouse', itemId: 'exp_boost_large', count: 1 },
+        { type: 'warehouse', itemId: 'exp_supply_2', count: 1 },
+        { type: 'warehouse', itemId: 'exp_supply_3', count: 1 }
+    ];
+    return rewards.map(function(r) {
+        if (r.type === 'precoin') {
+            return { name: r.name || 'PRE Coin', type: 'precoin', count: r.count || 0 };
+        }
+        var it = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[r.itemId]) ? WAREHOUSE_ITEMS[r.itemId] : null;
+        return { name: it ? it.name : r.itemId, type: 'warehouse', itemId: r.itemId, count: r.count || 1 };
+    });
+}
+
+// 检查并发放当天月卡邮件（仅在月卡生效且当天尚未发放时执行）
+function checkMonthlyCardDailyMail() {
+    if (typeof mailSystem === 'undefined' || typeof getMonthlyCardState !== 'function') return false;
+    if (mailSystem.getUserPrefix() === '') return false;
+
+    var state = getMonthlyCardState();
+    if (!state || !state.cards || state.cards.length === 0) return false;
+    if (typeof getMonthlyCardRemainingMs === 'function' && getMonthlyCardRemainingMs() <= 0) return false;
+
+    var now = Date.now();
+    var dateKey = _monthlyCardMailDateKey(now);
+    if (state.lastIssuedDate === dateKey) return false;
+
+    var mailId = 'pre_monthly_card_daily_' + dateKey;
+    var exists = mailSystem.getMails().some(function(m) { return m.id === mailId; });
+    if (!exists) {
+        var remainingDays = (typeof getMonthlyCardRemainingDays === 'function') ? getMonthlyCardRemainingDays() : 0;
+        var content = '今日的月卡奖励已发放，请注意查收。\n\n' +
+            '本封邮件有效期为 7 天（截至一周后的凌晨 04:00），请在有效期内领取，逾期将无法补领。\n' +
+            '当前月卡剩余天数：' + remainingDays + ' 天。\n\n' +
+            '— PRE Launcher 月卡系统';
+
+        mailSystem.addMail({
+            id: mailId,
+            title: _MONTHLY_CARD_MAIL_TITLE,
+            sender: _MONTHLY_CARD_MAIL_SENDER,
+            content: content,
+            attachments: _monthlyCardMailAttachments(),
+            mailType: 'reward',
+            sendTime: now,
+            expireTime: _monthlyCardMailExpireTime(now),
+            isRead: false,
+            isClaimed: false
+        });
+        console.log('[MailSystem] Monthly card daily mail issued:', mailId);
+    }
+
+    state.lastIssuedDate = dateKey;
+    if (typeof saveMonthlyCardState === 'function') saveMonthlyCardState(state);
+    return !exists;
+}
+
+// 启动器登录后定时校验（每分钟一次，另在窗口聚焦 / 邮件面板打开时立即校验）
+function initMonthlyCardDailyMailScheduler() {
+    if (_monthlyCardMailTimer) return;
+    var run = function() {
+        try { checkMonthlyCardDailyMail(); } catch (e) { console.warn('[MailSystem] Monthly card daily mail check failed:', e); }
+    };
+    _monthlyCardMailTimer = setInterval(run, 60 * 1000);
+    setTimeout(run, 500);
+    if (typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', function() { if (!document.hidden) run(); });
+        window.addEventListener('focus', run);
+    }
 }
 
 function migrateOldMailData() {
@@ -1580,6 +1710,9 @@ function showMailModal() {
     
     mailSystem.removeExpiredMails();
     mailSystem.applyMailUpdates();
+    if (typeof checkMonthlyCardDailyMail === 'function') {
+        try { checkMonthlyCardDailyMail(); } catch (e) {}
+    }
     renderMailList();
     clearMailDetail();
     

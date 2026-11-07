@@ -6261,8 +6261,8 @@
         updateGameProgress(colorAchievements, 10, 'color');
         updateGameProgress(cube3dAchievements, 10, 'cube3d');
         updateGameProgress(dinoAchievements, 10, 'dino');
-        updateGameProgress(abyssAchievements, 37, 'abyss');
-        updateGameProgress(allAchievements, 117, 'all');
+        updateGameProgress(abyssAchievements, 52, 'abyss');
+        updateGameProgress(allAchievements, 132, 'all');
 
         fkAchievements.forEach(function(achievementId) {
             saveAchievementTime(achievementId);
@@ -6483,8 +6483,8 @@
                 updateGameProgress(colorAchievements, 10, 'color');
                 updateGameProgress(cube3dAchievements, 10, 'cube3d');
                 updateGameProgress(dinoAchievements, 10, 'dino');
-                updateGameProgress(abyssAchievements, 37, 'abyss');
-                updateGameProgress(allAchievements, 117, 'all');
+                updateGameProgress(abyssAchievements, 52, 'abyss');
+                updateGameProgress(allAchievements, 132, 'all');
 
                 var specialAchievements = [];
                 if (fkAchievements.length >= 10) {
@@ -7266,7 +7266,22 @@
             { id: 'xboss1', name: '裂痕终结', desc: '击败深渊裂痕 · 卡俄斯', icon: 'fa-hurricane', game: 'abyss', condition: () => false },
             { id: 'xboss2', name: '无光终焉', desc: '击败无光之祖 · 乌尔', icon: 'fa-circle-notch', game: 'abyss', condition: () => false },
             { id: 'xboss3', name: '极限主宰', desc: '击败极限之主 · 绝', icon: 'fa-chess-king', game: 'abyss', condition: () => false },
-            { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 36 项成就，加冕为深渊之主', icon: 'fa-crown', game: 'abyss', condition: () => abyssUnlockedAchievements.length >= 36 }
+            { id: 'ng10', name: '轮回十重', desc: '通关轮回难度 10', icon: 'fa-layer-group', game: 'abyss', condition: () => false },
+            { id: 'ng15', name: '轮回终焉', desc: '通关轮回难度 15（最高）', icon: 'fa-infinity', game: 'abyss', condition: () => false },
+            { id: 'items15', name: '行囊初满', desc: '单局持有 15 件装备并通关', icon: 'fa-backpack', game: 'abyss', condition: () => false },
+            { id: 'items30', name: '装备收藏家', desc: '单局持有 30 件装备并通关', icon: 'fa-box', game: 'abyss', condition: () => false },
+            { id: 'items50', name: '囤积狂魔', desc: '单局持有 50 件装备并通关', icon: 'fa-warehouse', game: 'abyss', condition: () => false },
+            { id: 'atk500', name: '千钧之力', desc: '单局攻击力 ≥ 500 并通关', icon: 'fa-dumbbell', game: 'abyss', condition: () => false },
+            { id: 'atk1000', name: '毁灭之力', desc: '单局攻击力 ≥ 1000 并通关', icon: 'fa-bolt', game: 'abyss', condition: () => false },
+            { id: 'def200', name: '铜墙铁壁', desc: '单局防御力 ≥ 200 并通关', icon: 'fa-shield', game: 'abyss', condition: () => false },
+            { id: 'def500', name: '不动如山', desc: '单局防御力 ≥ 500 并通关', icon: 'fa-chess-rook', game: 'abyss', condition: () => false },
+            { id: 'critdmg200', name: '暴击精通', desc: '单局暴伤率 ≥ 200% 并通关', icon: 'fa-bullseye', game: 'abyss', condition: () => false },
+            { id: 'critdmg500', name: '致命一击', desc: '单局暴伤率 ≥ 500% 并通关', icon: 'fa-bomb', game: 'abyss', condition: () => false },
+            { id: 'critdmg1000', name: '湮灭暴击', desc: '单局暴伤率 ≥ 1000% 并通关', icon: 'fa-meteor', game: 'abyss', condition: () => false },
+            { id: 'hp1000', name: '生命强化', desc: '单局生命值 ≥ 1000 并通关', icon: 'fa-heart', game: 'abyss', condition: () => false },
+            { id: 'hp2000', name: '生命不息', desc: '单局生命值 ≥ 2000 并通关', icon: 'fa-heart-pulse', game: 'abyss', condition: () => false },
+            { id: 'hp3000', name: '不朽之躯', desc: '单局生命值 ≥ 3000 并通关', icon: 'fa-heart-circle-check', game: 'abyss', condition: () => false },
+            { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 51 项成就，加冕为深渊之主', icon: 'fa-crown', game: 'abyss', condition: () => abyssUnlockedAchievements.length >= 51 }
         ];
 
         var allUnlocked = fkUnlockedAchievements.concat(fxqUnlockedAchievements, wzqUnlockedAchievements, snakeUnlockedAchievements, memoryUnlockedAchievements, colorUnlockedAchievements, cube3dUnlockedAchievements, dinoUnlockedAchievements, abyssUnlockedAchievements);
@@ -8079,7 +8094,7 @@
         var allColorAchievements = ['color_first_game', 'color_score_100', 'color_score_200', 'color_games_10', 'color_perfect_match', 'color_speed_master', 'color_total_score_1000', 'color_games_50', 'color_games_100', 'color_total_score_2000'];
         var allCube3dAchievements = ['cube3d_first_game', 'cube3d_score_100', 'cube3d_score_300', 'cube3d_score_600', 'cube3d_games_5', 'cube3d_games_15', 'cube3d_orbs_10', 'cube3d_orbs_25', 'cube3d_survivor_30', 'cube3d_survivor_60'];
         var allDinoAchievements = ['dino_first_game', 'dino_score_100', 'dino_score_300', 'dino_score_500', 'dino_games_5', 'dino_games_10', 'dino_jumps_100', 'dino_total_1000', 'dino_dodger', 'dino_survivor'];
-        var allAbyssAchievements = ['first_run', 'depth5', 'depth10', 'boss1', 'boss2', 'boss3', 'boss4', 'win', 'kill50', 'kill200', 'kill500', 'rich', 'collector', 'legendary', 'fullset', 'crit100', 'flawless', 'potions', 'skills', 'bigHit', 'healer', 'explorer', 'death10', 'allboss', 'dust500', 'nopotion', 'ng1', 'elite20', 'items30', 'depth14', 'depth20', 'extreme_clear', 'xelite10', 'xboss1', 'xboss2', 'xboss3', 'abyss_ruler'];
+        var allAbyssAchievements = ['first_run', 'depth5', 'depth10', 'boss1', 'boss2', 'boss3', 'boss4', 'win', 'kill50', 'kill200', 'kill500', 'rich', 'collector', 'legendary', 'fullset', 'crit100', 'flawless', 'potions', 'skills', 'bigHit', 'healer', 'explorer', 'death10', 'allboss', 'dust500', 'nopotion', 'ng1', 'elite20', 'items30', 'depth14', 'depth20', 'extreme_clear', 'xelite10', 'xboss1', 'xboss2', 'xboss3', 'ng10', 'ng15', 'items15', 'items30', 'items50', 'atk500', 'atk1000', 'def200', 'def500', 'critdmg200', 'critdmg500', 'critdmg1000', 'hp1000', 'hp2000', 'hp3000', 'abyss_ruler'];
 
         var totalAchievements = allFkAchievements.length + allFxqAchievements.length + allWzqAchievements.length + allSnakeAchievements.length + allMemoryAchievements.length + allColorAchievements.length + allCube3dAchievements.length + allDinoAchievements.length + allAbyssAchievements.length;
 

@@ -424,7 +424,7 @@ const EVENTS = [
     d: '一面高及穹顶的镜子，裂纹中映出无数个你，每一个都在做不同的选择。',
     choices: [
       { label: '触碰镜面（复制一件装备）', fn() {
-          const eq = Object.values(R.equip).filter(Boolean);
+          const eq = Object.values(R.equip).flat().filter(Boolean);
           if (!eq.length) return '镜中的你一无所有，镜子黯淡下去。';
           const src = pick(eq);
           const copy = JSON.parse(JSON.stringify(src));
@@ -499,7 +499,7 @@ const EVENTS = [
           R.potions = Math.min(R.potionCap, R.potions + 2); return '药剂化作两瓶普通药水（药水 +2）。';
         } },
       { label: '用一件装备交换金币', fn() {
-          const eq = Object.values(R.equip).filter(Boolean).sort((a, b) => a.price - b.price);
+          const eq = Object.values(R.equip).flat().filter(Boolean).sort((a, b) => a.price - b.price);
           if (!eq.length) return '你身上没有可以交换的东西。';
           const it = eq[0];
           const g = Math.round(it.price * 0.8);
@@ -614,6 +614,22 @@ const ACHIEVEMENTS = [
   { id: 'xboss1',     n: '裂痕终结', d: '击败深渊裂痕 · 卡俄斯', i: '🌀', r: 90, c: s => s.stats.bosses.xboss1 >= 1 },
   { id: 'xboss2',     n: '无光终焉', d: '击败无光之祖 · 乌尔', i: '🕳️', r: 110, c: s => s.stats.bosses.xboss2 >= 1 },
   { id: 'xboss3',     n: '极限主宰', d: '击败极限之主 · 绝', i: '👑', r: 160, c: s => s.stats.bosses.xboss3 >= 1 },
+  /* —— 数值与轮回极限 —— */
+  { id: 'ng10',        n: '轮回十重', d: '通关轮回难度 10', i: '🔟', r: 80,  c: s => (s.stats.maxNgClear || 0) >= 10 },
+  { id: 'ng15',        n: '轮回终焉', d: '通关轮回难度 15（最高）', i: '♾️', r: 160, c: s => (s.stats.maxNgClear || 0) >= 15 },
+  { id: 'items15',     n: '行囊初满', d: '单局持有 15 件装备并通关', i: '🎒', r: 50,  c: s => (s.stats.maxItemsRun || 0) >= 15 },
+  { id: 'items30',     n: '装备收藏家', d: '单局持有 30 件装备并通关', i: '📦', r: 80,  c: s => (s.stats.maxItemsRun || 0) >= 30 },
+  { id: 'items50',     n: '囤积狂魔', d: '单局持有 50 件装备并通关', i: '🗃️', r: 120, c: s => (s.stats.maxItemsRun || 0) >= 50 },
+  { id: 'atk500',      n: '千钧之力', d: '单局攻击力 ≥ 500 并通关', i: '💪', r: 50,  c: s => (s.stats.maxAtkRun || 0) >= 500 },
+  { id: 'atk1000',     n: '毁灭之力', d: '单局攻击力 ≥ 1000 并通关', i: '⚡', r: 90,  c: s => (s.stats.maxAtkRun || 0) >= 1000 },
+  { id: 'def200',      n: '铜墙铁壁', d: '单局防御力 ≥ 200 并通关', i: '🛡️', r: 50,  c: s => (s.stats.maxDefRun || 0) >= 200 },
+  { id: 'def500',      n: '不动如山', d: '单局防御力 ≥ 500 并通关', i: '🏰', r: 90,  c: s => (s.stats.maxDefRun || 0) >= 500 },
+  { id: 'critdmg200',  n: '暴击精通', d: '单局暴伤率 ≥ 200% 并通关', i: '🎯', r: 50,  c: s => (s.stats.maxCritDmgRun || 0) >= 200 },
+  { id: 'critdmg500',  n: '致命一击', d: '单局暴伤率 ≥ 500% 并通关', i: '💥', r: 90,  c: s => (s.stats.maxCritDmgRun || 0) >= 500 },
+  { id: 'critdmg1000', n: '湮灭暴击', d: '单局暴伤率 ≥ 1000% 并通关', i: '🌟', r: 130, c: s => (s.stats.maxCritDmgRun || 0) >= 1000 },
+  { id: 'hp1000',      n: '生命强化', d: '单局生命值 ≥ 1000 并通关', i: '❤️', r: 50,  c: s => (s.stats.maxHpRun || 0) >= 1000 },
+  { id: 'hp2000',      n: '生命不息', d: '单局生命值 ≥ 2000 并通关', i: '💖', r: 90,  c: s => (s.stats.maxHpRun || 0) >= 2000 },
+  { id: 'hp3000',      n: '不朽之躯', d: '单局生命值 ≥ 3000 并通关', i: '💗', r: 130, c: s => (s.stats.maxHpRun || 0) >= 3000 },
 ];
 
 /* ---------------- 永久升级 ---------------- */
@@ -724,6 +740,7 @@ function defaultState() {
       bestHit: 0, healed: 0, events: 0, itemsFound: 0, legendEquipped: 0, fullSet: 0,
       flawlessElite: 0, dustEarned: 0, winsNoPotion: 0, maxDepth: 0, rooms: 0, evil: 0,
       damageDealt: 0, battles: 0, extremeWins: 0, extremeEliteKills: 0,
+      maxNgClear: 0, maxItemsRun: 0, maxAtkRun: 0, maxDefRun: 0, maxCritDmgRun: 0, maxHpRun: 0,
     },
     ach: {},
     codex: {},
@@ -933,8 +950,10 @@ function equipTotals() {
   const t = { atk: 0, def: 0, hp: 0, crit: 0, critDmg: 0, lifesteal: 0, gold: 0 };
   if (!R) return t;
   for (const k in R.equip) {
-    const it = R.equip[k];
-    if (it && it.stats) for (const s in it.stats) t[s] = (t[s] || 0) + it.stats[s];
+    const arr = R.equip[k];
+    if (Array.isArray(arr)) for (const it of arr) {
+      if (it && it.stats) for (const s in it.stats) t[s] = (t[s] || 0) + it.stats[s];
+    }
   }
   return t;
 }
@@ -959,6 +978,19 @@ function effStats() {
     lifesteal: eq.lifesteal,
     goldFind: u.gold * 12 + eq.gold,
   };
+}
+
+/* ---------------- 单局峰值追踪（用于数值成就） ---------------- */
+function trackRunPeaks() {
+  if (!R) return;
+  const itemCount = (R.equip.weapon.length || 0) + (R.equip.armor.length || 0) + (R.equip.trinket.length || 0);
+  if (itemCount > R.maxItems) R.maxItems = itemCount;
+  const s = effStats();
+  const atk = Math.round(s.atk), def = Math.round(s.def), critDmg = Math.round(s.critDmg);
+  if (atk > R.maxAtk) R.maxAtk = atk;
+  if (def > R.maxDef) R.maxDef = def;
+  if (critDmg > R.maxCritDmg) R.maxCritDmg = critDmg;
+  if (s.maxHp > R.maxHp) R.maxHp = s.maxHp;
 }
 
 /* ---------------- 装备生成 ---------------- */
@@ -1449,7 +1481,7 @@ function modal({ title, sub = '', body = '', buttons = [], size = '' }) {
     <h3>${title}</h3>
     ${sub ? `<div class="m-sub">${sub}</div>` : ''}
     <div class="modal-body">${body}</div>
-    <div class="modal-foot">${buttons.map((b, i) => `<button class="btn ${b.cls || 'btn-ghost'}" data-mi="${i}">${b.label}</button>`).join('')}</div>
+    ${buttons.length ? `<div class="modal-foot">${buttons.map((b, i) => `<button class="btn ${b.cls || 'btn-ghost'}" data-mi="${i}">${b.label}</button>`).join('')}</div>` : ''}
   </div>`;
   $$('[data-mi]', root).forEach(btn => {
     btn.onclick = () => {
@@ -1502,7 +1534,9 @@ function metaAchCount() { return META_ACHIEVEMENTS.filter(m => S.ach[m.id]).leng
 /* ---------------- 标题屏 ---------------- */
 function renderTitle() {
   const hasRun = !!S.runSave;
+  const pending = !!S.pendingSettlement;
   const played = S.stats.runs > 0 || S.meta.soulDust > 0 || S.stats.maxDepth > 0;
+  const settleBtn = `<button class="btn btn-danger btn-lg" onclick="showSettlementModal(S.pendingSettlement)">⏳ 待结算</button>`;
   $('#screen-title').innerHTML = `
   <div class="title-wrap">
     <div>
@@ -1515,8 +1549,8 @@ function renderTitle() {
         <span class="dim">每一次坠落，都会留下不会消散的魂尘。</span>
       </div>
       <div class="title-btns">
-        ${hasRun ? `<button class="btn btn-primary btn-lg" onclick="continueRun()">继续冒险</button>` : ''}
-        <button class="btn ${hasRun ? 'btn-ghost' : 'btn-primary'} btn-lg" onclick="startNewRun()">${played ? '开始新的冒险' : '踏入深渊'}</button>
+        ${pending ? settleBtn : hasRun ? `<button class="btn btn-primary btn-lg" onclick="continueRun()">继续冒险</button>` : ''}
+        ${pending ? '' : `<button class="btn ${hasRun ? 'btn-ghost' : 'btn-primary'} btn-lg" onclick="startNewRun()">${played ? '开始新的冒险' : '踏入深渊'}</button>`}
         ${played ? `<button class="btn btn-ghost btn-lg" onclick="goHub()">灵魂圣所</button>` : ''}
       </div>
       <div class="title-foot">
@@ -1536,7 +1570,8 @@ function goHub() {
 function renderHub() {
   const u = S.meta.upgrades;
   const tabs = [
-    ['sanctum', '⚒️ 圣所'], ['ach', '🏆 成就'], ['codex', '📖 图鉴'], ['stats', '📊 统计'], ['settings', '⚙️ 设置'],
+    ['sanctum', '⚒️ 圣所'], ['ach', '🏆 成就'], ['codex', '📖 图鉴'],
+    ['weapon', '⚔️ 武器'], ['skill', '✨ 技能'], ['stats', '📊 统计'], ['settings', '⚙️ 设置'],
   ];
   let content = '';
 
@@ -1636,8 +1671,10 @@ function renderHub() {
         </div>
         <div class="divider"></div>
         <div class="grid2" style="gap:8px">
-          <button class="btn btn-primary btn-block btn-lg" onclick="startNewRun()">踏入深渊</button>
-          <button class="btn btn-ghost btn-block btn-lg" ${S.runSave ? '' : 'disabled'} onclick="continueRun()">继续未完成的冒险</button>
+          ${S.pendingSettlement
+            ? `<button class="btn btn-danger btn-block btn-lg" style="grid-column:1/-1" onclick="showSettlementModal(S.pendingSettlement)">⏳ 待结算</button>`
+            : `<button class="btn btn-primary btn-block btn-lg" onclick="startNewRun()">踏入深渊</button>
+               <button class="btn btn-ghost btn-block btn-lg" ${S.runSave ? '' : 'disabled'} onclick="continueRun()">继续未完成的冒险</button>`}
         </div>
         <div class="small dim center sanctum-foot" style="line-height:1.8">
           生命 ${effStats().maxHp} · 攻击 ${Math.round(effStats().atk)} · 防御 ${Math.round(effStats().def)} · 暴击 ${Math.round(effStats().crit)}%
@@ -1728,6 +1765,63 @@ function renderHub() {
       <div class="card-h"><span>📖</span><div><div class="card-t">深渊图鉴</div><div class="card-sub">BESTIARY · 点击已收录的敌人查看详情与难度对比</div></div>
         <div style="margin-left:auto" class="pill tag-jade">${seenN} / ${Object.keys(all).length}</div></div>
       <div class="grid-auto">${list}</div>
+    </div>`;
+  }
+
+  if (hubTab === 'weapon') {
+    const slotOrder = ['weapon', 'armor', 'trinket'];
+    const groups = slotOrder.map(slot => {
+      const list = ITEM_BASES
+        .map((b, idx) => ({ b, idx }))
+        .filter(({ b }) => b.slot === slot)
+        .map(({ b, idx }) => `
+          <div class="cx clickable" onclick="openWeaponEntry(${idx})">
+            <div class="cx-top">
+              <div class="cx-emoji" style="border-color:${RARITY.legend.color}">${b.ico}</div>
+              <div>
+                <div class="cx-n">${b.n}</div>
+                <div class="small dim">${SLOT_NAME[b.slot]} · ${Object.keys(b.s).length} 项属性</div>
+              </div>
+            </div>
+            <div class="row small" style="margin-top:8px;gap:10px;flex-wrap:wrap">
+              ${Object.entries(b.s).map(([k, v]) => `<span style="color:${RARITY.rare.color}">${STAT_NAME[k] || k} +${v}</span>`).join('')}
+            </div>
+            <div class="cx-more">查看详情 ›</div>
+          </div>`).join('');
+      return `<div class="cx-sec" style="margin:0 0 10px"><span>${SLOT_ICON[slot]} ${SLOT_NAME[slot]}</span></div>
+              <div class="grid-auto" style="margin-bottom:18px">${list || '<div class="small dim">暂无</div>'}</div>`;
+    }).join('');
+    content = `<div class="card">
+      <div class="card-h"><span>⚔️</span><div><div class="card-t">武器与装备图鉴</div><div class="card-sub">ARMORY · 点击装备查看基底属性与稀有度加成</div></div>
+        <div style="margin-left:auto" class="pill tag-jade">共 ${ITEM_BASES.length} 种</div></div>
+      ${groups}
+    </div>`;
+  }
+
+  if (hubTab === 'skill') {
+    const rarOrder = ['common', 'rare', 'epic', 'legend'];
+    const groups = rarOrder.map(rar => {
+      const list = Object.entries(SKILLS)
+        .filter(([, sk]) => sk.rar === rar)
+        .map(([key, sk]) => `
+          <div class="cx clickable" onclick="openSkillEntry('${key}')">
+            <div class="cx-top">
+              <div class="cx-emoji" style="border-color:${RARITY[rar].color}">${sk.i}</div>
+              <div>
+                <div class="cx-n">${sk.n}</div>
+                <div class="small dim">冷却 ${sk.cd} 回合</div>
+              </div>
+            </div>
+            <div class="cx-l">${sk.d}</div>
+            <div class="cx-more">查看详情 ›</div>
+          </div>`).join('');
+      return `<div class="cx-sec" style="margin:0 0 10px"><span style="color:${RARITY[rar].color}">${RARITY[rar].n}技能</span></div>
+              <div class="grid-auto" style="margin-bottom:18px">${list || '<div class="small dim">暂无</div>'}</div>`;
+    }).join('');
+    content = `<div class="card">
+      <div class="card-h"><span>✨</span><div><div class="card-t">技能图鉴</div><div class="card-sub">SKILLS · 点击技能查看详细效果</div></div>
+        <div style="margin-left:auto" class="pill tag-jade">共 ${Object.keys(SKILLS).length} 个</div></div>
+      ${groups}
     </div>`;
   }
 
@@ -1995,6 +2089,89 @@ function openCodexEntry(key) {
   renderCodexCompare(key, 0);
 }
 
+/* ---------------- 装备详情 ---------------- */
+function openWeaponEntry(idx) {
+  const b = ITEM_BASES[idx];
+  if (!b) return;
+  const baseStatHtml = Object.entries(b.s).map(([k, v]) =>
+    `<div class="stat"><span class="stat-k">${STAT_NAME[k] || k}</span><span class="stat-v">+${v}</span></div>`
+  ).join('');
+  const rarRows = ['common', 'rare', 'epic', 'legend'].map(r => {
+    const m = RARITY[r].mult;
+    const stats = Object.entries(b.s).map(([k, v]) => `${STAT_NAME[k] || k} +${Math.round(v * m)}`).join('　');
+    return `<div class="stat"><span class="stat-k" style="color:${RARITY[r].color}">${RARITY[r].n}</span><span class="stat-v small" style="color:var(--muted)">${stats}</span></div>`;
+  }).join('');
+  modal({
+    title: `${b.ico} ${b.n}`,
+    sub: `${SLOT_NAME[b.slot].toUpperCase()} · ${SLOT_NAME[b.slot]}基底`,
+    size: 'wide',
+    body: `
+      <div class="cx-dlg">
+        <div class="cx-col cx-col-l">
+          <div class="cx-detail-top">
+            <div class="cx-detail-emoji" style="border-color:${RARITY.legend.color}">${b.ico}</div>
+            <div style="min-width:0">
+              <div style="font-family:var(--serif);font-size:17px;letter-spacing:2px;color:#ffe3bb">${b.n}</div>
+              <div class="small dim" style="margin-top:5px">${SLOT_ICON[b.slot]} ${SLOT_NAME[b.slot]} · 装备基底</div>
+            </div>
+          </div>
+          <div class="cx-sec">基底属性</div>
+          <div class="grid2" style="gap:6px 14px">${baseStatHtml}</div>
+          <div class="small dim" style="margin-top:10px;line-height:1.8">实际掉落的装备会根据稀有度乘以对应倍率，并随机附加词缀。</div>
+        </div>
+        <div class="cx-col cx-col-r">
+          <div class="cx-sec" style="margin-top:0">稀有度倍率</div>
+          <div class="col" style="gap:5px">${rarRows}</div>
+          <div class="cx-sec">可附加词缀</div>
+          <div class="row" style="flex-wrap:wrap;gap:6px">
+            ${AFFIXES.map(a => `<span class="pill" style="border-color:${RARITY.epic.color};color:#cfaeff">${a.n} +${a.r[0]}~${a.r[1]}</span>`).join('')}
+          </div>
+        </div>
+      </div>`,
+    buttons: [{ label: '关闭', cls: 'btn-primary' }],
+  });
+}
+
+/* ---------------- 技能详情 ---------------- */
+function openSkillEntry(key) {
+  const sk = SKILLS[key];
+  if (!sk) return;
+  const rar = RARITY[sk.rar] || RARITY.common;
+  modal({
+    title: `${sk.i} ${sk.n}`,
+    sub: `SKILL · ${rar.n}技能`,
+    size: 'wide',
+    body: `
+      <div class="cx-dlg">
+        <div class="cx-col cx-col-l">
+          <div class="cx-detail-top">
+            <div class="cx-detail-emoji" style="border-color:${rar.color}">${sk.i}</div>
+            <div style="min-width:0">
+              <div style="font-family:var(--serif);font-size:17px;letter-spacing:2px;color:#ffe3bb">${sk.n}</div>
+              <div class="small dim" style="margin-top:5px">
+                <span class="pill" style="border-color:${rar.color};color:${rar.color}">${rar.n}</span>
+                　冷却 ${sk.cd} 回合
+              </div>
+            </div>
+          </div>
+          <div class="cx-sec">技能效果</div>
+          <div class="cx-lore" style="font-size:14px;line-height:2;color:var(--text)">${sk.d}</div>
+        </div>
+        <div class="cx-col cx-col-r">
+          <div class="cx-sec" style="margin-top:0">技能信息</div>
+          <div class="grid2" style="gap:6px 14px">
+            <div class="stat"><span class="stat-k">稀有度</span><span class="stat-v" style="color:${rar.color}">${rar.n}</span></div>
+            <div class="stat"><span class="stat-k">冷却回合</span><span class="stat-v">${sk.cd}</span></div>
+          </div>
+          <div class="small dim" style="margin-top:12px;line-height:1.8">
+            技能可在冒险中通过事件、商店或奖励获取。每局最多携带 4 个技能，初始拥有 3 个基础技能。
+          </div>
+        </div>
+      </div>`,
+    buttons: [{ label: '关闭', cls: 'btn-primary' }],
+  });
+}
+
 function renderCodexCompare(key, ng) {
   const base = ENEMIES[key] || BOSSES[key];
   if (!base) return;
@@ -2054,6 +2231,7 @@ function discardCurrentRun() {
 }
 
 function startNewRun() {
+  if (S.pendingSettlement) { showSettlementModal(S.pendingSettlement); return; }
   if (S.runSave) {
     modal({
       title: '放弃当前的冒险？', sub: 'YOUR RUN IS STILL ACTIVE',
@@ -2260,11 +2438,12 @@ function beginRun(difficulty, boon) {
     depth: 1, gold: 70 + ng * 20, hp: 0, potions: 2 + (u.potion || 0),
     potionCap: 3 + (u.potion || 0),
     bonusHp: 0, bonusAtk: 0, bonusDef: 0, bonusCrit: 0,
-    skills: [], equip: { weapon: null, armor: null, trinket: null },
+    skills: [], equip: { weapon: [], armor: [], trinket: [] },
     revived: false, usedPotion: false, bossKills: 0, ng: ng, ngAtStart: ng,
     choices: null, choicesFor: -1, shop: null, shopFor: -1,
     skipFloor: false, cursed: false, extreme: false, extremeAllowed: !!S.meta.extreme,
     kills: 0, itemsLog: [], bossLog: [],
+    maxItems: 0, maxAtk: 0, maxDef: 0, maxCritDmg: 0, maxHp: 0,
     dev: S.meta.dev ? Object.assign({}, S.meta.dev) : undefined,
   };
   const pool = shuffle(STARTER_SKILLS.slice());
@@ -2302,10 +2481,15 @@ function beginRun(difficulty, boon) {
 }
 
 function continueRun() {
+  if (S.pendingSettlement) { showSettlementModal(S.pendingSettlement); return; }
   if (!S.runSave) { toast('没有可继续的冒险', '❔'); return; }
   R = JSON.parse(JSON.stringify(S.runSave));
   if (!R.skills) R.skills = ['fireSlash'];
-  if (!R.equip) R.equip = { weapon: null, armor: null, trinket: null };
+  if (!R.equip) R.equip = { weapon: [], armor: [], trinket: [] };
+  // 兼容旧存档：单物品格式转为数组
+  for (const slot of ['weapon', 'armor', 'trinket']) {
+    if (!Array.isArray(R.equip[slot])) R.equip[slot] = R.equip[slot] ? [R.equip[slot]] : [];
+  }
   if (!R.itemsLog) R.itemsLog = [];
   if (!R.bossLog) R.bossLog = [];
   if (R.kills === undefined) R.kills = 0;
@@ -2313,6 +2497,11 @@ function continueRun() {
   if (R.extremeAllowed === undefined) R.extremeAllowed = !!S.meta.extreme;
   if (R.ng === undefined) R.ng = R.ngAtStart !== undefined ? R.ngAtStart : (S.meta.ngPlus || 0);
   R.ngAtStart = R.ng;
+  if (R.maxItems === undefined) R.maxItems = 0;
+  if (R.maxAtk === undefined) R.maxAtk = 0;
+  if (R.maxDef === undefined) R.maxDef = 0;
+  if (R.maxCritDmg === undefined) R.maxCritDmg = 0;
+  if (R.maxHp === undefined) R.maxHp = 0;
   R.choicesFor = -1; R.shopFor = -1;
   runView = 'choices';
   pendingItems = [];
@@ -2356,12 +2545,14 @@ function playerPanelHtml() {
   const s = effStats();
   const hpPct = clamp(R.hp / s.maxHp * 100, 0, 100);
   const eq = ['weapon', 'armor', 'trinket'].map(k => {
-    const it = R.equip[k];
+    const arr = R.equip[k] || [];
+    const best = arr.length ? arr.reduce((a, b) => (a.score > b.score ? a : b)) : null;
     return `<div class="stat" style="padding:6px 9px">
       <span class="stat-k">${SLOT_ICON[k]} ${SLOT_NAME[k]}</span>
-      <span class="small" style="color:${it ? RARITY[it.rarity].color : 'var(--dim)'};max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it ? it.name : '空'}</span>
+      <span class="small" style="color:${best ? RARITY[best.rarity].color : 'var(--dim)'};max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best ? best.name + (arr.length > 1 ? ` ×${arr.length}` : '') : '空'}</span>
     </div>`;
   }).join('');
+  const totalEquip = (R.equip.weapon.length || 0) + (R.equip.armor.length || 0) + (R.equip.trinket.length || 0);
   const sk = R.skills.map(id => `<span class="pill" style="border-color:rgba(150,130,255,.4);color:#c9bcff">${SKILLS[id].i} ${SKILLS[id].n}</span>`).join('');
   return `<div class="card">
     <div class="row between" style="margin-bottom:10px">
@@ -2381,6 +2572,7 @@ function playerPanelHtml() {
     </div>
     <div class="divider" style="margin:12px 0"></div>
     <div class="col" style="gap:6px">${eq}</div>
+    <button class="btn btn-ghost btn-block btn-sm" style="margin-top:10px" onclick="showBackpack()">🎒 背包（${totalEquip} 件装备 · ${R.potions} 药水）</button>
     <div class="divider" style="margin:12px 0"></div>
     <div class="card-sub" style="margin-bottom:7px">已掌握技能</div>
     <div class="row" style="flex-wrap:wrap;gap:6px">${sk || '<span class="dim small">无</span>'}</div>
@@ -2403,6 +2595,7 @@ function floorTrackHtml() {
 
 function renderRun() {
   if (!R) { goHub(); return; }
+  trackRunPeaks();
   if (!R.choices || R.choicesFor !== R.depth) { R.choices = genChoices(R.depth); R.choicesFor = R.depth; }
   const bm = biomeOf(R.depth);
   let main = '';
@@ -2570,21 +2763,23 @@ function flushItems(cb) {
 }
 
 function offerItem(it, cb) {
-  const cur = R.equip[it.slot];
+  const arr = R.equip[it.slot] || [];
+  const best = arr.length ? arr.reduce((a, b) => (a.score > b.score ? a : b)) : null;
   const rr = RARITY[it.rarity];
-  const better = !cur || it.score > cur.score;
+  const better = !best || it.score > best.score;
   modal({
-    title: '获得物品', sub: `${rr.n} · ${SLOT_NAME[it.slot]}`,
+    title: '获得物品', sub: `${rr.n} · ${SLOT_NAME[it.slot]}（已持有 ${arr.length} 件）`,
     body: `<div class="row" style="gap:14px;align-items:flex-start">
       <div class="offer-ico" style="width:58px;height:58px;font-size:27px;border-color:${rr.color};box-shadow:0 0 26px -10px ${rr.color}">${it.ico}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:16px;font-weight:700;color:${rr.color}">${it.name}</div>
         <div class="small muted" style="margin-top:5px">${statLines(it.stats).join(' · ')}</div>
-        ${cur ? `<div class="small dim" style="margin-top:8px">当前装备：${cur.name}<br>${statLines(cur.stats).join(' · ')}</div>` : ''}
+        ${best ? `<div class="small dim" style="margin-top:8px">当前最强：${best.name}<br>${statLines(best.stats).join(' · ')}</div>` : ''}
         <div class="row" style="margin-top:9px;gap:8px">
           <span class="pill ${better ? 'tag-jade' : ''}">${better ? '▲ 更适合你' : '▼ 略逊一筹'}</span>
           <span class="pill tag-gold">估价 ${it.price} 金</span>
         </div>
+        <div class="small dim" style="margin-top:8px;line-height:1.7">所有同类装备可同时携带并叠加生效。</div>
       </div>
     </div>`,
     buttons: [
@@ -2595,11 +2790,64 @@ function offerItem(it, cb) {
 }
 
 function equipItem(it) {
-  R.equip[it.slot] = it;
+  if (!Array.isArray(R.equip[it.slot])) R.equip[it.slot] = [];
+  R.equip[it.slot].push(it);
   if (it.rarity === 'legend') S.stats.legendEquipped++;
-  if (R.equip.weapon && R.equip.armor && R.equip.trinket) S.stats.fullSet = 1;
+  if (R.equip.weapon.length && R.equip.armor.length && R.equip.trinket.length) S.stats.fullSet = 1;
   R.hp = Math.min(R.hp, effStats().maxHp);
   checkAch();
+}
+
+function removeEquip(it) {
+  const arr = R.equip[it.slot];
+  if (!Array.isArray(arr)) return;
+  const idx = arr.indexOf(it);
+  if (idx >= 0) arr.splice(idx, 1);
+}
+
+/* ---------------- 背包弹窗 ---------------- */
+function showBackpack() {
+  if (!R) return;
+  const slotOrder = ['weapon', 'armor', 'trinket'];
+  const groups = slotOrder.map(slot => {
+    const arr = R.equip[slot] || [];
+    const list = arr.map((it, i) => {
+      const rr = RARITY[it.rarity];
+      return `<div class="cx" style="padding:10px 12px">
+        <div class="cx-top" style="margin-bottom:4px">
+          <div class="cx-emoji" style="width:36px;height:36px;font-size:20px;border-color:${rr.color}">${it.ico}</div>
+          <div style="min-width:0">
+            <div class="cx-n" style="color:${rr.color}">${it.name}</div>
+            <div class="small dim">${SLOT_NAME[it.slot]} · 估价 ${it.price} 金</div>
+          </div>
+        </div>
+        <div class="row small" style="gap:8px;flex-wrap:wrap">
+          ${statLines(it.stats).map(s => `<span style="color:${RARITY.rare.color}">${s}</span>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="cx-sec" style="margin:0 0 10px"><span>${SLOT_ICON[slot]} ${SLOT_NAME[slot]} · ${arr.length} 件</span></div>
+            <div class="grid-auto" style="margin-bottom:16px">${list || '<div class="small dim">无</div>'}</div>`;
+  }).join('');
+
+  const total = (R.equip.weapon.length || 0) + (R.equip.armor.length || 0) + (R.equip.trinket.length || 0);
+  modal({
+    title: '🎒 背包',
+    sub: `BACKPACK · 本局持有 · ${total} 件装备 · ${R.potions} 瓶药水`,
+    size: 'wide',
+    body: `
+      <div class="settle-grid" style="grid-template-columns:1fr">
+        <div>
+          <div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:6px">
+            <span class="pill tag-rose">🧪 治疗药水 × ${R.potions} / ${R.potionCap}</span>
+            <span class="pill tag-gold">💰 ${fmt(R.gold)} 金币</span>
+          </div>
+          ${groups}
+        </div>
+      </div>
+      <div class="small dim" style="margin-top:8px;line-height:1.8">所有同类装备属性同时叠加生效。</div>`,
+    buttons: [{ label: '关闭', cls: 'btn-primary' }],
+  });
 }
 
 /* ---------------- 商店 ---------------- */
@@ -2986,6 +3234,13 @@ function finishRun(win, abandoned) {
       ngUp = true;
     }
     S.meta.ngPlus = Math.min(MAX_NG, S.meta.ngPlus || 0);
+    // 单局峰值成就统计：仅通关时计入
+    S.stats.maxNgClear = Math.max(S.stats.maxNgClear || 0, ng);
+    S.stats.maxItemsRun = Math.max(S.stats.maxItemsRun || 0, R.maxItems || 0);
+    S.stats.maxAtkRun = Math.max(S.stats.maxAtkRun || 0, R.maxAtk || 0);
+    S.stats.maxDefRun = Math.max(S.stats.maxDefRun || 0, R.maxDef || 0);
+    S.stats.maxCritDmgRun = Math.max(S.stats.maxCritDmgRun || 0, R.maxCritDmg || 0);
+    S.stats.maxHpRun = Math.max(S.stats.maxHpRun || 0, R.maxHp || 0);
   }
 
   // 通行证经验（难度 6-15 通关一次 +10；极限模式完整通关可使用每周加成 → +40）
@@ -3000,6 +3255,18 @@ function finishRun(win, abandoned) {
   }
   const st = { dust: dust, passXp: passXp, canBonus: canBonus, extremeClear: extremeClear, refund: refund, boonCost: boonCost };
 
+  // 结算数据持久化：避免弹窗弹出后意外刷新导致奖励丢失
+  const title = win ? (extremeClear ? '你踏穿了极限' : '深渊已被穿透') : '你坠落了';
+  const sub = win ? (extremeClear ? 'EXTREME CLEARED · 极限之主已陨落' : 'VICTORY · 深渊之主已陨落') : 'DEFEAT · 深渊记住了你的名字';
+  S.pendingSettlement = {
+    st: st,
+    title: title, sub: sub, win: win, extreme: extreme, extremeClear: extremeClear,
+    depthReached: depthReached, ng: ng, kills: kills, bossKills: bossKills,
+    items: items, bossList: bossList, boonCost: boonCost, refund: refund,
+    dust: dust, passXp: passXp, canBonus: canBonus, ngUp: ngUp,
+    ngPlusAfter: S.meta.ngPlus,
+  };
+
   S.runSave = null;
   R = null; B = null;
   saveGame();
@@ -3010,49 +3277,62 @@ function finishRun(win, abandoned) {
   showScreen('hub');
   renderTopbar();
 
-  const title = win ? (extremeClear ? '你踏穿了极限' : '深渊已被穿透') : '你坠落了';
-  const sub = win ? (extremeClear ? 'EXTREME CLEARED · 极限之主已陨落' : 'VICTORY · 深渊之主已陨落') : 'DEFEAT · 深渊记住了你的名字';
-  const rarityColor = { common: '#9aa7b8', rare: '#4fa8ff', epic: '#b06bff', legend: '#ffb545' };
-  const itemHtml = items.length
-    ? items.map(it => `<span class="pill" style="border-color:${rarityColor[it.r] || '#666'};color:${rarityColor[it.r] || '#ccc'}">${it.i || '🎁'} ${it.n}</span>`).join('')
-    : '<span class="small dim">本次冒险没有获得装备</span>';
-  const bodyHtml = `
-    <div class="center" style="margin-bottom:16px">
-      <div style="font-size:52px;line-height:1;filter:drop-shadow(0 10px 30px rgba(255,150,70,.5))">${win ? '🌅' : '💀'}</div>
-      <div style="font-family:var(--serif);font-size:17px;letter-spacing:3px;margin-top:12px;color:#ffd9a8">${title}</div>
-      <div class="small dim" style="margin-top:6px">本局难度 · ${ngInfo(ng).name}${extreme ? ' · 极限模式' : ''}</div>
-    </div>
-    <div class="col" style="gap:7px">
-      <div class="stat"><span class="stat-k">抵达层数</span><span class="stat-v">第 ${depthReached} 层${extreme ? ' / 20' : ''}</span></div>
-      <div class="stat"><span class="stat-k">击败敌人</span><span class="stat-v">${kills} 个</span></div>
-      <div class="stat"><span class="stat-k">击杀首领</span><span class="stat-v">${bossKills} 位</span></div>
-      <div class="stat"><span class="stat-k">获得魂尘</span><span class="stat-v" style="color:var(--gold)">✨ +${fmt(dust)}</span></div>
-      ${boonCost ? `<div class="stat"><span class="stat-k">开局增益花费</span><span class="stat-v" style="color:#ff8b9a">✨ -${fmt(boonCost)}</span></div>` : ''}
-      ${refund ? `<div class="stat"><span class="stat-k">开局增益退还</span><span class="stat-v" style="color:var(--jade)">✨ +${fmt(refund)}</span></div>` : ''}
-      <div class="stat"><span class="stat-k">通行证经验</span><span class="stat-v" style="color:#8fc4ff">${passXp > 0 ? '+' + passXp + ' 经验' + (canBonus ? '（可使用每周加成 → +40）' : '') : '本局无'}</span></div>
-    </div>
-    <div class="cx-sec" style="margin-top:14px">获得物品 · ${items.length} 件</div>
-    <div class="row" style="flex-wrap:wrap;gap:6px">${itemHtml}</div>
-    <div class="cx-sec" style="margin-top:14px">击败的首领 · ${bossList.length} 位</div>
-    <div class="row" style="flex-wrap:wrap;gap:6px">${bossList.length
-      ? bossList.map(n => `<span class="pill" style="border-color:rgba(176,107,255,.5);color:#cfaeff">👑 ${n}</span>`).join('')
-      : '<span class="small dim">本局没有击败首领</span>'}</div>
-    ${ngUp ? `<div class="center" style="margin-top:14px;color:#b5a8ff;font-size:12.5px">轮回难度提升至 ${S.meta.ngPlus} —— 深渊更深了。</div>` : ''}
-    <div class="small dim" style="margin-top:14px;line-height:1.8">领取后将获得本次的魂尘与通行证经验；放弃领取则不会获得任何奖励。</div>`;
+  showSettlementModal(S.pendingSettlement);
+}
 
-  const btns = [];
-  if (canBonus) btns.push({ label: `使用每周加成领取（+${PASS_XP_BONUS} 经验）`, cls: 'btn-arcane', fn: () => settleFinish(st, true, true) });
-  btns.push({ label: '领取奖励', cls: 'btn-primary', fn: () => settleFinish(st, true, false) });
-  btns.push({ label: '放弃领取', cls: 'btn-ghost', fn: () => settleFinish(st, false, false) });
+/* ---------------- 结算弹窗（横向双栏） ---------------- */
+function showSettlementModal(d) {
+  if (!d) return;
+  const rarityColor = { common: '#9aa7b8', rare: '#4fa8ff', epic: '#b06bff', legend: '#ffb545' };
+  const itemHtml = d.items.length
+    ? d.items.map(it => `<span class="pill" style="border-color:${rarityColor[it.r] || '#666'};color:${rarityColor[it.r] || '#ccc'}">${it.i || '🎁'} ${it.n}</span>`).join('')
+    : '<span class="small dim">本次冒险没有获得装备</span>';
+  const bossHtml = d.bossList.length
+    ? d.bossList.map(n => `<span class="pill" style="border-color:rgba(176,107,255,.5);color:#cfaeff">👑 ${n}</span>`).join('')
+    : '<span class="small dim">本局没有击败首领</span>';
+
+  const bodyHtml = `
+    <div class="settle-grid">
+      <div class="settle-left">
+        <div class="center" style="margin-bottom:14px">
+          <div style="font-size:50px;line-height:1;filter:drop-shadow(0 10px 30px rgba(255,150,70,.5))">${d.win ? '🌅' : '💀'}</div>
+          <div style="font-family:var(--serif);font-size:18px;letter-spacing:3px;margin-top:10px;color:#ffd9a8">${d.title}</div>
+          <div class="small dim" style="margin-top:5px">本局难度 · ${ngInfo(d.ng).name}${d.extreme ? ' · 极限模式' : ''}</div>
+        </div>
+        <div class="col" style="gap:7px">
+          <div class="stat"><span class="stat-k">抵达层数</span><span class="stat-v">第 ${d.depthReached} 层${d.extreme ? ' / 20' : ''}</span></div>
+          <div class="stat"><span class="stat-k">击败敌人</span><span class="stat-v">${d.kills} 个</span></div>
+          <div class="stat"><span class="stat-k">击杀首领</span><span class="stat-v">${d.bossKills} 位</span></div>
+          <div class="stat"><span class="stat-k">获得魂尘</span><span class="stat-v" style="color:var(--gold)">✨ +${fmt(d.dust)}</span></div>
+          ${d.boonCost ? `<div class="stat"><span class="stat-k">开局增益花费</span><span class="stat-v" style="color:#ff8b9a">✨ -${fmt(d.boonCost)}</span></div>` : ''}
+          ${d.refund ? `<div class="stat"><span class="stat-k">开局增益退还</span><span class="stat-v" style="color:var(--jade)">✨ +${fmt(d.refund)}</span></div>` : ''}
+          <div class="stat"><span class="stat-k">通行证经验</span><span class="stat-v" style="color:#8fc4ff">${d.passXp > 0 ? '+' + d.passXp + ' 经验' + (d.canBonus ? '（可使用每周加成 → +40）' : '') : '本局无'}</span></div>
+        </div>
+        ${d.ngUp ? `<div class="center" style="margin-top:12px;color:#b5a8ff;font-size:12.5px">轮回难度提升至 ${d.ngPlusAfter} —— 深渊更深了。</div>` : ''}
+      </div>
+      <div class="settle-right">
+        <div class="cx-sec" style="margin-top:0">获得物品 · ${d.items.length} 件</div>
+        <div class="settle-items">${itemHtml}</div>
+        <div class="cx-sec">击败的首领 · ${d.bossList.length} 位</div>
+        <div class="settle-items">${bossHtml}</div>
+        <div class="settle-btns">
+          ${d.canBonus ? `<button class="btn btn-arcane" onclick="settleFinish(S.pendingSettlement.st,true,true)">使用每周加成领取（+${PASS_XP_BONUS} 经验）</button>` : ''}
+          <button class="btn btn-primary" onclick="settleFinish(S.pendingSettlement.st,true,false)">领取奖励</button>
+          <button class="btn btn-ghost" onclick="settleFinish(S.pendingSettlement.st,false,false)">放弃领取</button>
+        </div>
+        <div class="small dim" style="line-height:1.7">领取后将获得本次的魂尘与通行证经验；放弃领取则不会获得任何奖励。</div>
+      </div>
+    </div>`;
 
   modal({
-    title: win ? 'THE ABYSS FALLS' : 'YOU HAVE FALLEN',
-    sub, body: bodyHtml, buttons: btns,
+    title: d.win ? 'THE ABYSS FALLS' : 'YOU HAVE FALLEN',
+    sub: d.sub, body: bodyHtml, buttons: [], size: 'wide',
   });
 }
 
 /* ---------------- 结算领取 ---------------- */
 function settleFinish(st, claim, useBonus) {
+  closeModal();
   if (claim) {
     S.meta.soulDust += st.dust;
     S.stats.dustEarned += st.dust;
@@ -3071,8 +3351,10 @@ function settleFinish(st, claim, useBonus) {
       }
     }
   }
+  S.pendingSettlement = null;
   saveGame();
   checkAch();
+  renderTitle();
   goHub();
 }
 
@@ -3341,6 +3623,8 @@ function init() {
   // 启动时强制同步一次，确保启动器侧能拿到已有的成就 / 统计进度
   syncLauncherData(true);
   renderTopbar();
+  // 若上一局结算未领取（意外刷新/重进），重新弹出结算弹窗
+  if (S.pendingSettlement) showSettlementModal(S.pendingSettlement);
 }
 
 document.addEventListener('DOMContentLoaded', init);

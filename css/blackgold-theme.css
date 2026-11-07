@@ -1,0 +1,439 @@
+/* ============================================================
+   PRE Launcher · 黑金主题（PRE 月卡专属）
+   适用范围：登录页 / 大厅页 / 系统设置页及全局弹窗组件
+   设计要点：
+   - 深黑暖底（避免纯黑死色），金色作为强调色而非文字色
+   - 文字易读性：主文字使用高亮度暖白（#f2ead8），次要文字
+     使用暖灰金（#c9b78e），确保与背景对比度充足，不会糊在一起
+   ============================================================ */
+
+body.blackgold-mode {
+    /* 主题色板 */
+    --bg-base: #0e0b07;
+    --bg-raised: #171208;
+    --bg-card: #1c160b;
+    --bg-card-2: #221a0e;
+    --bg-input: #120e07;
+    --bg-hover: rgba(212, 175, 55, 0.10);
+    --gold: #d4af37;
+    --gold-strong: #f0c944;
+    --gold-deep: #a8862a;
+    --gold-soft: rgba(212, 175, 55, 0.35);
+    --line: rgba(212, 175, 55, 0.22);
+    --line-strong: rgba(212, 175, 55, 0.45);
+    --text-1: #f2ead8;   /* 主文字：暖白，保证对比度 */
+    --text-2: #c9b78e;   /* 次要文字：暖灰金 */
+    --text-3: #8f8163;   /* 弱化文字 */
+    --danger: #e0654f;
+    --success: #4fc38a;
+
+    background: radial-gradient(circle at 20% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 85% 90%, rgba(212, 175, 55, 0.06) 0%, transparent 50%),
+                var(--bg-base) !important;
+    color: var(--text-1) !important;
+}
+
+/* ---------- 通用文字（易读性兜底） ---------- */
+body.blackgold-mode h1, body.blackgold-mode h2, body.blackgold-mode h3,
+body.blackgold-mode h4, body.blackgold-mode h5, body.blackgold-mode h6,
+body.blackgold-mode p, body.blackgold-mode span, body.blackgold-mode label,
+body.blackgold-mode li, body.blackgold-mode td, body.blackgold-mode th,
+body.blackgold-mode div, body.blackgold-mode a, body.blackgold-mode small,
+body.blackgold-mode em, body.blackgold-mode strong, body.blackgold-mode b {
+    color: inherit;
+}
+body.blackgold-mode { caret-color: var(--gold-strong); }
+body.blackgold-mode ::placeholder { color: var(--text-3) !important; opacity: 1; }
+body.blackgold-mode ::selection { background: rgba(212, 175, 55, 0.35); color: #fff8e6; }
+
+/* ---------- 滚动条 ---------- */
+body.blackgold-mode ::-webkit-scrollbar { width: 9px; height: 9px; }
+body.blackgold-mode ::-webkit-scrollbar-track { background: #100c07; }
+body.blackgold-mode ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(212,175,55,0.55), rgba(168,134,42,0.55));
+    border-radius: 8px; border: 2px solid #100c07;
+}
+body.blackgold-mode ::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.8); }
+
+/* ---------- 通用卡片 / 面板 ---------- */
+body.blackgold-mode .section-card,
+body.blackgold-mode .game-card,
+body.blackgold-mode .treasure-card,
+body.blackgold-mode .stat-card,
+body.blackgold-mode .info-card,
+body.blackgold-mode .feature-card,
+body.blackgold-mode .panel,
+body.blackgold-mode .card,
+body.blackgold-mode .wh-card,
+body.blackgold-mode .settings-card,
+body.blackgold-mode .profile-card,
+body.blackgold-mode .checkin-area,
+body.blackgold-mode .notice-card,
+body.blackgold-mode .achievement-card {
+    background: linear-gradient(165deg, var(--bg-card) 0%, var(--bg-raised) 100%) !important;
+    border: 1px solid var(--line) !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(212, 175, 55, 0.08) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .section-card:hover,
+body.blackgold-mode .game-card:hover,
+body.blackgold-mode .treasure-card:hover,
+body.blackgold-mode .card:hover {
+    border-color: var(--line-strong) !important;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(212, 175, 55, 0.12) !important;
+}
+
+/* ---------- 顶部导航栏 / 头部 ---------- */
+body.blackgold-mode header,
+body.blackgold-mode .app-header,
+body.blackgold-mode .top-bar,
+body.blackgold-mode .topbar,
+body.blackgold-mode .header,
+body.blackgold-mode .nav-bar,
+body.blackgold-mode .navbar,
+body.blackgold-mode .settings-header,
+body.blackgold-mode .header-right,
+body.blackgold-mode .header-left {
+    background: linear-gradient(180deg, #161006 0%, #100c07 100%) !important;
+    border-bottom: 1px solid var(--line) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .header-title-container,
+body.blackgold-mode .header-title-container * { color: var(--text-1) !important; }
+body.blackgold-mode .header-buttons-container button,
+body.blackgold-mode .header-right button {
+    color: var(--text-2) !important;
+}
+body.blackgold-mode .header-buttons-container button:hover,
+body.blackgold-mode .header-right button:hover {
+    color: var(--gold-strong) !important;
+    background: var(--bg-hover) !important;
+}
+
+/* ---------- 侧边栏 ---------- */
+body.blackgold-mode .settings-sidebar,
+body.blackgold-mode .sidebar,
+body.blackgold-mode aside.sidebar {
+    background: linear-gradient(180deg, #14100a 0%, #0f0c07 100%) !important;
+    border-right: 1px solid var(--line) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .sidebar-username { color: var(--text-1) !important; }
+body.blackgold-mode .sidebar-menu .menu-item,
+body.blackgold-mode .menu-item {
+    color: var(--text-2) !important;
+    background: transparent !important;
+}
+body.blackgold-mode .sidebar-menu .menu-item:hover,
+body.blackgold-mode .menu-item:hover {
+    background: var(--bg-hover) !important;
+    color: var(--gold-strong) !important;
+}
+body.blackgold-mode .sidebar-menu .menu-item.active,
+body.blackgold-mode .menu-item.active {
+    background: linear-gradient(135deg, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.10) 100%) !important;
+    color: var(--gold-strong) !important;
+    border-left-color: var(--gold) !important;
+    box-shadow: inset 3px 0 0 var(--gold) !important;
+}
+body.blackgold-mode .sidebar-footer,
+body.blackgold-mode .sidebar-uid,
+body.blackgold-mode .sidebar-copyright { color: var(--text-3) !important; }
+body.blackgold-mode .sidebar-avatar {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%) !important;
+    color: #241a05 !important;
+}
+
+/* ---------- 登录页 ---------- */
+body.blackgold-mode .login-container {
+    background: linear-gradient(165deg, #1b150a 0%, #120e07 100%) !important;
+    border: 1px solid var(--line-strong) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(212, 175, 55, 0.08) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .login-container::before {
+    background: linear-gradient(90deg, transparent, var(--gold), transparent) !important;
+}
+body.blackgold-mode .logo h1,
+body.blackgold-mode .login-container h1,
+body.blackgold-mode .login-container h2 {
+    background: linear-gradient(90deg, #f0c944, #d4af37 55%, #a8862a) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+}
+body.blackgold-mode .logo p,
+body.blackgold-mode .login-container p,
+body.blackgold-mode .login-subtitle { color: var(--text-2) !important; }
+body.blackgold-mode .input-group input,
+body.blackgold-mode .login-container input[type="text"],
+body.blackgold-mode .login-container input[type="password"],
+body.blackgold-mode .login-container input[type="email"],
+body.blackgold-mode .login-container input[type="number"] {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .input-group input:focus,
+body.blackgold-mode .login-container input:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18) !important;
+}
+body.blackgold-mode .input-group i,
+body.blackgold-mode .input-group label { color: var(--text-2) !important; }
+body.blackgold-mode .toggle-password { color: var(--text-3) !important; }
+body.blackgold-mode .toggle-password:hover { color: var(--gold-strong) !important; background: var(--bg-hover) !important; }
+body.blackgold-mode .login-btn,
+body.blackgold-mode .login-container button[type="submit"] {
+    background: linear-gradient(135deg, #f0c944 0%, #d4af37 50%, #a8862a 100%) !important;
+    color: #241a05 !important;
+    border: none !important;
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.28) !important;
+    font-weight: 700 !important;
+}
+body.blackgold-mode .login-btn:hover {
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.42) !important;
+    filter: brightness(1.06);
+}
+body.blackgold-mode .captcha-img {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--gold-strong) !important;
+}
+body.blackgold-mode .user-center {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--line) !important;
+}
+body.blackgold-mode .user-center:hover { background: var(--bg-card-2) !important; border-color: var(--line-strong) !important; }
+body.blackgold-mode .user-center .user-name { color: var(--text-1) !important; }
+body.blackgold-mode .user-center .user-id { color: var(--text-2) !important; }
+body.blackgold-mode .user-tooltip {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--line-strong) !important;
+    color: var(--text-1) !important;
+}
+
+/* ---------- 设置页主体 ---------- */
+body.blackgold-mode .settings-container,
+body.blackgold-mode .settings-main,
+body.blackgold-mode .main-content,
+body.blackgold-mode .content-area,
+body.blackgold-mode .page-content {
+    background: transparent !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .settings-main { background: rgba(14, 11, 7, 0.6) !important; }
+body.blackgold-mode .card-header,
+body.blackgold-mode .card-header .card-title,
+body.blackgold-mode .card-title h3 { color: var(--text-1) !important; }
+body.blackgold-mode .card-title p,
+body.blackgold-mode .card-header p { color: var(--text-2) !important; }
+body.blackgold-mode .card-icon {
+    background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.08)) !important;
+    color: var(--gold-strong) !important;
+}
+
+/* ---------- 表单控件 ---------- */
+body.blackgold-mode input[type="text"],
+body.blackgold-mode input[type="password"],
+body.blackgold-mode input[type="email"],
+body.blackgold-mode input[type="number"],
+body.blackgold-mode input[type="search"],
+body.blackgold-mode textarea,
+body.blackgold-mode select {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode input:focus,
+body.blackgold-mode textarea:focus,
+body.blackgold-mode select:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.16) !important;
+    outline: none !important;
+}
+body.blackgold-mode select option { background: #1c160b; color: var(--text-1); }
+
+/* ---------- 按钮 ---------- */
+body.blackgold-mode .btn-primary,
+body.blackgold-mode .primary-btn,
+body.blackgold-mode button.primary {
+    background: linear-gradient(135deg, #f0c944 0%, #d4af37 55%, #a8862a 100%) !important;
+    color: #241a05 !important;
+    border: none !important;
+    font-weight: 700 !important;
+    box-shadow: 0 6px 18px rgba(212, 175, 55, 0.25) !important;
+}
+body.blackgold-mode .btn-secondary,
+body.blackgold-mode .secondary-btn {
+    background: var(--bg-card-2) !important;
+    border: 1px solid var(--line-strong) !important;
+    color: var(--gold-strong) !important;
+}
+body.blackgold-mode button:not(.close):not([class*="icon"]) {
+    color: var(--text-1);
+}
+
+/* ---------- 弹窗（模态框） ---------- */
+body.blackgold-mode .modal-content,
+body.blackgold-mode .modal-body,
+body.blackgold-mode .custom-alert,
+body.blackgold-mode .custom-modal,
+body.blackgold-mode .dialog,
+body.blackgold-mode .popup,
+body.blackgold-mode .more-themes-modal-content,
+body.blackgold-mode .theme-version-modal-content,
+body.blackgold-mode .theme-notice-content,
+body.blackgold-mode #shopModal .shop-layout,
+body.blackgold-mode #shopModal .shop-bundle-box,
+body.blackgold-mode #shopModal .shop-cf-card,
+body.blackgold-mode #shopModal .shop-ps-card,
+body.blackgold-mode .mail-modal-content,
+body.blackgold-mode .mail-modal,
+body.blackgold-mode .warehouse-modal-content,
+body.blackgold-mode .wh-modal-content,
+body.blackgold-mode .confirm-modal-content,
+body.blackgold-mode .alert-modal-content {
+    background: linear-gradient(170deg, #1d160b 0%, #14100a 100%) !important;
+    border: 1px solid var(--line-strong) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .modal-header,
+body.blackgold-mode .modal-title,
+body.blackgold-mode .more-themes-modal-header,
+body.blackgold-mode .more-themes-modal-header h3 {
+    color: var(--text-1) !important;
+    border-bottom-color: var(--line) !important;
+}
+body.blackgold-mode .modal-header h3,
+body.blackgold-mode .modal-header h2 { color: var(--gold-strong) !important; }
+body.blackgold-mode .modal-footer,
+body.blackgold-mode .more-themes-modal-footer { border-top-color: var(--line) !important; }
+body.blackgold-mode .modal-backdrop,
+body.blackgold-mode .more-themes-modal-backdrop { background: rgba(0, 0, 0, 0.72) !important; }
+body.blackgold-mode .close,
+body.blackgold-mode .more-themes-close,
+body.blackgold-mode .modal-close { color: var(--text-2) !important; }
+body.blackgold-mode .close:hover,
+body.blackgold-mode .more-themes-close:hover,
+body.blackgold-mode .modal-close:hover { color: var(--gold-strong) !important; background: var(--bg-hover) !important; }
+
+/* ---------- 商店组件 ---------- */
+body.blackgold-mode #shopModal .shop-sidebar {
+    background: linear-gradient(180deg, #16110a 0%, #100c07 100%) !important;
+    border-right-color: var(--line) !important;
+}
+body.blackgold-mode #shopModal .shop-side-item { color: var(--text-2) !important; }
+body.blackgold-mode #shopModal .shop-side-item i { background: rgba(212,175,55,0.10); color: var(--text-2) !important; }
+body.blackgold-mode #shopModal .shop-side-item:hover { background: var(--bg-hover) !important; color: var(--gold-strong) !important; }
+body.blackgold-mode #shopModal .shop-side-item.active {
+    background: linear-gradient(135deg, #d4af37 0%, #a8862a 100%) !important;
+    color: #241a05 !important;
+}
+body.blackgold-mode #shopModal .shop-main-cat,
+body.blackgold-mode #shopModal .shop-content,
+body.blackgold-mode #shopModal .shop-main { color: var(--text-1) !important; }
+body.blackgold-mode #shopModal .wh-card,
+body.blackgold-mode #shopModal .shop-card,
+body.blackgold-mode #shopModal .shop-mc-panel,
+body.blackgold-mode #shopModal .shop-mc-info,
+body.blackgold-mode #shopModal .shop-mc-stat {
+    background: var(--bg-card) !important;
+    border-color: var(--line) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode #shopModal .shop-mc-panel-title,
+body.blackgold-mode #shopModal .shop-mc-title,
+body.blackgold-mode #shopModal .shop-mc-stat b { color: var(--text-1) !important; }
+body.blackgold-mode #shopModal .shop-mc-sub,
+body.blackgold-mode #shopModal .shop-mc-limit,
+body.blackgold-mode #shopModal .shop-mc-rule,
+body.blackgold-mode #shopModal .shop-mc-buy-tip { color: var(--text-2) !important; }
+body.blackgold-mode #shopModal .shop-mc-reward-row {
+    background: rgba(212,175,55,0.06) !important;
+    border-color: var(--line) !important;
+}
+body.blackgold-mode #shopModal .shop-mc-reward-name { color: var(--text-1) !important; }
+
+/* ---------- 邮件 / 仓库弹窗列表 ---------- */
+body.blackgold-mode .mail-item,
+body.blackgold-mode .mail-list-item,
+body.blackgold-mode .wh-item,
+body.blackgold-mode .warehouse-item {
+    background: var(--bg-card) !important;
+    border-color: var(--line) !important;
+    color: var(--text-1) !important;
+}
+body.blackgold-mode .mail-item:hover,
+body.blackgold-mode .wh-item:hover { border-color: var(--line-strong) !important; }
+
+/* ---------- 标签 / 徽章 / 状态 ---------- */
+body.blackgold-mode .tag,
+body.blackgold-mode .badge,
+body.blackgold-mode .status-tag {
+    background: rgba(212, 175, 55, 0.14) !important;
+    color: var(--gold-strong) !important;
+    border: 1px solid var(--line) !important;
+}
+
+/* ---------- 表格 ---------- */
+body.blackgold-mode table { color: var(--text-1) !important; }
+body.blackgold-mode th { background: var(--bg-card-2) !important; color: var(--gold-strong) !important; border-color: var(--line) !important; }
+body.blackgold-mode td { border-color: var(--line) !important; }
+body.blackgold-mode tr:hover td { background: var(--bg-hover) !important; }
+
+/* ---------- 开关 / 复选 ---------- */
+body.blackgold-mode input[type="checkbox"],
+body.blackgold-mode input[type="radio"] { accent-color: var(--gold); }
+
+/* ---------- 链接与强调 ---------- */
+body.blackgold-mode a { color: var(--gold-strong) !important; }
+body.blackgold-mode a:hover { color: #ffe9a8 !important; }
+
+/* ---------- 更多主题弹窗：黑金主题卡片 ---------- */
+.more-theme-preview.blackgold-preview-small {
+    background: linear-gradient(150deg, #241b0c 0%, #0f0c07 100%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+.blackgold-preview-small .more-theme-preview-bar {
+    background: linear-gradient(90deg, #f0c944 0%, #d4af37 60%, #a8862a 100%) !important;
+}
+.blackgold-preview-small .more-theme-preview-card {
+    background: rgba(212, 175, 55, 0.14) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+.more-theme-card[data-theme="blackgold"] {
+    position: relative;
+}
+.more-theme-card[data-theme="blackgold"] .more-theme-lock {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #f0c944;
+    background: rgba(15, 12, 7, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 20px;
+    padding: 3px 9px;
+    letter-spacing: 0.03em;
+}
+.more-theme-card[data-theme="blackgold"] .more-theme-lock i { font-size: 9px; }
+.more-theme-card[data-theme="blackgold"].more-theme-card-locked .more-theme-preview {
+    filter: grayscale(0.45) brightness(0.75);
+}
+.more-theme-card[data-theme="blackgold"].more-theme-card-locked { cursor: not-allowed; }
+.more-theme-card[data-theme="blackgold"].more-theme-card-locked .more-theme-info h4,
+.more-theme-card[data-theme="blackgold"].more-theme-card-locked .more-theme-info p {
+    opacity: 0.6;
+}
+.more-theme-card[data-theme="blackgold"].selected {
+    border-color: var(--gold, #d4af37) !important;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+}

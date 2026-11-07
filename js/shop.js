@@ -4,7 +4,7 @@
 // 入口：顶部导航栏「商店」→ 全屏弹窗
 // 样式：完全自包含（wh-* 基础 + shop-* 扩展），不依赖仓库先打开
 
-var SHOP_DATA_VERSION = 5; // v5: 鎏金幻彩降价+自动返还邮件、新增 3D 太空遨游背景
+var SHOP_DATA_VERSION = 7; // v7: 新增 PRE 月卡（30 天订阅，最多叠加 90 天）
 
 // 物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
 function _shopItemIconHtml(icon, color) {
@@ -27,10 +27,10 @@ var SHOP_ITEM_PRICES = {
     exp_boost_small: {
         price: 400,
         discount: 0,
-        stock: -1,
-        stockType: 'none',
+        stock: 5,
+        stockType: 'daily',
         enabled: true,
-        note: '经验获取 +5%，可与不同类型叠加（I+II+III+Ⅳ+V 组合可至 +175%）'
+        note: '每日限购 5 张，经验获取 +5%，可与不同类型叠加（I+II+III+Ⅳ+V 组合可至 +175%）'
     },
     exp_boost_mid: {
         price: 600,
@@ -566,6 +566,28 @@ var SHOP_SPECIAL_ITEMS = {
             dateText: '2026.09'
         }
     },
+    sp_bg_october: {
+        kind: 'background',
+        targetId: 'monthly-bg-october',
+        unlockSource: 'monthly_mail_october',
+        name: '限定背景「十月枫华」',
+        icon: 'fas fa-leaf',
+        color: '#b84a2a',
+        price: 5000,
+        enabled: true,
+        desc: '十月限定动态背景，深秋红枫与金秋晚霞渐变，缀以枫红光晕、动态星粒子与年月角标（2026.10）',
+        note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往系统设置应用',
+        preview: {
+            name: '十月枫华',
+            gradient: 'radial-gradient(circle at 18% 18%, rgba(255, 170, 80, 0.28) 0%, transparent 40%), radial-gradient(circle at 82% 78%, rgba(220, 70, 60, 0.26) 0%, transparent 45%), radial-gradient(circle at 55% 40%, rgba(255, 210, 130, 0.18) 0%, transparent 50%), radial-gradient(circle at 12% 78%, rgba(150, 40, 70, 0.22) 0%, transparent 50%), radial-gradient(circle at 75% 22%, rgba(240, 130, 50, 0.16) 0%, transparent 45%), linear-gradient(135deg, #1f0809 0%, #3d1012 15%, #6b1f16 30%, #9c3a1c 45%, #c96a24 60%, #e89a3c 72%, #a64826 88%, #401718 100%)',
+            isDynamic: true,
+            backgroundSize: '300% 300%',
+            animation: 'octoberShift 21s ease infinite',
+            particles: true,
+            showDate: true,
+            dateText: '2026.10'
+        }
+    },
     sp_bg_3d_space: {
         kind: 'background',
         targetId: 'bg-3d-space',
@@ -596,6 +618,81 @@ var SHOP_SPECIAL_ITEMS = {
         note: '限定返场 · 固定价 5000 PRE Coin，不参与任何促销与折扣；购买后可前往用户名片中更改名片样式'
     }
 };
+
+// ==================== PRE 月卡配置（商店专属订阅制商品）====================
+// 规则：
+//   - 售价 3000 PRE Coin / 张，每张 30 天
+//   - 可重复购买，但同时持有的剩余天数最多 90 天（即最多 3 张）
+//   - 达到 90 天上限后不可购买，需等待首张月卡消耗完（30 天）后才可继续购买
+//   - 每日通过邮件系统发放当日奖励（当日未登录启动器不发放，且不可补领）
+var PRE_MONTHLY_CARD = {
+    id: 'pre_monthly_card',
+    name: 'PRE 月卡',
+    price: 3000,
+    days: 30,
+    maxDays: 90,
+    icon: 'fas fa-id-card',
+    color: '#d4af37',
+    dailyRewards: [
+        { type: 'precoin', name: 'PRE Coin', count: 120, icon: 'fas fa-coins', color: '#f39c12' },
+        { type: 'warehouse', itemId: 'rand_box_1', count: 1 },
+        { type: 'warehouse', itemId: 'exp_boost_large', count: 1 },
+        { type: 'warehouse', itemId: 'exp_supply_2', count: 1 },
+        { type: 'warehouse', itemId: 'exp_supply_3', count: 1 }
+    ]
+};
+
+var _MONTHLY_CARD_MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function _monthlyCardStorageKey() {
+    return _shopGetUsername() + '_preMonthlyCard';
+}
+
+// 读取月卡状态（自动清理已结束的卡片，避免数据无限增长）
+function getMonthlyCardState() {
+    var state = null;
+    try { state = JSON.parse(localStorage.getItem(_monthlyCardStorageKey()) || 'null'); } catch (e) { state = null; }
+    if (!state || typeof state !== 'object') {
+        state = { version: 1, cards: [], lastIssuedDate: null, totalPurchased: 0, lastPurchaseTime: 0 };
+        return state;
+    }
+    if (!Array.isArray(state.cards)) state.cards = [];
+    var now = Date.now();
+    var valid = state.cards.filter(function(c) { return c && c.startTime && c.endTime && c.endTime > now; });
+    if (valid.length !== state.cards.length) {
+        state.cards = valid;
+        saveMonthlyCardState(state);
+    }
+    return state;
+}
+
+function saveMonthlyCardState(state) {
+    if (!state) return;
+    try { localStorage.setItem(_monthlyCardStorageKey(), JSON.stringify(state)); } catch (e) {}
+}
+
+// 剩余可用时长（毫秒）：所有卡片按顺序衔接，因此取最后一张的结束时间即可
+function getMonthlyCardRemainingMs() {
+    var state = getMonthlyCardState();
+    if (!state.cards || state.cards.length === 0) return 0;
+    var maxEnd = 0;
+    state.cards.forEach(function(c) { if (c.endTime > maxEnd) maxEnd = c.endTime; });
+    return Math.max(0, maxEnd - Date.now());
+}
+
+function getMonthlyCardRemainingDays() {
+    return Math.ceil(getMonthlyCardRemainingMs() / _MONTHLY_CARD_MS_PER_DAY);
+}
+
+// 月卡是否处于生效状态（有未消耗时长即为生效）
+function isMonthlyCardActive() {
+    return getMonthlyCardRemainingMs() > 0;
+}
+
+// 购买资格：剩余天数 + 30 天不超过 90 天
+function canPurchaseMonthlyCard() {
+    return getMonthlyCardRemainingMs() + PRE_MONTHLY_CARD.days * _MONTHLY_CARD_MS_PER_DAY <= PRE_MONTHLY_CARD.maxDays * _MONTHLY_CARD_MS_PER_DAY;
+}
 
 // ==================== 价格计算辅助（★ 单一改价入口 ★）====================
 // 获取商品实际最终价格（已应用自身折扣 + 全局促销折扣）
@@ -661,7 +758,8 @@ var SHOP_CATEGORIES = [
     { id: 'weekly_limit', name: '每周限购',   icon: 'fas fa-calendar-week' },
     { id: 'monthly_limit',name: '每月限购',   icon: 'fas fa-calendar-alt' },
     { id: 'total_limit',  name: '累计限购',   icon: 'fas fa-infinity' },
-    { id: 'bundle',       name: '组合包',     icon: 'fas fa-gift', separator: true }
+    { id: 'bundle',       name: '组合包',     icon: 'fas fa-gift', separator: true },
+    { id: 'monthly_card', name: 'PRE 月卡',   icon: 'fas fa-id-card', separator: true }
 ];
 
 // ==================== 开发者模式检测 ====================
@@ -1270,6 +1368,69 @@ function _shopConfirmPurchaseSpecialItem(itemId) {
     }
 }
 
+// ==================== PRE 月卡购买 ====================
+// 月卡购买入口：校验上限与余额后弹出统一的「确认购买」弹窗
+function shopPurchaseMonthlyCard() {
+    var cfg = PRE_MONTHLY_CARD;
+    if (typeof spendPreCoin !== 'function' || typeof getPreCoinBalance !== 'function') {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '系统错误', message: 'PRE Coin 系统未加载' });
+        return false;
+    }
+    if (!canPurchaseMonthlyCard()) {
+        if (typeof showToast === 'function') {
+            showToast({ type: 'error', title: '已达购买上限', message: '月卡最多同时持有 ' + cfg.maxDays + ' 天，请等待当前月卡消耗 30 天后再购买' });
+        }
+        return false;
+    }
+    var balance = getPreCoinBalance();
+    if (balance < cfg.price) {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: 'PRE Coin 不足', message: '当前余额 ' + balance + '，需要 ' + cfg.price });
+        return false;
+    }
+    shopOpenPurchaseConfirm({ kind: 'monthly' });
+    return true;
+}
+
+// 月卡实际执行购买（仅在确认弹窗点确定后调用）
+function _shopExecutePurchaseMonthlyCard() {
+    var cfg = PRE_MONTHLY_CARD;
+    if (!canPurchaseMonthlyCard()) return false;
+    var spent = spendPreCoin(cfg.price, '商店购买：' + cfg.name + '（30 天）');
+    if (!spent) return false;
+
+    var state = getMonthlyCardState();
+    var now = Date.now();
+    var lastEnd = now;
+    state.cards.forEach(function(c) { if (c.endTime > lastEnd) lastEnd = c.endTime; });
+    var startTime = lastEnd;
+    var endTime = startTime + cfg.days * _MONTHLY_CARD_MS_PER_DAY;
+    state.cards.push({ id: 'mc_' + now + '_' + (state.cards.length + 1), purchaseTime: now, startTime: startTime, endTime: endTime });
+    state.totalPurchased = (state.totalPurchased || 0) + 1;
+    state.lastPurchaseTime = now;
+    saveMonthlyCardState(state);
+
+    _shopRecordPurchase('monthly_card', cfg.price, 1);
+
+    // 购买后立即发放当天的月卡邮件（防止首日奖励漏发）
+    if (typeof checkMonthlyCardDailyMail === 'function') {
+        try { checkMonthlyCardDailyMail(); } catch (e) {}
+    }
+
+    var modal = document.getElementById('shopModal');
+    if (modal && modal.style.display === 'flex') renderShopUI();
+    return true;
+}
+
+// 月卡确认购买：执行成功后弹出统一的购买成功弹窗
+function _shopConfirmPurchaseMonthlyCard() {
+    var ok = _shopExecutePurchaseMonthlyCard();
+    if (ok) {
+        shopOpenPurchaseSuccess({ kind: 'monthly' });
+    } else {
+        if (typeof showToast === 'function') showToast({ type: 'error', title: '购买失败', message: '购买过程中发生问题，请稍后重试' });
+    }
+}
+
 // ★ 统一的类别过滤：返回 { singles: [itemIds], bundles: [bundleIds], specials: [specialIds] }
 //   singles → 已排序好的 itemId 列表（同现有稀有度+价格排序）
 //   bundles → 已排序好的 bundleId 列表
@@ -1403,16 +1564,21 @@ function renderShopToolbar() {
         var catCount;
         if (cat.id === 'recommend') {
             catCount = recEntries.length;
+        } else if (cat.id === 'monthly_card') {
+            // 月卡条目显示当前剩余天数（未激活时显示 NEW）
+            var mcDays = getMonthlyCardRemainingDays();
+            catCount = mcDays > 0 ? mcDays + '天' : 'NEW';
         } else {
             var fc2 = _shopFilterByCategory(cat.id);
             catCount = fc2.singles.length + fc2.bundles.length + (fc2.specials ? fc2.specials.length : 0);
         }
         var sep = cat.separator ? '<div class="shop-side-sep"></div>' : '';
         var isRecommend = cat.id === 'recommend';
+        var isMonthly = cat.id === 'monthly_card';
         var html = sep + '<button class="shop-side-item' + (isRecommend ? ' shop-side-recommend' : '') +
             (cat.id === _shopActiveCategory ? ' active' : '') + '" data-cat="' + cat.id + '">' +
             '<i class="' + cat.icon + '"></i><span class="shop-side-name">' + cat.name + '</span>' +
-            '<em class="shop-side-count">' + catCount + '</em></button>';
+            '<em class="shop-side-count' + (isMonthly && catCount !== 'NEW' ? ' shop-side-count-days' : '') + '">' + catCount + '</em></button>';
         // 「推荐」作为独立精选入口，与下方商品分类之间加一条分隔线
         if (isRecommend) html += '<div class="shop-side-sep"></div>';
         return html;
@@ -1436,6 +1602,11 @@ function renderShopToolbar() {
         var countHtml;
         if (_shopActiveCategory === 'recommend') {
             countHtml = '<span class="shop-item-count shop-rec-count"><i class="fas fa-thumbs-up"></i> 精选推荐 <b>' + recEntries.length + '</b> 款</span>';
+        } else if (_shopActiveCategory === 'monthly_card') {
+            var mcRemainDays = getMonthlyCardRemainingDays();
+            countHtml = mcRemainDays > 0
+                ? '<span class="shop-item-count shop-mc-bar-tag"><i class="fas fa-hourglass-half"></i> 月卡剩余 <b>' + mcRemainDays + '</b> 天</span>'
+                : '<span class="shop-item-count"><i class="fas fa-id-card"></i> 月卡未激活</span>';
         } else if (_shopActiveCategory === 'bundle') {
             countHtml = '<span class="shop-item-count"><i class="fas fa-gift"></i> 在售组合包 <b>' + fc.bundles.length + '</b> 款</span>';
         } else if (hasS && hasB) {
@@ -1683,6 +1854,12 @@ function renderShopUI() {
         return;
     }
 
+    // ★ PRE 月卡为独立订阅视图，整块内容区展示月卡信息
+    if (_shopActiveCategory === 'monthly_card') {
+        _shopRenderMonthlyCardView(content);
+        return;
+    }
+
     // ★ 统一过滤（singles + bundles + specials）
     var fc = _shopFilterByCategory(_shopActiveCategory);
     var singles = fc.singles;
@@ -1820,6 +1997,139 @@ function renderShopUI() {
     });
 }
 
+// ==================== PRE 月卡视图 ====================
+function _shopMonthlyRewardMeta(r) {
+    if (r.type === 'precoin') {
+        return { name: r.name || 'PRE Coin', icon: r.icon || 'fas fa-coins', color: r.color || '#f39c12', count: r.count || 0 };
+    }
+    var it = (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[r.itemId]) ? WAREHOUSE_ITEMS[r.itemId] : null;
+    return { name: it ? it.name : r.itemId, icon: it ? it.icon : 'fas fa-box', color: it ? it.color : '#999999', count: r.count || 1 };
+}
+
+function _shopMonthlyRewardChipsHtml(chipClass) {
+    chipClass = chipClass || 'shop-mc-reward-chip';
+    return PRE_MONTHLY_CARD.dailyRewards.map(function(r) {
+        var m = _shopMonthlyRewardMeta(r);
+        return '<span class="' + chipClass + '" style="background:' + hexToRgbaShop(m.color, 0.12) + ';color:' + m.color + ';border-color:' + hexToRgbaShop(m.color, 0.35) + ';">' +
+            _shopItemIconHtml(m.icon) + m.name + ' ×' + m.count + '</span>';
+    }).join('');
+}
+
+function _shopFormatMonthlyDateTime(ts) {
+    if (!ts) return '—';
+    var d = new Date(ts + 8 * 60 * 60 * 1000);
+    var p2 = function(n) { return (n < 10 ? '0' : '') + n; };
+    return (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日 ' + p2(d.getUTCHours()) + ':' + p2(d.getUTCMinutes());
+}
+
+// 渲染整页「PRE 月卡」：带鼠标跟随 3D 倾斜的动态银行卡 + 订阅信息 / 每日奖励 / 购买区
+function _shopRenderMonthlyCardView(content) {
+    var cfg = PRE_MONTHLY_CARD;
+    var state = getMonthlyCardState();
+    var remainingMs = getMonthlyCardRemainingMs();
+    var remainingDays = Math.ceil(remainingMs / _MONTHLY_CARD_MS_PER_DAY);
+    var maxEnd = 0;
+    state.cards.forEach(function(c) { if (c.endTime > maxEnd) maxEnd = c.endTime; });
+    var active = remainingMs > 0;
+    var canBuy = canPurchaseMonthlyCard();
+    var maxRemainDays = cfg.maxDays - remainingDays;
+    var username = _shopGetUsername();
+    var holderName = username && username !== 'anonymous' ? username : 'PRE USER';
+
+    var rewardRows = cfg.dailyRewards.map(function(r) {
+        var m = _shopMonthlyRewardMeta(r);
+        return '<div class="shop-mc-reward-row">' +
+            '<div class="shop-mc-reward-icon" style="background:' + hexToRgbaShop(m.color, 0.15) + ';">' + _shopItemIconHtml(m.icon, m.color) + '</div>' +
+            '<div class="shop-mc-reward-name">' + m.name + '</div>' +
+            '<div class="shop-mc-reward-count">×' + m.count + '</div>' +
+            '</div>';
+    }).join('');
+
+    var limitNote = !canBuy
+        ? '已达购买上限：当前剩余 ' + remainingDays + ' 天，最多可同时持有 ' + cfg.maxDays + ' 天。需等待首张月卡消耗 30 天后才可继续购买。'
+        : '可重复购买，最多同时持有 ' + cfg.maxDays + ' 天；当前还可购买约 ' + Math.floor(maxRemainDays / cfg.days) + ' 张。';
+
+    var html = '' +
+        '<div class="shop-mc-wrap">' +
+            '<div class="shop-mc-hero">' +
+                '<div class="shop-mc-scene" id="shopMcScene">' +
+                    '<div class="shop-mc-float">' +
+                        '<div class="shop-mc-card3d" id="shopMonthlyCard3D">' +
+                            '<div class="shop-mc-aura"></div>' +
+                            '<div class="shop-mc-shine"></div>' +
+                            '<div class="shop-mc-grid"></div>' +
+                            '<div class="shop-mc-top">' +
+                                '<span class="shop-mc-brand"><i class="fas fa-crown"></i> PRE LAUNCHER</span>' +
+                                '<span class="shop-mc-tier">MONTHLY PASS</span>' +
+                            '</div>' +
+                            '<div class="shop-mc-mid">' +
+                                '<div class="shop-mc-chip"></div>' +
+                                (active
+                                    ? '<span class="shop-mc-days-tag"><i class="fas fa-hourglass-half"></i> 剩余 ' + remainingDays + ' 天</span>'
+                                    : '<span class="shop-mc-days-tag shop-mc-days-tag-off">未激活</span>') +
+                            '</div>' +
+                            '<div class="shop-mc-number">1145 1419 1981 0325</div>' +
+                            '<div class="shop-mc-bottom">' +
+                                '<div class="shop-mc-bank-field"><div class="shop-mc-label">PASS HOLDER</div><div class="shop-mc-holder">' + holderName + '</div></div>' +
+                                '<div class="shop-mc-bank-field shop-mc-right"><div class="shop-mc-label">VALID THRU</div><div class="shop-mc-holder">' + (active ? _shopFormatMonthlyDateTime(maxEnd) : '30 DAYS') + '</div></div>' +
+                            '</div>' +
+                            '<div class="shop-mc-holo"></div>' +
+                            '<div class="shop-mc-stars"><span></span><span></span><span></span><span></span><span></span><span></span></div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="shop-mc-info">' +
+                    '<div class="shop-mc-info-head">' +
+                        '<div class="shop-mc-title"><i class="fas fa-id-card"></i> PRE 月卡</div>' +
+                        '<div class="shop-mc-sub">30 天订阅 · 每日奖励通过邮件发放</div>' +
+                    '</div>' +
+                    '<div class="shop-mc-stats">' +
+                        '<div class="shop-mc-stat"><span>剩余天数</span><b>' + (active ? remainingDays + ' 天' : '未激活') + '</b></div>' +
+                        '<div class="shop-mc-stat"><span>生效状态</span><b class="' + (active ? 'shop-mc-on' : 'shop-mc-off') + '">' + (active ? '生效中' : '未购买') + '</b></div>' +
+                        '<div class="shop-mc-stat"><span>到期时间</span><b>' + (active ? _shopFormatMonthlyDateTime(maxEnd) : '—') + '</b></div>' +
+                        '<div class="shop-mc-stat"><span>已购买</span><b>' + (state.totalPurchased || 0) + ' 张</b></div>' +
+                    '</div>' +
+                    '<div class="shop-mc-price-box">' +
+                        '<div class="shop-mc-price"><b>' + cfg.price + '</b><small>PRE Coin / 30 天</small></div>' +
+                        '<div class="shop-mc-limit"><i class="fas fa-circle-info"></i><span>' + limitNote + '</span></div>' +
+                    '</div>' +
+                    '<button class="shop-mc-buy" id="shopMonthlyCardBuyBtn" type="button" ' + (canBuy ? '' : 'disabled') + '>' +
+                        '<i class="fas ' + (canBuy ? 'fa-crown' : 'fa-ban') + '"></i> ' + (canBuy ? '购买月卡' : '已达购买上限') +
+                    '</button>' +
+                    '<div class="shop-mc-buy-tip"><i class="fas fa-envelope"></i> 购买后立即发放今日月卡邮件，当日奖励请前往邮件领取</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="shop-mc-panel">' +
+                '<div class="shop-mc-panel-title"><i class="fas fa-gift"></i> 每日奖励（当天登录启动器后通过邮件发放）</div>' +
+                '<div class="shop-mc-rewards">' + rewardRows + '</div>' +
+            '</div>' +
+            '<div class="shop-mc-rules">' +
+                '<div class="shop-mc-rule"><i class="fas fa-check"></i> 每张月卡有效期 30 天，可叠加购买，最多同时持有 90 天（3 张）。</div>' +
+                '<div class="shop-mc-rule"><i class="fas fa-check"></i> 达到 90 天上限后无法购买，需等待首张月卡消耗完 30 天后才能继续购买。</div>' +
+                '<div class="shop-mc-rule"><i class="fas fa-check"></i> 每日奖励于当天登录启动器时通过邮件发放，邮件有效期 7 天（截至一周后凌晨 04:00）。</div>' +
+                '<div class="shop-mc-rule"><i class="fas fa-check"></i> 当日未登录启动器则不发放当日奖励，且不可补领。</div>' +
+            '</div>' +
+        '</div>';
+
+    content.innerHTML = html;
+
+    // 3D 鼠标跟随倾斜（外圈浮动动画 + 内层 transform，互不冲突）
+    var scene = content.querySelector('#shopMcScene');
+    var card = content.querySelector('#shopMonthlyCard3D');
+    if (scene && card) {
+        scene.addEventListener('mousemove', function(e) {
+            var r = scene.getBoundingClientRect();
+            var px = (e.clientX - r.left) / r.width - 0.5;
+            var py = (e.clientY - r.top) / r.height - 0.5;
+            card.style.transform = 'rotateX(' + (-py * 16) + 'deg) rotateY(' + (px * 22) + 'deg) translateZ(8px)';
+        });
+        scene.addEventListener('mouseleave', function() { card.style.transform = ''; });
+    }
+
+    var buyBtn = content.querySelector('#shopMonthlyCardBuyBtn');
+    if (buyBtn) buyBtn.addEventListener('click', function() { shopPurchaseMonthlyCard(); });
+}
+
 // ==================== 「推荐」精选轮播 ====================
 // 逻辑：从当前在售单品 / 组合包 / 限定外观中按「稀有度 + 折扣 + 价值」综合评分挑选 7 款，
 //      以 3D 斜向叠放卡片 + 鼠标跟随倾斜展示，支持圆点 / 滚轮 / 方向键 / 左右箭头切换与自动轮播。
@@ -1926,8 +2236,13 @@ function _shopGetRecommendEntries() {
     });
     entries = entries.slice(0, _shopRecMaxCount);
 
+    // ★ PRE 月卡常驻精选：无论是否已达购买上限均展示（达上限时按钮变为「查看详情」）
+    entries.unshift(_shopRecMonthlyEntry());
+
     entries.forEach(function(e) {
-        if (e.kind === 'bundle' && e.originalPrice && e.originalPrice > e.price) {
+        if (e.kind === 'monthly') {
+            // 常驻月卡条目的 tag / reason / stockText 已在工厂函数中设定，这里仅补全 stockText
+        } else if (e.kind === 'bundle' && e.originalPrice && e.originalPrice > e.price) {
             e.tag = '超值组合';
             e.reason = '单买合计 ' + e.originalPrice.toLocaleString() + '，打包立省 ' + (e.originalPrice - e.price).toLocaleString() + ' PRE Coin';
         } else if (e.discount > 0 && e.discount < 100) {
@@ -1949,8 +2264,35 @@ function _shopGetRecommendEntries() {
     return entries;
 }
 
+// 常驻精选条目：PRE 月卡（始终展示，不受购买上限影响）
+function _shopRecMonthlyEntry() {
+    var cfg = PRE_MONTHLY_CARD;
+    var days = getMonthlyCardRemainingDays();
+    return {
+        kind: 'monthly',
+        id: cfg.id,
+        name: cfg.name,
+        desc: '30 天订阅，每日通过邮件发放 PRE Coin ×120、随机物品箱 · 初级、经验值加成卡 Ⅲ、经验值补给卡 Ⅱ / Ⅲ',
+        icon: cfg.icon,
+        color: cfg.color,
+        rarityName: '订阅',
+        rarityColor: '#d4af37',
+        kindLabel: '订阅月卡',
+        price: cfg.price,
+        originalPrice: null,
+        discount: 0,
+        tag: '常驻精选',
+        reason: days > 0
+            ? '月卡生效中，剩余 ' + days + ' 天，可叠加续费至 ' + cfg.maxDays + ' 天'
+            : '每日登录即领 5 项奖励，30 天收益远超售价',
+        stockText: days > 0 ? '月卡剩余 ' + days + ' 天' : '最多持有 ' + cfg.maxDays + ' 天',
+        score: 999
+    };
+}
+
 function _shopRecStockText(entry) {
     if (entry.kind === 'special') return '每账号限购 1 件';
+    if (entry.kind === 'monthly') return entry.stockText || '';
     var cfg = entry.kind === 'bundle' ? SHOP_BUNDLES[entry.id] : SHOP_ITEM_PRICES[entry.id];
     if (!cfg) return '';
     var remaining = entry.kind === 'bundle' ? getShopBundleStockRemaining(entry.id) : getShopStockRemaining(entry.id);
@@ -2051,13 +2393,24 @@ function _shopRecSpawnRipple(stage, clientX, clientY) {
 }
 
 function _shopRecInfoHtml(entry) {
-    var kindIcon = entry.kind === 'bundle' ? 'fas fa-gift' : (entry.kind === 'special' ? 'fas fa-gem' : 'fas fa-tag');
+    var kindIcon = entry.kind === 'bundle' ? 'fas fa-gift'
+        : (entry.kind === 'special' ? 'fas fa-gem'
+        : (entry.kind === 'monthly' ? 'fas fa-id-card' : 'fas fa-tag'));
     var priceHtml = '<div class="shop-rec-price">' +
         '<b>' + entry.price.toLocaleString() + '</b>' +
-        '<span class="unit">PRE Coin</span>' +
+        '<span class="unit">PRE Coin' + (entry.kind === 'monthly' ? ' / 30 天' : '') + '</span>' +
         (entry.originalPrice ? '<s>' + entry.originalPrice.toLocaleString() + '</s>' : '') +
         '</div>';
-    var ctaLabel = entry.kind === 'bundle' ? '查看组合包' : '立即购买';
+    // 月卡：可购买时「立即购买」，已达 90 天上限时变为「查看详情」（点击跳转至月卡条目）
+    var ctaLabel, ctaIcon;
+    if (entry.kind === 'monthly') {
+        if (canPurchaseMonthlyCard()) { ctaLabel = '立即购买'; ctaIcon = 'fas fa-crown'; }
+        else { ctaLabel = '查看详情'; ctaIcon = 'fas fa-eye'; }
+    } else if (entry.kind === 'bundle') {
+        ctaLabel = '查看组合包'; ctaIcon = 'fas fa-eye';
+    } else {
+        ctaLabel = '立即购买'; ctaIcon = 'fas fa-shopping-cart';
+    }
     return '<div class="shop-rec-info-main">' +
             '<div class="shop-rec-kicker">' +
                 '<span class="shop-rec-tag">' + entry.tag + '</span>' +
@@ -2069,8 +2422,8 @@ function _shopRecInfoHtml(entry) {
             '<div class="shop-rec-reason"><i class="fas fa-lightbulb"></i><span>' + entry.reason + '</span></div>' +
         '</div>' +
         '<div class="shop-rec-buy">' + priceHtml +
-            '<button class="shop-rec-cta" data-kind="' + entry.kind + '" data-id="' + entry.id + '">' +
-                '<i class="' + (entry.kind === 'bundle' ? 'fas fa-eye' : 'fas fa-shopping-cart') + '"></i> ' + ctaLabel +
+            '<button class="shop-rec-cta' + (entry.kind === 'monthly' ? ' shop-rec-cta-monthly' : '') + '" data-kind="' + entry.kind + '" data-id="' + entry.id + '">' +
+                '<i class="' + ctaIcon + '"></i> ' + ctaLabel +
             '</button>' +
         '</div>';
 }
@@ -2081,9 +2434,22 @@ function _shopRecBuy(entry) {
         openShopBundleModal(entry.id);
     } else if (entry.kind === 'special') {
         shopPurchaseSpecialItem(entry.id);
+    } else if (entry.kind === 'monthly') {
+        if (canPurchaseMonthlyCard()) {
+            shopPurchaseMonthlyCard();
+        } else {
+            // 已达购买上限：跳转至月卡条目查看详情
+            _shopGoToCategory('monthly_card');
+        }
     } else {
         shopPurchaseItem(entry.id, 1);
     }
+}
+
+// 切换侧边栏分类并刷新视图（月卡「查看详情」等入口使用）
+function _shopGoToCategory(catId) {
+    _shopActiveCategory = catId;
+    if (document.getElementById('shopContent')) renderShopUI();
 }
 
 function _shopRecPaint() {
@@ -2627,6 +2993,14 @@ function shopOpenPurchaseConfirm(opts) {
         color = cfg.color || '#3498db';
         desc = cfg.kind === 'background' ? '动态背景' : '名片样式';
         unitLabel = '件';
+    } else if (opts.kind === 'monthly') {
+        cfg = PRE_MONTHLY_CARD;
+        totalCost = cfg.price;
+        name = cfg.name;
+        icon = cfg.icon;
+        color = cfg.color;
+        desc = '30 天订阅 · 每日邮件奖励';
+        unitLabel = '张';
     }
 
     var balance = (typeof getPreCoinBalance === 'function') ? getPreCoinBalance() : 0;
@@ -2643,6 +3017,22 @@ function shopOpenPurchaseConfirm(opts) {
             <div class="shop-cf-row">
                 <span>单价</span>
                 <b>${finalPrice} PRE Coin</b>
+            </div>
+        `;
+    } else if (opts.kind === 'monthly') {
+        var mcRemainDays = getMonthlyCardRemainingDays();
+        qtyRowHtml = `
+            <div class="shop-cf-row">
+                <span>月卡时长</span>
+                <b>${PRE_MONTHLY_CARD.days} 天</b>
+            </div>
+            <div class="shop-cf-row">
+                <span>当前剩余</span>
+                <b>${mcRemainDays} 天</b>
+            </div>
+            <div class="shop-cf-row">
+                <span>购买后剩余</span>
+                <b>${mcRemainDays + PRE_MONTHLY_CARD.days} 天（上限 ${PRE_MONTHLY_CARD.maxDays} 天）</b>
             </div>
         `;
     }
@@ -2716,6 +3106,11 @@ function shopOpenPurchaseConfirm(opts) {
                 }).join('')}
             </div>
         `;
+    } else if (opts.kind === 'monthly') {
+        rightHtml += `
+            <div class="shop-cf-section-title shop-cf-section-title-sm"><i class="fas fa-gift"></i> 每日奖励（共 ${cfg.dailyRewards.length} 项）</div>
+            <div class="shop-cf-items-compact">${_shopMonthlyRewardChipsHtml('shop-cf-chip')}</div>
+        `;
     }
     rightHtml += `
         <div class="shop-cf-section-title"><i class="fas fa-receipt"></i> 消费明细</div>
@@ -2772,6 +3167,7 @@ function shopOpenPurchaseConfirm(opts) {
         if (opts.kind === 'item') _shopConfirmPurchaseItem(opts.itemId, opts.qty);
         else if (opts.kind === 'bundle') _shopConfirmPurchaseBundle(opts.bundleId);
         else if (opts.kind === 'special') _shopConfirmPurchaseSpecialItem(opts.specialId);
+        else if (opts.kind === 'monthly') _shopConfirmPurchaseMonthlyCard();
     });
 
     modal.style.display = 'flex';
@@ -2826,6 +3222,15 @@ function shopOpenPurchaseSuccess(opts) {
         color = cfg.color || '#3498db';
         desc = cfg.kind === 'background' ? '动态背景' : '名片样式';
         labelLine = cfg.kind === 'background' ? '已解锁 · 可前往系统设置 → 预设背景应用' : '已解锁 · 可在系统设置中更改名片样式';
+    } else if (opts.kind === 'monthly') {
+        cfg = PRE_MONTHLY_CARD;
+        totalCost = cfg.price;
+        name = cfg.name;
+        icon = cfg.icon;
+        color = cfg.color;
+        desc = '30 天订阅 · 每日邮件奖励（剩余 ' + getMonthlyCardRemainingDays() + ' 天）';
+        labelLine = '月卡已激活 · 今日奖励已发送至邮件';
+        itemsMiniHtml = _shopMonthlyRewardChipsHtml('shop-ps-chip');
     }
 
     var modal = document.createElement('div');
@@ -2849,7 +3254,7 @@ function shopOpenPurchaseSuccess(opts) {
                     <div class="shop-ps-desc">${desc}</div>
                 </div>
             </div>
-            <div class="shop-ps-label"><i class="fas fa-warehouse"></i> ${labelLine}</div>
+            <div class="shop-ps-label"><i class="fas ${opts.kind === 'monthly' ? 'fa-envelope-open-text' : 'fa-warehouse'}"></i> ${labelLine}</div>
             ${itemsMiniHtml ? '<div class="shop-ps-chips">' + itemsMiniHtml + '</div>' : ''}
             <div class="shop-ps-foot">
                 <span class="shop-ps-cost">本次花费 <b>${totalCost}</b> PRE Coin</span>
@@ -3226,11 +3631,29 @@ function getShopStyleCSS() {
             background: linear-gradient(180deg, #fafbfc 0%, #f4f5f7 100%);
             border-right: 1px solid rgba(0,0,0,0.07);
             scrollbar-width: thin;
+            scrollbar-color: rgba(192,57,43,0.35) transparent;
         }
-        #shopModal .shop-sidebar::-webkit-scrollbar { width: 6px; }
+        /* 自定义侧边栏滚动条 */
+        #shopModal .shop-sidebar::-webkit-scrollbar { width: 8px; height: 8px; }
+        #shopModal .shop-sidebar::-webkit-scrollbar-track {
+            background: transparent; border-radius: 8px;
+        }
         #shopModal .shop-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(192,57,43,0.25); border-radius: 6px;
+            background: linear-gradient(180deg, rgba(231,76,60,0.45) 0%, rgba(192,57,43,0.55) 100%);
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            transition: background 0.25s ease;
         }
+        #shopModal .shop-sidebar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(231,76,60,0.75) 0%, rgba(192,57,43,0.85) 100%);
+            background-clip: padding-box; border: 2px solid transparent;
+        }
+        #shopModal .shop-sidebar::-webkit-scrollbar-thumb:active {
+            background: rgba(155,45,36,0.9);
+            background-clip: padding-box; border: 1px solid transparent;
+        }
+        #shopModal .shop-sidebar::-webkit-scrollbar-corner { background: transparent; }
         #shopModal .shop-side-title {
             display: flex; align-items: center; gap: 7px;
             font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
@@ -3332,6 +3755,15 @@ function getShopStyleCSS() {
         body.dark-mode #shopModal .shop-sidebar {
             background: linear-gradient(180deg, #1c1c32 0%, #181828 100%);
             border-right-color: rgba(255,255,255,0.08);
+            scrollbar-color: rgba(231,76,60,0.4) transparent;
+        }
+        body.dark-mode #shopModal .shop-sidebar::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(231,76,60,0.4) 0%, rgba(192,57,43,0.5) 100%);
+            background-clip: padding-box; border: 2px solid transparent;
+        }
+        body.dark-mode #shopModal .shop-sidebar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(231,76,60,0.7) 0%, rgba(192,57,43,0.8) 100%);
+            background-clip: padding-box; border: 2px solid transparent;
         }
         body.dark-mode #shopModal .shop-side-title { color: #777; }
         body.dark-mode #shopModal .shop-side-item { color: #aaa; }
@@ -4517,5 +4949,214 @@ function getShopStyleCSS() {
         }
     `;
 
-    return warehouseBaseCSS + warehouseDarkCSS + responsiveCSS + shopExtCSS + devCoinCSS + devResetCSS + bundleCSS + recommendCSS;
+    // ====== PRE 月卡（3D 动态银行卡 + 订阅信息）======
+    var monthlyCardCSS = `
+        #shopModal .shop-side-count-days {
+            background: linear-gradient(135deg, #b8860b 0%, #f0c944 100%);
+            color: #3a2605;
+        }
+        #shopModal .shop-side-item.active .shop-side-count-days { background: rgba(255,255,255,0.32); color: white; }
+        #shopModal .shop-mc-bar-tag b { color: #b8860b; }
+
+        #shopModal .shop-mc-wrap { display: flex; flex-direction: column; gap: 20px; padding-bottom: 10px; }
+        #shopModal .shop-mc-hero { display: flex; gap: 28px; align-items: stretch; flex-wrap: wrap; }
+        #shopModal .shop-mc-scene {
+            flex: 1 1 430px; min-width: 340px; perspective: 1200px;
+            display: flex; align-items: center; justify-content: center; padding: 16px 4px;
+        }
+        #shopModal .shop-mc-float { width: 100%; max-width: 480px; animation: shopMcFloat 6.5s ease-in-out infinite; }
+        @keyframes shopMcFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        #shopModal .shop-mc-card3d {
+            position: relative; width: 100%; aspect-ratio: 1.586 / 1; border-radius: 20px;
+            overflow: hidden; transform-style: preserve-3d; transition: transform 0.16s ease-out;
+            color: #fff9e8;
+            background: linear-gradient(115deg, #1a1206 0%, #3a260b 18%, #8a6512 40%, #e9c766 55%, #fff1bc 63%, #d4af37 74%, #5d400d 100%);
+            box-shadow: 0 26px 60px rgba(0,0,0,0.38), 0 10px 24px rgba(184,134,11,0.3), inset 0 1px 0 rgba(255,255,255,0.45);
+        }
+        #shopModal .shop-mc-card3d::after {
+            content: ''; position: absolute; inset: 0; border-radius: 20px; pointer-events: none;
+            border: 1px solid rgba(255,240,190,0.45); box-shadow: inset 0 0 40px rgba(255,225,150,0.25);
+        }
+        #shopModal .shop-mc-aura {
+            position: absolute; inset: -20%;
+            background: radial-gradient(circle at 30% 20%, rgba(255,235,170,0.45), transparent 45%), radial-gradient(circle at 80% 75%, rgba(255,200,90,0.35), transparent 50%);
+            animation: shopMcAura 9s ease-in-out infinite;
+        }
+        @keyframes shopMcAura { 0%, 100% { opacity: 0.85; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+        #shopModal .shop-mc-shine {
+            position: absolute; top: -60%; left: -40%; width: 55%; height: 220%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+            transform: rotate(22deg); animation: shopMcShine 4.8s ease-in-out infinite;
+        }
+        @keyframes shopMcShine { 0% { left: -55%; } 55% { left: 110%; } 100% { left: 110%; } }
+        #shopModal .shop-mc-grid {
+            position: absolute; inset: 0; opacity: 0.6;
+            background-image: linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+            background-size: 34px 34px;
+            -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 30%, transparent 80%);
+            mask-image: radial-gradient(circle at 50% 50%, #000 30%, transparent 80%);
+        }
+        #shopModal .shop-mc-holo {
+            position: absolute; right: -40px; bottom: -60px; width: 220px; height: 220px; border-radius: 50%;
+            background: conic-gradient(from 0deg, rgba(255,0,128,0.35), rgba(0,200,255,0.35), rgba(255,220,0,0.35), rgba(120,255,150,0.35), rgba(255,0,128,0.35));
+            filter: blur(18px); opacity: 0.55; animation: shopMcHolo 12s linear infinite;
+        }
+        @keyframes shopMcHolo { to { transform: rotate(360deg); } }
+        #shopModal .shop-mc-stars span {
+            position: absolute; width: 6px; height: 6px; border-radius: 50%;
+            background: #fff6cf; box-shadow: 0 0 10px #ffe9a0; animation: shopMcStar 3.6s ease-in-out infinite;
+        }
+        #shopModal .shop-mc-stars span:nth-child(1) { left: 14%; top: 24%; animation-delay: 0s; }
+        #shopModal .shop-mc-stars span:nth-child(2) { left: 48%; top: 14%; width: 4px; height: 4px; animation-delay: 0.6s; }
+        #shopModal .shop-mc-stars span:nth-child(3) { left: 78%; top: 30%; animation-delay: 1.2s; }
+        #shopModal .shop-mc-stars span:nth-child(4) { left: 28%; top: 66%; width: 4px; height: 4px; animation-delay: 1.8s; }
+        #shopModal .shop-mc-stars span:nth-child(5) { left: 62%; top: 58%; animation-delay: 2.4s; }
+        #shopModal .shop-mc-stars span:nth-child(6) { left: 88%; top: 72%; width: 5px; height: 5px; animation-delay: 3s; }
+        @keyframes shopMcStar { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+        #shopModal .shop-mc-top {
+            position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 24px 0;
+        }
+        #shopModal .shop-mc-brand {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 15px; font-weight: 800; letter-spacing: 0.14em; color: #fff6d5;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.55);
+        }
+        #shopModal .shop-mc-brand i { color: #ffd76a; font-size: 15px; }
+        #shopModal .shop-mc-tier {
+            font-size: 10px; font-weight: 800; letter-spacing: 0.18em; color: rgba(255,246,213,0.9);
+            border: 1px solid rgba(255,246,213,0.42); border-radius: 20px; padding: 4px 10px;
+        }
+        #shopModal .shop-mc-mid {
+            position: relative; z-index: 2; display: flex; align-items: center; gap: 14px;
+            padding: 22px 24px 0;
+        }
+        #shopModal .shop-mc-chip {
+            width: 44px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, #f7e7a8 0%, #d4af37 45%, #a4791b 100%);
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        #shopModal .shop-mc-chip::before, #shopModal .shop-mc-chip::after {
+            content: ''; position: absolute; background: rgba(0,0,0,0.18);
+        }
+        #shopModal .shop-mc-chip::before { left: 8px; right: 8px; top: 50%; height: 1px; }
+        #shopModal .shop-mc-chip::after { top: 6px; bottom: 6px; left: 50%; width: 1px; }
+        #shopModal .shop-mc-days-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 800; color: #3a2605;
+            background: linear-gradient(135deg, #fff4c9 0%, #f0c944 100%);
+            border-radius: 20px; padding: 6px 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.7);
+        }
+        #shopModal .shop-mc-days-tag-off { background: rgba(0,0,0,0.28); color: #ffefc9; box-shadow: none; }
+        #shopModal .shop-mc-number {
+            position: relative; z-index: 2; padding: 18px 24px 0;
+            font-family: 'Courier New', monospace; font-size: clamp(15px, 2.2vw, 21px); font-weight: 700;
+            letter-spacing: 0.24em; color: #fff6d5; text-shadow: 0 1px 4px rgba(0,0,0,0.55);
+        }
+        #shopModal .shop-mc-bottom {
+            position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+            display: flex; align-items: flex-end; justify-content: space-between;
+            padding: 0 24px 20px;
+        }
+        #shopModal .shop-mc-label {
+            font-size: 8.5px; font-weight: 800; letter-spacing: 0.16em; color: rgba(255,246,213,0.72);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+        }
+        #shopModal .shop-mc-holder {
+            font-size: 13px; font-weight: 800; color: #fff6d5; margin-top: 3px;
+            letter-spacing: 0.06em; text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        #shopModal .shop-mc-right { text-align: right; }
+
+        #shopModal .shop-mc-info {
+            flex: 1 1 320px; min-width: 300px;
+            background: linear-gradient(160deg, rgba(212,175,55,0.10) 0%, rgba(212,175,55,0.03) 60%, rgba(0,0,0,0.02) 100%);
+            border: 1px solid rgba(212,175,55,0.28); border-radius: 18px;
+            padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;
+        }
+        #shopModal .shop-mc-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 22px; font-weight: 800; color: #2c3e50;
+        }
+        #shopModal .shop-mc-title i { color: #b8860b; }
+        #shopModal .shop-mc-sub { font-size: 12.5px; color: #8a8f98; margin-top: 4px; }
+        #shopModal .shop-mc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        #shopModal .shop-mc-stat {
+            background: rgba(255,255,255,0.72); border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;
+        }
+        #shopModal .shop-mc-stat span { font-size: 11px; color: #9aa0a6; }
+        #shopModal .shop-mc-stat b { font-size: 15px; color: #2c3e50; }
+        #shopModal .shop-mc-on { color: #27ae60 !important; }
+        #shopModal .shop-mc-off { color: #b0b6bd !important; }
+        #shopModal .shop-mc-price-box { display: flex; flex-direction: column; gap: 8px; }
+        #shopModal .shop-mc-price { display: flex; align-items: baseline; gap: 8px; color: #b8860b; }
+        #shopModal .shop-mc-price b { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+        #shopModal .shop-mc-price small { font-size: 12px; color: #8a8f98; }
+        #shopModal .shop-mc-limit { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #8a8f98; line-height: 1.7; }
+        #shopModal .shop-mc-limit i { color: #c9a227; margin-top: 3px; }
+        #shopModal .shop-mc-buy {
+            margin-top: auto; width: 100%; padding: 14px 0; border: none; border-radius: 14px;
+            font-size: 15px; font-weight: 800; letter-spacing: 0.04em; cursor: pointer; color: #3a2605;
+            background: linear-gradient(135deg, #f6e3a1 0%, #e9c766 45%, #d4af37 100%);
+            box-shadow: 0 8px 20px rgba(184,134,11,0.35), inset 0 1px 0 rgba(255,255,255,0.7);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+        #shopModal .shop-mc-buy:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(184,134,11,0.45); filter: brightness(1.04); }
+        #shopModal .shop-mc-buy:active:not([disabled]) { transform: translateY(0) scale(0.99); }
+        #shopModal .shop-mc-buy[disabled] { background: rgba(0,0,0,0.08); color: #9aa0a6; box-shadow: none; cursor: not-allowed; }
+        #shopModal .shop-mc-buy-tip { font-size: 11.5px; color: #9aa0a6; display: flex; align-items: center; gap: 6px; }
+        #shopModal .shop-mc-buy-tip i { color: #c9a227; }
+
+        #shopModal .shop-mc-panel {
+            background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 18px 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        }
+        #shopModal .shop-mc-panel-title {
+            display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #2c3e50;
+            margin-bottom: 14px; padding-left: 10px; border-left: 3px solid #d4af37;
+        }
+        #shopModal .shop-mc-panel-title i { color: #b8860b; }
+        #shopModal .shop-mc-rewards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        #shopModal .shop-mc-reward-row {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+            border-radius: 12px; background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04);
+        }
+        #shopModal .shop-mc-reward-icon {
+            width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 14px;
+        }
+        #shopModal .shop-mc-reward-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #444; }
+        #shopModal .shop-mc-reward-count { font-size: 13px; font-weight: 800; color: #b8860b; }
+        #shopModal .shop-mc-reward-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 20px;
+            border: 1px solid transparent; margin: 0 8px 8px 0;
+        }
+        #shopModal .shop-mc-rules { display: flex; flex-direction: column; gap: 8px; }
+        #shopModal .shop-mc-rule { font-size: 12px; color: #8a8f98; line-height: 1.7; display: flex; gap: 8px; align-items: flex-start; }
+        #shopModal .shop-mc-rule i { color: #27ae60; margin-top: 3px; }
+
+        body.dark-mode #shopModal .shop-mc-info { background: rgba(212,175,55,0.06); border-color: rgba(212,175,55,0.25); }
+        body.dark-mode #shopModal .shop-mc-title,
+        body.dark-mode #shopModal .shop-mc-stat b { color: #e8e8e8; }
+        body.dark-mode #shopModal .shop-mc-stat { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
+        body.dark-mode #shopModal .shop-mc-panel { background: #24243a; border-color: rgba(255,255,255,0.08); }
+        body.dark-mode #shopModal .shop-mc-panel-title { color: #e8e8e8; }
+        body.dark-mode #shopModal .shop-mc-reward-row { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
+        body.dark-mode #shopModal .shop-mc-reward-name { color: #ccc; }
+        body.dark-mode #shopModal .shop-mc-rules,
+        body.dark-mode #shopModal .shop-mc-rule { color: #98a0aa; }
+
+        @media (max-width: 1100px) {
+            #shopModal .shop-mc-hero { flex-direction: column; gap: 18px; }
+            #shopModal .shop-mc-scene { flex: 0 0 auto; min-width: 0; }
+            #shopModal .shop-mc-float { max-width: 520px; }
+        }
+    `;
+
+    return warehouseBaseCSS + warehouseDarkCSS + responsiveCSS + shopExtCSS + devCoinCSS + devResetCSS + bundleCSS + recommendCSS + monthlyCardCSS;
 }

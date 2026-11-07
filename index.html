@@ -51,8 +51,8 @@
     <script src="./js/pass.js?v=3.14" defer></script>
     <script src="./js/dailytasks.js?v=1.1" defer></script>
     <script src="./js/lottery.js?v=1.6" defer></script>
-    <script src="./js/shop.js?v=2.9" defer></script>
-    <script src="./js/premail.js?v=2.1" defer></script>
+    <script src="./js/shop.js?v=3.0" defer></script>
+    <script src="./js/premail.js?v=2.2" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
@@ -34305,7 +34305,7 @@
             }
             
             // 计算成就完成度
-            var totalAchievements = 125; // 10+10+10+10+10+10+10+10 + 8特殊成就(含光影恐龙) + 深渊回响37
+            var totalAchievements = 140; // 10+10+10+10+10+10+10+10 + 8特殊成就(含光影恐龙) + 深渊回响52
             var completedAchievements = 0;
             
             // 从用户的gameData中获取成就数据
@@ -35256,9 +35256,9 @@
                                                                 <div class="game-achievement-info">
                                                                     <span class="game-achievement-name">深渊回响</span>
                                                                     <div class="game-achievement-progress-bar">
-                                                                        <div class="game-achievement-progress-fill" style="width: ${(abyssAchievements.length/37)*100}%;"></div>
+                                                                        <div class="game-achievement-progress-fill" style="width: ${(abyssAchievements.length/52)*100}%;"></div>
                                                                     </div>
-                                                                    <span class="game-achievement-count">${abyssAchievements.length}/37</span>
+                                                                    <span class="game-achievement-count">${abyssAchievements.length}/52</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -41674,7 +41674,7 @@ ID：${user ? user.userId : '---'}
                     name: '深渊回响',
                     icon: 'fas fa-moon',
                     iconBg: 'linear-gradient(135deg, #2b2350 0%, #5a3b8c 45%, #d45d79 100%)',
-                    total: 37,
+                    total: 52,
                     dataKey: 'abyssAchievements',
                     achievements: [
                         { id: 'first_run', name: '初次坠落', desc: '完成第一次冒险（无论成败）', icon: 'fas fa-seedling' },
@@ -41713,7 +41713,22 @@ ID：${user ? user.userId : '---'}
                         { id: 'xboss1', name: '裂痕终结', desc: '击败深渊裂痕 · 卡俄斯', icon: 'fas fa-hurricane' },
                         { id: 'xboss2', name: '无光终焉', desc: '击败无光之祖 · 乌尔', icon: 'fas fa-circle-notch' },
                         { id: 'xboss3', name: '极限主宰', desc: '击败极限之主 · 绝', icon: 'fas fa-chess-king' },
-                        { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 36 项成就，加冕为深渊之主', icon: 'fas fa-gem' }
+                        { id: 'ng10', name: '轮回十重', desc: '通关轮回难度 10', icon: 'fas fa-layer-group' },
+                        { id: 'ng15', name: '轮回终焉', desc: '通关轮回难度 15（最高）', icon: 'fas fa-infinity' },
+                        { id: 'items15', name: '行囊初满', desc: '单局持有 15 件装备并通关', icon: 'fas fa-backpack' },
+                        { id: 'items30', name: '装备收藏家', desc: '单局持有 30 件装备并通关', icon: 'fas fa-box' },
+                        { id: 'items50', name: '囤积狂魔', desc: '单局持有 50 件装备并通关', icon: 'fas fa-warehouse' },
+                        { id: 'atk500', name: '千钧之力', desc: '单局攻击力 ≥ 500 并通关', icon: 'fas fa-dumbbell' },
+                        { id: 'atk1000', name: '毁灭之力', desc: '单局攻击力 ≥ 1000 并通关', icon: 'fas fa-bolt' },
+                        { id: 'def200', name: '铜墙铁壁', desc: '单局防御力 ≥ 200 并通关', icon: 'fas fa-shield' },
+                        { id: 'def500', name: '不动如山', desc: '单局防御力 ≥ 500 并通关', icon: 'fas fa-chess-rook' },
+                        { id: 'critdmg200', name: '暴击精通', desc: '单局暴伤率 ≥ 200% 并通关', icon: 'fas fa-bullseye' },
+                        { id: 'critdmg500', name: '致命一击', desc: '单局暴伤率 ≥ 500% 并通关', icon: 'fas fa-bomb' },
+                        { id: 'critdmg1000', name: '湮灭暴击', desc: '单局暴伤率 ≥ 1000% 并通关', icon: 'fas fa-meteor' },
+                        { id: 'hp1000', name: '生命强化', desc: '单局生命值 ≥ 1000 并通关', icon: 'fas fa-heart' },
+                        { id: 'hp2000', name: '生命不息', desc: '单局生命值 ≥ 2000 并通关', icon: 'fas fa-heart-pulse' },
+                        { id: 'hp3000', name: '不朽之躯', desc: '单局生命值 ≥ 3000 并通关', icon: 'fas fa-heart-circle-check' },
+                        { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 51 项成就，加冕为深渊之主', icon: 'fas fa-gem' }
                     ]
                 }
             };
