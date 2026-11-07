@@ -218,7 +218,7 @@ const versionHistoryData = {
     launcherUpdateContent: [
         {
             version: "RC 3.0.4.2 (c4)",
-            date: "2026-11-03",
+            date: "2026-11-07",
             tag: "normal",
             tagText: "常规更新",
             images: [],
