@@ -217,6 +217,17 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.4.2 (c5)",
+            date: "2026-11-07",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 修复「深渊回响」游戏版本号未更新的问题，已通过热修复更新完成",
+            ]
+        },
+        {
             version: "RC 3.0.4.2 (c4)",
             date: "2026-11-07",
             tag: "normal",

@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 3.0.4.2 (c4)",
+    login: "RC 3.0.4.2 (c5)",
 
     // 点击方块游戏版本号
     fkgame: "RC 1.3.1",
@@ -22,11 +22,11 @@ const versionInfo = {
     colormatchgame: "RC 1.2.0",
 
     // 深渊回响（回合制 Roguelike）版本号
-    abyss: "RC 1.0.1",
+    abyss: "RC 1.0.2",
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20261107.3042.c4.149.l6",
+    launcher: "20261107.3042.c4.150.l6",
     
     // 主题版本信息
     // status字段可选值说明：
