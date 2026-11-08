@@ -369,6 +369,12 @@ body.blackgold-mode .warehouse-item {
 body.blackgold-mode .mail-item:hover,
 body.blackgold-mode .wh-item:hover { border-color: var(--line-strong) !important; }
 
+/* PRE 月卡邮件：保留淡金色动效卡片 */
+body.blackgold-mode .mail-item.mail-item-monthly {
+    background: linear-gradient(115deg, rgba(212, 175, 55, 0.14) 0%, rgba(212, 175, 55, 0.26) 50%, rgba(255, 226, 156, 0.2) 72%, rgba(212, 175, 55, 0.14) 100%) !important;
+    border-color: rgba(212, 175, 55, 0.5) !important;
+}
+
 /* ---------- 标签 / 徽章 / 状态 ---------- */
 body.blackgold-mode .tag,
 body.blackgold-mode .badge,

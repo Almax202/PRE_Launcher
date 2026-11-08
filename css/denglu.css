@@ -11907,6 +11907,64 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
     text-overflow: ellipsis;
 }
 
+/* ==================== PRE 月卡邮件：淡金色动效卡片（与商店月卡风格一致） ==================== */
+.mail-item.mail-item-monthly {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(115deg, #fffdf8 0%, #fdf4dd 24%, #f9e9bd 48%, #fff9e7 66%, #f6e3ae 86%, #fffdf8 100%);
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    box-shadow: 0 4px 14px rgba(184, 134, 11, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.mail-item.mail-item-monthly::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    left: -45%;
+    width: 45%;
+    height: 220%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
+    transform: rotate(22deg);
+    animation: mailMonthlyShine 4.6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.mail-item.mail-item-monthly::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 24px rgba(255, 210, 96, 0.4);
+    pointer-events: none;
+    animation: mailMonthlyAura 3.6s ease-in-out infinite;
+}
+
+@keyframes mailMonthlyShine {
+    0% { left: -55%; }
+    55% { left: 115%; }
+    100% { left: 115%; }
+}
+
+@keyframes mailMonthlyAura {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+}
+
+.mail-item.mail-item-monthly:hover {
+    background: linear-gradient(115deg, #fffefb 0%, #fdf7e6 24%, #fbedc8 48%, #fffbea 66%, #f5e0a6 86%, #fffefb 100%);
+    border-color: rgba(184, 134, 11, 0.62);
+}
+
+.mail-item.mail-item-monthly.unread,
+.mail-item.mail-item-monthly.unread:hover {
+    border-left: 4px solid #d4af37;
+}
+
+.mail-item.mail-item-monthly.active {
+    background: linear-gradient(115deg, #fff8e1 0%, #fbecc0 45%, #f5df9a 72%, #fff8e1 100%);
+    border-color: rgba(184, 134, 11, 0.7);
+}
+
 .mail-empty {
     display: flex;
     flex-direction: column;
@@ -12353,6 +12411,111 @@ body.transparent-mode #redeemCodeModal .about-fullscreen {
     background: #f5f5f5;
     color: #ccc;
     cursor: not-allowed;
+}
+
+/* 「冬季快乐」邮件专用：残忍拒绝按钮 */
+.mail-action-btn.reject-btn {
+    background: #fff5e6;
+    color: #b8860b;
+    border: 1px solid rgba(195, 157, 63, 0.45);
+}
+
+.mail-action-btn.reject-btn:hover {
+    background: #ffedd0;
+    color: #96690a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(195, 157, 63, 0.25);
+}
+
+/* ==================== 冬季礼物全屏弹窗 ==================== */
+.winter-gift-modal {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.winter-gift-modal.show {
+    opacity: 1;
+}
+
+.winter-gift-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    max-width: 92vw;
+    max-height: 92vh;
+    padding: 12px;
+}
+
+.winter-gift-gif {
+    display: block;
+    max-width: 82vw;
+    max-height: 70vh;
+    border-radius: 14px;
+    box-shadow: 0 12px 48px rgba(195, 157, 63, 0.35);
+}
+
+.winter-gift-caption {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    color: #ffe9b0;
+    text-shadow: 0 0 18px rgba(255, 210, 96, 0.55);
+}
+
+.winter-gift-close {
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.winter-gift-close:hover {
+    background: rgba(255, 255, 255, 0.28);
+    transform: rotate(90deg);
+}
+
+/* 残忍拒绝确认弹窗：两个「收下」按钮等宽 */
+.winter-gift-reject-content .confirm-footer {
+    display: flex;
+    gap: 12px;
+}
+
+.winter-gift-reject-content .confirm-footer .confirm-btn {
+    flex: 1;
+}
+
+@media (max-width: 600px) {
+    .winter-gift-caption {
+        font-size: 17px;
+    }
+    .winter-gift-gif {
+        max-width: 88vw;
+        max-height: 60vh;
+    }
 }
 
 .mail-detail-empty {
@@ -12903,6 +13066,19 @@ body.dark-mode .mail-item-preview {
     color: #666;
 }
 
+/* 暗色模式下的月卡邮件：保留淡金色动效质感 */
+body.dark-mode .mail-item.mail-item-monthly,
+body.dark-mode .mail-item.mail-item-monthly.unread,
+body.dark-mode .mail-item.mail-item-monthly:hover {
+    background: linear-gradient(115deg, rgba(212, 175, 55, 0.16) 0%, rgba(212, 175, 55, 0.26) 45%, rgba(255, 220, 150, 0.18) 70%, rgba(212, 175, 55, 0.16) 100%);
+    border-color: rgba(212, 175, 55, 0.45);
+}
+
+body.dark-mode .mail-item.mail-item-monthly.active {
+    background: linear-gradient(115deg, rgba(212, 175, 55, 0.24) 0%, rgba(212, 175, 55, 0.34) 55%, rgba(212, 175, 55, 0.24) 100%);
+    border-color: rgba(212, 175, 55, 0.66);
+}
+
 body.dark-mode .mail-empty {
     color: #666;
 }
@@ -13002,6 +13178,17 @@ body.dark-mode .mail-action-btn.delete-btn {
 body.dark-mode .mail-action-btn.delete-btn:hover {
     background: rgba(255, 255, 255, 0.15);
     color: #e0e0e0;
+}
+
+body.dark-mode .mail-action-btn.reject-btn {
+    background: rgba(255, 226, 156, 0.1);
+    color: #e3c274;
+    border-color: rgba(255, 226, 156, 0.32);
+}
+
+body.dark-mode .mail-action-btn.reject-btn:hover {
+    background: rgba(255, 226, 156, 0.2);
+    color: #f3d79a;
 }
 
 body.dark-mode .mail-action-btn.delete-btn:disabled {
@@ -13196,6 +13383,24 @@ body.transparent-mode .mail-item.unread {
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* 透明模式下的月卡邮件：保留淡金色动效质感 */
+body.transparent-mode .mail-item.mail-item-monthly,
+body.transparent-mode .mail-item.mail-item-monthly.unread,
+body.transparent-mode .mail-item.mail-item-monthly:hover {
+    background: linear-gradient(115deg, rgba(212, 175, 55, 0.18) 0%, rgba(255, 226, 156, 0.3) 48%, rgba(212, 175, 55, 0.2) 78%, rgba(212, 175, 55, 0.18) 100%);
+    border-color: rgba(255, 226, 156, 0.5);
+}
+
+body.transparent-mode .mail-item.mail-item-monthly .mail-item-sender,
+body.transparent-mode .mail-item.mail-item-monthly .mail-item-title {
+    color: rgba(255, 250, 235, 0.95);
+}
+
+body.transparent-mode .mail-item.mail-item-monthly .mail-item-time,
+body.transparent-mode .mail-item.mail-item-monthly .mail-item-preview {
+    color: rgba(255, 243, 214, 0.7);
+}
+
 body.transparent-mode .mail-item-sender,
 body.transparent-mode .mail-item-title {
     color: rgba(255, 255, 255, 0.9);
@@ -13286,6 +13491,17 @@ body.transparent-mode .mail-action-btn.delete-btn {
 body.transparent-mode .mail-action-btn.delete-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     color: #fff;
+}
+
+body.transparent-mode .mail-action-btn.reject-btn {
+    background: rgba(255, 226, 156, 0.14);
+    color: #f0d595;
+    border-color: rgba(255, 226, 156, 0.35);
+}
+
+body.transparent-mode .mail-action-btn.reject-btn:hover {
+    background: rgba(255, 226, 156, 0.24);
+    color: #fff2d0;
 }
 
 body.transparent-mode #mailHistoryModal {

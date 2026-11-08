@@ -643,6 +643,30 @@ var PRE_MONTHLY_CARD = {
 };
 
 var _MONTHLY_CARD_MS_PER_DAY = 24 * 60 * 60 * 1000;
+var _MONTHLY_CARD_TZ_MS = 8 * 60 * 60 * 1000;          // UTC+8
+var _MONTHLY_CARD_RESET_MS = 4 * 60 * 60 * 1000;       // 启动器统一刷新时间 04:00
+
+// 给定时间所在「UTC+8 自然日」的凌晨 04:00
+function _monthlyCardDay4AM(ts) {
+    var d = new Date((ts || Date.now()) + _MONTHLY_CARD_TZ_MS);
+    var dayStart = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    return dayStart + _MONTHLY_CARD_RESET_MS - _MONTHLY_CARD_TZ_MS;
+}
+
+// 当前所处月卡周期的起点：不晚于给定时间的最近凌晨 04:00
+function _monthlyCardCycleStart(ts) {
+    var t = ts || Date.now();
+    var day4 = _monthlyCardDay4AM(t);
+    return day4 <= t ? day4 : day4 - _MONTHLY_CARD_MS_PER_DAY;
+}
+
+// 将到期时间统一对齐到凌晨 04:00（同日 04:00；若该时刻已过则顺延至次日 04:00，避免瞬间失效）
+function _monthlyCardSnapEndTo4AM(endTime, now) {
+    if (!endTime) return endTime;
+    var day4 = _monthlyCardDay4AM(endTime);
+    if (day4 <= (now || Date.now())) day4 += _MONTHLY_CARD_MS_PER_DAY;
+    return day4;
+}
 
 function _monthlyCardStorageKey() {
     return _shopGetUsername() + '_preMonthlyCard';
@@ -659,7 +683,16 @@ function getMonthlyCardState() {
     if (!Array.isArray(state.cards)) state.cards = [];
     var now = Date.now();
     var valid = state.cards.filter(function(c) { return c && c.startTime && c.endTime && c.endTime > now; });
-    if (valid.length !== state.cards.length) {
+    // 历史数据迁移：本次更新前购入的月卡，到期时间统一强制对齐到凌晨 04:00
+    var changed = valid.length !== state.cards.length;
+    valid.forEach(function(c) {
+        var aligned = _monthlyCardSnapEndTo4AM(c.endTime, now);
+        if (aligned !== c.endTime) {
+            c.endTime = aligned;
+            changed = true;
+        }
+    });
+    if (changed) {
         state.cards = valid;
         saveMonthlyCardState(state);
     }
@@ -1400,10 +1433,12 @@ function _shopExecutePurchaseMonthlyCard() {
 
     var state = getMonthlyCardState();
     var now = Date.now();
-    var lastEnd = now;
-    state.cards.forEach(function(c) { if (c.endTime > lastEnd) lastEnd = c.endTime; });
-    var startTime = lastEnd;
-    var endTime = startTime + cfg.days * _MONTHLY_CARD_MS_PER_DAY;
+    // 到期时间统一固定到凌晨 04:00：以当前周期起点（或已有月卡的结束时间）为基准，
+    // 每张月卡叠加 30 天，结果始终保持 04:00 对齐（30 / 60 / 90 天后凌晨 04:00）
+    var base = _monthlyCardCycleStart(now);
+    state.cards.forEach(function(c) { if (c.endTime > base) base = c.endTime; });
+    var startTime = Math.max(now, base);
+    var endTime = base + cfg.days * _MONTHLY_CARD_MS_PER_DAY;
     state.cards.push({ id: 'mc_' + now + '_' + (state.cards.length + 1), purchaseTime: now, startTime: startTime, endTime: endTime });
     state.totalPurchased = (state.totalPurchased || 0) + 1;
     state.lastPurchaseTime = now;
@@ -2100,13 +2135,13 @@ function _shopRenderMonthlyCardView(content) {
                 '</div>' +
             '</div>' +
             '<div class="shop-mc-panel">' +
-                '<div class="shop-mc-panel-title"><i class="fas fa-gift"></i> 每日奖励（当天登录启动器后通过邮件发放）</div>' +
+                '<div class="shop-mc-panel-title"><i class="fas fa-gift"></i> 每日奖励（每日凌晨 04:00 通过邮件发放）</div>' +
                 '<div class="shop-mc-rewards">' + rewardRows + '</div>' +
             '</div>' +
             '<div class="shop-mc-rules">' +
                 '<div class="shop-mc-rule"><i class="fas fa-check"></i> 每张月卡有效期 30 天，可叠加购买，最多同时持有 90 天（3 张）。</div>' +
                 '<div class="shop-mc-rule"><i class="fas fa-check"></i> 达到 90 天上限后无法购买，需等待首张月卡消耗完 30 天后才能继续购买。</div>' +
-                '<div class="shop-mc-rule"><i class="fas fa-check"></i> 每日奖励于当天登录启动器时通过邮件发放，邮件有效期 7 天（截至一周后凌晨 04:00）。</div>' +
+                '<div class="shop-mc-rule"><i class="fas fa-check"></i> 每日奖励于每日凌晨 04:00 通过邮件发放，邮件有效期 7 天（截至一周后凌晨 04:00）。</div>' +
                 '<div class="shop-mc-rule"><i class="fas fa-check"></i> 当日未登录启动器则不发放当日奖励，且不可补领。</div>' +
             '</div>' +
         '</div>';

@@ -35,8 +35,8 @@
     <title>PRE Launcher</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="./css/denglu.css?v=3.0" as="style">
-    <link rel="stylesheet" href="./css/denglu.css?v=3.0">
+    <link rel="preload" href="./css/denglu.css?v=3.2" as="style">
+    <link rel="stylesheet" href="./css/denglu.css?v=3.2">
     <link rel="stylesheet" href="./css/homenav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" onerror="this.onerror=null; this.media='all'; this.href='./css/font-awesome.min.css'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
@@ -47,12 +47,12 @@
     <script src="./js/settings.js" defer></script>
     <script src="./js/versionHistory.js?v=3.0.4.1" defer></script>
     <script src="./js/precoin.js?v=1.2" defer></script>
-    <script src="./js/warehouse.js?v=4.5" defer></script>
+    <script src="./js/warehouse.js?v=4.6" defer></script>
     <script src="./js/pass.js?v=3.14" defer></script>
     <script src="./js/dailytasks.js?v=1.1" defer></script>
     <script src="./js/lottery.js?v=1.6" defer></script>
-    <script src="./js/shop.js?v=3.0" defer></script>
-    <script src="./js/premail.js?v=2.2" defer></script>
+    <script src="./js/shop.js?v=3.1" defer></script>
+    <script src="./js/premail.js?v=2.4" defer></script>
     <script src="./js/versionManager.js" defer></script>
     <script src="./js/wordlist.js" defer></script>
     <script src="./js/privacypolicy.js" defer></script>
@@ -43150,6 +43150,10 @@ ID：${user ? user.userId : '---'}
                             <button class="mail-action-btn claim-btn" id="mailClaimBtn">
                                 <i class="fas fa-gift"></i>
                                 <span>领取</span>
+                            </button>
+                            <button class="mail-action-btn reject-btn" id="mailRejectBtn" style="display: none;">
+                                <i class="fas fa-hand"></i>
+                                <span>残忍拒绝</span>
                             </button>
                             <button class="mail-action-btn delete-btn" id="mailDeleteBtn">
                                 <i class="fas fa-trash"></i>

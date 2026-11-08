@@ -1387,6 +1387,28 @@ var mailSystem = {
                 }
             ]
         },
+        {
+            version: 34,
+            date: "2026-11-08",
+            mails: [
+                {
+                    id: 'winter_gift_mail_2026',
+                    title: '冬季快乐',
+                    sender: 'PRE Launcher',
+                    content: '有一份冬天的礼物送给你\n是否要收下？',
+                    attachments: [
+                        {
+                            name: '神秘礼物',
+                            type: 'warehouse',
+                            itemId: 'mystery_gift',
+                            count: 1
+                        }
+                    ],
+                    startTime: "2026-11-09 00:00:00",
+                    endTime: "2026-11-17 04:00:00"
+                }
+            ]
+        },
     ],
     
     applyMailUpdates: function() {
@@ -1571,25 +1593,44 @@ function bindMailEventListeners() {
 
 // ==================== PRE 月卡：每日奖励邮件发放 ====================
 // 规则：
-//   - 月卡生效期间，用户当天登录启动器时发放当日奖励邮件
-//   - 当日未登录启动器则不发放，且不可补领（只发当天，不回补历史日期）
+//   - 月卡生效期间，每日凌晨 04:00（启动器统一刷新时间）发放当日奖励邮件
+//   - 启动器在 04:00 时未运行，则下次登录/聚焦时补发当日邮件（只发当天，不回补历史日期）
 //   - 邮件有效期 7 天，截至一周后的凌晨 04:00
 var _MONTHLY_CARD_MAIL_TITLE = '「PRE 月卡」每日发放';
 var _MONTHLY_CARD_MAIL_SENDER = 'PRE Launcher';
 var _monthlyCardMailTimer = null;
+var _monthlyCardMailResetTimer = null;
+var _monthlyCardMailUserTimer = null;
+var _monthlyCardMailLastUserPrefix = '';
+
+// 每日刷新分界点：UTC+8 凌晨 04:00
+var _MONTHLY_CARD_MAIL_TZ_MS = 8 * 60 * 60 * 1000;
+var _MONTHLY_CARD_MAIL_RESET_MS = 4 * 60 * 60 * 1000;
+
+// 当前月卡自然日周期的起点（UTC+8 凌晨 04:00 时间戳）
+function _monthlyCardMailCycleStart(ts) {
+    var t = (ts || Date.now()) + _MONTHLY_CARD_MAIL_TZ_MS;
+    var d = new Date(t);
+    var todayReset = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) + _MONTHLY_CARD_MAIL_RESET_MS;
+    var start = (t >= todayReset) ? todayReset : todayReset - 24 * 60 * 60 * 1000;
+    return start - _MONTHLY_CARD_MAIL_TZ_MS;
+}
+
+// 下一个 UTC+8 凌晨 04:00（用于准点发放）
+function _monthlyCardMailNextResetTime(ts) {
+    return _monthlyCardMailCycleStart(ts) + 24 * 60 * 60 * 1000;
+}
 
 // 以每日 04:00 为分界线的日期键（YYYY-MM-DD）
 function _monthlyCardMailDateKey(ts) {
-    var d = new Date((ts || Date.now()) + 8 * 60 * 60 * 1000 - 4 * 60 * 60 * 1000);
+    var d = new Date(_monthlyCardMailCycleStart(ts) + _MONTHLY_CARD_MAIL_TZ_MS);
     var p2 = function(n) { return (n < 10 ? '0' : '') + n; };
     return d.getUTCFullYear() + '-' + p2(d.getUTCMonth() + 1) + '-' + p2(d.getUTCDate());
 }
 
-// 邮件有效期：发放日次日 04:00 起算 7 天 → 一周后的凌晨 04:00
+// 邮件有效期：发放周期起点 + 7 天 → 一周后的凌晨 04:00
 function _monthlyCardMailExpireTime(ts) {
-    var d = new Date((ts || Date.now()) + 8 * 60 * 60 * 1000);
-    var dayStartUTC = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - 8 * 60 * 60 * 1000;
-    return dayStartUTC + 7 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000;
+    return _monthlyCardMailCycleStart(ts) + 7 * 24 * 60 * 60 * 1000;
 }
 
 // 由商店月卡配置生成邮件附件（配置缺失时使用固定兜底）
@@ -1633,6 +1674,8 @@ function checkMonthlyCardDailyMail() {
             '当前月卡剩余天数：' + remainingDays + ' 天。\n\n' +
             '— PRE Launcher 月卡系统';
 
+        // 每日发放时间统一为当天凌晨 04:00（启动器统一刷新时间）
+        var sendTime = _monthlyCardMailCycleStart(now);
         mailSystem.addMail({
             id: mailId,
             title: _MONTHLY_CARD_MAIL_TITLE,
@@ -1640,7 +1683,7 @@ function checkMonthlyCardDailyMail() {
             content: content,
             attachments: _monthlyCardMailAttachments(),
             mailType: 'reward',
-            sendTime: now,
+            sendTime: sendTime,
             expireTime: _monthlyCardMailExpireTime(now),
             isRead: false,
             isClaimed: false
@@ -1653,14 +1696,42 @@ function checkMonthlyCardDailyMail() {
     return !exists;
 }
 
-// 启动器登录后定时校验（每分钟一次，另在窗口聚焦 / 邮件面板打开时立即校验）
+// 启动器登录后定时校验：
+//   - 每日凌晨 04:00 准点发放，并自动安排下一次
+//   - 登录/聚焦/可见性变化/邮件面板打开时立即校验
+//   - 监听登录用户变化，登录后立即补发当天邮件（避免新邮件提示延迟）
 function initMonthlyCardDailyMailScheduler() {
     if (_monthlyCardMailTimer) return;
     var run = function() {
         try { checkMonthlyCardDailyMail(); } catch (e) { console.warn('[MailSystem] Monthly card daily mail check failed:', e); }
     };
+
     _monthlyCardMailTimer = setInterval(run, 60 * 1000);
     setTimeout(run, 500);
+
+    // 04:00 准点发放（一次性定时器在触发后递归安排下一天）
+    var scheduleReset = function() {
+        if (_monthlyCardMailResetTimer) clearTimeout(_monthlyCardMailResetTimer);
+        var delay = Math.max(1000, _monthlyCardMailNextResetTime() - Date.now() + 500);
+        _monthlyCardMailResetTimer = setTimeout(function() {
+            run();
+            scheduleReset();
+        }, delay);
+    };
+    scheduleReset();
+
+    // 登录用户变化监听：登录成功后立即校验（最长 2 秒内触发）
+    try {
+        _monthlyCardMailLastUserPrefix = mailSystem.getUserPrefix();
+    } catch (e) { _monthlyCardMailLastUserPrefix = ''; }
+    _monthlyCardMailUserTimer = setInterval(function() {
+        var prefix = '';
+        try { prefix = mailSystem.getUserPrefix(); } catch (e) { prefix = ''; }
+        if (prefix === _monthlyCardMailLastUserPrefix) return;
+        _monthlyCardMailLastUserPrefix = prefix;
+        if (prefix) run();
+    }, 2 * 1000);
+
     if (typeof document !== 'undefined') {
         document.addEventListener('visibilitychange', function() { if (!document.hidden) run(); });
         window.addEventListener('focus', run);
@@ -1759,6 +1830,9 @@ function setupMailModalEventDelegation() {
             case 'mailClaimBtn':
                 claimSelectedMail();
                 break;
+            case 'mailRejectBtn':
+                showWinterGiftRejectModal();
+                break;
             case 'mailDeleteBtn':
                 deleteSelectedMail();
                 break;
@@ -1829,6 +1903,142 @@ function _isNoticeMail(mail) {
     return !!(mail && mail.mailType === 'notice');
 }
 
+// ==================== 冬季快乐邮件（限定特殊交互） ====================
+var WINTER_GIFT_MAIL_ID = 'winter_gift_mail_2026';
+var WINTER_GIFT_GIF_SRC = './bgimg/1.gif';
+var WINTER_GIFT_AUDIO_SRC = 'https://lf26-music-east.douyinstatic.com/obj/ies-music-hj/7692696905846934329.mp3';
+
+function _isWinterGiftMail(mail) {
+    return !!(mail && mail.id === WINTER_GIFT_MAIL_ID);
+}
+
+// 全屏礼物弹窗：循环 gif + 循环音乐 + 祝福文案
+function ensureWinterGiftModal() {
+    var modal = document.getElementById('winterGiftModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.className = 'winter-gift-modal';
+    modal.id = 'winterGiftModal';
+    modal.style.display = 'none';
+    modal.innerHTML =
+        '<button class="winter-gift-close" id="winterGiftCloseBtn" title="关闭" type="button"><i class="fas fa-times"></i></button>' +
+        '<div class="winter-gift-stage">' +
+            '<img class="winter-gift-gif" id="winterGiftGif" src="' + WINTER_GIFT_GIF_SRC + '" alt="冬季礼物">' +
+            '<p class="winter-gift-caption">恭喜您获得极品 DJ 奶蛙一只</p>' +
+        '</div>' +
+        '<audio id="winterGiftAudio" loop preload="auto" src="' + WINTER_GIFT_AUDIO_SRC + '"></audio>';
+    document.body.appendChild(modal);
+
+    modal.querySelector('#winterGiftCloseBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        hideWinterGiftModal();
+    });
+    // 浏览器自动播放限制兜底：任意点击弹窗时再次尝试播放
+    modal.addEventListener('click', function() { _winterGiftPlayAudio(); });
+    return modal;
+}
+
+function _winterGiftPlayAudio() {
+    var audio = document.getElementById('winterGiftAudio');
+    if (!audio) return;
+    try {
+        audio.volume = 1;
+        var p = audio.play();
+        if (p && typeof p.catch === 'function') p.catch(function() {});
+    } catch (e) {}
+}
+
+function showWinterGiftModal() {
+    var modal = ensureWinterGiftModal();
+    var audio = document.getElementById('winterGiftAudio');
+    if (audio) {
+        try { audio.currentTime = 0; } catch (e) {}
+    }
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+    _winterGiftPlayAudio();
+}
+
+function hideWinterGiftModal() {
+    var modal = document.getElementById('winterGiftModal');
+    if (!modal) return;
+    var audio = document.getElementById('winterGiftAudio');
+    if (audio) {
+        try { audio.pause(); audio.currentTime = 0; } catch (e) {}
+    }
+    modal.classList.remove('show');
+    setTimeout(function() { modal.style.display = 'none'; }, 300);
+}
+
+// 「残忍拒绝」确认弹窗：两个按钮均为「收下」
+function ensureWinterGiftRejectModal() {
+    var modal = document.getElementById('winterGiftRejectModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.className = 'custom-confirm-modal';
+    modal.id = 'winterGiftRejectModal';
+    modal.style.display = 'none';
+    modal.innerHTML =
+        '<div class="confirm-content winter-gift-reject-content">' +
+            '<div class="confirm-header"><h3>提示</h3></div>' +
+            '<div class="confirm-body"><p>您不可拒绝这份礼物，是否要确认收下吗？</p></div>' +
+            '<div class="confirm-footer">' +
+                '<button class="confirm-btn confirm-ok" id="winterGiftAcceptA" type="button">收下</button>' +
+                '<button class="confirm-btn confirm-ok" id="winterGiftAcceptB" type="button">收下</button>' +
+            '</div>' +
+        '</div>';
+    document.body.appendChild(modal);
+
+    var accept = function() {
+        hideWinterGiftRejectModal();
+        claimWinterGiftMail(currentMailId);
+    };
+    modal.querySelector('#winterGiftAcceptA').addEventListener('click', accept);
+    modal.querySelector('#winterGiftAcceptB').addEventListener('click', accept);
+    return modal;
+}
+
+function showWinterGiftRejectModal() {
+    var modal = ensureWinterGiftRejectModal();
+    modal.style.display = 'flex';
+    setTimeout(function() { modal.classList.add('show'); }, 10);
+}
+
+function hideWinterGiftRejectModal() {
+    var modal = document.getElementById('winterGiftRejectModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(function() { modal.style.display = 'none'; }, 300);
+}
+
+// 收下即领取，并弹出全屏礼物弹窗
+function claimWinterGiftMail(mailId) {
+    if (!mailId) return;
+    var mails = mailSystem.getMails();
+    var mail = mails.find(function(m) { return m.id === mailId; });
+    if (!mail) return;
+
+    if (mail.expireTime && mail.expireTime < Date.now()) {
+        showAlert('该邮件已过期');
+        return;
+    }
+
+    if (!mail.isClaimed) {
+        var ok = mailSystem.claimMail(mailId);
+        if (!ok) {
+            showAlert('领取失败，请稍后重试');
+            return;
+        }
+    }
+
+    selectMail(mailId);
+    renderMailList();
+    updateClaimAllButton();
+    showWinterGiftModal();
+}
+
 function renderMailList() {
     var mailList = document.getElementById('mailList');
     if (!mailList) return;
@@ -1858,6 +2068,7 @@ function renderMailList() {
         var isUnread = !mail.isRead;
         var isClaimed = mail.isClaimed;
         var isNotice = _isNoticeMail(mail);
+        var isMonthlyCard = mail.id && mail.id.indexOf('pre_monthly_card_daily_') === 0;
         var isExpired = mail.expireTime && mail.expireTime < Date.now();
         
         var timeStr = formatMailTime(mail.sendTime);
@@ -1871,7 +2082,7 @@ function renderMailList() {
         }
         
         html += `
-            <div class="mail-item ${isUnread ? 'unread' : ''} ${isExpired ? 'expired' : ''}" data-mail-id="${mail.id}">
+            <div class="mail-item ${isUnread ? 'unread' : ''} ${isExpired ? 'expired' : ''} ${isMonthlyCard ? 'mail-item-monthly' : ''}" data-mail-id="${mail.id}">
                 <div class="mail-item-header">
                     <span class="mail-item-sender">${escapeHtml(mail.sender)}</span>
                     <span class="mail-item-time">${timeStr}</span>
@@ -2127,7 +2338,17 @@ function selectMail(mailId) {
                 // 仓库道具附件：点击弹出物品详情弹窗（仅预览，不在邮件内使用）
                 if (whItem) {
                     itemDiv.classList.add('mail-attachment-clickable');
+                    var isWinterMail = _isWinterGiftMail(mail);
                     itemDiv.addEventListener('click', function() {
+                        // 「冬季快乐」邮件：未收下前不可预览附件
+                        if (isWinterMail) {
+                            if (!mail.isClaimed) {
+                                showAlert('您还未领取该邮件呢！请先领取才可查看哦');
+                            } else {
+                                showWinterGiftModal();
+                            }
+                            return;
+                        }
                         if (typeof showWarehouseItemDetail === 'function') {
                             showWarehouseItemDetail(att.itemId, {
                                 previewOnly: true,
@@ -2172,8 +2393,10 @@ function selectMail(mailId) {
     
     var claimBtn = document.getElementById('mailClaimBtn');
     var deleteBtn = document.getElementById('mailDeleteBtn');
+    var rejectBtn = document.getElementById('mailRejectBtn');
     
     var isExpired = mail.expireTime && mail.expireTime < Date.now();
+    var isWinterMail = _isWinterGiftMail(mail);
     
     var isNotice = _isNoticeMail(mail);
     if (isNotice) {
@@ -2182,13 +2405,22 @@ function selectMail(mailId) {
         claimBtn.innerHTML = '<i class="fas fa-envelope-open"></i><span>已读</span>';
     } else if (mail.isClaimed) {
         claimBtn.disabled = true;
-        claimBtn.innerHTML = '<i class="fas fa-check"></i><span>已领取</span>';
+        claimBtn.innerHTML = isWinterMail
+            ? '<i class="fas fa-check"></i><span>已收下</span>'
+            : '<i class="fas fa-check"></i><span>已领取</span>';
     } else if (isExpired) {
         claimBtn.disabled = true;
         claimBtn.innerHTML = '<i class="fas fa-clock"></i><span>已过期</span>';
     } else {
         claimBtn.disabled = false;
-        claimBtn.innerHTML = '<i class="fas fa-gift"></i><span>领取</span>';
+        claimBtn.innerHTML = isWinterMail
+            ? '<i class="fas fa-gift"></i><span>收下</span>'
+            : '<i class="fas fa-gift"></i><span>领取</span>';
+    }
+    
+    // 「残忍拒绝」按钮仅在本封「冬季快乐」邮件未领取时显示
+    if (rejectBtn) {
+        rejectBtn.style.display = (isWinterMail && !mail.isClaimed && !isExpired) ? '' : 'none';
     }
     
     // 通知类邮件已读即可删除；奖励类邮件须已领取（或已过期）
@@ -2245,6 +2477,12 @@ function claimSelectedMail() {
     var isExpired = mail.expireTime && mail.expireTime < Date.now();
     if (isExpired) {
         showAlert('该邮件已过期');
+        return;
+    }
+    
+    // 「冬季快乐」邮件：点击「收下」即视为领取，并弹出全屏礼物弹窗
+    if (_isWinterGiftMail(mail)) {
+        claimWinterGiftMail(currentMailId);
         return;
     }
     

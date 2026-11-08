@@ -332,6 +332,15 @@ var WAREHOUSE_ITEMS = {
         desc: '在签到里程碑「阶段突破 · 极限」中，授予累计签到满 365 天用户的终极荣誉勋章，见证你突破极限的传奇征程。',
         flavorText: '一百二十级只是序章，两百级才是终章——你把所有人眼中的不可能，活成了自己的日常。\n——真正的突破，永远不是抵达终点，而是敢于向终点再迈一步。',
         source: '签到里程碑 · 阶段突破·极限 · 累计签到 365 天', usable: false
+    },
+    // ---- 杂项 ----
+    // 邮件活动限定收藏品：不进入商店与幸运抽奖机，仅可通过邮件 / 开发者获取
+    mystery_gift: {
+        name: '神秘礼物', icon: 'fas fa-gift', color: '#c39d3f',
+        category: 'misc', rarity: 'legendary', showSource: true,
+        desc: '一封冬日邮件里送来的神秘礼物，里面装着一只奶蛙。',
+        flavorText: '请善待这只奶蛙，它唱歌时的样子，值得被反复观看。\n——所以，到底是谁把这鬼东西寄到我家门口的？',
+        source: '邮件「冬季快乐」', usable: false, viewer: 'winter_gift'
     }
 };
 
@@ -340,7 +349,8 @@ var WAREHOUSE_CATEGORIES = [
     { id: 'all', name: '全部', icon: 'fas fa-th-large' },
     { id: 'consumable', name: '消耗品', icon: 'fas fa-bolt' },
     { id: 'material', name: '材料', icon: 'fas fa-cubes' },
-    { id: 'badge', name: '徽章', icon: 'fas fa-id-badge' }
+    { id: 'badge', name: '徽章', icon: 'fas fa-id-badge' },
+    { id: 'misc', name: '杂项', icon: 'fas fa-box-open' }
 ];
 
 // 稀有度配置（用于排序/类型tag配色）
@@ -987,11 +997,12 @@ function toggleWarehouseRemoveMode() {
 
 // ==================== 仓库展示：分类分组 / 系列排序 ====================
 // 分类展示顺序（徽章固定放在仓库最下面）
-var WAREHOUSE_CATEGORY_ORDER = ['consumable', 'material', 'badge'];
+var WAREHOUSE_CATEGORY_ORDER = ['consumable', 'material', 'badge', 'misc'];
 var WAREHOUSE_CATEGORY_META = {
     consumable: { name: '消耗品', icon: 'fas fa-bolt' },
     material: { name: '材料', icon: 'fas fa-cubes' },
-    badge: { name: '徽章', icon: 'fas fa-id-badge' }
+    badge: { name: '徽章', icon: 'fas fa-id-badge' },
+    misc: { name: '杂项', icon: 'fas fa-box-open' }
 };
 // 系列展示顺序：经验值补给卡 → 经验值加成卡 → PRE Coin 补给包 → 一袋/一盒幸运币 → 随机物品箱 → 幸运币 → 抽卡卷 → 补签卡 → 兑换卡
 var WAREHOUSE_SERIES_ORDER = ['exp_supply', 'exp_boost', 'precoin_supply', 'luck_bag', 'luck_box', 'rand_box', 'luck_coin', 'gacha_ticket', 'makeup', 'exchange'];
@@ -1277,7 +1288,7 @@ function buildWarehouseCardHTML(itemId, entry, removeMode, timedMeta) {
 
 // 分类名称
 function getWarehouseCategoryLabel(category) {
-    var labels = { consumable: '消耗品', material: '材料', badge: '徽章' };
+    var labels = { consumable: '消耗品', material: '材料', badge: '徽章', misc: '杂项' };
     return labels[category] || '道具';
 }
 
@@ -2597,6 +2608,9 @@ function showWarehouseItemDetail(itemId, options) {
     if (canUse) {
         actionBtns += '<button class="wh-detail-use-btn" type="button"><i class="fas fa-hand-sparkles"></i> 使用该物品</button>';
     }
+    if (item.viewer === 'winter_gift') {
+        actionBtns += '<button class="wh-detail-view-btn" type="button"><i class="fas fa-eye"></i> 查看</button>';
+    }
     footer.innerHTML =
         '<div class="wh-detail-source">' +
             (sourceText ? '<i class="fas fa-link"></i><span></span>' : '') +
@@ -2618,6 +2632,13 @@ function showWarehouseItemDetail(itemId, options) {
             var ok = useWarehouseItem(itemId, timedUid);
             // 使用成功（含打开兑换卡选择弹窗）后关闭详情；失败（如加成叠加被拒）则保留弹窗
             if (ok !== false) closeWarehouseItemDetailModal();
+        };
+    }
+
+    var viewBtn = footer.querySelector('.wh-detail-view-btn');
+    if (viewBtn) {
+        viewBtn.onclick = function() {
+            if (typeof showWinterGiftModal === 'function') showWinterGiftModal();
         };
     }
 
@@ -5262,6 +5283,28 @@ function getWarehouseStyleCSS() {
         .wh-detail-use-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(212, 93, 121, 0.45);
+        }
+
+        .wh-detail-view-btn {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #c39d3f 0%, #e3c274 100%);
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(195, 157, 63, 0.35);
+        }
+
+        .wh-detail-view-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(195, 157, 63, 0.45);
         }
 
         /* 仓库卡片可点击提示（移除模式除外） */
