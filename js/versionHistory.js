@@ -217,6 +217,17 @@ function updateVersionNotificationDot() {
 const versionHistoryData = {
     launcherUpdateContent: [
         {
+            version: "RC 3.0.4.3 (c6)",
+            date: "2026-11-11",
+            tag: "patch",
+            tagText: "补丁更新",
+            images: [],
+            features: [
+                "修复问题",
+                "- 修复商店系统的自动重置功能未生效的问题"
+            ]
+        },
+        {
             version: "RC 3.0.4.3 (c5)",
             date: "2026-11-11",
             tag: "normal",
