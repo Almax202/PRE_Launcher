@@ -18,8 +18,8 @@ var SHOP_DATA_VERSION = 8; // v8: 上架 V 档经验卡/补给卡与四档幸运
 //   - 不参与重置（保留购买记录）：PRE 月卡、背景、用户名片
 var SHOP_AUTO_RESET = {
     enabled: true,
-    resetAtUTC: '2026-11-12T04:00:00+08:00',
-    resetKey: '2026-11-12_v1'
+    resetAtUTC: '2026-11-11T04:00:00+08:00',
+    resetKey: '2026-11-11_v1'
 };
 
 // 自动重置排除名单：PRE 月卡与全部特殊商品（背景 / 用户名片）
