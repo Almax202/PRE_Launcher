@@ -4,7 +4,158 @@
 // 入口：顶部导航栏「商店」→ 全屏弹窗
 // 样式：完全自包含（wh-* 基础 + shop-* 扩展），不依赖仓库先打开
 
-var SHOP_DATA_VERSION = 7; // v7: 新增 PRE 月卡（30 天订阅，最多叠加 90 天）
+var SHOP_DATA_VERSION = 8; // v8: 上架 V 档经验卡/补给卡与四档幸运币，调整组合包构成
+
+// ==================== 商店购买状态自动重置（★ 版本更新后一键重置限购 ★）====================
+// 用途：商店系统大幅更新（新增/调整物品与组合包）后，清除用户已有的购买/限购计数，
+//       避免老用户因旧限购记录而无法购买更新后的商品。
+// 规则：
+//   - enabled: 总开关，true 时开启自动重置，false 时完全关闭自动重置
+//   - resetAtUTC: 生效时间（UTC 时间字符串，可带 +08:00 偏移，如 '2026-11-11T04:00:00+08:00'），
+//                 当前时间早于该时刻不会触发，用于配合版本上线时间
+//   - resetKey: 每轮重置的唯一标识。开发者每次需要再重置一轮时，修改 resetKey（并同步 resetAtUTC）即可，
+//               每位用户在每个 resetKey 下只会自动重置一次，之后再次进入商店不会重复触发
+//   - 不参与重置（保留购买记录）：PRE 月卡、背景、用户名片
+var SHOP_AUTO_RESET = {
+    enabled: true,
+    resetAtUTC: '2026-11-12T04:00:00+08:00',
+    resetKey: '2026-11-12_v1'
+};
+
+// 自动重置排除名单：PRE 月卡与全部特殊商品（背景 / 用户名片）
+function _shopAutoResetIsExcluded(itemId) {
+    if (!itemId) return true;
+    if (itemId === 'monthly_card') return true;
+    if (itemId.indexOf('special_') === 0) return true; // 背景 / 用户名片购买记录
+    if (typeof SHOP_SPECIAL_ITEMS !== 'undefined' && SHOP_SPECIAL_ITEMS[itemId]) return true;
+    return false;
+}
+
+// 解析购买记录 key 对应的展示名称（单品 / 组合包 / 特殊商品）
+function _shopAutoResetDisplayName(key) {
+    if (SHOP_BUNDLES[key]) return SHOP_BUNDLES[key].name;
+    if (typeof SHOP_SPECIAL_ITEMS !== 'undefined' && SHOP_SPECIAL_ITEMS[key]) return SHOP_SPECIAL_ITEMS[key].name;
+    if (key.indexOf('special_') === 0) {
+        var sid = key.substring(8);
+        if (typeof SHOP_SPECIAL_ITEMS !== 'undefined' && SHOP_SPECIAL_ITEMS[sid]) return SHOP_SPECIAL_ITEMS[sid].name;
+        return sid;
+    }
+    if (key === 'monthly_card') return 'PRE 月卡';
+    var cfg = SHOP_ITEM_PRICES[key];
+    if (cfg) {
+        var wid = _shopResolveWarehouseId(key);
+        if (typeof WAREHOUSE_ITEMS !== 'undefined' && WAREHOUSE_ITEMS[wid]) return WAREHOUSE_ITEMS[wid].name;
+    }
+    if (key.indexOf('bundle_') === 0) {
+        var bid = key.substring(7);
+        if (SHOP_BUNDLES[bid]) return SHOP_BUNDLES[bid].name;
+    }
+    return key;
+}
+
+// 执行自动重置检查：满足「已开启 + 已到生效时间 + 该用户本轮未重置过」时清除购买状态。
+// 返回 null（未触发）或 { items: [{ key, name, count }] }（已重置，items 为被重置的已购内容）
+function _shopRunAutoReset() {
+    if (!SHOP_AUTO_RESET || !SHOP_AUTO_RESET.enabled) return null;
+    var username = _shopGetUsername();
+    if (!username || username === 'anonymous') return null;
+    var resetAt = new Date(SHOP_AUTO_RESET.resetAtUTC).getTime();
+    if (isNaN(resetAt) || Date.now() < resetAt) return null;
+    var flagKey = username + '_shop_auto_reset_' + SHOP_AUTO_RESET.resetKey;
+    try { if (localStorage.getItem(flagKey) === '1') return null; } catch (e) { return null; }
+
+    var data = getShopData();
+    if (!data.purchases || typeof data.purchases !== 'object') data.purchases = {};
+    var kept = {};       // 排除项（月卡 / 背景 / 名片）原样保留
+    var resetItems = []; // 被重置的已购内容（供弹窗展示）
+    Object.keys(data.purchases).forEach(function(key) {
+        var rec = data.purchases[key] || {};
+        if (_shopAutoResetIsExcluded(key)) {
+            kept[key] = rec;
+            return;
+        }
+        var count = rec.totalCount || 0;
+        if (count > 0) resetItems.push({ key: key, name: _shopAutoResetDisplayName(key), count: count });
+    });
+
+    data.purchases = kept;
+    saveShopData(data);
+    try { localStorage.setItem(flagKey, '1'); } catch (e) {}
+    return { items: resetItems };
+}
+
+// 底部通栏弹窗：告知用户商店购买状态已重置，并列出被重置的已购内容
+function shopOpenAutoResetNotice(resetItems) {
+    var old = document.getElementById('shopAutoResetNotice');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+
+    if (!document.getElementById('shop-auto-reset-style')) {
+        var st = document.createElement('style');
+        st.id = 'shop-auto-reset-style';
+        st.innerHTML = ''
+            + '#shopAutoResetNotice{position:fixed;left:0;right:0;bottom:0;z-index:100000;display:flex;justify-content:center;padding:0 16px 18px;pointer-events:none;}'
+            + '#shopAutoResetNotice.show .shop-arn-box{transform:translateY(0);opacity:1;}'
+            + '.shop-arn-box{pointer-events:auto;width:min(1180px,100%);max-height:72vh;overflow:auto;border-radius:16px 16px 14px 14px;'
+            + 'background:linear-gradient(135deg,rgba(26,17,48,.98),rgba(15,10,30,.99));border:1px solid rgba(240,160,80,.45);'
+            + 'box-shadow:0 -6px 30px rgba(0,0,0,.6),0 0 22px rgba(240,160,80,.18);padding:18px 22px 16px;'
+            + 'transform:translateY(120%);opacity:0;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .3s;color:#e8e3ff;}'
+            + '.shop-arn-head{display:flex;align-items:flex-start;gap:12px;}'
+            + '.shop-arn-ico{width:40px;height:40px;flex:0 0 40px;border-radius:11px;display:flex;align-items:center;justify-content:center;'
+            + 'background:linear-gradient(135deg,#f0a050,#d4743a);color:#1a1130;font-size:1.05rem;box-shadow:0 4px 12px rgba(240,160,80,.35);}'
+            + '.shop-arn-title{font-size:1.02rem;font-weight:700;color:#ffd9a8;line-height:1.35;}'
+            + '.shop-arn-sub{font-size:.78rem;color:rgba(232,227,255,.72);margin-top:4px;line-height:1.55;}'
+            + '.shop-arn-close{margin-left:auto;background:transparent;border:none;color:rgba(232,227,255,.65);font-size:1rem;cursor:pointer;padding:4px 6px;}'
+            + '.shop-arn-close:hover{color:#ffd9a8;}'
+            + '.shop-arn-list{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;}'
+            + '.shop-arn-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.045);border:1px solid rgba(240,160,80,.16);'
+            + 'border-radius:9px;padding:8px 10px;font-size:.76rem;color:rgba(232,227,255,.9);}'
+            + '.shop-arn-item i{color:#f0a050;font-size:.72rem;}'
+            + '.shop-arn-item b{margin-left:auto;color:#ffd9a8;font-weight:600;white-space:nowrap;}'
+            + '.shop-arn-empty{margin-top:12px;font-size:.78rem;color:rgba(232,227,255,.6);}'
+            + '.shop-arn-foot{margin-top:12px;font-size:.72rem;line-height:1.6;color:rgba(232,227,255,.55);border-top:1px dashed rgba(240,160,80,.2);padding-top:10px;}'
+            + '.shop-arn-actions{display:flex;justify-content:flex-end;margin-top:12px;}'
+            + '.shop-arn-ok{background:linear-gradient(135deg,#f0a050,#d4743a);color:#1a1130;border:none;border-radius:9px;'
+            + 'padding:8px 22px;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(240,160,80,.3);}'
+            + '.shop-arn-ok:hover{filter:brightness(1.06);}'
+            + '@media(max-width:640px){.shop-arn-box{max-height:76vh;padding:14px 16px;}.shop-arn-list{grid-template-columns:1fr;}}';
+        document.head.appendChild(st);
+    }
+
+    var listHtml = resetItems.length
+        ? resetItems.map(function(it) {
+            return '<div class="shop-arn-item"><i class="fas fa-rotate-left"></i><span>' + it.name + '</span><b>×' + it.count + '</b></div>';
+        }).join('')
+        : '<div class="shop-arn-empty">本次没有需要重置的已购买内容。</div>';
+
+    var wrap = document.createElement('div');
+    wrap.id = 'shopAutoResetNotice';
+    wrap.innerHTML = ''
+        + '<div class="shop-arn-box">'
+        +   '<div class="shop-arn-head">'
+        +     '<div class="shop-arn-ico"><i class="fas fa-rotate"></i></div>'
+        +     '<div>'
+        +       '<div class="shop-arn-title">商店购买状态已重置</div>'
+        +       '<div class="shop-arn-sub">版本更新已完成，商店内所有贩售物品与组合包的购买状态（限购次数）已自动重置，您现在可以重新购买更新后的商品。</div>'
+        +     '</div>'
+        +     '<button class="shop-arn-close" id="shopArnClose"><i class="fas fa-times"></i></button>'
+        +   '</div>'
+        +   '<div class="shop-arn-list">' + listHtml + '</div>'
+        +   '<div class="shop-arn-foot"><i class="fas fa-circle-info"></i> 以下内容不在重置范围内，已购买记录与权益保持不变：PRE 月卡、背景、名片。本次重置每位用户仅执行一次，再次进入商店不会重复触发。</div>'
+        +   '<div class="shop-arn-actions"><button class="shop-arn-ok" id="shopArnOk">我知道了</button></div>'
+        + '</div>';
+    document.body.appendChild(wrap);
+
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() { wrap.classList.add('show'); });
+    });
+
+    function close() {
+        wrap.classList.remove('show');
+        setTimeout(function() { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }, 320);
+    }
+    wrap.querySelector('#shopArnClose').addEventListener('click', close);
+    wrap.querySelector('#shopArnOk').addEventListener('click', close);
+}
 
 // 物品图标统一渲染：优先使用 Lucide（lucide-bridge.js），桥接层缺失时回退 Font Awesome
 function _shopItemIconHtml(icon, color) {
@@ -43,10 +194,10 @@ var SHOP_ITEM_PRICES = {
     exp_boost_large: {
         price: 1000,
         discount: 0,
-        stock: 1,
+        stock: 2,
         stockType: 'weekly',
         enabled: true,
-        note: '经验获取 +30%，每周限购 1 份，可叠加（I+II+III+Ⅳ+V 组合可至 +175%）'
+        note: '经验获取 +30%，每周限购 2 份，可叠加（I+II+III+Ⅳ+V 组合可至 +175%）'
     },
     exp_boost_premium: {
         price: 1800,
@@ -55,6 +206,14 @@ var SHOP_ITEM_PRICES = {
         stockType: 'total',
         enabled: true,
         note: '经验获取 +50%，永久限购 2 份，可叠加（I+II+III+Ⅳ+V 同时激活可至 +175%）'
+    },
+    exp_boost_5: {
+        price: 2300,
+        discount: 0,
+        stock: 3,
+        stockType: 'total',
+        enabled: true,
+        note: '经验获取 +75%，累计限购 3 份，可叠加（仅在阶段突破·极限模式（121级后）可用）'
     },
     // ===== 消耗品：抽卡卷 =====
     gacha_single: {
@@ -85,13 +244,46 @@ var SHOP_ITEM_PRICES = {
     },
 
     // ===== 消耗品：幸运币（幸运抽奖机投币使用） =====
+    // 旧版通用幸运币已下架，改由四档专属幸运币售卖
     luck_coin: {
         price: 100,
         discount: 0,
         stock: 3,
         stockType: 'daily',
+        enabled: false,
+        note: '已停止售卖（旧版通用幸运币）'
+    },
+    luck_coin_common: {
+        price: 100,
+        discount: 0,
+        stock: 10,
+        stockType: 'daily',
         enabled: true,
-        note: '每日限购 3 枚，在幸运抽奖机投币口使用：提升普通档位奖品概率（上限 75%）'
+        note: '每日限购 10 枚，普通档位幸运币：提升普通档位奖品概率（上限 75%）'
+    },
+    luck_coin_rare: {
+        price: 150,
+        discount: 0,
+        stock: 10,
+        stockType: 'daily',
+        enabled: true,
+        note: '每日限购 10 枚，稀有档位幸运币：提升稀有档位奖品概率（上限 65%）'
+    },
+    luck_coin_epic: {
+        price: 250,
+        discount: 0,
+        stock: 10,
+        stockType: 'weekly',
+        enabled: true,
+        note: '每周限购 10 枚，史诗档位幸运币：提升史诗档位奖品概率（上限 40%）'
+    },
+    luck_coin_legend: {
+        price: 500,
+        discount: 0,
+        stock: 10,
+        stockType: 'weekly',
+        enabled: true,
+        note: '每周限购 10 枚，传说档位幸运币：提升传说档位奖品概率（上限 25%）'
     },
 
     // ===== 消耗品：经验值补给卡 =====
@@ -106,18 +298,18 @@ var SHOP_ITEM_PRICES = {
     exp_supply_2: {
         price: 800,
         discount: 0,
-        stock: 2,
+        stock: 3,
         stockType: 'weekly',
         enabled: true,
-        note: '每周限购 2 份，立即获得 600 经验值'
+        note: '每周限购 3 份，立即获得 600 经验值'
     },
     exp_supply_3: {
         price: 1400,
         discount: 0,
-        stock: 1,
+        stock: 3,
         stockType: 'weekly',
         enabled: true,
-        note: '每周限购 1 份，立即获得 1000 经验值'
+        note: '每周限购 3 份，立即获得 1000 经验值'
     },
     exp_supply_4: {
         price: 2000,
@@ -126,6 +318,14 @@ var SHOP_ITEM_PRICES = {
         stockType: 'total',
         enabled: true,
         note: '永久限购 3 份，立即获得 2000 经验值'
+    },
+    exp_supply_5: {
+        price: 2500,
+        discount: 0,
+        stock: 3,
+        stockType: 'total',
+        enabled: true,
+        note: '累计限购 3 份，立即获得 3000 经验值（仅在阶段突破·极限模式（121级后）可用）'
     },
     // ===== 消耗品：每月限购特供（stockType: monthly，对应已有仓库道具 ID） =====
     exp_boost_large_monthly: {
@@ -137,14 +337,41 @@ var SHOP_ITEM_PRICES = {
         warehouseId: 'exp_boost_large', // 与普通版共享仓库条目
         note: '每月限购 1 份，经验获取 +30%，可叠加（月度特供价 90% 折）'
     },
+    exp_boost_premium_monthly: {
+        price: 1800,
+        discount: 0,
+        stock: 2,
+        stockType: 'monthly',
+        enabled: true,
+        warehouseId: 'exp_boost_premium',
+        note: '每月限购 2 份，经验获取 +50%，可叠加'
+    },
+    exp_boost_5_monthly: {
+        price: 2300,
+        discount: 0,
+        stock: 2,
+        stockType: 'monthly',
+        enabled: true,
+        warehouseId: 'exp_boost_5',
+        note: '每月限购 2 份，经验获取 +75%（仅在阶段突破·极限模式可用）'
+    },
     exp_supply_4_monthly: {
         price: 2000,
         discount: 0,              
-        stock: 1,
+        stock: 2,
         stockType: 'monthly',
         enabled: true,
         warehouseId: 'exp_supply_4',
-        note: '每月限购 1 份，立即获得 2000 经验值，（月度特供价 90% 折）'
+        note: '每月限购 2 份，立即获得 2000 经验值，（月度特供价 90% 折）'
+    },
+    exp_supply_5_monthly: {
+        price: 2500,
+        discount: 0,
+        stock: 2,
+        stockType: 'monthly',
+        enabled: true,
+        warehouseId: 'exp_supply_5',
+        note: '每月限购 2 份，立即获得 3000 经验值（仅在阶段突破·极限模式可用）'
     },
     gacha_ten_monthly: {
         price: 1300,
@@ -176,10 +403,10 @@ var SHOP_ITEM_PRICES = {
 //     ★ start 留空 '' = 立即开始；end 留空 '' = 永不结束
 //     ★ 到点自动开始 / 到点自动结束，无需手动干预
 var SHOP_GLOBAL_PROMO = {
-    enabled: false,
+    enabled: true,
     discount: 20,                     // ★ 全场促销折扣百分比，修改此单一数值即可
-    start: '2026-08-30 00:00:00',     // 促销开始时间（UTC+8）
-    end: '2026-09-13 23:59:59'        // 促销截止时间（UTC+8）
+    start: '2026-11-12 04:00:00',     // 促销开始时间（UTC+8）
+    end: '2026-11-26 04:00:00'        // 促销截止时间（UTC+8）
 };
 
 // 将 'YYYY-MM-DD HH:mm:ss' 按 UTC+8 解析为时间戳；未配置/格式错误返回 null
@@ -245,27 +472,31 @@ var SHOP_BUNDLES = {
         items: [
             { itemId: 'exp_boost_small', price: 400 },
             { itemId: 'exp_supply_1', price: 400 },
-            { itemId: 'luck_coin', price: 100 }
+            { itemId: 'exp_boost_mid', price: 600 },
+            { itemId: 'exp_boost_large', price: 1000 },
+            { itemId: 'exp_supply_2', price: 800, qty: 3 },
+            { itemId: 'exp_supply_3', price: 1400, qty: 2 }
         ],
         discount: 50,          // ★ 整包打折百分比，修改此单一数值即可
         stock: 1,
         stockType: 'total',
         enabled: true,
-        note: '新手补给三件套，包含 50% 折扣，助力初期等级提升（该组合包仅限购 1 份）'
+        note: '新手补给套装，包含 50% 折扣，助力初期等级提升（该组合包仅限购 1 份）'
     },
     bundle_allinone: {
         name: 'PRE Launcher 豪华组合包',
         icon: 'fas fa-gift',
         color: '#e74c3c',
         items: [
-            { itemId: 'exp_boost_small', price: 400 },
             { itemId: 'exp_boost_mid', price: 600 },
             { itemId: 'exp_boost_large', price: 1000 },
+            { itemId: 'exp_boost_premium', price: 1800 },
+            { itemId: 'exp_boost_5', price: 2300 },
             { itemId: 'exp_supply_1', price: 400 },
             { itemId: 'exp_supply_2', price: 800 },
             { itemId: 'exp_supply_3', price: 1400 },
             { itemId: 'exp_supply_4', price: 2000 },
-            { itemId: 'makeup_card', price: 500 },
+            { itemId: 'exp_supply_5', price: 2500 },
             { itemId: 'makeup_card', price: 500 },
             { itemId: 'makeup_card', price: 500 },
         ],
@@ -330,6 +561,20 @@ var SHOP_BUNDLES = {
         stockType: 'total',
         enabled: true,
         note: '经验补给包 Ⅳ，两张经验补给卡 Ⅳ（共4000 EXP），获取经验的有效方式（该组合包仅限购 1 份）'
+    },
+    bundle_exp05: {
+        name: '经验补给包 Ⅴ',
+        icon: 'fas fa-gift',
+        color: '#ff2d55',
+        items: [
+            { itemId: 'exp_supply_5', price: 2500 },
+            { itemId: 'exp_supply_5', price: 2500 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: '经验补给包 Ⅴ，两张经验补给卡 V（共6000 EXP），极限模式下的经验首选（该组合包仅限购 1 份）'
     },
     bundle_gacha01: {
         name: '提取补给包 Ⅰ',
@@ -404,6 +649,35 @@ var SHOP_BUNDLES = {
         enabled: true,
         note: '经验加成包 Ⅲ，内含两张经验加成卡 Ⅲ，可叠加（该组合包仅限购 1 份）'
     },
+    bundle_expup4: {
+        name: '经验加成包 Ⅳ',
+        icon: 'fas fa-gift',
+        color: '#c0392b',
+        items: [
+            { itemId: 'exp_boost_premium', price: 1800 },
+            { itemId: 'exp_boost_premium', price: 1800 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: '经验加成包 Ⅳ，内含两张经验加成卡 Ⅳ，可叠加（该组合包仅限购 1 份）'
+    },
+    bundle_expup5: {
+        name: '经验加成包 Ⅴ',
+        icon: 'fas fa-gift',
+        color: '#ff2d55',
+        items: [
+            { itemId: 'exp_boost_5', price: 2300 },
+            { itemId: 'exp_boost_5', price: 2300 },
+        ],
+        discount: 10,          // ★ 整包打折百分比，修改此单一数值即可
+        stock: 1,
+        stockType: 'total',
+        enabled: true,
+        note: '经验加成包 Ⅴ，内含两张经验加成卡 V，极限模式下的加成首选（该组合包仅限购 1 份）'
+    },
+    
 
     // 新增组合包：复制上方格式追加即可
     // bundle_xxx: {
@@ -422,7 +696,7 @@ var SHOP_BUNDLES = {
 
     // ===== 每月限购组合包 =====
     bundle_monthly_supply: {
-        name: '月度成长补给包',
+        name: '月度成长补给包 Ⅰ',
         icon: 'fas fa-gift',
         color: '#e67e22',
         items: [
@@ -436,6 +710,37 @@ var SHOP_BUNDLES = {
         enabled: true,
         note: '每月限购 1 份： 经验加成卡Ⅱ + 经验加成卡Ⅲ + 经验补给卡Ⅳ（整包 85% 折）'
     },
+    bundle_monthly_supply_2: {
+        name: '月度成长补给包 Ⅱ',
+        icon: 'fas fa-gift',
+        color: '#c0392b',
+        items: [
+            { itemId: 'exp_boost_5', price: 2300 },
+            { itemId: 'exp_supply_4', price: 2000 },
+            { itemId: 'exp_supply_5', price: 2500 },
+        ],
+        discount: 15,         // ★ 整包 85% 折
+        stock: 1,
+        stockType: 'monthly',
+        enabled: true,
+        note: '每月限购 1 份： 经验加成卡 V + 经验补给卡Ⅳ + 经验补给卡 V（整包 85% 折）'
+    },
+    bundle_luckycoin: {
+        name: '幸运币组合包',
+        icon: 'fas fa-gift',
+        color: '#e67e22',
+        items: [
+            { itemId: 'luck_coin_common', price: 100, qty: 10 },
+            { itemId: 'luck_coin_rare', price: 150, qty: 10 },
+            { itemId: 'luck_coin_epic', price: 250, qty: 10 },
+            { itemId: 'luck_coin_legend', price: 500, qty: 10 },
+        ],
+        discount: 50,          // ★ 整包 50% 折
+        stock: 1,
+        stockType: 'monthly',
+        enabled: true,
+        note: '每月限购一份，包含所有档位的幸运币各 10 枚，超值组合优惠！（整包 50% 折）'
+    },
 
     // ===== 每周限购组合包 =====
     bundle_weekly_supply: {
@@ -444,14 +749,15 @@ var SHOP_BUNDLES = {
         color: '#16a085',
         items: [
             { itemId: 'exp_supply_2', price: 800 },
-            { itemId: 'exp_boost_mid', price: 600 },
+            { itemId: 'exp_boost_large', price: 1000 },
+            { itemId: 'exp_supply_3', price: 1400 },
             { itemId: 'makeup_card', price: 500 },
         ],
         discount: 20,         // ★ 整包 8 折
         stock: 1,
         stockType: 'weekly',
         enabled: true,
-        note: '每周限购 1 份：经验补给卡Ⅱ + 经验加成卡Ⅱ + 补签卡 1 张（整包 80% 折）'
+        note: '每周限购 1 份：经验补给卡Ⅱ + 经验加成卡Ⅲ + 经验补给卡Ⅲ + 补签卡 1 张（整包 80% 折）'
     }
 };
 
@@ -1091,6 +1397,10 @@ function showShopModal() {
     // 每次打开商店都做一次返还检查（有多重幂等保护，不会重复发邮件）
     _shopRunPriceAdjustmentRefunds();
 
+    // 版本更新后的购买状态自动重置（每位用户每轮仅执行一次，月卡/背景/名片不参与）
+    var autoResetResult = null;
+    try { autoResetResult = _shopRunAutoReset(); } catch (e) { autoResetResult = null; }
+
     var modal = ensureShopModal();
     // 每次进入商店都固定展示「推荐」，并从第一件推荐商品开始
     _shopActiveCategory = 'recommend';
@@ -1098,6 +1408,11 @@ function showShopModal() {
     renderShopUI();
     modal.style.display = 'flex';
     setTimeout(function() { modal.classList.add('show'); }, 10);
+
+    // 重置完成后弹出底部通栏提示（列出被重置的已购内容）
+    if (autoResetResult) {
+        setTimeout(function() { shopOpenAutoResetNotice(autoResetResult.items || []); }, 420);
+    }
 }
 
 function closeShopModal() {

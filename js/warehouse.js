@@ -67,7 +67,7 @@ var WAREHOUSE_ITEMS = {
         category: 'consumable', rarity: 'legendary', showSource: true,
         desc: '使用后30分钟内，经验获取提升75%。（该卡仅在阶段突破·极限模式（121级后）可用；可与不同类型加成卡叠加，同类型不可叠加，最多同时5张。当 I+II+III+Ⅳ+V 中任意五张同时激活时，叠加可达 +175%。）',
         flavorText: '一道撕裂天穹的猩红闪电，将经验加成的极限推向了又一个顶峰 \n——当雷霆落下，所有的天花板都不过是一地碎片。',
-        source: '阶段突破·极限里程碑奖励（暂不上架商店）', usable: true, _boostType: 'extreme', _boostPercent: 75, _requireExtreme: true
+        source: '阶段突破·极限里程碑奖励 / 商店兑换', usable: true, _boostType: 'extreme', _boostPercent: 75, _requireExtreme: true
     },
     gacha_single: {
         name: '单次抽卡卷', icon: 'fas fa-ticket-simple', color: '#2ecc71',
@@ -95,35 +95,35 @@ var WAREHOUSE_ITEMS = {
         category: 'material', rarity: 'rare', showSource: true,
         desc: '可在幸运抽奖机投币口投入：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%。（该幸运币效果与「幸运币 · 普通」一致，并自新版起不再对抽卡模拟器生效）',
         flavorText: '把它轻轻抛起的那一刻，仿佛连概率女神都忍不住多看了你一眼。\n——所谓幸运，不过是机会恰好遇见了相信它的人。',
-        source: '商店 / 新手组合包', usable: false
+        source: '往期活动奖励（现已停止售卖）', usable: false
     },
     luck_coin_common: {
         name: '幸运币 · 普通', icon: 'fas fa-coins', color: '#95a5a6',
         category: 'material', rarity: 'common', showSource: true,
         desc: '可在幸运抽奖机中使用：下一次抽取时普通奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；普通档位奖励合计概率上限 75%（超出部分无效）。',
         flavorText: '一枚朴素的银色硬币，却能让平凡的时刻悄悄偏向你。\n——幸运从不喧哗，它只是站在你这边。',
-        source: '签到（前半月）/ 通行证 1-30 级 / 自选兑换卡', usable: false
+        source: '商店兑换 / 签到（前半月）/ 通行证 1-30 级 / 自选兑换卡', usable: false
     },
     luck_coin_rare: {
         name: '幸运币 · 稀有', icon: 'fas fa-coins', color: '#f1c40f',
         category: 'material', rarity: 'rare', showSource: true,
         desc: '可在幸运抽奖机中使用：下一次抽取时稀有奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；稀有档位奖励合计概率上限 65%（超出部分无效）。',
         flavorText: '金色纹路在币面上流转，命运的天平开始微微倾斜。\n——它会记得每一次被投入投币口的瞬间。',
-        source: '签到（后半月）/ 通行证 31-60 级 / 自选兑换卡', usable: false
+        source: '商店兑换 / 签到（后半月）/ 通行证 31-60 级 / 自选兑换卡', usable: false
     },
     luck_coin_epic: {
         name: '幸运币 · 史诗', icon: 'fas fa-coins', color: '#9b59b6',
         category: 'material', rarity: 'epic', showSource: true,
         desc: '可在幸运抽奖机中使用：下一次抽取时史诗奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；史诗档位奖励合计概率上限 40%（超出部分无效）。',
         flavorText: '紫色的微光自币心升起，那是对更高处的一次郑重邀请。\n——史诗从不轻易现身，除非你足够诚心。',
-        source: '通行证 61-90 级 / 自选兑换卡', usable: false
+        source: '商店兑换 / 通行证 61-90 级 / 自选兑换卡', usable: false
     },
     luck_coin_legend: {
         name: '幸运币 · 传说', icon: 'fas fa-coins', color: '#e67e22',
         category: 'material', rarity: 'legendary', showSource: true,
         desc: '可在幸运抽奖机中使用：下一次抽取时传说奖品概率提升。不同档位幸运币不可同时投入，单次最多投入 10 枚；传说档位奖励合计概率上限 25%（超出部分无效）。',
         flavorText: '炽金的光晕包裹着这枚传说中的硬币，投下的刹那，整台抽奖机都会为之震颤。\n——传说的门槛很高，但幸运女神此刻正注视着你。',
-        source: '通行证 91-120 级 / 自选兑换卡', usable: false
+        source: '商店兑换 / 通行证 91-120 级 / 自选兑换卡', usable: false
     },
     // ---- 幸运币 袋 / 盒（开箱型道具：随机开出对应档位幸运币；暂不加入自选物品兑换卡）----
     luck_bag_common: {
@@ -237,7 +237,7 @@ var WAREHOUSE_ITEMS = {
         category: 'consumable', rarity: 'legendary', showSource: true,
         desc: '使用后获得3000点经验值，将立即对账户等级生效。（仅在阶段突破·极限模式（121级后）可用。）',
         flavorText: '一颗从极限深处坠落的猩红陨星，其蕴含的经验密度已超越常理极限 \n——它只向那些敢于踏入极限领域的人展露真容。',
-        source: '阶段突破·极限里程碑奖励（暂不上架商店）', usable: true, _expGain: 3000, _requireExtreme: true
+        source: '阶段突破·极限里程碑奖励 / 商店兑换', usable: true, _expGain: 3000, _requireExtreme: true
     },
     precoin_supply_1: {
         name: 'PRE Coin 补给包 Ⅰ', icon: 'fas fa-coins', color: '#3498db',
@@ -426,16 +426,74 @@ function saveWarehouseData(data) {
 // 过期清理在 getWarehouseData / 渲染前统一执行，保证过期项自动消失
 
 // 清理已过期的限时物品（每次读取/渲染时自动调用）
+// 赛季限定物品不再直接清除：赛季轮换后按「赛季物品继承机制」折算并转为新赛季物品
 function cleanExpiredTimedItems(data) {
     if (!data.timedItems) { data.timedItems = []; return; }
     var now = Date.now();
-    var valid = data.timedItems.filter(function(t) {
-        return t.expiresAt && new Date(t.expiresAt).getTime() > now && (!t.qty || t.qty > 0);
+    var curSeason = _whCurrentSeasonLabel();
+    var curExpireMs = _whCurrentSeasonExpireMs();
+    var changed = false;
+    var inherited = false;
+    var next = [];
+    data.timedItems.forEach(function(t) {
+        if (!t) { changed = true; return; }
+        var expMs = t.expiresAt ? new Date(t.expiresAt).getTime() : 0;
+        var expired = !(expMs > now);
+        var qty = t.qty || 0;
+        if (qty <= 0) { changed = true; return; }
+        if (t.season) {
+            // 赛季限定物品：未到期正常保留
+            if (!expired) { next.push(t); return; }
+            // 已到期且赛季已轮换（当前赛季标记不同、新赛季仍在进行中）→ 按继承机制折算为新赛季物品
+            if (t.season !== curSeason && curExpireMs > now && WAREHOUSE_ITEMS[t.itemId]) {
+                var keepQty = Math.ceil(qty * WAREHOUSE_SEASON_INHERIT_KEEP_RATE);
+                if (keepQty > 0) {
+                    next.push({
+                        uid: 'ti_inherit_' + now + '_' + Math.floor(Math.random() * 1e6),
+                        itemId: t.itemId,
+                        qty: keepQty,
+                        obtainedAt: new Date(now).toISOString(),
+                        expiresAt: new Date(curExpireMs).toISOString(),
+                        source: '赛季物品继承（' + t.season + ' → ' + curSeason + '）',
+                        season: curSeason
+                    });
+                    inherited = true;
+                }
+                changed = true;
+                return;
+            }
+            // 休赛期（新赛季尚未开启）：暂存原条目，等待赛季轮换后再继承，避免数据丢失
+            next.push(t);
+            return;
+        }
+        if (!expired) {
+            next.push(t);
+        } else {
+            changed = true;
+        }
     });
-    if (valid.length !== data.timedItems.length) {
-        data.timedItems = valid;
+    if (changed) {
+        data.timedItems = next;
+        if (inherited) mergeSeasonTimedItems(data); // 继承条目与已有的同赛季同道具条目合并
         saveWarehouseData(data);
     }
+}
+
+// 赛季物品继承机制：赛季轮换后，上一赛季的赛季限定物品不再全部过期删除。
+// 每件物品数量扣除 80%（即保留 20%，出现小数时向上取整），保留部分自动转换为新赛季的同类赛季物品。
+// 后续所有赛季轮换均沿用该逻辑（由 cleanExpiredTimedItems 在读取仓库时自动执行）
+var WAREHOUSE_SEASON_INHERIT_KEEP_RATE = 0.2;
+
+// 当前赛季标记（缺省回退第一赛季）
+function _whCurrentSeasonLabel() {
+    return (typeof PASS_CONFIG !== 'undefined' && PASS_CONFIG.seasonLabel) ? PASS_CONFIG.seasonLabel : '第一赛季';
+}
+
+// 当前赛季结束时间（毫秒时间戳；无法解析时为 0）
+function _whCurrentSeasonExpireMs() {
+    if (typeof PASS_CONFIG === 'undefined' || !PASS_CONFIG.endTime) return 0;
+    var ms = new Date(PASS_CONFIG.endTime).getTime();
+    return isNaN(ms) ? 0 : ms;
 }
 
 // 合并相同赛季物品：同一 itemId、同一赛季、同一到期时间的多条限时条目合并为一条，数量累加
@@ -557,7 +615,7 @@ function warehouseAddTimedItems(items, source, expiryDays, silent) {
 
 // ==================== 赛季限定物品（通行证等级奖励专用） ====================
 // 与限时物品共用 timedItems 存储，条目附加 season（赛季名）标记：
-// - 到期时间固定为赛季结束时间，赛季结束后由 cleanExpiredTimedItems 自动过期清空
+// - 到期时间固定为赛季结束时间；赛季轮换后按「赛季物品继承机制」折算保留 20% 数量并转为新赛季同类物品
 // - 仓库卡片 / 详情以「XX赛季」文本标记替代剩余天数倒计时
 // - 仅通行证等级奖励（含 EX 溢出）发放的物品使用此接口；PRE Coin 等统一货币与其他获取途径不受影响
 // warehouseAddSeasonItem('exp_supply_1', 1, '通行证 Lv.10 免费奖励', '第一赛季', '2026-12-30T20:00:00Z')
@@ -1231,7 +1289,7 @@ function buildWarehouseCardHTML(itemId, entry, removeMode, timedMeta) {
     var timedTagHtml = '';
     if (isTimed && timedMeta.season) {
         displayName = _whSeasonItemName(item, timedMeta);
-        timedTagHtml = '<span class="wh-timed-tag" style="background:#6a5acd;color:#fff;" title="该物品为「' + timedMeta.season + '」物品，赛季结束后将自动过期并清除">「' + timedMeta.season + '」</span>';
+        timedTagHtml = '<span class="wh-timed-tag" style="background:#6a5acd;color:#fff;" title="该物品为「' + timedMeta.season + '」物品，赛季轮换时保留 20% 数量（小数向上取整）并自动转换为新赛季的同类赛季物品">「' + timedMeta.season + '」</span>';
     } else if (isTimed && timedMeta.expiresAt) {
         displayName = item.name + '（限时）';
         displayDesc = item.desc + '（该物品具有时效性，有效期为14天）';
@@ -2176,7 +2234,7 @@ function _whShowRandBoxModal(item, usedCount, rolls, seasonLabel) {
     var noteEl = modal.querySelector('#wrboxNote');
     if (noteEl) {
         noteEl.innerHTML = seasonName
-            ? '<i class="fas fa-warehouse"></i> 物品已按「' + seasonName + '」限定存入仓库，赛季结束后自动过期；PRE Coin 已入账'
+            ? '<i class="fas fa-warehouse"></i> 物品已按「' + seasonName + '」限定存入仓库，赛季轮换时保留 20% 数量并转为新赛季同类物品；PRE Coin 已入账'
             : '<i class="fas fa-warehouse"></i> 物品已自动存入仓库，PRE Coin 已入账';
     }
 
@@ -2536,12 +2594,12 @@ function showWarehouseItemDetail(itemId, options) {
         ownedQty = options.qty;
     }
 
-    // 赛季限定物品：名称追加「XX赛季」后缀，描述写明赛季过期规则，不显示剩余天数
+    // 赛季限定物品：名称追加「XX赛季」后缀，描述写明赛季物品继承规则，不显示剩余天数
     var isSeasonItem = !!(timedMeta && timedMeta.season);
     var displayName = item.name + (timedMeta ? (isSeasonItem ? '' : '（限时）') : '');
     var displayDesc = item.desc + (timedMeta ? (isSeasonItem
-        ? '（该物品为「' + timedMeta.season + '」物品，赛季结束后将自动过期并清除）'
-        : '（该物品具有时效性，有效期为14天）') : '');
+        ? '（该物品为「' + timedMeta.season + '」赛季限定物品，赛季轮换后物品数量将扣除 80% 后保留剩余部分（向上取整），保留部分自动转换为下一赛季的同类赛季物品）'
+        : '（该物品具有时效性，有效期 14 天）') : '');
 
     // ---- 左侧图标区 ----
     var iconPanel = modal.querySelector('#whDetailIconPanel');
@@ -2552,7 +2610,7 @@ function showWarehouseItemDetail(itemId, options) {
 
     var timedTagHtml = '';
     if (isSeasonItem) {
-        timedTagHtml = '<span class="wh-detail-tag wh-detail-season-tag" title="赛季结束后将自动过期并清除">「' + timedMeta.season + '」</span>';
+        timedTagHtml = '<span class="wh-detail-tag wh-detail-season-tag" title="赛季轮换时保留 20% 数量（小数向上取整）并自动转换为新赛季的同类赛季物品">「' + timedMeta.season + '」</span>';
     } else if (timedMeta && timedMeta.expiresAt) {
         var nowMs = Date.now();
         var expireMs = new Date(timedMeta.expiresAt).getTime();

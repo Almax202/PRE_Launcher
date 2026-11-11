@@ -28,8 +28,8 @@ var PASS_CONFIG = {
     exFreeItem: 'rand_box_2',    // EX 溢出：免费每级奖励「随机物品箱 · 中级」×1
     exPremiumItem: 'rand_box_3', // EX 溢出：付费每级额外奖励「随机物品箱 · 高级」×1
     startTime: '2026-09-30T20:00:00Z',   // 赛季起始时间 (UTC) = 2026-10-01 04:00 (UTC+8)
-    endTime: '2026-12-30T20:00:00Z',     // 赛季结束时间 (UTC) = 2026-12-31 04:00 (UTC+8)
-    seasonLabel: '第一赛季'              // 赛季限定物品标记：等级奖励物品名称后缀与过期清空依据
+    endTime: '2026-11-30T20:00:00Z',     // 赛季结束时间 (UTC) = 2026-12-01 04:00 (UTC+8)
+    seasonLabel: '第一赛季'              // 赛季限定物品标记：等级奖励物品名称后缀与赛季继承折算依据
 };
 
 // ==================== 奖励表生成 ====================
@@ -154,8 +154,8 @@ var PASS_WEEKLY_TASK_POOL = [
     { id: 'w_pass3',    title: '关注通行证',        desc: '本周打开赛季通行证 3 次',         target: 3, exp: 5 }
 ];
 
-// ==================== 每周事项（12 周 × 10 个任务，3-10 经验） ====================
-// 周次开放规则：自 PASS_CONFIG.startTime 起每 7 天开放 1 周，总计 12 周
+// ==================== 每周事项（8 周 × 10 个任务，3-10 经验） ====================
+// 周次开放规则：自 PASS_CONFIG.startTime 起每 7 天开放 1 周，总计 8 周
 // （扩充时刻随赛季起始时间固定在 UTC+8 凌晨 4 点，即新一周第一天的凌晨 4 点扩充）
 // 任务类型 key 与 _wireTaskHooks / dailyTaskMarkProgress 的 taskKey 保持一致
 //   checkin / minigame / gacha / warehouse / treasure / mail / shop / coin / boost
@@ -264,63 +264,11 @@ var PASS_WEEKLY12_TASK_POOLS = [
         { id: 'wk8_t8', title: '富甲一方',       desc: '本周累计赚取 500 PRE Coin',                target: 500, exp: 8, taskKey: 'coin'      },
         { id: 'wk8_t9', title: '游戏征服',       desc: '本周游玩任意小游戏 9 次',                  target: 9,   exp: 9, taskKey: 'minigame'  },
         { id: 'wk8_t10', title: '金玉满堂',      desc: '本周累计赚取 600 PRE Coin',                target: 600, exp: 10, taskKey: 'coin'      }
-    ],
-    // ===== 第九周 =====
-    [
-        { id: 'wk9_t1', title: '签到如常',       desc: '本周完成每日签到 7 次',                    target: 7,   exp: 8, taskKey: 'checkin'   },
-        { id: 'wk9_t2', title: '游戏巅峰',       desc: '本周游玩任意小游戏 8 次',                  target: 8,   exp: 8, taskKey: 'minigame'  },
-        { id: 'wk9_t3', title: '抽卡无止境',     desc: '本周在抽卡模拟器抽取 12 次',               target: 12,  exp: 8, taskKey: 'gacha'     },
-        { id: 'wk9_t4', title: '仓库巡官',       desc: '本周打开仓库 7 次',                        target: 7,   exp: 5, taskKey: 'warehouse' },
-        { id: 'wk9_t5', title: '购物无止境',     desc: '本周打开商店 7 次',                        target: 7,   exp: 5, taskKey: 'shop'      },
-        { id: 'wk9_t6', title: '信使达人',       desc: '本周打开邮件系统 6 次',                    target: 6,   exp: 6, taskKey: 'mail'      },
-        { id: 'wk9_t7', title: '宝箱无止境',     desc: '本周打开百宝箱 6 次',                      target: 6,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk9_t8', title: '经验狂潮',       desc: '本周使用任意经验加成卡 3 次',              target: 3,   exp: 8, taskKey: 'boost'     },
-        { id: 'wk9_t9', title: '十连风暴',       desc: '本周在抽卡模拟器抽取 14 次',               target: 14,  exp: 9, taskKey: 'gacha'     },
-        { id: 'wk9_t10', title: '加成巅峰',      desc: '本周使用任意经验加成卡 4 次',              target: 4,   exp: 10, taskKey: 'boost'     }
-    ],
-    // ===== 第十周 =====
-    [
-        { id: 'wk10_t1', title: '签到坚守',      desc: '本周完成每日签到 7 次',                    target: 7,   exp: 8, taskKey: 'checkin'   },
-        { id: 'wk10_t2', title: '游戏宗师',      desc: '本周游玩任意小游戏 8 次',                  target: 8,   exp: 8, taskKey: 'minigame'  },
-        { id: 'wk10_t3', title: '抽卡大师',      desc: '本周在抽卡模拟器抽取 12 次',               target: 12,  exp: 8, taskKey: 'gacha'     },
-        { id: 'wk10_t4', title: '仓管大师',      desc: '本周打开仓库 8 次',                        target: 8,   exp: 6, taskKey: 'warehouse' },
-        { id: 'wk10_t5', title: '购物大师',      desc: '本周打开商店 8 次',                        target: 8,   exp: 6, taskKey: 'shop'      },
-        { id: 'wk10_t6', title: '邮件大师',      desc: '本周打开邮件系统 6 次',                    target: 6,   exp: 6, taskKey: 'mail'      },
-        { id: 'wk10_t7', title: '百宝箱宗师',    desc: '本周打开百宝箱 6 次',                      target: 6,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk10_t8', title: '金币大亨',      desc: '本周累计赚取 600 PRE Coin',                target: 600, exp: 8, taskKey: 'coin'      },
-        { id: 'wk10_t9', title: '仓库宗师',      desc: '本周打开仓库 9 次',                        target: 9,   exp: 9, taskKey: 'warehouse' },
-        { id: 'wk10_t10', title: '抽卡至尊',     desc: '本周在抽卡模拟器抽取 15 次',               target: 15,  exp: 10, taskKey: 'gacha'     }
-    ],
-    // ===== 第十一周 =====
-    [
-        { id: 'wk11_t1', title: '签到冲刺',      desc: '本周完成每日签到 7 次',                    target: 7,   exp: 8, taskKey: 'checkin'   },
-        { id: 'wk11_t2', title: '游戏王者',      desc: '本周游玩任意小游戏 9 次',                  target: 9,   exp: 8, taskKey: 'minigame'  },
-        { id: 'wk11_t3', title: '抽卡王者',      desc: '本周在抽卡模拟器抽取 14 次',               target: 14,  exp: 8, taskKey: 'gacha'     },
-        { id: 'wk11_t4', title: '仓库王者',      desc: '本周打开仓库 8 次',                        target: 8,   exp: 6, taskKey: 'warehouse' },
-        { id: 'wk11_t5', title: '商店王者',      desc: '本周打开商店 8 次',                        target: 8,   exp: 6, taskKey: 'shop'      },
-        { id: 'wk11_t6', title: '信使大师',      desc: '本周打开邮件系统 7 次',                    target: 7,   exp: 6, taskKey: 'mail'      },
-        { id: 'wk11_t7', title: '百宝箱王者',    desc: '本周打开百宝箱 7 次',                      target: 7,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk11_t8', title: '加成大师',      desc: '本周使用任意经验加成卡 3 次',              target: 3,   exp: 8, taskKey: 'boost'     },
-        { id: 'wk11_t9', title: '游戏至臻',      desc: '本周游玩任意小游戏 10 次',                 target: 10,  exp: 9, taskKey: 'minigame'  },
-        { id: 'wk11_t10', title: '财通四海',     desc: '本周累计赚取 700 PRE Coin',                target: 700, exp: 10, taskKey: 'coin'      }
-    ],
-    // ===== 第十二周 =====
-    [
-        { id: 'wk12_t1', title: '赛季全勤',      desc: '本周完成每日签到 7 次',                    target: 7,   exp: 8, taskKey: 'checkin'   },
-        { id: 'wk12_t2', title: '游戏之巅',      desc: '本周游玩任意小游戏 10 次',                 target: 10,  exp: 8, taskKey: 'minigame'  },
-        { id: 'wk12_t3', title: '抽卡之巅',      desc: '本周在抽卡模拟器抽取 15 次',               target: 15,  exp: 8, taskKey: 'gacha'     },
-        { id: 'wk12_t4', title: '仓库之巅',      desc: '本周打开仓库 9 次',                        target: 9,   exp: 6, taskKey: 'warehouse' },
-        { id: 'wk12_t5', title: '购物之巅',      desc: '本周打开商店 9 次',                        target: 9,   exp: 6, taskKey: 'shop'      },
-        { id: 'wk12_t6', title: '邮件之巅',      desc: '本周打开邮件系统 7 次',                    target: 7,   exp: 6, taskKey: 'mail'      },
-        { id: 'wk12_t7', title: '百宝箱之巅',    desc: '本周打开百宝箱 7 次',                      target: 7,   exp: 6, taskKey: 'treasure'  },
-        { id: 'wk12_t8', title: '财富之巅',      desc: '本周累计赚取 800 PRE Coin',                target: 800, exp: 8, taskKey: 'coin'      },
-        { id: 'wk12_t9', title: '加成之巅',      desc: '本周使用任意经验加成卡 4 次',              target: 4,   exp: 9, taskKey: 'boost'     },
-        { id: 'wk12_t10', title: '财富帝国',     desc: '本周累计赚取 1000 PRE Coin',               target: 1000, exp: 10, taskKey: 'coin'     }
     ]
 ];
 
 // 每周开放周期（毫秒）：自赛季起始时间起每 7 天开放 1 周
-var PASS_WEEKLY12_TOTAL_WEEKS = 12;
+var PASS_WEEKLY12_TOTAL_WEEKS = 8;
 var PASS_WEEKLY12_WEEK_MS = 7 * 24 * 3600 * 1000;
 // 周次子标签每页固定显示的周次按钮数量（超过后以左右箭头翻页）
 var PASS_WEEKLY12_PAGE_SIZE = 3;
@@ -716,8 +664,9 @@ function _passCollectItem(bucket, itemId, qty) {
 }
 
 // 发放赛季限定物品（通行证等级奖励专用，静默入账）：
-// 物品以「第一赛季」标记写入仓库限时条目，到期时间为赛季结束（PASS_CONFIG.endTime），
-// 赛季结束后自动过期清空；PRE Coin 等统一货币不走此接口，不受赛季限制
+// 物品以「第一赛季」标记写入仓库限时条目，到期时间为赛季结束（PASS_CONFIG.endTime）；
+// 赛季轮换后按仓库「赛季物品继承机制」保留 20% 数量（小数向上取整）并自动转为新赛季同类物品；
+// PRE Coin 等统一货币不走此接口，不受赛季限制
 function _passGrantSeasonItem(itemId, qty, source) {
     var label = PASS_CONFIG.seasonLabel || '第一赛季';
     if (typeof warehouseAddSeasonItem === 'function') {
@@ -967,7 +916,7 @@ var _passDevForceLocked = false;
 // session 级，不写入存档，刷新/重登后还原；真实赛季结束时也会自动进入休赛期
 var _passDevOffSeason = false;
 
-// Dev 每周事项「一键启用所有周任务」开关：开启后第 1~12 周按钮全部显示并可完成/领取
+// Dev 每周事项「一键启用所有周任务」开关：开启后第 1~8 周按钮全部显示并可完成/领取
 // session 级（与 _passDevUnlockAll 一致，不写入存档，刷新/重登后还原真实时间推进）
 var _passDevWeekly12UnlockAll = false;
 
@@ -1141,14 +1090,14 @@ function _getPassWeekly12OpenWeeks() {
 }
 
 // 每周事项下一周次开放时间（与 _getPassWeekly12OpenWeeks 同源，均基于赛季起始 + 7 天周期；
-// 12 周全部开放后返回 null）
+// 8 周全部开放后返回 null）
 function _getPassWeekly12NextOpenTime() {
     var openWeeks = _getPassWeekly12OpenWeeks();
     if (openWeeks >= PASS_WEEKLY12_TOTAL_WEEKS) return null;
     return new Date(PASS_CONFIG.startTime).getTime() + openWeeks * PASS_WEEKLY12_WEEK_MS;
 }
 
-// 距下一周次开放剩余天数（向上取整，范围 1~7；12 周全部开放后为 0）
+// 距下一周次开放剩余天数（向上取整，范围 1~7；8 周全部开放后为 0）
 function _getPassWeekly12DaysUntilNext() {
     var next = _getPassWeekly12NextOpenTime();
     if (next === null) return 0;
@@ -1199,7 +1148,7 @@ function passUpdateWeekly12Progress(taskKey, increment) {
     increment = parseInt(increment, 10) || 1;
     var data = getPassData();
     data = ensureWeekly12Tasks(data);
-    // Dev 解锁态下遍历全部 12 周；否则仅推进当前已开放周次
+    // Dev 解锁态下遍历全部 8 周；否则仅推进当前已开放周次
     var openWeeks = _isWeekly12DevUnlocked() ? PASS_WEEKLY12_TOTAL_WEEKS : _getPassWeekly12OpenWeeks();
     var updated = false;
     for (var w = 1; w <= openWeeks; w++) {
@@ -1252,14 +1201,14 @@ function passClaimWeekly12Task(week, taskId) {
     return true;
 }
 
-// Dev：一键启用所有周任务（初始化全部 12 周数据并解锁全部周次按钮，无视周次时间限制）
+// Dev：一键启用所有周任务（初始化全部 8 周数据并解锁全部周次按钮，无视周次时间限制）
 function passDevWeekly12EnableAll() {
     var data = getPassData();
     data = ensureWeekly12Tasks(data);
     _passDevWeekly12UnlockAll = true;
     savePassData(data);
     if (typeof showToast === 'function') {
-        showToast({ type: 'success', title: '通行证 Dev', message: '已启用全部 12 周每周事项，第 1~12 周按钮已全部显示（经验需手动领取）' });
+        showToast({ type: 'success', title: '通行证 Dev', message: '已启用全部 8 周每周事项，第 1~8 周按钮已全部显示（经验需手动领取）' });
     }
     return true;
 }
@@ -1282,7 +1231,7 @@ function passDevWeekly12CompleteAll() {
     }
     savePassData(data);
     if (typeof showToast === 'function') {
-        showToast({ type: 'success', title: '通行证 Dev', message: '已将全部 12 周每周事项任务进度拉满（' + completed + ' 个任务本次完成），经验需手动领取' });
+        showToast({ type: 'success', title: '通行证 Dev', message: '已将全部 8 周每周事项任务进度拉满（' + completed + ' 个任务本次完成），经验需手动领取' });
     }
     return true;
 }
@@ -1307,12 +1256,12 @@ function passDevWeekly12DisableAll() {
     }
     savePassData(data);
     if (typeof showToast === 'function') {
-        showToast({ type: 'success', title: '通行证 Dev', message: '已禁用全部 12 周每周事项（进度与领取状态已清空，已获得的经验值保留）' });
+        showToast({ type: 'success', title: '通行证 Dev', message: '已禁用全部 8 周每周事项（进度与领取状态已清空，已获得的经验值保留）' });
     }
     return true;
 }
 
-// Dev：一键重置所有周任务完成状态（12 周全部任务进度清零、领取状态清空，不改变周次解锁状态与已获经验）
+// Dev：一键重置所有周任务完成状态（8 周全部任务进度清零、领取状态清空，不改变周次解锁状态与已获经验）
 function passDevWeekly12ResetAll() {
     var data = getPassData();
     data = ensureWeekly12Tasks(data);
@@ -1329,7 +1278,7 @@ function passDevWeekly12ResetAll() {
     }
     savePassData(data);
     if (typeof showToast === 'function') {
-        showToast({ type: 'success', title: '通行证 Dev', message: '已重置全部 12 周每周事项的完成状态（进度与领取状态已清空，已获得的经验值保留）' });
+        showToast({ type: 'success', title: '通行证 Dev', message: '已重置全部 8 周每周事项的完成状态（进度与领取状态已清空，已获得的经验值保留）' });
     }
     return true;
 }
@@ -1739,7 +1688,7 @@ function passDevCompleteAllTasks() {
             entry.progress = def.target;
         });
     });
-    // 每周事项 12 周任务进度同步拉满
+    // 每周事项 8 周任务进度同步拉满
     for (var w = 1; w <= PASS_WEEKLY12_TOTAL_WEEKS; w++) {
         var pool12 = PASS_WEEKLY12_TASK_POOLS[w - 1];
         var arr12 = data.weekly12Tasks[w];
@@ -1788,7 +1737,7 @@ function passDevResetAllTasks() {
         });
     });
 
-    // 每周事项：重置 12 周全部任务进度与领取状态
+    // 每周事项：重置 8 周全部任务进度与领取状态
     for (var rw = 1; rw <= PASS_WEEKLY12_TOTAL_WEEKS; rw++) {
         var rpool = PASS_WEEKLY12_TASK_POOLS[rw - 1];
         var rarr = data.weekly12Tasks[rw];
@@ -1996,7 +1945,7 @@ window.pass = {
     claimExReward: passClaimExReward,
     updateTask: passUpdateTaskProgress,
     claimTask: passClaimTask,
-    // 每周事项（12 周）
+    // 每周事项（8 周）
     updateWeekly12Task: passUpdateWeekly12Progress,
     claimWeekly12Task: passClaimWeekly12Task,
     getWeekly12OpenWeeks: _getPassWeekly12OpenWeeks,
@@ -2072,11 +2021,11 @@ function _buildPassHTML() {
                     <div class="pass-title-cn">${cfg.name}</div>
                     <div class="pass-title-en">${cfg.nameEn}</div>
                 </div>
-                <button class="pass-announcement-btn" id="passAnnouncementBtn" type="button" title="通行证公告">
-                    <i class="fas fa-bullhorn"></i> 公告
+                <button class="pass-announcement-btn" id="passAnnouncementBtn" type="button" title="通行证手册">
+                    <i class="fas fa-bullhorn"></i> 手册
                 </button>
-                <button class="pass-season-switch-btn" id="passSeasonSwitchBtn" type="button" title="切换赛季通行证">
-                    <i class="fas fa-shuffle"></i> 切换
+                <button class="pass-season-switch-btn" id="passSeasonSwitchBtn" type="button" title="回顾历史赛季">
+                    <i class="fas fa-clock-rotate-left"></i> 回顾
                 </button>
                 <div class="pass-badge pass-badge-live" id="passSeasonBadge">
                     <i class="fas fa-circle"></i> 进行中
@@ -2091,7 +2040,7 @@ function _buildPassHTML() {
                     <div class="pass-season-time-item">
                         <i class="fas fa-flag-checkered"></i>
                         <span class="pass-season-time-label">结束</span>
-                        <span class="pass-season-time-value" id="passEndTime">2026-12-31 04:00</span>
+                        <span class="pass-season-time-value" id="passEndTime">2026-12-01 04:00</span>
                     </div>
                     <i class="fas fa-ellipsis pass-season-time-sep"></i>
                     <div class="pass-season-time-item pass-season-days-left" id="passSeasonDaysLeft">
@@ -2128,12 +2077,12 @@ function _buildPassHTML() {
                         <div class="pass-dev-dropdown-divider"></div>
                         <button class="pass-dev-item pass-dev-item-toggle" type="button" data-dev-action="enableWeekly12All">
                             <i class="fas fa-calendar-plus pass-dev-item-icon"></i>
-                            <span class="pass-dev-item-label">一键启用所有周任务（共计 12 周）</span>
+                            <span class="pass-dev-item-label">一键启用所有周任务（共计 8 周）</span>
                             <i class="fas fa-circle-check pass-dev-item-state"></i>
                         </button>
                         <button class="pass-dev-item" type="button" data-dev-action="completeWeekly12All">
                             <i class="fas fa-circle-check pass-dev-item-icon"></i>
-                            <span class="pass-dev-item-label">一键完成所有周任务（共计 12 周）</span>
+                            <span class="pass-dev-item-label">一键完成所有周任务（共计 8 周）</span>
                         </button>
                         <button class="pass-dev-item pass-dev-item-toggle" type="button" data-dev-action="disableWeekly12All">
                             <i class="fas fa-ban pass-dev-item-icon"></i>
@@ -2494,11 +2443,11 @@ function _buildPassHTML() {
         </div>
     </div>
 
-    <!-- ===== 更换赛季通行证弹窗 ===== -->
+    <!-- ===== 回顾历史赛季弹窗 ===== -->
     <div class="pass-modal-overlay" id="passSeasonSwitchModal" style="display:none;">
         <div class="pass-modal-box pass-modal-box-season">
-            <div class="pass-modal-title">更换赛季通行证</div>
-            <div class="pass-modal-subtitle">选择要查看的赛季通行证，点击对应赛季卡片即可切换</div>
+            <div class="pass-modal-title">回顾历史赛季</div>
+            <div class="pass-modal-subtitle">选择要回顾的历史赛季，点击对应赛季卡片即可查看</div>
             <div class="pass-season-grid" id="passSeasonGrid"></div>
         </div>
     </div>
@@ -2524,8 +2473,8 @@ function _buildPassHTML() {
         <div class="pass-modal-box pass-modal-box-announcement">
             <div class="pass-ann-head">
                 <div class="pass-ann-head-text">
-                    <div class="pass-modal-title">通行证公告</div>
-                    <div class="pass-modal-subtitle">了解赛季通行证的最新动态与规则说明</div>
+                    <div class="pass-modal-title">通行证手册</div>
+                    <div class="pass-modal-subtitle">本手册将帮助您了解赛季通行证的最新动态与规则说明</div>
                 </div>
                 <button class="pass-ann-close" id="passAnnouncementClose" type="button" title="关闭">
                     <i class="fas fa-times"></i>
@@ -2871,7 +2820,7 @@ function _bindPassEvents() {
         });
     });
 
-    // 更换赛季通行证：切换按钮 + 赛季卡片点击
+    // 回顾历史赛季：回顾按钮 + 赛季卡片点击
     var seasonSwitchBtn = document.getElementById('passSeasonSwitchBtn');
     if (seasonSwitchBtn) seasonSwitchBtn.addEventListener('click', _openPassSeasonSwitchModal);
 
@@ -3101,7 +3050,7 @@ function _calcPassObtainableExp() {
     sections.push({ name: '赛季任务', icon: 'fas fa-trophy', exp: s.exp,
         note: '剩余 ' + s.remain + ' / ' + s.total + ' 个任务未领取' });
 
-    // 每周事项：仅计入已开放周次（Dev 解锁态下按 12 周全开放计）
+    // 每周事项：仅计入已开放周次（Dev 解锁态下按 8 周全开放计）
     var openWeeks = _isWeekly12DevUnlocked() ? PASS_WEEKLY12_TOTAL_WEEKS : _getPassWeekly12OpenWeeks();
     var w12Exp = 0, w12Remain = 0, w12Total = 0;
     for (var wk = 1; wk <= openWeeks; wk++) {
@@ -3193,7 +3142,7 @@ function _closePassExpCalcModal() {
     document.getElementById('passExpCalcModal').style.display = 'none';
 }
 
-// ==================== 更换赛季通行证弹窗 ====================
+// ==================== 回顾历史赛季弹窗 ====================
 
 // 赛季卡片数据：仅第一赛季开放，后续赛季在 seasons 中追加即可
 function _getPassSeasonCardList() {
@@ -3485,7 +3434,12 @@ function _renderPassAnnouncementContent() {
         box.innerHTML = '<div class="pass-ann-empty">请选择左侧公告查看详情</div>';
         return;
     }
-    box.innerHTML = cur.content;
+    // 公告内容 + 统一的最新编辑时间（公告自身已写入编辑时间则不重复追加）
+    var html = cur.content || '';
+    if (cur.updatedAt && html.indexOf('最新编辑时间') === -1) {
+        html += '<h3>最新编辑时间</h3><p>' + cur.updatedAt + '（UTC+8）</p>';
+    }
+    box.innerHTML = html;
     box.scrollTop = 0;
 }
 
@@ -3756,7 +3710,7 @@ function _renderPassWeekly12Subtabs() {
     var page = Math.max(0, Math.min(maxPage, _passUI.week12Page || 0));
     _passUI.week12Page = page;
 
-    var weekNames = ['第一周', '第二周', '第三周', '第四周', '第五周', '第六周', '第七周', '第八周', '第九周', '第十周', '第十一周', '第十二周'];
+    var weekNames = ['第一周', '第二周', '第三周', '第四周', '第五周', '第六周', '第七周', '第八周'];
     var html = '';
 
     // 周次数量超过单页容量时：第一周按钮左侧渲染向左箭头、本页末按钮右侧渲染向右箭头
@@ -4479,11 +4433,11 @@ function _renderPassWeekly12Tasks(data) {
             countdownTab.style.display = 'none';
         } else {
             if (_isWeekly12DevUnlocked()) {
-                // Dev 解禁态：12 周全部开放，无真实刷新倒计时
-                countdownTab.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-code"></i> 开发者调试：12 周每周事项已全部开放</div>';
+                // Dev 解禁态：8 周全部开放，无真实刷新倒计时
+                countdownTab.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-code"></i> 开发者调试：8 周每周事项已全部开放</div>';
             } else if (openWeeks >= PASS_WEEKLY12_TOTAL_WEEKS) {
-                // 12 周已按真实时间全部开放
-                countdownTab.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-circle-check"></i> 12 周每周事项已全部开放</div>';
+                // 8 周已按真实时间全部开放
+                countdownTab.innerHTML = '<div class="pass-weekly12-countdown"><i class="fas fa-circle-check"></i> 8 周每周事项已全部开放</div>';
             } else {
                 // 倒计时与周次开放判定同源：归零之时即新周按钮出现之时
                 var nextOpen = _getPassWeekly12NextOpenTime();
@@ -4511,7 +4465,7 @@ function _renderPassWeekly12Tasks(data) {
             list.innerHTML = _buildPassLockedCard({
                 title: '每周事项尚未开启',
                 desc: wk12CardDesc,
-                note: '赛季开启后第一周事项立即可做，此后每 7 天开放一个新周次，共 12 周'
+                note: '赛季开启后第一周事项立即可做，此后每 7 天开放一个新周次，共 8 周'
             });
         }
         document.getElementById('passWeekly12Dot').style.display = 'none';
@@ -4733,7 +4687,7 @@ function _passBuildProgressStats() {
     var taskPct = Math.floor(taskRatio * 100);
     var taskDetail = '已完成 ' + sR.finished + ' / ' + sR.count + ' 个赛季任务';
 
-    // 3) 每周事项十二周总进度
+    // 3) 每周事项八周总进度
     var openWeeks = _getPassWeekly12OpenWeeks();
     var w12Done = 0, w12Total = 0, w12Finished = 0, w12Count = 0;
     for (var wk = 1; wk <= openWeeks; wk++) {
@@ -4780,7 +4734,7 @@ function _passBuildProgressStats() {
         dims: [
             { icon: 'fas fa-level-up-alt', color: '#ff6b9d', title: '通行证等级总进度', detail: levelDetail, pct: levelPct, ratio: levelRatio },
             { icon: 'fas fa-list-check',     color: '#6a5acd', title: '通行证任务总进度',       detail: taskDetail,  pct: taskPct,  ratio: taskRatio },
-            { icon: 'fas fa-calendar-check', color: '#4a9eff', title: '每周事项十二周总进度',   detail: w12Detail,   pct: w12Pct,   ratio: w12Ratio },
+            { icon: 'fas fa-calendar-check', color: '#4a9eff', title: '每周事项八周总进度',   detail: w12Detail,   pct: w12Pct,   ratio: w12Ratio },
             { icon: 'fas fa-gift',           color: '#f59e0b', title: '阶段奖励领取完成度',     detail: phaseDetail, pct: phasePct, ratio: phaseRatio },
             boostActive
                 ? { icon: 'fas fa-gauge-high', color: '#10b981', title: '等级提速完成度',      detail: boostDetail, pct: boostPct, ratio: boostRatio, disabled: false }
@@ -6121,7 +6075,7 @@ function _injectPassCSS() {
     white-space: nowrap;
 }
 .pass-refresh-hint i { font-size: 11px; }
-/* ===== 每周事项（12 周） ===== */
+/* ===== 每周事项（8 周） ===== */
 /* 周次子标签容器：固定窗口，每页 3 个周次按钮 + 左右翻页箭头，不滚动不换行。
    注意：此处不设置 display——未激活时由 .pass-subtabs-inline 的 display:none 生效，
    激活时由 .pass-subtabs-inline.pass-subtabs-inline-active 的 display:flex 生效。 */
@@ -6348,8 +6302,8 @@ function _injectPassCSS() {
 }
 .pass-modal-footer .pass-btn { padding: 10px 24px; font-size: 14px; }
 
-/* ===== 更换赛季通行证 ===== */
-/* 左上角「切换」按钮（进行中徽章左侧，与徽章同风格的胶囊小按钮） */
+/* ===== 回顾历史赛季 ===== */
+/* 左上角「回顾」按钮（进行中徽章左侧，与徽章同风格的胶囊小按钮） */
 .pass-season-switch-btn {
     padding: 5px 14px; border-radius: 20px;
     font-size: 12px; font-weight: 600;
@@ -6495,7 +6449,7 @@ function _injectPassCSS() {
 }
 
 /* ===== 通行证公告 ===== */
-/* 左上角「公告」按钮（「切换」按钮左侧，同风格胶囊小按钮，金色系区分） */
+/* 左上角「手册」按钮（「回顾」按钮左侧，同风格胶囊小按钮，金色系区分） */
 .pass-announcement-btn {
     padding: 5px 14px; border-radius: 20px;
     font-size: 12px; font-weight: 600;
