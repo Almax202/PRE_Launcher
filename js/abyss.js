@@ -23,6 +23,10 @@ function wpick(pairs) { // [[val,weight],...]
   return pairs[pairs.length - 1][0];
 }
 
+/* ---------------- 经济平衡 ---------------- */
+// 敌方金币基础值统一缩放：降低金币膨胀，避免玩家靠大量购买装备碾压敌人
+const GOLD_SCALE = 0.55;
+
 /* ---------------- 存档键 ---------------- */
 const SAVE_KEY = 'echoes_of_abyss_v1';
 
@@ -246,16 +250,24 @@ const ENEMIES = {
     lore: '它们不是一个生物，而是一段无法被遗忘的话。',
     intents: [{ t: 'heavy', m: 1.7 }, { t: 'dot', b: 'burn', v: 0.05, d: 3 }, { t: 'debuff', b: 'vuln', v: 0.4, d: 2 }] },
 
-  /* 极限模式：深红深渊（第 13-20 层） */
-  voidReaper: { n: '虚渊收割者', i: '🪓', hp: 320, atk: 46, def: 20, gold: [42, 62], tags: ['void', 'undead'],
+  /* 深渊叠加 / 极限：深红深渊（第 11-15 层） */
+  voidReaper: { n: '虚渊收割者', i: '🔪', hp: 320, atk: 46, def: 20, gold: [42, 62], tags: ['void', 'undead'],
     lore: '它以碎裂的层数为镰，收割所有试图越界的灵魂。',
     intents: [{ t: 'heavy', m: 1.9 }, { t: 'atk', m: 1.2 }, { t: 'drain', m: 1.1 }, { t: 'debuff', b: 'vuln', v: 0.45, d: 2 }] },
   flameWarden: { n: '焚魂守卫', i: '🔥', hp: 360, atk: 42, def: 28, gold: [44, 66], tags: ['elemental', 'construct'],
     lore: '深红的火不焚肉身，只烧灼那些尚存的希望。',
     intents: [{ t: 'atk', m: 1.1 }, { t: 'dot', b: 'burn', v: 0.06, d: 3 }, { t: 'buff', b: 'defUp', v: 0.8, d: 3 }, { t: 'heavy', m: 1.8 }] },
-  mirrorShade: { n: '镜影傀儡', i: '🪞', hp: 300, atk: 48, def: 16, gold: [46, 68], tags: ['void', 'human'],
+  mirrorShade: { n: '镜影傀儡', i: '🎭', hp: 300, atk: 48, def: 16, gold: [46, 68], tags: ['void', 'human'],
     lore: '它是你自己，只是选择了另一条更深的道路。',
     intents: [{ t: 'multi', m: 0.6, hits: 3 }, { t: 'debuff', b: 'weak', v: 0.35, d: 2 }, { t: 'atk', m: 1.3 }, { t: 'buff', b: 'atkUp', v: 0.45, d: 2 }] },
+
+  /* 深渊叠加专属精英 */
+  xelite1: { n: '深渊猎杀者', i: '🦂', hp: 250, atk: 38, def: 18, gold: [40, 58], tags: ['void', 'beast'], extremeOnly: true,
+    lore: '它只在层数被叠加之后出现，专门猎杀那些以为自己还能回头的人。',
+    intents: [{ t: 'multi', m: 0.55, hits: 3 }, { t: 'heavy', m: 1.9 }, { t: 'debuff', b: 'vuln', v: 0.4, d: 2 }, { t: 'buff', b: 'atkUp', v: 0.4, d: 2 }] },
+  xelite2: { n: '血契祭司', i: '🩸', hp: 280, atk: 34, def: 22, gold: [42, 62], tags: ['human', 'demon'], extremeOnly: true,
+    lore: '她用条约上的墨水喂养深渊，每一条契约都让她年轻一分。',
+    intents: [{ t: 'drain', m: 1.2 }, { t: 'dot', b: 'burn', v: 0.06, d: 3 }, { t: 'buff', b: 'defUp', v: 0.8, d: 3 }, { t: 'heal', v: 0.16 }] },
 };
 
 /* ---------------- BOSS ---------------- */
@@ -273,59 +285,171 @@ const BOSSES = {
     lore: '它不是深渊的统治者，它就是深渊本身。',
     intents: [{ t: 'atk', m: 1.15 }, { t: 'heavy', m: 2 }, { t: 'drain', m: 1.2 }, { t: 'debuff', b: 'vuln', v: 0.4, d: 2 }, { t: 'buff', b: 'atkUp', v: 0.4, d: 2 }, { t: 'multi', m: 0.6, hits: 3 }] },
 
-  /* 极限模式首领 */
+  /* 深渊叠加 · 极限首领 */
   xboss1: { n: '深渊裂痕 · 卡俄斯', i: '🌀', hp: 880, atk: 52, def: 24, gold: [420, 500], tags: ['void', 'boss'], boss: true,
     lore: '它本是深渊的边界。你越过了它，它便长成了你的形状。',
     intents: [{ t: 'atk', m: 1.2 }, { t: 'multi', m: 0.6, hits: 4 }, { t: 'debuff', b: 'vuln', v: 0.5, d: 2 }, { t: 'buff', b: 'atkUp', v: 0.5, d: 2 }, { t: 'heavy', m: 2.1 }] },
-  xboss2: { n: '无光之祖 · 乌尔', i: '🕳️', hp: 1150, atk: 62, def: 30, gold: [540, 640], tags: ['void', 'undead', 'boss'], boss: true,
+  xboss2: { n: '无光之祖 · 乌尔', i: '🌚', hp: 1150, atk: 62, def: 30, gold: [540, 640], tags: ['void', 'undead', 'boss'], boss: true,
     lore: '在光诞生之前，它就已经在这里等待。',
     intents: [{ t: 'drain', m: 1.4 }, { t: 'heavy', m: 2.2 }, { t: 'dot', b: 'burn', v: 0.07, d: 3 }, { t: 'buff', b: 'defUp', v: 0.9, d: 3 }, { t: 'multi', m: 0.55, hits: 4 }] },
-  xboss3: { n: '极限之主 · 绝', i: '👑', hp: 1520, atk: 76, def: 36, gold: [720, 880], tags: ['void', 'demon', 'boss'], boss: true,
+  xboss3: { n: '极限之主 · 绝', i: '👑', hp: 1520, atk: 76, def: 36, gold: [720, 880], tags: ['void', 'demon', 'boss'], boss: true, extremeOnly: true,
     lore: '它是所有走到尽头的人留下的最后一道回声。',
     intents: [{ t: 'heavy', m: 2.4 }, { t: 'multi', m: 0.55, hits: 5 }, { t: 'drain', m: 1.5 }, { t: 'debuff', b: 'weak', v: 0.4, d: 2 }, { t: 'buff', b: 'atkUp', v: 0.55, d: 2 }, { t: 'atk', m: 1.3 }] },
+  xboss4: { n: '深渊主宰 · 阒', i: '🌑', hp: 2100, atk: 92, def: 44, gold: [980, 1200], tags: ['void', 'demon', 'boss'], boss: true, extremeOnly: true,
+    lore: '条约写满之后，它才终于拥有了真正的名字。',
+    intents: [{ t: 'heavy', m: 2.6 }, { t: 'multi', m: 0.6, hits: 5 }, { t: 'drain', m: 1.6 }, { t: 'dot', b: 'burn', v: 0.08, d: 3 }, { t: 'buff', b: 'atkUp', v: 0.6, d: 2 }, { t: 'debuff', b: 'vuln', v: 0.5, d: 2 }] },
 };
 
 /* ---------------- 区域 ---------------- */
 const BIOMES = [
-  { id: 1, name: '腐化地窟', sub: '前 3 层 · 湿冷、腐臭与低语',
+  { id: 1, name: '腐化地窟', sub: '第 1-2 层 · 湿冷、腐臭与低语',
     enemies: ['rat', 'bat', 'spider', 'skeleton'], boss: 'boss1' },
-  { id: 2, name: '幽影回廊', sub: '第 4-6 层 · 无尽的长廊与被遗忘的名字',
+  { id: 2, name: '幽影回廊', sub: '第 3-4 层 · 无尽的长廊与被遗忘的名字',
     enemies: ['wraith', 'assassin', 'gargoyle', 'priest'], boss: 'boss2' },
-  { id: 3, name: '熔火深渊', sub: '第 7-9 层 · 岩浆、硫磺与咆哮',
+  { id: 3, name: '熔火深渊', sub: '第 5-6 层 · 岩浆、硫磺与咆哮',
     enemies: ['worm', 'elemental', 'hound', 'colossus'], boss: 'boss3' },
-  { id: 4, name: '虚空王座', sub: '第 10-12 层 · 现实的边缘',
+  { id: 4, name: '虚空王座', sub: '第 7-10 层 · 现实的边缘',
     enemies: ['crawler', 'devourer', 'whisper'], boss: 'boss4' },
-  { id: 5, name: '深红极限', sub: '第 13-20 层 · 越界之后的深渊',
+  { id: 5, name: '深红极限', sub: '第 11-15 层 · 深渊叠加 · 极限',
     enemies: ['voidReaper', 'flameWarden', 'mirrorShade'], boss: 'xboss1' },
 ];
-const MAX_DEPTH = 12;
-const EXTREME_MAX_DEPTH = 20;
-const EXTREME_UNLOCK_NG = 10;   // 轮回难度 10 及以上才可开启极限模式
-const EXTREME_BOSS_FLOORS = { 15: 'xboss1', 18: 'xboss2', 20: 'xboss3' };
+const MAX_DEPTH = 5;            // 正常模式：5 层
+const STACK_MAX_DEPTH = 10;     // 深渊叠加：10 层
+const LIMIT_MAX_DEPTH = 15;     // 深渊叠加 · 极限：15 层
+const STACK_UNLOCK_NG = 10;     // 轮回难度 10 及以上才可进入深渊叠加
+const EXTREME_ONLY_KEYS = ['voidReaper', 'flameWarden', 'mirrorShade', 'xelite1', 'xelite2', 'xboss1', 'xboss2', 'xboss3', 'xboss4'];
+function isExtremeKey(key) { return EXTREME_ONLY_KEYS.indexOf(key) >= 0; }
+function modeOf(r) {
+  if (!r) return 0;
+  if (r.stackMode === undefined) return r.extreme ? 2 : 0;
+  return r.stackMode | 0;
+}
+function modeName(r) {
+  const m = modeOf(r);
+  return m === 2 ? '深渊叠加 · 极限' : (m === 1 ? '深渊叠加' : '正常模式');
+}
 function biomeOf(d) {
-  if (d <= 3) return BIOMES[0];
-  if (d <= 6) return BIOMES[1];
-  if (d <= 9) return BIOMES[2];
-  if (d <= 12) return BIOMES[3];
+  if (d <= 2) return BIOMES[0];
+  if (d <= 4) return BIOMES[1];
+  if (d <= 6) return BIOMES[2];
+  if (d <= 10) return BIOMES[3];
   return BIOMES[4];
 }
-const BOSS_FLOORS = [3, 6, 9, 12];
-function bossFloorsOf() {
-  return (R && R.extreme) ? [15, 18, 20] : BOSS_FLOORS;
-}
-function isBossFloor(d) {
-  const list = bossFloorsOf();
-  return list.indexOf(d) >= 0;
-}
 function depthCapOf() {
-  return (R && R.extreme) ? EXTREME_MAX_DEPTH : MAX_DEPTH;
+  const m = modeOf(R);
+  return m === 2 ? LIMIT_MAX_DEPTH : (m === 1 ? STACK_MAX_DEPTH : MAX_DEPTH);
 }
+// 每一层的终点都是该生态区域的首领
 function bossKeyOf(d) {
-  if (R && R.extreme && EXTREME_BOSS_FLOORS[d]) return EXTREME_BOSS_FLOORS[d];
-  const idx = BOSS_FLOORS.indexOf(d);
-  return idx >= 0 ? BIOMES[idx].boss : BIOMES[3].boss;
+  const m = modeOf(R);
+  if (m === 0) {
+    if (d <= 2) return 'boss1';
+    if (d <= 4) return 'boss2';
+    return 'boss3';
+  }
+  if (m === 1) {
+    if (d <= 7) return 'boss4';
+    if (d <= 9) return 'xboss1';
+    return 'xboss2';
+  }
+  if (d <= 12) return 'xboss2';
+  if (d <= 14) return 'xboss3';
+  return 'xboss4';
 }
-function extremeMul() { return (R && R.extreme) ? 1.6 : 1; }
+function extremeMul() {
+  const m = modeOf(R);
+  return m === 2 ? 2.2 : (m === 1 ? 1.6 : 1);
+}
+
+/* ---------------- 深渊条约（共 24 条 · 60 分） ---------------- */
+// mods 均为比例值：敌人加成累加；我方为负值减益
+const TREATIES = [
+  { id: 't_hp1',   n: '生命增幅',     s: 1, i: '❤️', d: '敌方生命值 +20%',                 mods: { enemyHp: 0.2 } },
+  { id: 't_atk1',  n: '攻击增幅',     s: 1, i: '⚔️', d: '敌方攻击力 +15%',                 mods: { enemyAtk: 0.15 } },
+  { id: 't_def1',  n: '铁壁',         s: 1, i: '🏰', d: '敌方防御力 +25%',                 mods: { enemyDef: 0.25 } },
+  { id: 't_gold1', n: '贪婪税',       s: 1, i: '💵', d: '金币获取 -20%',                   mods: { goldGain: -0.2 } },
+  { id: 't_pdef1', n: '虚弱侵蚀',     s: 1, i: '🩹', d: '我方防御力 -10%',                 mods: { playerDef: -0.1 } },
+  { id: 't_patk1', n: '钝刃',         s: 1, i: '🗡️', d: '我方攻击力 -10%',                 mods: { playerAtk: -0.1 } },
+  { id: 't_pcrt1', n: '迟缓',         s: 1, i: '🐌', d: '我方暴击率 -10%',                 mods: { playerCrit: -10 } },
+  { id: 't_shop1', n: '物价微涨',     s: 1, i: '🏷️', d: '深渊商店价格 +30%',               mods: { shopPrice: 0.3 } },
+
+  { id: 't_hp2',   n: '生命增幅 II',  s: 2, i: '💗', d: '敌方生命值 +40%',                 mods: { enemyHp: 0.4 } },
+  { id: 't_atk2',  n: '攻击增幅 II',  s: 2, i: '🔱', d: '敌方攻击力 +30%',                 mods: { enemyAtk: 0.3 } },
+  { id: 't_def2',  n: '硬壳',         s: 2, i: '🐢', d: '敌方防御力 +50%',                 mods: { enemyDef: 0.5 } },
+  { id: 't_pcd2',  n: '精神压迫',     s: 2, i: '🧠', d: '我方暴击伤害 -25%',               mods: { playerCritDmg: -0.25 } },
+  { id: 't_pdef2', n: '疲惫之躯',     s: 2, i: '😵', d: '我方防御力 -20%',                 mods: { playerDef: -0.2 } },
+  { id: 't_gold2', n: '贫瘠',         s: 2, i: '💲', d: '金币获取 -35%',                   mods: { goldGain: -0.35 } },
+
+  { id: 't_shop2', n: '通货膨胀',     s: 3, i: '💸', d: '深渊商店所有物品价格翻倍（×2）', mods: { shopPrice: 1.0 } },
+  { id: 't_patk3', n: '肌肉萎缩',     s: 3, i: '💪', d: '我方攻击力 -25%，暴击率 -20%',    mods: { playerAtk: -0.25, playerCrit: -20 } },
+  { id: 't_atk3',  n: '深渊回响',     s: 3, i: '🔊', d: '敌方攻击力 +45%',                 mods: { enemyAtk: 0.45 } },
+  { id: 't_php3',  n: '血之代价',     s: 3, i: '🩸', d: '我方最大生命 -20%',               mods: { playerHp: -0.2 } },
+
+  { id: 't_patk4', n: '肌肉萎缩 · 极', s: 4, i: '💀', d: '我方攻击力 -18%，暴击率 -15%',    mods: { playerAtk: -0.18, playerCrit: -15 } },
+  { id: 't_hp4',   n: '生命增幅 · 极', s: 4, i: '💓', d: '敌方生命值 +80%，防御力 +50%',    mods: { enemyHp: 0.8, enemyDef: 0.5 } },
+
+  { id: 't_pcd5',  n: '精神衰竭',     s: 5, i: '💫', d: '我方暴击伤害 -60%',               mods: { playerCritDmg: -0.6 } },
+  { id: 't_atk5',  n: '深渊凝视',     s: 5, i: '👁️', d: '敌方生命值 +100%，攻击力 +60%',   mods: { enemyHp: 1.0, enemyAtk: 0.6 } },
+  { id: 't_shop5', n: '万物通胀',     s: 5, i: '📈', d: '深渊商店价格 ×3，金币获取 -50%',  mods: { shopPrice: 2.0, goldGain: -0.5 } },
+  { id: 't_pall5', n: '灵魂枯竭',     s: 5, i: '🥀', d: '我方攻击 -20%，防御 -18%，生命 -15%', mods: { playerAtk: -0.2, playerDef: -0.18, playerHp: -0.15 } },
+];
+const TREATY_TOTAL_SCORE = TREATIES.reduce((s, t) => s + t.s, 0);
+
+function treatyById(id) { return TREATIES.find(t => t.id === id) || null; }
+function treatyMods() {
+  const m = { enemyHp: 0, enemyAtk: 0, enemyDef: 0, playerAtk: 0, playerHp: 0, playerDef: 0, playerCrit: 0, playerCritDmg: 0, shopPrice: 0, goldGain: 0 };
+  if (!R || !Array.isArray(R.treatyIds)) return m;
+  R.treatyIds.forEach(id => {
+    const t = treatyById(id);
+    if (!t || !t.mods) return;
+    for (const k in t.mods) m[k] = (m[k] || 0) + t.mods[k];
+  });
+  return m;
+}
+function treatyScore() {
+  if (!R || !Array.isArray(R.treatyIds)) return 0;
+  return R.treatyIds.reduce((s, id) => { const t = treatyById(id); return s + (t ? t.s : 0); }, 0);
+}
+
+/* ---------------- 深渊苦难（层间馈赠的代偿） ---------------- */
+// 每条苦难包含 2-3 项敌方增益，强度中等，可跨层累积
+const HARDSHIPS = [
+  { id: 'h_hp',     n: '血脉膨胀', i: '🩸', d: '敌方生命 +9%，防御 +5%',              mods: { enemyHp: 0.09, enemyDef: 0.05 } },
+  { id: 'h_atk',    n: '嗜血狂怒', i: '🦷', d: '敌方攻击 +8%，生命 +5%',              mods: { enemyAtk: 0.08, enemyHp: 0.05 } },
+  { id: 'h_def',    n: '深渊甲壳', i: '🦀', d: '敌方防御 +10%，生命 +4%',             mods: { enemyDef: 0.1, enemyHp: 0.04 } },
+  { id: 'h_swift',  n: '迅捷猎杀', i: '💨', d: '敌方攻击 +6%，防御 +6%，生命 +4%',    mods: { enemyAtk: 0.06, enemyDef: 0.06, enemyHp: 0.04 } },
+  { id: 'h_giant',  n: '巨物降临', i: '🗿', d: '敌方生命 +11%，攻击 +4%',             mods: { enemyHp: 0.11, enemyAtk: 0.04 } },
+  { id: 'h_blade',  n: '磨砺利刃', i: '⚔️', d: '敌方攻击 +10%，防御 +4%',             mods: { enemyAtk: 0.1, enemyDef: 0.04 } },
+  { id: 'h_bastion', n: '深渊壁垒', i: '🏯', d: '敌方防御 +12%，攻击 +4%',            mods: { enemyDef: 0.12, enemyAtk: 0.04 } },
+  { id: 'h_frenzy', n: '群体狂化', i: '🔥', d: '敌方生命 +6%，攻击 +6%，防御 +5%',    mods: { enemyHp: 0.06, enemyAtk: 0.06, enemyDef: 0.05 } },
+];
+const GIFT_BUFFS = [
+  { k: 'bonusHp',   v: 45, n: '深渊之心', d: '最大生命 +45', i: '❤️' },
+  { k: 'bonusAtk',  v: 7,  n: '掠夺之刃', d: '攻击 +7',      i: '⚔️' },
+  { k: 'bonusDef',  v: 5,  n: '黑曜石肤', d: '防御 +5',      i: '🛡️' },
+  { k: 'bonusCrit', v: 9,  n: '猎杀直觉', d: '暴击率 +9%',   i: '🎯' },
+];
+function hardshipById(id) { return HARDSHIPS.find(h => h.id === id) || null; }
+function hardshipMods() {
+  const m = { enemyHp: 0, enemyAtk: 0, enemyDef: 0 };
+  if (!R || !Array.isArray(R.hardships)) return m;
+  R.hardships.forEach(id => {
+    const h = hardshipById(id);
+    if (!h || !h.mods) return;
+    for (const k in h.mods) m[k] = (m[k] || 0) + h.mods[k];
+  });
+  // 苦难可跨层累积，但总增益设上限，避免长局敌人被无限放大
+  m.enemyHp = Math.min(0.8, m.enemyHp);
+  m.enemyAtk = Math.min(0.8, m.enemyAtk);
+  m.enemyDef = Math.min(0.8, m.enemyDef);
+  return m;
+}
+function addHardship(id) {
+  const h = hardshipById(id);
+  if (!h || !R) return;
+  if (!Array.isArray(R.hardships)) R.hardships = [];
+  R.hardships.push(id);
+}
 
 /* ---------------- 事件 ---------------- */
 const EVENTS = [
@@ -420,7 +544,7 @@ const EVENTS = [
     ]
   },
   {
-    id: 'mirror', n: '裂纹之镜', i: '🪞',
+    id: 'mirror', n: '裂纹之镜', i: '🔮',
     d: '一面高及穹顶的镜子，裂纹中映出无数个你，每一个都在做不同的选择。',
     choices: [
       { label: '触碰镜面（复制一件装备）', fn() {
@@ -573,13 +697,34 @@ const EVENTS = [
         } },
     ]
   },
+  {
+    id: 'deepPact', n: '深渊的页码', i: '🌑', extremeOnly: true,
+    d: '一本没有封面的书悬在通道中央，每一页都写着你的名字，最后一页还空着。',
+    choices: [
+      { label: '在空白页上写下名字（攻击 +10，防御 +6，最大生命 -15%）', fn() {
+          R.bonusAtk += 10; R.bonusDef += 6;
+          const loss = Math.round(effStats().maxHp * 0.15);
+          R.bonusHp -= loss; R.hp = Math.min(R.hp, effStats().maxHp);
+          if (R.hp <= 0) R.hp = 1;
+          return `书页吞下了你的名字（攻击 +10，防御 +6，最大生命 -${loss}）。`;
+        } },
+      { label: '撕下最后一页（获得一件传说装备）', fn() {
+          const it = genItem(R.depth + 2, 'legend');
+          addItem(it);
+          return `你撕下了空白的一页，它在你手中凝成 <b style="color:${RARITY.legend.color}">${it.name}</b>。`;
+        } },
+      { label: '合上书，退后（恢复 30% 生命并清除诅咒）', fn() {
+          const s = effStats();
+          healPlayer(Math.round(s.maxHp * 0.3));
+          return '书合上了。你的呼吸重新变得平稳（恢复 30% 生命）。';
+        } },
+    ]
+  },
 ];
 
 /* ---------------- 成就 ---------------- */
 const ACHIEVEMENTS = [
   { id: 'first_run',  n: '初次坠落', d: '完成第一次冒险（无论成败）', i: '🌱', r: 8, c: s => s.stats.runs >= 1 },
-  { id: 'depth5',     n: '深潜者', d: '抵达第 5 层', i: '⛏️', r: 15, c: s => s.stats.maxDepth >= 5 },
-  { id: 'depth10',    n: '无光之处', d: '抵达第 10 层', i: '🌑', r: 30, c: s => s.stats.maxDepth >= 10 },
   { id: 'boss1',      n: '地窟征服者', d: '击败地窟领主 · 格拉姆', i: '🐗', r: 20, c: s => s.stats.bosses.boss1 >= 1 },
   { id: 'boss2',      n: '影之猎手', d: '击败幽影君主 · 维尔', i: '🧛', r: 30, c: s => s.stats.bosses.boss2 >= 1 },
   { id: 'boss3',      n: '熔火克星', d: '击败熔火巨兽 · 伊格尼斯', i: '🐉', r: 40, c: s => s.stats.bosses.boss3 >= 1 },
@@ -605,15 +750,20 @@ const ACHIEVEMENTS = [
   { id: 'nopotion',   n: '纯粹主义者', d: '通关一局且从未使用药水', i: '🚫', r: 45, c: s => s.stats.winsNoPotion >= 1 },
   { id: 'ng1',        n: '轮回者', d: '开启轮回难度 1', i: '🔄', r: 45, c: s => s.meta.ngPlus >= 1 },
   { id: 'elite20',    n: '精英猎手', d: '累计击杀 20 个精英敌人', i: '🔱', r: 30, c: s => s.stats.eliteKills >= 20 },
-  { id: 'items30',    n: '拾荒之王', d: '累计拾取 30 件装备', i: '🎁', r: 25, c: s => s.stats.itemsFound >= 30 },
-  /* —— 极限模式（深红深渊） —— */
-  { id: 'depth14',    n: '触界者', d: '抵达第 14 层', i: '🔥', r: 45, c: s => s.stats.maxDepth >= 14 },
-  { id: 'depth20',    n: '极限之地', d: '抵达第 20 层', i: '🌋', r: 80, c: s => s.stats.maxDepth >= 20 },
-  { id: 'extreme_clear', n: '极限征服者', d: '完整通过一次极限模式', i: '💥', r: 150, c: s => s.stats.extremeWins >= 1 },
-  { id: 'xelite10',   n: '极限猎人', d: '在极限模式中击杀 10 个精英敌人', i: '🔺', r: 50, c: s => s.stats.extremeEliteKills >= 10 },
+  { id: 'scavenger30', n: '拾荒之王', d: '累计拾取 30 件装备', i: '🎁', r: 25, c: s => s.stats.itemsFound >= 30 },
+  /* —— 深渊叠加 / 深渊叠加 · 极限 —— */
+  { id: 'depth5',     n: '五层尽处', d: '通关第 5 层', i: '🕯️', r: 30, c: s => s.stats.maxDepth >= 5 },
+  { id: 'depth10',    n: '叠加之底', d: '抵达第 10 层', i: '🌋', r: 60, c: s => s.stats.maxDepth >= 10 },
+  { id: 'depth14',    n: '触界者', d: '抵达第 14 层', i: '🔥', r: 70, c: s => s.stats.maxDepth >= 14 },
+  { id: 'depth20',    n: '极限之地', d: '抵达第 15 层', i: '🌑', r: 100, c: s => s.stats.maxDepth >= 15 },
+  { id: 'extreme_clear', n: '深渊征服者', d: '完整通过一次深渊叠加 · 极限（15 层）', i: '💥', r: 150, c: s => s.stats.extremeWins >= 1 },
+  { id: 'xelite10',   n: '叠加猎人', d: '在深渊叠加中击杀 10 个精英敌人', i: '🔺', r: 50, c: s => s.stats.extremeEliteKills >= 10 },
+  { id: 'treaty10',   n: '条约收集者', d: '单局选取 10 条深渊条约', i: '📜', r: 70, c: s => (s.stats.maxTreatiesRun || 0) >= 10 },
+  { id: 'treaty30',   n: '与深渊同谋', d: '单局条约总分达到 30 分', i: '🖋️', r: 120, c: s => (s.stats.maxTreatyScore || 0) >= 30 },
   { id: 'xboss1',     n: '裂痕终结', d: '击败深渊裂痕 · 卡俄斯', i: '🌀', r: 90, c: s => s.stats.bosses.xboss1 >= 1 },
-  { id: 'xboss2',     n: '无光终焉', d: '击败无光之祖 · 乌尔', i: '🕳️', r: 110, c: s => s.stats.bosses.xboss2 >= 1 },
+  { id: 'xboss2',     n: '无光终焉', d: '击败无光之祖 · 乌尔', i: '🌚', r: 110, c: s => s.stats.bosses.xboss2 >= 1 },
   { id: 'xboss3',     n: '极限主宰', d: '击败极限之主 · 绝', i: '👑', r: 160, c: s => s.stats.bosses.xboss3 >= 1 },
+  { id: 'xboss4',     n: '深渊主宰', d: '击败深渊主宰 · 阒', i: '🌑', r: 220, c: s => s.stats.bosses.xboss4 >= 1 },
   /* —— 数值与轮回极限 —— */
   { id: 'ng10',        n: '轮回十重', d: '通关轮回难度 10', i: '🔟', r: 80,  c: s => (s.stats.maxNgClear || 0) >= 10 },
   { id: 'ng15',        n: '轮回终焉', d: '通关轮回难度 15（最高）', i: '♾️', r: 160, c: s => (s.stats.maxNgClear || 0) >= 15 },
@@ -638,8 +788,8 @@ const UPGRADES = [
   { id: 'atk',    n: '力量之魂', d: '攻击 +1.5',         max: 25, i: '⚔️', cost: l => 10 + l * 8 },
   { id: 'def',    n: '守护之魂', d: '防御 +1',           max: 25, i: '🛡️', cost: l => 10 + l * 8 },
   { id: 'crit',   n: '敏锐之魂', d: '暴击率 +3%',        max: 12, i: '🎯', cost: l => 16 + l * 12 },
-  { id: 'gold',   n: '财富之魂', d: '金币获取 +12%',     max: 10, i: '💰', cost: l => 14 + l * 10 },
-  { id: 'dust',   n: '共鸣之魂', d: '魂尘获取 +10%',     max: 10, i: '✨', cost: l => 18 + l * 14 },
+  { id: 'gold',   n: '财富之魂', d: '金币获取 +5%',      max: 10, i: '💰', cost: l => 14 + l * 10 },
+  { id: 'dust',   n: '共鸣之魂', d: '魂尘获取 +6%',      max: 10, i: '✨', cost: l => 18 + l * 14 },
   { id: 'potion', n: '行囊扩容', d: '药水携带上限 +1',   max: 4,  i: '🧪', cost: l => 30 + l * 25 },
   { id: 'memory', n: '远古记忆', d: '开局多一个随机技能', max: 3,  i: '📜', cost: l => 45 + l * 45 },
   { id: 'revive', n: '不灭之魂', d: '每局可复活一次',     max: 1,  i: '🕯️', cost: l => 150 },
@@ -687,7 +837,7 @@ function ngInfo(lv) {
   const hp = lv * 0.35;
   const atk = lv * 0.25;
   const score = 1 + lv * 0.2;
-  const dust = 1 + lv * 0.25;
+  const dust = 1 + lv * 0.08;
   const effects = [];
   if (lv === 0) {
     effects.push('敌人为基础数值');
@@ -731,19 +881,21 @@ function defaultState() {
     meta: {
       soulDust: 0, ngPlus: 0,
       upgrades: { hp: 0, atk: 0, def: 0, crit: 0, gold: 0, dust: 0, potion: 0, memory: 0, revive: 0 },
-      extreme: false, passWeekly: null,
+      extreme: false, passWeekly: null, stackEnabled: true,
     },
     stats: {
       runs: 0, wins: 0, deaths: 0, kills: 0, eliteKills: 0,
-      bosses: { boss1: 0, boss2: 0, boss3: 0, boss4: 0, xboss1: 0, xboss2: 0, xboss3: 0 },
+      bosses: { boss1: 0, boss2: 0, boss3: 0, boss4: 0, xboss1: 0, xboss2: 0, xboss3: 0, xboss4: 0 },
       goldEarned: 0, maxGold: 0, buys: 0, potionsUsed: 0, skillUses: 0, crits: 0,
       bestHit: 0, healed: 0, events: 0, itemsFound: 0, legendEquipped: 0, fullSet: 0,
       flawlessElite: 0, dustEarned: 0, winsNoPotion: 0, maxDepth: 0, rooms: 0, evil: 0,
       damageDealt: 0, battles: 0, extremeWins: 0, extremeEliteKills: 0,
+      maxTreatiesRun: 0, maxTreatyScore: 0,
       maxNgClear: 0, maxItemsRun: 0, maxAtkRun: 0, maxDefRun: 0, maxCritDmgRun: 0, maxHpRun: 0,
     },
     ach: {},
     codex: {},
+    history: [],
     settings: { sound: true, fps: 'auto', motion: 'all' },
   };
 }
@@ -964,19 +1116,22 @@ function effStats() {
   const bonusDef = R ? R.bonusDef : 0, bonusCrit = R ? R.bonusCrit : 0;
   const dv = (R && R.dev) ? R.dev : null;
   const rb = rulerBuff();
-  const atkMul = rb ? (1 + rb.atkPct) : 1;
-  const defMul = rb ? (1 + rb.defPct) : 1;
-  const critAdd = rb ? rb.critAdd : 0;
+  const tm = treatyMods();
+  // 条约攻击减益最多叠加到 -65%，避免后期攻击力被压成 1 而完全无法战斗
+  const atkMul = (rb ? (1 + rb.atkPct) : 1) * Math.max(0.35, 1 + tm.playerAtk);
+  const defMul = (rb ? (1 + rb.defPct) : 1) * (1 + tm.playerDef);
+  const hpMul = 1 + tm.playerHp;
+  const critAdd = (rb ? rb.critAdd : 0) + tm.playerCrit;
   const hasHp = dv && dv.hp != null, hasAtk = dv && dv.atk != null;
   const hasDef = dv && dv.def != null, hasCrit = dv && dv.crit != null;
   return {
-    maxHp: Math.max(1, Math.round(hasHp ? dv.hp : (100 + u.hp * 10 + eq.hp + bonusHp))),
-    atk: (hasAtk ? dv.atk : (14 + u.atk * 1.5 + eq.atk + bonusAtk)) * atkMul,
-    def: (hasDef ? dv.def : (3 + u.def * 1 + eq.def + bonusDef)) * defMul,
+    maxHp: Math.max(1, Math.round((hasHp ? dv.hp : (100 + u.hp * 10 + eq.hp + bonusHp)) * hpMul)),
+    atk: Math.max(1, (hasAtk ? dv.atk : (14 + u.atk * 1.5 + eq.atk + bonusAtk)) * atkMul),
+    def: Math.max(0, (hasDef ? dv.def : (3 + u.def * 1 + eq.def + bonusDef)) * defMul),
     crit: clamp((hasCrit ? dv.crit : (5 + u.crit * 3 + eq.crit + bonusCrit)) + critAdd, 0, 100),
-    critDmg: 150 + eq.critDmg,
+    critDmg: Math.max(100, 150 + eq.critDmg + 150 * tm.playerCritDmg),
     lifesteal: eq.lifesteal,
-    goldFind: u.gold * 12 + eq.gold,
+    goldFind: u.gold * 5 + eq.gold,
   };
 }
 
@@ -1053,7 +1208,11 @@ function addItem(it) {
 /* ---------------- 金币 / 生命 ---------------- */
 function addGold(n) {
   n = Math.round(n);
-  if (n > 0 && R && R.extreme) n = Math.round(n * 1.6);
+  if (n > 0 && R) {
+    const m = modeOf(R);
+    const modeMul = m === 2 ? 1.3 : (m === 1 ? 1.15 : 1);
+    n = Math.round(n * modeMul * Math.max(0, 1 + treatyMods().goldGain));
+  }
   R.gold += n;
   if (n > 0) { S.stats.goldEarned += n; S.stats.maxGold = Math.max(S.stats.maxGold, R.gold); }
 }
@@ -1407,7 +1566,7 @@ function tryFlee() {
    界面层：渲染 / 流程 / 交互
    ============================================================ */
 
-let runView = 'choices';
+let runView = 'map';
 let pendingItems = [];
 
 /* ---------------- 屏幕切换 ---------------- */
@@ -1610,48 +1769,60 @@ function renderHub() {
       </div>
     </div>`;
 
-    // 极限模式开关卡片
-    const extremeUnlocked = (S.meta.ngPlus || 0) >= EXTREME_UNLOCK_NG;
+    // 深渊叠加 · 玩法说明卡片（通关第 5 层时触发，无需预先开启）
+    const stackUnlocked = (S.meta.ngPlus || 0) >= STACK_UNLOCK_NG;
     const runActive = !!S.runSave;
-    const extremeOn = !!S.meta.extreme;
-    const extremeSwitchLocked = !extremeUnlocked || runActive;
-    const extremeCard = `<div class="card sanctum-card xmode-card ${extremeOn ? 'on' : ''} ${extremeUnlocked ? '' : 'locked'}">
-      <div class="card-h"><span>🩸</span><div><div class="card-t">极限模式</div><div class="card-sub">EXTREME MODE · 深红深渊 · 20 层</div></div>
-        <div style="margin-left:auto" class="pill ${runActive ? 'tag-gold' : extremeOn ? 'tag-rose' : ''}">${runActive ? '冒险中 · 锁定' : extremeOn ? '已启用' : extremeUnlocked ? '已解锁' : '未解锁'}</div>
+    const stackEnabled = S.meta.stackEnabled !== false;
+    const stackCard = `<div class="card sanctum-card xmode-card ${stackUnlocked && stackEnabled ? 'on' : ''} ${stackUnlocked ? '' : 'locked'}">
+      <div class="card-h"><span>🩸</span><div><div class="card-t">深渊叠加</div><div class="card-sub">ABYSS STACK · 5 / 10 / 15 层</div></div>
+        <div style="margin-left:auto" class="pill ${runActive ? 'tag-gold' : stackUnlocked && stackEnabled ? 'tag-rose' : ''}">${runActive ? '冒险中' : !stackUnlocked ? '未解锁' : stackEnabled ? '已启用' : '已关闭'}</div>
       </div>
       <div class="small dim" style="line-height:1.9">
-        ${extremeUnlocked
-          ? '开启后，通关第 13 层时将弹出提示，可选择进入极限模式并把探索层数提高到 <b style="color:#ff8b9a">20</b> 层。<br>敌人的生命与攻击大幅提高，全新的精英与首领登场；我方的增益与事件馈赠同样被深渊放大，通关后的魂尘奖励大幅增加。'
-          : `轮回难度达到 <b>${EXTREME_UNLOCK_NG}</b> 后解锁（当前 ${S.meta.ngPlus}/${MAX_NG}）。关闭状态下通关第 13 层将直接结算本局。`}
+        ${stackUnlocked
+          ? (stackEnabled
+            ? '开启后，通关第 <b>5</b> 层时将弹出提示，可选择进入「深渊叠加」模式并把探索层数提高到 <b style="color:#ff8b9a">10</b> 层；在深渊叠加模式中，敌人的生命与攻击大幅提高，全新的精英与首领登场；我方的增益与事件馈赠同样被深渊放大，通关后的魂尘奖励大幅增加。<br><br>玩家在通过第 <b>10</b> 层后将弹出提示，可选择进入「深渊叠加 · 极限」模式并把探索层数提高到 <b style="color:#ff8b9a">15</b> 层，并连带启用新的「深渊条约」模式：在 11-14 层的每一层结束后，玩家可以选择六种条约（共 24 种条约，所有条约共计 60 分），每个条约将会由分数等级大幅提升敌方/我方的总体难度。'
+            : '深渊叠加当前已 <b style="color:#ff9aa8">关闭</b>。通关第 <b>5</b> 层后将直接结算本局，不再弹出进入提示，也不会进入 10 / 15 层的叠加内容。<br><br>开启/关闭状态会在一局开始时锁定，冒险进行中无法更改；本局结算后可重新开启。')
+          : `轮回难度达到 <b>${STACK_UNLOCK_NG}</b> 后解锁（当前 ${S.meta.ngPlus}/${MAX_NG}）。未解锁时通关第 5 层将直接结算本局。`}
       </div>
       <div class="xmode-row">
-        <div class="xmode-switch ${extremeOn ? 'on' : ''} ${extremeSwitchLocked ? 'locked' : ''}" onclick="toggleExtremeMode()"><span></span></div>
-        <div class="small ${(extremeOn && !runActive) ? '' : 'dim'}">${runActive
-          ? (extremeOn ? '冒险进行中 · 本局已锁定为开启，结束前无法关闭' : '冒险进行中 · 本局已锁定为关闭，结束前无法开启')
-          : extremeUnlocked ? (extremeOn ? '开启 · 通关 13 层后可进入极限模式' : '关闭 · 通关 13 层后直接结算') : '锁定中 · 无法开启'}</div>
+        <div class="xmode-switch ${stackEnabled ? 'on' : ''} ${runActive || !stackUnlocked ? 'locked' : ''}" onclick="toggleStackEnabled()"><span></span></div>
+        <div class="small ${stackEnabled ? '' : 'dim'}" style="line-height:1.6">
+          ${!stackUnlocked ? '尚未解锁' : runActive ? '冒险进行中 · 结算前无法更改开关' : stackEnabled ? '已启用 · 第 5 层结束后可选择进入深渊叠加' : '已关闭 · 第 5 层结束后直接结算本局'}
+        </div>
       </div>
     </div>`;
 
-    // 每周加成卡片
+    // 每周加成卡片（与通行证赛季时间绑定：赛季结束后进入休赛期，无法获取通行证经验）
     const pw = ensurePassWeekly();
-    const pwUnlocked = (S.meta.ngPlus || 0) >= 6;
+    const pwSeason = passWeeklySeasonState();
+    const pwOffSeason = !pwSeason.active;
+    const pwUnlocked = !pwOffSeason && (S.meta.ngPlus || 0) >= 6;
     const xpPct = Math.round(Math.max(0, pw.xpLeft) / PASS_WEEK_XP * 100);
     const segHtml = [0, 1, 2].map(i => `<div class="pw-seg ${i < pw.bonusLeft ? 'on' : ''}"></div>`).join('');
+    const pwPill = pwOffSeason
+      ? '<div style="margin-left:auto" class="pill">📅 休赛期</div>'
+      : `<div style="margin-left:auto" class="pill ${pwUnlocked ? 'tag-jade' : ''}">${pwUnlocked ? `本周 ${pw.bonusLeft} / ${PASS_BONUS_MAX} 次` : '未解锁'}</div>`;
     const weeklyCard = `<div class="card sanctum-card pw-card ${pwUnlocked ? '' : 'locked'}">
       <div class="card-h"><span>📅</span><div><div class="card-t">每周加成</div><div class="card-sub">WEEKLY BONUS · ${pw.week}</div></div>
-        <div style="margin-left:auto" class="pill ${pwUnlocked ? 'tag-jade' : ''}">${pwUnlocked ? `本周 ${pw.bonusLeft} / ${PASS_BONUS_MAX} 次` : '未解锁'}</div>
+        ${pwPill}
       </div>
       <div class="pw-refresh-row"><span class="pw-refresh" id="pwRefreshLabel">🕒 ${pwRefreshText()}</span></div>
-      ${pwUnlocked ? `
+      ${pwOffSeason ? `<div class="small dim sanctum-foot" style="line-height:1.9">
+        ${pwSeason.phase === 'before'
+          ? '通行证赛季尚未开启，每周加成暂时处于休赛期，无法获取通行证经验；赛季开启后将自动恢复。'
+          : '当前赛季已结束，每周加成已进入 <b>休赛期</b>，期间无法通过深渊冒险获取通行证经验。<br>下一赛季开启后，本功能将自动恢复。'}
+      </div>` : pwUnlocked ? `
       <div class="pw-label"><span>本周剩余可获取通行证经验</span><span style="color:#8fc4ff">${pw.xpLeft} / ${PASS_WEEK_XP}</span></div>
       <div class="pw-bar"><div class="pw-bar-fill" style="width:${xpPct}%"></div></div>
       <div class="pw-label" style="margin-top:14px"><span>本周可用加成次数</span><span style="color:var(--rose)">${pw.bonusLeft} / ${PASS_BONUS_MAX}</span></div>
       <div class="pw-segs">${segHtml}</div>
       <div class="small dim sanctum-foot" style="margin-top:auto;line-height:1.9">
         每周可获得 <b>${PASS_WEEK_XP}</b> 点通行证经验（${PASS_WEEK_XP / 10} 级）。<br>
-        难度 6-15 中每次通关可领取 <b>${PASS_XP_CLEAR}</b> 经验；难度 0-5 不提供经验。<br>
-        完整通过极限模式后可消耗 1 次加成，一次性获得 <b>${PASS_XP_BONUS}</b> 经验（4 级）；中途放弃或未结算极限模式时不可使用。
-      </div>` : `<div class="small dim sanctum-foot" style="line-height:1.9">轮回难度达到 <b>6</b> 后解锁（当前 ${S.meta.ngPlus}/${MAX_NG}）。<br>解锁后难度 6-15 中每次通关可领取 ${PASS_XP_CLEAR} 点通行证经验，难度 0-5 不提供经验。</div>`}
+        轮回难度 6-15 普通模式（5 层）每次通关 +<b>${PASS_XP_CLEAR}</b> 经验（1 级）。<br>
+        深渊叠加通关可领取 <b>1</b> 次加成：+${PASS_XP_BONUS} 经验（4 级）。<br>
+        深渊叠加 · 极限通关可一次性领取全部剩余加成（最多 ${PASS_BONUS_MAX} 次，共 ${PASS_BONUS_MAX * PASS_XP_BONUS} 经验 / ${PASS_BONUS_MAX * PASS_XP_BONUS / 10} 级）。<br>
+        每周经验领取完毕后本周无法再获取，待下周一 04:00 刷新。
+      </div>` : `<div class="small dim sanctum-foot" style="line-height:1.9">轮回难度达到 <b>6</b> 后解锁（当前 ${S.meta.ngPlus}/${MAX_NG}）。<br>普通模式（5 层）每次通关可领取 ${PASS_XP_CLEAR} 点通行证经验；深渊叠加 / 极限通关可领取每周加成次数。</div>`}
     </div>`;
 
     content = `
@@ -1693,7 +1864,7 @@ function renderHub() {
           </div>
         </div>
       </div>
-      ${extremeCard}
+      ${stackCard}
       ${weeklyCard}
     </div>
     <div class="card" style="margin-top:16px">
@@ -1761,10 +1932,31 @@ function renderHub() {
       </div>`;
     }).join('');
     const seenN = Object.keys(all).filter(k => S.codex[k]).length;
+    const treatyCards = TREATIES.map(t => `<div class="cx s${t.s}" style="border-color:rgba(255,140,160,${0.16 + t.s * 0.05})">
+      <div class="cx-top">
+        <div class="cx-emoji" style="border-color:rgba(255,140,160,.5)">${t.i}</div>
+        <div><div class="cx-n">${t.n}</div><div class="small dim">${t.s} 分</div></div>
+      </div>
+      <div class="cx-l">${t.d}</div>
+    </div>`).join('');
     content = `<div class="card">
-      <div class="card-h"><span>📖</span><div><div class="card-t">深渊图鉴</div><div class="card-sub">BESTIARY · 点击已收录的敌人查看详情与难度对比</div></div>
+      <div class="card-h"><span>🩸</span><div><div class="card-t">深渊玩法</div><div class="card-sub">ABYSS MODES · 通关第 5 / 10 层时的进阶选择</div></div>
+        <div style="margin-left:auto" class="pill ${(S.meta.ngPlus || 0) >= STACK_UNLOCK_NG ? 'tag-rose' : ''}">${(S.meta.ngPlus || 0) >= STACK_UNLOCK_NG ? '深渊叠加已解锁' : `轮回 ${STACK_UNLOCK_NG} 解锁`}</div></div>
+      <div class="grid3" style="gap:10px">
+        <div class="cx"><div class="cx-n">正常模式 · ${MAX_DEPTH} 层</div><div class="cx-l">通关第 ${MAX_DEPTH} 层后直接结算；轮回难度 ${STACK_UNLOCK_NG} 及以上可触发深渊叠加提示。</div></div>
+        <div class="cx"><div class="cx-n">深渊叠加 · ${STACK_MAX_DEPTH} 层</div><div class="cx-l">第 ${MAX_DEPTH} 层后选择进入。敌人生命/攻击大幅提高，全新精英与首领登场，我方增益与事件馈赠同步放大，魂尘奖励提升。</div></div>
+        <div class="cx"><div class="cx-n">深渊叠加 · 极限 · ${LIMIT_MAX_DEPTH} 层</div><div class="cx-l">第 ${STACK_MAX_DEPTH} 层后选择进入。敌人数值产生巨大变化，并启用「深渊条约」：第 11-14 层每层结束后可从六条条约中签署任意数量。</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><span>📖</span><div><div class="card-t">深渊图鉴</div><div class="card-sub">BESTIARY · 点击已收录的敌人查看详情与数值计算器</div></div>
         <div style="margin-left:auto" class="pill tag-jade">${seenN} / ${Object.keys(all).length}</div></div>
       <div class="grid-auto">${list}</div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><span>📜</span><div><div class="card-t">深渊条约图鉴</div><div class="card-sub">ABYSS TREATIES · 共 ${TREATIES.length} 条 · 总计 ${TREATY_TOTAL_SCORE} 分</div></div>
+        <div style="margin-left:auto" class="pill tag-rose">仅在深渊叠加 · 极限生效</div></div>
+      <div class="treaty-grid codex-treaties">${treatyCards}</div>
     </div>`;
   }
 
@@ -1836,10 +2028,38 @@ function renderHub() {
       ['暴击次数', st.crits], ['累计治疗', fmt(st.healed)], ['技能释放', st.skillUses],
       ['药水使用', st.potionsUsed], ['购买次数', st.buys], ['拾取装备', st.itemsFound],
       ['经历事件', st.events], ['累计魂尘', fmt(st.dustEarned)],
+      ['深层通关', (st.extremeWins || 0) + ' 次'], ['单局最多条约', (st.maxTreatiesRun || 0) + ' 条'],
+      ['单局条约最高分', (st.maxTreatyScore || 0) + ' 分'],
     ];
+    const hist = Array.isArray(S.history) ? S.history : [];
+    const histHtml = hist.length
+      ? hist.map((r, i) => {
+          const rMode = r.stackMode !== undefined ? r.stackMode : (r.extreme ? 2 : 0);
+          const res = r.win ? (r.extremeClear ? '极限通关' : '通关') : (r.abandoned ? '放弃' : '坠落');
+          const cls = r.win ? 'tag-jade' : (r.abandoned ? '' : 'tag-rose');
+          const ico = r.win ? '🌅' : (r.abandoned ? '🚪' : '💀');
+          const icoStyle = r.win
+            ? 'background:rgba(63,224,164,.12);border-color:rgba(63,224,164,.35)'
+            : (r.abandoned ? '' : 'background:rgba(255,93,122,.12);border-color:rgba(255,93,122,.35)');
+          return `<div class="upg" style="cursor:pointer" onclick="openRunRecord(${i})">
+            <div class="upg-ico" style="${icoStyle}">${ico}</div>
+            <div style="min-width:0;flex:1">
+              <div class="upg-name">第 ${r.depth} 层 · ${ngInfo(r.ng || 0).name} · ${rMode === 2 ? '深渊叠加 · 极限' : rMode === 1 ? '深渊叠加' : '正常模式'}
+                <span class="pill ${cls}" style="margin-left:6px">${res}</span></div>
+              <div class="upg-desc">${fmtRunTime(r.ts)} · 击败 ${r.kills || 0} 个敌人 · 首领 ${r.bossKills || 0} 位 · 装备 ${(r.items || []).length} 件</div>
+            </div>
+            <div class="small dim">详情 ›</div>
+          </div>`;
+        }).join('')
+      : '<div class="small dim" style="line-height:1.9;padding:6px 2px">还没有战绩记录。完成或结束一局冒险后，这里会保留最近 10 局的战绩。</div>';
     content = `<div class="card">
       <div class="card-h"><span>📊</span><div><div class="card-t">冒险记录</div><div class="card-sub">STATISTICS</div></div></div>
       <div class="grid2" style="gap:6px 18px">${rows.map(([k, v]) => `<div class="stat"><span class="stat-k">${k}</span><span class="stat-v">${v}</span></div>`).join('')}</div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><span>📜</span><div><div class="card-t">战绩回顾</div><div class="card-sub">RUN HISTORY · 点击查看单局详情</div></div>
+        <div style="margin-left:auto" class="pill tag-gold">最近 ${hist.length} / 10 局</div></div>
+      <div class="col" style="gap:8px">${histHtml}</div>
     </div>`;
   }
 
@@ -1904,9 +2124,9 @@ function renderHub() {
           <div class="col" style="gap:10px">
             <button class="btn btn-ghost btn-block" onclick="renderAchieveDebug()">🔄 重新检测成就</button>
             <div class="divider"></div>
-            <button class="btn btn-danger btn-block" onclick="confirmReset()">⚠️ 清空所有存档</button>
+            <button class="btn btn-danger btn-block" onclick="confirmReset()">⚠️ 重置游戏进度</button>
             <div class="small dim" style="line-height:1.9">
-              清空操作不可撤销。游戏进度保存在浏览器本地（localStorage），清除浏览器数据同样会丢失进度。
+              重置操作不可撤销。魂尘、强化、图鉴与战绩记录会被清除；成就解锁状态与每周加成会被保留。游戏进度保存在浏览器本地（localStorage）。
             </div>
           </div>
         </div>
@@ -1925,6 +2145,76 @@ function renderHub() {
 
 function switchTab(k) { hubTab = k; sfx('click'); renderHub(); }
 
+/* ---------------- 战绩回顾 ---------------- */
+function fmtRunTime(ts) {
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return '时间未知';
+  const p = n => ('0' + n).slice(-2);
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+function openRunRecord(i) {
+  const r = (S.history || [])[i];
+  if (!r) return;
+  sfx('click');
+  const rarityColor = { common: '#9aa7b8', rare: '#4fa8ff', epic: '#b06bff', legend: '#ffb545' };
+  const itemHtml = (r.items || []).length
+    ? r.items.map(it => `<span class="pill" style="border-color:${rarityColor[it.r] || '#666'};color:${rarityColor[it.r] || '#ccc'}">${it.i || '🎁'} ${it.n}</span>`).join('')
+    : '<span class="small dim">本局没有获得装备</span>';
+  // 击败的敌人：按名称合并计数
+  const enemyMap = {};
+  (r.enemies || []).forEach(e => {
+    const name = (e && e.n) ? e.n : String(e || '未知敌人');
+    const o = enemyMap[name] || (enemyMap[name] = { n: name, i: (e && e.i) || '👹', boss: !!(e && e.boss), c: 0 });
+    o.c++;
+  });
+  const enemies = Object.values(enemyMap).sort((a, b) => (b.boss - a.boss) || (b.c - a.c));
+  const enemyHtml = enemies.length
+    ? enemies.map(e => `<span class="pill" style="${e.boss ? 'border-color:rgba(176,107,255,.5);color:#cfaeff' : ''}">${e.boss ? '👑' : e.i} ${e.n}${e.c > 1 ? ' ×' + e.c : ''}</span>`).join('')
+    : '<span class="small dim">本局没有击败敌人</span>';
+  const skillHtml = (r.skills || []).length
+    ? r.skills.map(id => {
+        const sk = SKILLS[id];
+        if (!sk) return '';
+        return `<span class="pill" style="border-color:${RARITY[sk.rar].color};color:${RARITY[sk.rar].color}">${sk.i} ${sk.n}</span>`;
+      }).join('')
+    : '<span class="small dim">本局没有习得技能</span>';
+  const rMode = r.stackMode !== undefined ? r.stackMode : (r.extreme ? 2 : 0);
+  const rCap = rMode === 2 ? LIMIT_MAX_DEPTH : rMode === 1 ? STACK_MAX_DEPTH : MAX_DEPTH;
+  const rModeLabel = rMode === 2 ? '深渊叠加 · 极限' : rMode === 1 ? '深渊叠加' : '正常模式';
+  const result = r.win ? (r.extremeClear ? '深渊叠加 · 极限通关' : '通关成功') : (r.abandoned ? '主动放弃' : '冒险失败');
+  const extremeText = rMode === 2 ? (r.extremeClear ? '已进入并完整通关' : '已进入 · 未通关') : rMode === 1 ? '已进入 · 未进入极限' : '未进入深渊叠加';
+  const bodyHtml = `
+    <div class="settle-grid">
+      <div class="settle-left">
+        <div class="center" style="margin-bottom:14px">
+          <div style="font-size:46px;line-height:1">${r.win ? '🌅' : (r.abandoned ? '🚪' : '💀')}</div>
+          <div style="font-family:var(--serif);font-size:17px;letter-spacing:2px;margin-top:8px;color:#ffd9a8">${result}</div>
+          <div class="small dim" style="margin-top:5px">${fmtRunTime(r.ts)}</div>
+        </div>
+        <div class="col" style="gap:7px">
+          <div class="stat"><span class="stat-k">难度</span><span class="stat-v">${ngInfo(r.ng || 0).name} · ${rModeLabel}</span></div>
+          <div class="stat"><span class="stat-k">抵达层数</span><span class="stat-v">第 ${r.depth} 层 / ${rCap}</span></div>
+          <div class="stat"><span class="stat-k">击败敌人</span><span class="stat-v">${r.kills || 0} 个</span></div>
+          <div class="stat"><span class="stat-k">击杀首领</span><span class="stat-v">${r.bossKills || 0} 位</span></div>
+          ${rMode === 2 ? `<div class="stat"><span class="stat-k">选取条约</span><span class="stat-v" style="color:#ff9aa8">${r.treatyCount || 0} 条 · ${r.treatyScore || 0} 分</span></div>` : ''}
+          <div class="stat"><span class="stat-k">获得魂尘</span><span class="stat-v" style="color:var(--gold)">✨ +${fmt(r.dust || 0)}</span></div>
+          <div class="stat"><span class="stat-k">深渊叠加</span><span class="stat-v" style="color:${r.extremeClear ? 'var(--jade)' : (rMode > 0 ? '#ff8b9a' : 'inherit')}">${extremeText}</span></div>
+          <div class="stat"><span class="stat-k">药水使用</span><span class="stat-v">${r.usedPotion ? '使用过' : '未使用'}</span></div>
+        </div>
+      </div>
+      <div class="settle-right">
+        <div class="cx-sec" style="margin-top:0">获得的物品 · ${(r.items || []).length} 件</div>
+        <div class="settle-items">${itemHtml}</div>
+        <div class="cx-sec">击败的敌人 · ${Object.values(enemyMap).reduce((a, e) => a + e.c, 0)} 个</div>
+        <div class="settle-items">${enemyHtml}</div>
+        <div class="cx-sec">习得的技能 · ${(r.skills || []).length} 个</div>
+        <div class="settle-items">${skillHtml}</div>
+      </div>
+    </div>`;
+  modal({ title: '战绩详情', sub: 'RUN RECORD', body: bodyHtml, size: 'wide', buttons: [{ label: '关闭', cls: 'btn-primary' }] });
+}
+
 function buyUpgrade(id) {
   const up = UPGRADES.find(x => x.id === id);
   const lv = S.meta.upgrades[id] || 0;
@@ -1942,15 +2232,21 @@ function buyUpgrade(id) {
 
 function confirmReset() {
   modal({
-    title: '确认清空存档？', sub: 'THIS CANNOT BE UNDONE',
-    body: '所有魂尘、成就、图鉴与记录都会被抹去，深渊将再次对你完全陌生。',
+    title: '确认重置游戏进度？', sub: 'ACHIEVEMENTS & WEEKLY BONUS ARE KEPT',
+    body: '魂尘、强化、图鉴与战绩记录都会被重置，但<b>成就解锁状态</b>与<b>每周加成</b>会被保留。',
     buttons: [
       { label: '再想想', cls: 'btn-ghost' },
-      { label: '确认清空', cls: 'btn-danger', fn: () => {
+      { label: '确认重置', cls: 'btn-danger', fn: () => {
+          // 保留成就解锁状态与每周加成（每周剩余经验 / 可用加成次数）
+          const keepAch = Object.assign({}, S.ach || {});
+          const keepWeekly = S.meta && S.meta.passWeekly ? Object.assign({}, S.meta.passWeekly) : null;
           localStorage.removeItem(SAVE_KEY);
-          S = defaultState(); R = null; B = null;
+          S = defaultState();
+          S.ach = keepAch;
+          if (keepWeekly) S.meta.passWeekly = keepWeekly;
+          R = null; B = null;
           saveGame(); renderTitle(); showScreen('title');
-          toast('存档已清空', '🗑️');
+          toast('游戏进度已重置（成就与每周加成已保留）', '🗑️');
         } },
     ]
   });
@@ -2003,11 +2299,11 @@ const CODEX_BUFF_NAMES = {
 };
 
 function codexDepthOf(key) {
-  const fixed = { boss1: 3, boss2: 6, boss3: 9, boss4: 12, xboss1: 15, xboss2: 18, xboss3: 20 };
+  const fixed = { boss1: 1, boss2: 3, boss3: 5, boss4: 7, xboss1: 9, xboss2: 10, xboss3: 13, xboss4: 15, xelite1: 6, xelite2: 9 };
   if (fixed[key]) return fixed[key];
   const idx = BIOMES.findIndex(b => b.enemies.indexOf(key) >= 0);
-  if (idx === 4) return 14 + Math.max(0, BIOMES[4].enemies.indexOf(key)) * 2;
-  return (idx >= 0 ? idx : 0) * 3 + 1;
+  if (idx === 4) return 11 + Math.max(0, BIOMES[4].enemies.indexOf(key));
+  return (idx >= 0 ? idx : 0) * 2 + 1;
 }
 
 function enemyStatsAt(base, isBoss, ng, depth) {
@@ -2039,15 +2335,15 @@ function openCodexEntry(key) {
   const depth = codexDepthOf(key);
   const maxNg = Math.min(S.meta.ngPlus || 0, MAX_NG);
   const tags = (base.tags || []).map(t => CODEX_TAG_NAMES[t] || t).join(' · ');
-  const goldTxt = base.gold ? `${base.gold[0]} ~ ${base.gold[1]}` : '—';
+  const goldTxt = base.gold ? `${Math.round(base.gold[0] * GOLD_SCALE)} ~ ${Math.round(base.gold[1] * GOLD_SCALE)}` : '—';
   const intents = (base.intents || []).map(it => `<div class="intent-line">▸ ${codexIntentText(it, base.atk, effStats().def)}</div>`).join('');
   const ngOpts = [];
   for (let lv = 0; lv <= maxNg; lv++) ngOpts.push(`<option value="${lv}">${ngInfo(lv).name}</option>`);
 
   modal({
     title: `${base.i} ${base.n}`,
-    sub: `${isBoss ? 'BOSS' : 'BESTIARY'} · ${base.tags && base.tags.indexOf('boss') >= 0 ? '深渊首领' : '深渊生物'} · 基准层数 第 ${depth} 层${EXTREME_BOSS_FLOORS[key] || BIOMES[4].enemies.indexOf(key) >= 0 ? ' · 极限模式' : ''}`,
-    size: 'wide',
+    sub: `${isBoss ? 'BOSS' : 'BESTIARY'} · ${base.tags && base.tags.indexOf('boss') >= 0 ? '深渊首领' : '深渊生物'} · 基准层数 第 ${depth} 层${isExtremeKey(key) ? ' · 深渊叠加 / 极限专属' : ''}`,
+    size: 'wide codex-wide',
     body: `
       <div class="cx-dlg">
         <div class="cx-col cx-col-l">
@@ -2070,13 +2366,21 @@ function openCodexEntry(key) {
           <div class="col" style="gap:5px">${intents || '<div class="small dim">无</div>'}</div>
         </div>
         <div class="cx-col cx-col-r">
-          <div class="cx-sec" style="margin-top:0">难度对比</div>
+          <div class="cx-sec" style="margin-top:0">数值计算器</div>
           <div class="small dim" style="margin-bottom:8px;line-height:1.8">
-            以「初临深渊（轮回 0）」为基准，对比所选轮回难度下的数值变化。仅可选择已解锁的难度（当前最高 ${ngInfo(maxNg).name}）。
+            以「初临深渊（轮回 0）」为基准，可叠加轮回难度、全部苦难与全部条约，实时计算敌人的最终数值。
           </div>
           <div class="cx-cmp-row">
             <span class="small muted">轮回难度</span>
             <select class="cx-select" id="cx-ng">${ngOpts.join('')}</select>
+          </div>
+          <div class="row" style="gap:14px;flex-wrap:wrap;margin-bottom:12px">
+            <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="cx-hardship" style="accent-color:#ff8a3d"> 计入全部苦难
+            </label>
+            <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="cx-treaty" style="accent-color:#ff5d7a"> 计入全部条约
+            </label>
           </div>
           <div id="cx-cmp"></div>
         </div>
@@ -2085,8 +2389,10 @@ function openCodexEntry(key) {
   });
 
   const sel = $('#cx-ng');
-  if (sel) sel.onchange = () => renderCodexCompare(key, parseInt(sel.value, 10) || 0);
-  renderCodexCompare(key, 0);
+  const refresh = () => renderCodexCompare(key, sel ? (parseInt(sel.value, 10) || 0) : 0);
+  if (sel) sel.onchange = refresh;
+  ['#cx-hardship', '#cx-treaty'].forEach(s => { const el = $(s); if (el) el.onchange = refresh; });
+  refresh();
 }
 
 /* ---------------- 装备详情 ---------------- */
@@ -2172,14 +2478,46 @@ function openSkillEntry(key) {
   });
 }
 
+function allTreatyMods() {
+  const m = { enemyHp: 0, enemyAtk: 0, enemyDef: 0, playerAtk: 0, playerHp: 0, playerDef: 0, playerCrit: 0, playerCritDmg: 0, shopPrice: 0, goldGain: 0 };
+  TREATIES.forEach(t => {
+    if (!t.mods) return;
+    for (const k in t.mods) m[k] = (m[k] || 0) + t.mods[k];
+  });
+  return m;
+}
+
+function allHardshipMods() {
+  const m = { enemyHp: 0, enemyAtk: 0, enemyDef: 0 };
+  HARDSHIPS.forEach(h => {
+    if (!h.mods) return;
+    for (const k in h.mods) m[k] = (m[k] || 0) + h.mods[k];
+  });
+  m.enemyHp = Math.min(0.8, m.enemyHp);
+  m.enemyAtk = Math.min(0.8, m.enemyAtk);
+  m.enemyDef = Math.min(0.8, m.enemyDef);
+  return m;
+}
+
 function renderCodexCompare(key, ng) {
   const base = ENEMIES[key] || BOSSES[key];
   if (!base) return;
   const isBoss = !!base.boss;
   const depth = codexDepthOf(key);
+  const useH = !!($('#cx-hardship') && $('#cx-hardship').checked);
+  const useT = !!($('#cx-treaty') && $('#cx-treaty').checked);
+  const hm = useH ? allHardshipMods() : { enemyHp: 0, enemyAtk: 0, enemyDef: 0 };
+  const tm = useT ? allTreatyMods() : { enemyHp: 0, enemyAtk: 0, enemyDef: 0, playerAtk: 0, playerHp: 0, playerDef: 0, playerCrit: 0, playerCritDmg: 0, shopPrice: 0, goldGain: 0 };
+  const em = {
+    hp: (1 + hm.enemyHp) * (1 + tm.enemyHp),
+    atk: (1 + hm.enemyAtk) * (1 + tm.enemyAtk),
+    def: (1 + hm.enemyDef) * (1 + tm.enemyDef),
+  };
   const a = enemyStatsAt(base, isBoss, 0, depth);
-  const b = enemyStatsAt(base, isBoss, ng, depth);
-  const pdef = effStats().def;
+  const rawB = enemyStatsAt(base, isBoss, ng, depth);
+  const b = { hp: Math.round(rawB.hp * em.hp), atk: rawB.atk * em.atk, def: Math.round(rawB.def * em.def) };
+  const pdef0 = effStats().def;
+  const pdef1 = Math.max(0, pdef0 * (1 + tm.playerDef));
   const row = (label, x, y, fmtFn) => {
     const diff = y - x;
     const pct = x === 0 ? (diff === 0 ? '—' : '+∞') : (diff >= 0 ? '+' : '') + Math.round(diff / x * 100) + '%';
@@ -2192,14 +2530,31 @@ function renderCodexCompare(key, ng) {
       <span class="cmp-d ${cls}">${pct}</span>
     </div>`;
   };
-  const hit0 = Math.max(1, Math.round(a.atk * 1 * (1 - mitigation(pdef))));
-  const hit1 = Math.max(1, Math.round(b.atk * 1 * (1 - mitigation(pdef))));
+  const hit0 = Math.max(1, Math.round(a.atk * (1 - mitigation(pdef0))));
+  const hit1 = Math.max(1, Math.round(b.atk * (1 - mitigation(pdef1))));
   const goldMul0 = 1;
-  const goldMul1 = 1 + ng * 0.3;
-  const g0 = base.gold ? Math.round(base.gold[0] * goldMul0) + '~' + Math.round(base.gold[1] * goldMul0) : '—';
-  const g1 = base.gold ? Math.round(base.gold[0] * goldMul1) + '~' + Math.round(base.gold[1] * goldMul1) : '—';
+  const goldMul1 = (1 + ng * 0.08) * Math.max(0, 1 + tm.goldGain);
+  const g0 = base.gold ? Math.round(base.gold[0] * GOLD_SCALE * goldMul0) + '~' + Math.round(base.gold[1] * GOLD_SCALE * goldMul0) : '—';
+  const g1 = base.gold ? Math.round(base.gold[0] * GOLD_SCALE * goldMul1) + '~' + Math.round(base.gold[1] * GOLD_SCALE * goldMul1) : '—';
+  const goldCls = goldMul1 > 1 ? 'up' : (goldMul1 < 1 ? 'down' : 'same');
+  const pctOf = v => (v >= 0 ? '+' : '') + Math.round(v * 100) + '%';
+  const extras = [];
+  if (useH) extras.push(`☠ 全部苦难：生命 ${pctOf(hm.enemyHp)} · 攻击 ${pctOf(hm.enemyAtk)} · 防御 ${pctOf(hm.enemyDef)}（单项上限 +80%）`);
+  if (useT) {
+    extras.push(`📜 全部条约 ${TREATIES.length} 条：敌方生命 ${pctOf(tm.enemyHp)} · 攻击 ${pctOf(tm.enemyAtk)} · 防御 ${pctOf(tm.enemyDef)}`);
+    const pl = [];
+    if (tm.playerAtk) pl.push(`攻击 ${pctOf(tm.playerAtk)}（实战最多 -65%）`);
+    if (tm.playerDef) pl.push(`防御 ${pctOf(tm.playerDef)}`);
+    if (tm.playerHp) pl.push(`生命 ${pctOf(tm.playerHp)}`);
+    if (tm.playerCrit) pl.push(`暴击率 ${tm.playerCrit > 0 ? '+' : ''}${Math.round(tm.playerCrit)}%`);
+    if (tm.playerCritDmg) pl.push(`暴击伤害 ${tm.playerCritDmg > 0 ? '+' : ''}${Math.round(tm.playerCritDmg)}%`);
+    if (tm.shopPrice) pl.push(`商店价格 ×${(1 + tm.shopPrice).toFixed(2)}`);
+    if (tm.goldGain) pl.push(`金币 ${pctOf(Math.max(-1, tm.goldGain))}`);
+    if (pl.length) extras.push(`我方修正：${pl.join('　·　')}`);
+  }
+  if (!useH && !useT) extras.push('勾选上方选项，可把全部苦难 / 全部条约叠加进计算结果。');
   const html = `
-    <div class="cmp-head"><span class="cmp-k">属性</span><span class="cmp-v">轮回 0</span><span class="cmp-arrow"></span><span class="cmp-v">${ngInfo(ng).name}</span><span class="cmp-d"></span></div>
+    <div class="cmp-head"><span class="cmp-k">属性</span><span class="cmp-v">基准 · 轮回 0</span><span class="cmp-arrow"></span><span class="cmp-v">${ngInfo(ng).name}${(useH || useT) ? ' + 修正' : ''}</span><span class="cmp-d"></span></div>
     <div class="cmp-body">
       ${row('❤ 生命', a.hp, b.hp, v => Math.round(v))}
       ${row('⚔ 攻击', a.atk, b.atk, v => Math.round(v))}
@@ -2209,11 +2564,11 @@ function renderCodexCompare(key, ng) {
         <span class="cmp-k">💰 金币</span>
         <span class="cmp-v">${g0}</span>
         <span class="cmp-arrow">→</span>
-        <span class="cmp-v ${ng > 0 ? 'up' : 'same'}">${g1}</span>
-        <span class="cmp-d ${ng > 0 ? 'up' : 'same'}">${ng > 0 ? '+' + Math.round((goldMul1 - 1) * 100) + '%' : '—'}</span>
+        <span class="cmp-v ${goldCls}">${g1}</span>
+        <span class="cmp-d ${goldCls}">${goldMul1 === 1 ? '—' : pctOf(goldMul1 - 1)}</span>
       </div>
     </div>
-    ${ng === 0 ? '<div class="small dim center" style="margin-top:10px">当前正在与初始难度对比，切换上方难度查看差异。</div>' : ''}`;
+    <div class="small dim" style="margin-top:10px;line-height:1.9">${extras.map(x => `<div>${x}</div>`).join('')}</div>`;
   const el = $('#cx-cmp');
   if (el) el.innerHTML = html;
 }
@@ -2440,9 +2795,12 @@ function beginRun(difficulty, boon) {
     bonusHp: 0, bonusAtk: 0, bonusDef: 0, bonusCrit: 0,
     skills: [], equip: { weapon: [], armor: [], trinket: [] },
     revived: false, usedPotion: false, bossKills: 0, ng: ng, ngAtStart: ng,
-    choices: null, choicesFor: -1, shop: null, shopFor: -1,
-    skipFloor: false, cursed: false, extreme: false, extremeAllowed: !!S.meta.extreme,
-    kills: 0, itemsLog: [], bossLog: [],
+    map: null, mapFor: -1, node: null, active: null, done: [],
+    shop: null, shopFor: -1, shopReroll: 0, hardships: [], gift: null, giftNext: null,
+    skipFloor: false, cursed: false, stackMode: 0,
+    stackEnabled: S.meta.stackEnabled !== false,
+    treatyIds: [], treatySeen: [], treatyOptions: [], treatySel: [],
+    kills: 0, itemsLog: [], bossLog: [], enemyLog: [],
     maxItems: 0, maxAtk: 0, maxDef: 0, maxCritDmg: 0, maxHp: 0,
     dev: S.meta.dev ? Object.assign({}, S.meta.dev) : undefined,
   };
@@ -2471,7 +2829,7 @@ function beginRun(difficulty, boon) {
     toast('开局增益已生效', '🌠', 'success');
   }
   R.hp = effStats().maxHp;
-  runView = 'choices';
+  runView = 'map';
   pendingItems = [];
   S.stats.maxDepth = Math.max(S.stats.maxDepth, 1);
   saveRunState();
@@ -2492,9 +2850,17 @@ function continueRun() {
   }
   if (!R.itemsLog) R.itemsLog = [];
   if (!R.bossLog) R.bossLog = [];
+  if (!R.enemyLog) R.enemyLog = [];
   if (R.kills === undefined) R.kills = 0;
-  if (R.extreme === undefined) R.extreme = false;
-  if (R.extremeAllowed === undefined) R.extremeAllowed = !!S.meta.extreme;
+  if (R.stackMode === undefined) R.stackMode = R.extreme ? 2 : 0;
+  if (R.stackEnabled === undefined) R.stackEnabled = true;
+  if (!Array.isArray(R.treatyIds)) R.treatyIds = [];
+  if (!Array.isArray(R.treatySeen)) R.treatySeen = [];
+  if (!Array.isArray(R.treatyOptions)) R.treatyOptions = [];
+  if (!Array.isArray(R.treatySel)) R.treatySel = [];
+  if (!Array.isArray(R.hardships)) R.hardships = [];
+  if (R.shopReroll === undefined) R.shopReroll = 0;
+  if (R.giftNext === undefined) R.giftNext = null;
   if (R.ng === undefined) R.ng = R.ngAtStart !== undefined ? R.ngAtStart : (S.meta.ngPlus || 0);
   R.ngAtStart = R.ng;
   if (R.maxItems === undefined) R.maxItems = 0;
@@ -2502,8 +2868,11 @@ function continueRun() {
   if (R.maxDef === undefined) R.maxDef = 0;
   if (R.maxCritDmg === undefined) R.maxCritDmg = 0;
   if (R.maxHp === undefined) R.maxHp = 0;
-  R.choicesFor = -1; R.shopFor = -1;
-  runView = 'choices';
+  if (!Array.isArray(R.done)) R.done = [];
+  if (!R.map || R.mapFor !== R.depth) { R.map = null; R.mapFor = -1; R.node = null; R.done = []; }
+  R.active = null;
+  R.shopFor = -1;
+  runView = R.gift ? 'gift' : ((modeOf(R) === 2 && R.treatyOptions.length && R.depth >= 12 && R.depth <= 15) ? 'treaty' : 'map');
   pendingItems = [];
   renderRun();
   showScreen('run');
@@ -2516,30 +2885,187 @@ function saveRunState() {
   saveGame();
 }
 
-function genChoices(depth) {
-  if (isBossFloor(depth)) return [{ type: 'boss' }];
-  const pool = R && R.extreme
-    ? [['battle', 32], ['elite', 18], ['treasure', 15], ['shop', 11], ['campfire', 10], ['event', 14]]
-    : [['battle', 34], ['elite', 12], ['treasure', 16], ['shop', 12], ['campfire', 12], ['event', 14]];
-  const out = []; const used = new Set();
-  let guard = 0;
-  while (out.length < 3 && guard++ < 100) {
-    const t = wpick(pool);
-    if (used.has(t)) continue;
-    used.add(t); out.push({ type: t });
-  }
-  return out;
-}
+/* ---------------- 深渊路线地图 ---------------- */
+const MAP_COL_W = 132;
+const MAP_ROW_H = 136;
+const MAP_NODE = 82;
 
 const ROOM_META = {
-  battle:   { n: '战斗', i: '⚔️', d: '与深渊的住民交锋，赢取金币与战利品', cls: '' },
-  elite:    { n: '精英战斗', i: '🔱', d: '强大的敌人，更丰厚的奖励', cls: 'elite' },
-  treasure: { n: '宝箱', i: '🎁', d: '未知的装备与金币，任你挑选', cls: '' },
-  shop:     { n: '流浪商人', i: '🛒', d: '用金币换取补给、装备与技能', cls: 'shop' },
-  campfire: { n: '营火', i: '🔥', d: '休整、强化自身，或恢复生命', cls: 'camp' },
-  event:    { n: '奇遇', i: '❓', d: '未知的命运在等待着你', cls: '' },
-  boss:     { n: '首领', i: '👑', d: '这一层的守卫者，击败它才能继续深入', cls: 'boss' },
+  start:  { n: '入口', i: '🚪', d: '本层的起点', cls: 'start' },
+  battle: { n: '战斗', i: '⚔️', d: '与深渊的住民交锋，赢取金币与战利品', cls: '' },
+  elite:  { n: '精英', i: '🔱', d: '强大的敌人，更丰厚的奖励', cls: 'elite' },
+  event:  { n: '奇遇', i: '❓', d: '未知的命运在等待着你', cls: '' },
+  shop:   { n: '深渊商店', i: '🛒', d: '用金币换取补给、装备与技能', cls: 'shop' },
+  boss:   { n: '首领', i: '👑', d: '这一层的守卫者，击败它才能继续深入', cls: 'boss' },
 };
+
+function genMap(depth) {
+  const rows = rnd(2, 3);
+  const middleCols = rnd(4, 5);
+  // 本层总节点数 = 入口 + 中间节点 + 深渊商店 + 首领，控制在 8-9 个
+  const totalMiddle = Math.max(middleCols + 1, rnd(5, 6));
+  const battles = clamp(rnd(4, 5), 4, totalMiddle - 1);
+  const events = totalMiddle - battles;
+
+  const types = [];
+  for (let i = 0; i < battles; i++) types.push(Math.random() < 0.24 ? 'elite' : 'battle');
+  for (let i = 0; i < events; i++) types.push('event');
+  shuffle(types);
+
+  const nodes = [];
+  const colNodes = [];
+  let uid = 0;
+  function mkNode(c, r, type) {
+    const n = { id: 'm' + (uid++), c: c, r: r, type: type, links: [] };
+    nodes.push(n);
+    return n;
+  }
+  function connect(a, b) {
+    if (!a || !b || a === b) return;
+    if (a.links.indexOf(b.id) < 0) a.links.push(b.id);
+    if (b.links.indexOf(a.id) < 0) b.links.push(a.id);
+  }
+
+  for (let c = 0; c <= middleCols + 2; c++) colNodes.push([]);
+
+  const startRow = rnd(0, rows - 1);
+  colNodes[0].push(mkNode(0, startRow, 'start'));
+
+  // 中间列：每列至少一个节点，额外节点优先补在首列与末列以形成分叉/汇流
+  const slotRows = [];
+  for (let c = 0; c < middleCols; c++) slotRows.push([rnd(0, rows - 1)]);
+  let extra = totalMiddle - middleCols;
+  const preferred = [];
+  const firstFree = [], lastFree = [];
+  for (let r = 0; r < rows; r++) {
+    if (slotRows[0].indexOf(r) < 0) firstFree.push(r);
+    if (slotRows[middleCols - 1].indexOf(r) < 0) lastFree.push(r);
+  }
+  const pairCount = Math.max(firstFree.length, lastFree.length);
+  for (let i = 0; i < pairCount; i++) {
+    if (firstFree[i] !== undefined) preferred.push([0, firstFree[i]]);
+    if (lastFree[i] !== undefined) preferred.push([middleCols - 1, lastFree[i]]);
+  }
+  while (extra > 0) {
+    let p = preferred.shift();
+    if (!p) {
+      const cand = [];
+      for (let c = 0; c < middleCols; c++) {
+        for (let r = 0; r < rows; r++) {
+          if (slotRows[c].indexOf(r) < 0) cand.push([c, r]);
+        }
+      }
+      if (!cand.length) break;
+      p = pick(cand);
+    }
+    if (slotRows[p[0]].indexOf(p[1]) >= 0) continue;
+    slotRows[p[0]].push(p[1]);
+    extra--;
+  }
+  for (let c = 0; c < middleCols; c++) {
+    shuffle(slotRows[c]);
+    for (let i = 0; i < slotRows[c].length; i++) {
+      colNodes[c + 1].push(mkNode(c + 1, slotRows[c][i], types.pop() || 'battle'));
+    }
+  }
+
+  const shopRow = rnd(0, rows - 1);
+  const bossRow = rnd(0, rows - 1);
+  colNodes[middleCols + 1].push(mkNode(middleCols + 1, shopRow, 'shop'));
+  colNodes[middleCols + 2].push(mkNode(middleCols + 2, bossRow, 'boss'));
+
+  const start = colNodes[0][0];
+  const shop = colNodes[middleCols + 1][0];
+  const boss = colNodes[middleCols + 2][0];
+
+  // 入口一分多
+  colNodes[1].forEach(n => connect(start, n));
+
+  // 相邻列之间按行距连通（允许斜向上下换行）
+  for (let c = 1; c < middleCols + 1; c++) {
+    const A = colNodes[c], B = colNodes[c + 1];
+    A.forEach(a => B.forEach(b => { if (Math.abs(a.r - b.r) <= 1) connect(a, b); }));
+    A.forEach(a => {
+      if (!B.some(b => a.links.indexOf(b.id) >= 0)) {
+        const b = B.reduce((best, x) => (Math.abs(x.r - a.r) < Math.abs(best.r - a.r) ? x : best), B[0]);
+        connect(a, b);
+      }
+    });
+    B.forEach(b => {
+      if (!A.some(a => a.links.indexOf(b.id) >= 0)) {
+        const a = A.reduce((best, x) => (Math.abs(x.r - b.r) < Math.abs(best.r - b.r) ? x : best), A[0]);
+        connect(a, b);
+      }
+    });
+  }
+
+  // 同列上下连通：部分节点可纵向移动
+  for (let c = 1; c <= middleCols; c++) {
+    const arr = colNodes[c].slice().sort((a, b) => a.r - b.r);
+    for (let i = 0; i < arr.length - 1; i++) {
+      if (arr[i + 1].r - arr[i].r === 1 && Math.random() < 0.65) connect(arr[i], arr[i + 1]);
+    }
+  }
+
+  // 末列节点汇入深渊商店，再由商店通往首领
+  colNodes[middleCols].forEach(n => connect(n, shop));
+  connect(shop, boss);
+
+  return {
+    rows: rows, cols: middleCols + 3, middleCols: middleCols,
+    nodes: nodes, start: start.id, shop: shop.id, boss: boss.id,
+    w: (middleCols + 3) * MAP_COL_W, h: rows * MAP_ROW_H,
+  };
+}
+
+function nodeById(id) {
+  if (!R || !R.map) return null;
+  return R.map.nodes.find(n => n.id === id) || null;
+}
+
+function linkNodes(a, b) {
+  if (!a || !b || a === b) return;
+  if (a.links.indexOf(b.id) < 0) a.links.push(b.id);
+  if (b.links.indexOf(a.id) < 0) b.links.push(a.id);
+}
+
+// 兜底修复：极少数旧存档可能停在“四周都不可走”的节点，强行接通最近的后续节点
+function repairMapProgress() {
+  if (!R || !R.map || R.active) return;
+  const cur = nodeById(R.node);
+  if (!cur || cur.type === 'boss') return;
+  const moves = R.map.nodes.filter(n => R.done.indexOf(n.id) < 0 && n.c >= cur.c && cur.links.indexOf(n.id) >= 0);
+  if (moves.length) return;
+  const future = R.map.nodes.filter(n => R.done.indexOf(n.id) < 0 && n.c > cur.c);
+  if (!future.length) return;
+  const minC = Math.min.apply(null, future.map(n => n.c));
+  linkNodes(cur, pick(future.filter(n => n.c === minC)));
+}
+
+function ensureMap() {
+  if (!R) return;
+  if (!R.map || R.mapFor !== R.depth) {
+    R.map = genMap(R.depth);
+    R.mapFor = R.depth;
+    R.node = R.map.start;
+    R.done = [R.map.start];
+    R.active = null;
+    R.shopFor = -1;
+  }
+  if (!Array.isArray(R.done)) R.done = [R.map.start];
+  if (R.done.indexOf(R.map.start) < 0) R.done.unshift(R.map.start);
+  if (!R.node || !nodeById(R.node)) R.node = R.map.start;
+  repairMapProgress();
+}
+
+function canEnterNode(n) {
+  if (!n || !R || R.active) return false;
+  if (R.done.indexOf(n.id) >= 0) return false;
+  const cur = nodeById(R.node);
+  if (!cur || cur.links.indexOf(n.id) < 0) return false;
+  // 只允许同列纵向移动或继续向右，禁止回到已经走过的列，避免回头后前方节点已清理而卡死
+  return n.c >= cur.c;
+}
 
 function playerPanelHtml() {
   const s = effStats();
@@ -2549,77 +3075,367 @@ function playerPanelHtml() {
     const best = arr.length ? arr.reduce((a, b) => (a.score > b.score ? a : b)) : null;
     return `<div class="stat" style="padding:6px 9px">
       <span class="stat-k">${SLOT_ICON[k]} ${SLOT_NAME[k]}</span>
-      <span class="small" style="color:${best ? RARITY[best.rarity].color : 'var(--dim)'};max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best ? best.name + (arr.length > 1 ? ` ×${arr.length}` : '') : '空'}</span>
+      <span class="small" style="color:${best ? RARITY[best.rarity].color : 'var(--dim)'};max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best ? best.name + (arr.length > 1 ? ` ×${arr.length}` : '') : '空'}</span>
     </div>`;
   }).join('');
   const totalEquip = (R.equip.weapon.length || 0) + (R.equip.armor.length || 0) + (R.equip.trinket.length || 0);
   const sk = R.skills.map(id => `<span class="pill" style="border-color:rgba(150,130,255,.4);color:#c9bcff">${SKILLS[id].i} ${SKILLS[id].n}</span>`).join('');
-  return `<div class="card">
-    <div class="row between" style="margin-bottom:10px">
-      <div><div class="card-t" style="font-size:15px">无名者</div><div class="card-sub">第 ${R.depth} 层 · 堕落者</div></div>
-      <div class="pill tag-rose">💰 ${fmt(R.gold)}</div>
+  const treatyPill = (R.treatyIds && R.treatyIds.length)
+    ? `<span class="pill tag-rose" title="点击查看已签署的条约" style="cursor:pointer" onclick="showTreatyTags()">📜 条约 ${R.treatyIds.length} 条 · ${treatyScore()} 分</span>` : '';
+  const hardshipPill = (R.hardships && R.hardships.length)
+    ? `<span class="pill tag-rose" title="点击查看已背负的苦难" style="cursor:pointer" onclick="showHardshipTags()">☠ 苦难 ${R.hardships.length}</span>` : '';
+  return `<div class="card hero-strip">
+    <div class="hs-col hs-id">
+      <div class="row between" style="margin-bottom:9px">
+        <div><div class="card-t" style="font-size:16px">无名者</div><div class="card-sub">第 ${R.depth} 层 · ${modeName(R)}</div></div>
+        <div class="pill tag-gold">💰 ${fmt(R.gold)}</div>
+      </div>
+      <div class="bar hp"><div class="bar-fill" style="width:${hpPct}%"></div></div>
+      <div class="row between small" style="margin-top:6px">
+        <span class="muted">❤ ${Math.round(R.hp)} / ${s.maxHp}</span>
+        <span class="muted">🧪 ${R.potions} / ${R.potionCap}</span>
+      </div>
+      ${(treatyPill || hardshipPill) ? `<div class="row" style="margin-top:9px;flex-wrap:wrap;gap:6px">${treatyPill}${hardshipPill}</div>` : ''}
     </div>
-    <div class="bar hp"><div class="bar-fill" style="width:${hpPct}%"></div></div>
-    <div class="row between small" style="margin-top:6px">
-      <span class="muted">❤ ${Math.round(R.hp)} / ${s.maxHp}</span>
-      <span class="muted">🧪 ${R.potions} / ${R.potionCap}</span>
+    <div class="hs-col hs-stat">
+      <div class="pstat-grid" style="margin-top:0">
+        <div class="pstat"><b>${Math.round(s.atk)}</b><span>攻击</span></div>
+        <div class="pstat"><b>${Math.round(s.def)}</b><span>防御</span></div>
+        <div class="pstat"><b>${Math.round(s.crit)}%</b><span>暴击</span></div>
+        <div class="pstat"><b>${Math.round(s.critDmg)}%</b><span>暴伤</span></div>
+      </div>
+      <div class="col" style="gap:6px;margin-top:9px">${eq}</div>
     </div>
-    <div class="pstat-grid">
-      <div class="pstat"><b>${Math.round(s.atk)}</b><span>攻击</span></div>
-      <div class="pstat"><b>${Math.round(s.def)}</b><span>防御</span></div>
-      <div class="pstat"><b>${Math.round(s.crit)}%</b><span>暴击</span></div>
-      <div class="pstat"><b>${Math.round(s.critDmg)}%</b><span>暴伤</span></div>
+    <div class="hs-col hs-skill">
+      <div class="card-sub" style="margin-bottom:7px">已掌握技能</div>
+      <div class="row" style="flex-wrap:wrap;gap:6px;max-height:72px;overflow:auto">${sk || '<span class="dim small">无</span>'}</div>
+      <button class="btn btn-ghost btn-block btn-sm" style="margin-top:10px" onclick="showBackpack()">🎒 背包（${totalEquip} 件装备 · ${R.potions} 药水）</button>
     </div>
-    <div class="divider" style="margin:12px 0"></div>
-    <div class="col" style="gap:6px">${eq}</div>
-    <button class="btn btn-ghost btn-block btn-sm" style="margin-top:10px" onclick="showBackpack()">🎒 背包（${totalEquip} 件装备 · ${R.potions} 药水）</button>
-    <div class="divider" style="margin:12px 0"></div>
-    <div class="card-sub" style="margin-bottom:7px">已掌握技能</div>
-    <div class="row" style="flex-wrap:wrap;gap:6px">${sk || '<span class="dim small">无</span>'}</div>
   </div>`;
+}
+
+function mapHtml() {
+  const map = R.map;
+  const doneSet = {};
+  (R.done || []).forEach(id => { doneSet[id] = 1; });
+  const curId = R.node;
+  const xOf = n => n.c * MAP_COL_W + MAP_COL_W / 2;
+  const yOf = n => n.r * MAP_ROW_H + MAP_ROW_H / 2;
+
+  const seen = {};
+  let edges = '';
+  map.nodes.forEach(a => {
+    a.links.forEach(id => {
+      const b = nodeById(id);
+      if (!b) return;
+      const key = a.id < b.id ? a.id + '|' + b.id : b.id + '|' + a.id;
+      if (seen[key]) return;
+      seen[key] = 1;
+      const live = (a.id === curId && canEnterNode(b)) || (b.id === curId && canEnterNode(a));
+      const cls = (doneSet[a.id] && doneSet[b.id]) ? 'done' : (live ? 'live' : '');
+      edges += `<line x1="${xOf(a)}" y1="${yOf(a)}" x2="${xOf(b)}" y2="${yOf(b)}" class="ml ${cls}"/>`;
+    });
+  });
+
+  let nodeHtml = '';
+  map.nodes.forEach(n => {
+    const m = ROOM_META[n.type] || ROOM_META.battle;
+    const done = !!doneSet[n.id];
+    const cur = n.id === curId;
+    const avail = canEnterNode(n);
+    const cls = ['mn', 'mn-' + n.type];
+    if (done) cls.push('done');
+    if (cur) cls.push('cur');
+    if (avail) cls.push('avail');
+    if (!done && !cur && !avail) cls.push('locked');
+    nodeHtml += `<div class="${cls.join(' ')}" style="left:${xOf(n)}px;top:${yOf(n)}px;--mn:${MAP_NODE}px"
+      title="${m.n} · ${m.d}" ${avail ? `onclick="enterNode('${n.id}')"` : ''}>
+      <span class="mn-ico">${m.i}</span>
+      <span class="mn-name">${m.n}</span>
+      ${cur ? '<span class="mn-here">你</span>' : ''}
+      ${done && !cur ? '<span class="mn-check">✓</span>' : ''}
+    </div>`;
+  });
+
+  const total = map.nodes.length;
+  const cleared = (R.done || []).length;
+  const hint = R.active ? '正在探索当前节点……'
+    : (R.node === map.shop ? '离开商店后即可挑战本层首领。'
+      : '只能继续向右或在本列上下移动，无法返回已走过的列。');
+  return `<div class="card map-card">
+    <div class="card-h">
+      <span>🧭</span>
+      <div><div class="card-t">深渊路线 · 第 ${R.depth} 层</div><div class="card-sub">${modeName(R)} · 点击相邻节点前进 · 本层会经历多场战斗与奇遇</div></div>
+      <div style="margin-left:auto" class="row" style="gap:6px;flex-wrap:wrap">
+        ${R.treatyIds && R.treatyIds.length ? `<span class="pill tag-rose">📜 ${R.treatyIds.length} 条 · ${treatyScore()} 分</span>` : ''}
+        <span class="pill tag-jade">已清理 ${cleared} / ${total}</span>
+      </div>
+    </div>
+    <div class="map-legend">
+      <span><i class="lg battle"></i>战斗</span>
+      <span><i class="lg elite"></i>精英</span>
+      <span><i class="lg event"></i>奇遇</span>
+      <span><i class="lg shop"></i>深渊商店</span>
+      <span><i class="lg boss"></i>首领</span>
+    </div>
+    <div class="map-scroll">
+      <div class="abyss-map" style="width:${map.w}px;height:${map.h}px">
+        <svg class="map-links" width="${map.w}" height="${map.h}" viewBox="0 0 ${map.w} ${map.h}">${edges}</svg>
+        ${nodeHtml}
+      </div>
+    </div>
+    <div class="map-hint">${hint}</div>
+  </div>`;
+}
+
+function scrollMapToCurrent() {
+  requestAnimationFrame(() => {
+    const wrap = document.querySelector('.map-scroll');
+    const cur = document.querySelector('.abyss-map .mn.cur');
+    if (!wrap || !cur) return;
+    const target = cur.offsetLeft - wrap.clientWidth / 2 + cur.offsetWidth / 2;
+    wrap.scrollLeft = Math.max(0, target);
+  });
 }
 
 function floorTrackHtml() {
   let out = '';
   const cap = depthCapOf();
   for (let i = 1; i <= cap; i++) {
-    const isBoss = isBossFloor(i);
     const cls = ['fp'];
-    if (isBoss) cls.push('boss');
     if (i < R.depth) cls.push('done');
     else if (i === R.depth) cls.push('cur');
-    out += `<div class="${cls.join(' ')}" title="第 ${i} 层${isBoss ? ' · 首领' : ''}"></div>`;
+    out += `<div class="${cls.join(' ')}" title="第 ${i} 层"></div>`;
   }
   return `<div class="floor-track">${out}</div>`;
+}
+
+/* ---------------- 深渊条约 ---------------- */
+function rollTreatyOptions() {
+  let seen = Array.isArray(R.treatySeen) ? R.treatySeen : [];
+  const owned = Array.isArray(R.treatyIds) ? R.treatyIds : [];
+  let pool = TREATIES.filter(t => seen.indexOf(t.id) < 0 && owned.indexOf(t.id) < 0);
+  if (pool.length < 6) {
+    R.treatySeen = [];
+    seen = [];
+    pool = TREATIES.filter(t => owned.indexOf(t.id) < 0);
+  }
+  const opts = shuffle(pool).slice(0, 6);
+  opts.forEach(t => { if (R.treatySeen.indexOf(t.id) < 0) R.treatySeen.push(t.id); });
+  R.treatyOptions = opts.map(t => t.id);
+  R.treatySel = [];
+}
+function treatyHtml() {
+  const opts = (R.treatyOptions || []).map(treatyById).filter(Boolean);
+  const sel = R.treatySel || [];
+  const pickedScore = sel.reduce((s, id) => { const t = treatyById(id); return s + (t ? t.s : 0); }, 0);
+  const cards = opts.map(t => {
+    const on = sel.indexOf(t.id) >= 0;
+    return `<div class="treaty ${on ? 'on' : ''} s${t.s}" onclick="toggleTreaty('${t.id}')">
+      <div class="treaty-top"><span class="treaty-ico">${t.i}</span><b>${t.n}</b><span class="treaty-score">${t.s} 分</span></div>
+      <div class="treaty-desc">${t.d}</div>
+      <div class="treaty-mark">${on ? '已签署' : '点击签署'}</div>
+    </div>`;
+  }).join('');
+  return `<div class="card treaty-card">
+    <div class="card-h">
+      <span>📜</span>
+      <div><div class="card-t">深渊条约 · 通往第 ${R.depth} 层</div><div class="card-sub">签署条约会让深渊更兴奋，但奖励也更丰厚</div></div>
+      <div style="margin-left:auto"><span class="pill tag-rose">已选 ${sel.length} 条 · ${pickedScore} 分</span></div>
+    </div>
+    <div class="small dim" style="line-height:1.8;margin-bottom:12px">从下方六条条约中任意勾选（可不选），随后点击「挑战」进入第 ${R.depth} 层。本局累计：<b style="color:#ff9aa8">${(R.treatyIds || []).length} 条 · ${treatyScore()} 分</b>。</div>
+    <div class="treaty-grid">${cards}</div>
+    <div class="row between" style="margin-top:14px;gap:10px;flex-wrap:wrap">
+      <span class="small dim">条约只能签署，无法撤销；未选择的条约会留在深渊中。</span>
+      <button class="btn btn-primary" onclick="confirmTreaty()">⚔️ 挑战第 ${R.depth} 层</button>
+    </div>
+  </div>`;
+}
+function toggleTreaty(id) {
+  if (!R || runView !== 'treaty') return;
+  const i = R.treatySel.indexOf(id);
+  if (i >= 0) R.treatySel.splice(i, 1);
+  else R.treatySel.push(id);
+  sfx('click');
+  renderRun();
+}
+function confirmTreaty() {
+  if (!R) return;
+  const picks = (R.treatySel || []).slice();
+  picks.forEach(id => {
+    if (R.treatyIds.indexOf(id) < 0) R.treatyIds.push(id);
+  });
+  R.treatyOptions = [];
+  R.treatySel = [];
+  R.hp = Math.min(R.hp, effStats().maxHp);
+  if (R.hp <= 0) R.hp = 1;
+  runView = 'map';
+  saveRunState();
+  sfx('click');
+  renderRun();
+  showScreen('run');
+}
+
+/* ---------------- 层间馈赠：深渊的馈赠与代偿 ---------------- */
+function makeGiftReward(kind) {
+  const d = R.depth;
+  if (kind === 'gold') {
+    const amount = 45 + d * 10;
+    return { kind, i: '💰', n: '深渊金币', d: `立即获得 ${fmt(amount)} 金币`, gold: amount };
+  }
+  if (kind === 'potion') {
+    return { kind, i: '🧪', n: '治疗药水 ×2', d: '补充 2 瓶药水（不超过上限）', potions: 2 };
+  }
+  if (kind === 'item') {
+    const it = genItem(d, rollRarity(d, 3));
+    return { kind, i: it.ico, n: it.name, d: `${SLOT_NAME[it.slot]} · ${statLines(it.stats).join(' · ')}`, it };
+  }
+  if (kind === 'buff') {
+    const b = pick(GIFT_BUFFS);
+    return { kind, i: b.i, n: b.n, d: b.d + '（本局永久）', buff: b };
+  }
+  const avail = SKILL_POOL.filter(s => !R.skills.includes(s));
+  if (avail.length) {
+    const sid = pick(avail);
+    return { kind: 'skill', i: SKILLS[sid].i, n: SKILLS[sid].n, d: SKILLS[sid].d + `（冷却 ${SKILLS[sid].cd} 回合）`, sid };
+  }
+  return makeGiftReward('gold');
+}
+
+function startGift(nextView, clearedDepth) {
+  const kinds = shuffle(['gold', 'item', 'potion', 'buff', 'skill']).slice(0, 4);
+  const rewards = kinds.map(makeGiftReward);
+  const hardshipIds = shuffle(HARDSHIPS.map(h => h.id)).slice(0, 4);
+  R.gift = { rewards, hardshipIds, sel: [], from: clearedDepth || (R.depth - 1) };
+  R.giftNext = nextView || 'map';
+  runView = 'gift';
+}
+
+function giftHtml() {
+  if (!R || !R.gift) return mapHtml();
+  const g = R.gift;
+  const sel = g.sel || [];
+  const cols = g.rewards.map((r, i) => {
+    const h = hardshipById(g.hardshipIds[i]);
+    const on = sel.indexOf(i) >= 0;
+    const full = sel.length >= 2 && !on;
+    return `<div class="col" style="gap:10px">
+      <div class="card" style="padding:14px;height:158px;overflow:hidden;display:flex;flex-direction:column;cursor:${full ? 'not-allowed' : 'pointer'};opacity:${full ? '.45' : '1'};border-color:${on ? 'rgba(255,203,92,.7)' : 'var(--line)'}" ${full ? '' : `onclick="toggleGift(${i})"`}>
+        <div class="row between"><span style="font-size:26px">${r.i}</span><span class="pill ${on ? 'tag-gold' : ''}">${on ? '✓ 已选择' : '点击选择'}</span></div>
+        <div class="card-t" style="font-size:14px;margin-top:8px">${r.n}</div>
+        <div class="small dim" style="line-height:1.7;margin-top:4px">${r.d}</div>
+      </div>
+      <div class="card" style="padding:13px;height:104px;overflow:hidden;border-color:rgba(255,95,115,.4);background:linear-gradient(165deg,rgba(74,18,28,.62),rgba(18,9,15,.92))">
+        <div class="small" style="color:#ff8b9a;letter-spacing:1px">☠ 苦难 · ${h ? h.n : '未知'}</div>
+        <div class="small dim" style="line-height:1.7;margin-top:5px">${h ? h.d : '深渊的低语'}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="card">
+    <div class="card-h">
+      <span>🎁</span>
+      <div><div class="card-t">深渊的馈赠与代偿</div><div class="card-sub">第 ${g.from || (R.depth - 1)} 层已结束 · 免费带走至多 2 件馈赠，但每件馈赠都附带着苦难</div></div>
+      <div style="margin-left:auto"><span class="pill tag-rose">已选择 ${sel.length} / 2</span></div>
+    </div>
+    <div class="small dim" style="line-height:1.8;margin-bottom:12px">馈赠无需金币，但深渊从不做亏本买卖——选择上方的馈赠，就必须接受其下方的苦难。苦难会永久强化本局后续层数的敌人。</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">${cols}</div>
+    <div class="row between" style="margin-top:16px;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="rejectGift()">拒绝馈赠</button>
+      <button class="btn btn-primary" onclick="confirmGift()" ${sel.length ? '' : 'disabled'}>${sel.length ? `领取 ${sel.length} 件馈赠并进入第 ${R.depth} 层` : '请选择至多 2 件馈赠'}</button>
+    </div>
+  </div>`;
+}
+
+function toggleGift(i) {
+  if (!R || !R.gift) return;
+  const sel = R.gift.sel || (R.gift.sel = []);
+  const k = sel.indexOf(i);
+  if (k >= 0) sel.splice(k, 1);
+  else if (sel.length < 2) sel.push(i);
+  else { toast('最多只能选择 2 件馈赠', '🎁'); return; }
+  sfx('click');
+  renderRun();
+}
+
+function applyGiftReward(r) {
+  if (r.kind === 'gold') R.gold += r.gold;
+  else if (r.kind === 'potion') R.potions = Math.min(R.potionCap, R.potions + r.potions);
+  else if (r.kind === 'item') pendingItems.push(r.it);
+  else if (r.kind === 'buff') {
+    R[r.buff.k] += r.buff.v;
+    if (r.buff.k === 'bonusHp') R.hp = Math.min(effStats().maxHp, R.hp + r.buff.v);
+  } else if (r.kind === 'skill') {
+    if (R.skills.indexOf(r.sid) < 0) R.skills.push(r.sid);
+  }
+}
+
+function proceedGiftNext() {
+  if (!R) return;
+  const next = R.giftNext || 'map';
+  R.giftNext = null;
+  if (next === 'treaty') { rollTreatyOptions(); runView = 'treaty'; }
+  else runView = 'map';
+  saveRunState();
+  checkAch();
+  renderRun();
+  showScreen('run');
+}
+
+function confirmGift() {
+  if (!R || !R.gift) return;
+  const g = R.gift;
+  const sel = (g.sel || []).slice();
+  if (!sel.length) return;
+  sel.forEach(i => {
+    applyGiftReward(g.rewards[i]);
+    addHardship(g.hardshipIds[i]);
+  });
+  R.gift = null;
+  sfx('buy');
+  if (pendingItems.length) flushItems(proceedGiftNext);
+  else proceedGiftNext();
+}
+
+function rejectGift() {
+  if (!R || !R.gift) return;
+  modal({
+    title: '拒绝深渊的馈赠？', sub: 'REFUSE THE GIFT',
+    body: '即便不选择馈赠，深渊也将随机给你选择当前物品的任意两个苦难，是否要拒绝馈赠并进入下一层？',
+    buttons: [
+      { label: '返回选择', cls: 'btn-ghost' },
+      { label: '确定 · 拒绝馈赠', cls: 'btn-danger', fn: () => {
+          const g = R.gift;
+          if (!g) return;
+          const picked = shuffle(g.hardshipIds.slice()).slice(0, 2);
+          picked.forEach(id => addHardship(id));
+          R.gift = null;
+          proceedGiftNext();
+          const lines = picked.map(id => {
+            const h = hardshipById(id);
+            return h ? `<div><b style="color:#ff8b9a">${h.i} ${h.n}</b> · ${h.d}</div>` : '';
+          }).join('');
+          modal({
+            title: '深渊的嘲弄', sub: 'ABYSSAL MOCKERY',
+            body: `<div style="line-height:2">你拒绝了馈赠，但深渊仍将两个苦难强加于你：</div><div class="col" style="gap:8px;margin-top:12px">${lines}</div>`,
+            buttons: [{ label: `继续进入第 ${R.depth} 层`, cls: 'btn-primary' }],
+          });
+        } },
+    ],
+  });
 }
 
 function renderRun() {
   if (!R) { goHub(); return; }
   trackRunPeaks();
-  if (!R.choices || R.choicesFor !== R.depth) { R.choices = genChoices(R.depth); R.choicesFor = R.depth; }
+  ensureMap();
   const bm = biomeOf(R.depth);
   let main = '';
 
-  if (runView === 'choices') {
-    const cards = R.choices.map((c, i) => {
-      const m = ROOM_META[c.type];
-      return `<div class="room ${m.cls}" onclick="enterRoom(${i})">
-        <div class="room-icon">${m.i}</div>
-        <div class="room-name">${m.n}</div>
-        <div class="room-desc">${m.d}</div>
-      </div>`;
-    }).join('');
-    main = `<div class="card">
-      <div class="card-h"><span>🧭</span><div><div class="card-t">选择前进的方向</div><div class="card-sub">每层只能选择一处，无法回头</div></div></div>
-      <div class="rooms" ${R.choices.length === 1 ? 'style="grid-template-columns:1fr;max-width:420px;margin:18px auto 0"' : ''}>${cards}</div>
-      ${isBossFloor(R.depth) ? `<div class="small dim center" style="margin-top:16px">深重的压迫感扑面而来……这一层只有一位守卫者。</div>` : ''}
-    </div>`;
-  }
-
+  if (runView === 'map') main = mapHtml();
   if (runView === 'shop') main = shopHtml();
-  if (runView === 'campfire') main = campfireHtml();
-  if (runView === 'treasure') main = treasureHtml();
   if (runView === 'event') main = eventHtml();
+  if (runView === 'treaty') main = treatyHtml();
+  if (runView === 'gift') main = giftHtml();
 
   $('#screen-run').innerHTML = `
     <div class="depth-head">
@@ -2630,17 +3446,18 @@ function renderRun() {
       </div>
       <div style="margin-left:auto" class="row" style="gap:8px;flex-wrap:wrap">
         <span class="pill tag-gold">🔄 ${ngInfo(R.ng || 0).name}</span>
-        ${R.extreme ? '<span class="pill tag-rose">🩸 极限模式</span>' : ''}
+        ${R.stackMode ? `<span class="pill tag-rose">🩸 ${modeName(R)}</span>` : ''}
         ${hasRulerBuff() ? '<span class="pill tag-jade">👑 深渊统治者</span>' : ''}
         <button class="btn btn-sm btn-ghost" onclick="abandonRun()">放弃冒险</button>
       </div>
     </div>
     ${floorTrackHtml()}
-    <div class="battle">
+    <div class="run-stack">
       <div id="run-main">${main}</div>
-      <div class="panel-b">${playerPanelHtml()}</div>
+      <div class="player-rail">${playerPanelHtml()}</div>
     </div>`;
   renderTopbar();
+  if (runView === 'map') scrollMapToCurrent();
 }
 
 function abandonRun() {
@@ -2654,43 +3471,88 @@ function abandonRun() {
   });
 }
 
-function enterRoom(i) {
-  const c = R.choices[i];
-  if (!c) return;
+function closeBattleAndContinue() {
+  if (!R) return;
+  R.active = null;
+  B = null;
+  pendingItems = [];
+  runView = 'map';
+  saveRunState();
+  renderRun();
+  showScreen('run');
+}
+
+function enterNode(id) {
+  const n = nodeById(id);
+  if (!canEnterNode(n)) return;
+  R.active = id;
+  saveRunState();
   sfx('click');
-  if (c.type === 'battle') startBattle('normal');
-  else if (c.type === 'elite') startBattle('elite');
-  else if (c.type === 'boss') startBattle('boss');
-  else if (c.type === 'shop') { runView = 'shop'; renderShop(); }
-  else if (c.type === 'campfire') { runView = 'campfire'; renderRun(); }
-  else if (c.type === 'treasure') { runView = 'treasure'; genTreasure(); renderRun(); }
-  else if (c.type === 'event') { runView = 'event'; genEvent(); renderRun(); }
+  if (n.type === 'battle') startBattle('normal');
+  else if (n.type === 'elite') startBattle('elite');
+  else if (n.type === 'boss') startBattle('boss');
+  else if (n.type === 'shop') { runView = 'shop'; renderShop(); }
+  else if (n.type === 'event') { runView = 'event'; genEvent(); renderRun(); }
 }
 
 function clearRoom() {
   if (!R) return;
   flushItems(() => {
+    if (!R) return;
+    const node = R.active ? nodeById(R.active) : null;
     S.stats.rooms++;
     R.kills = R.kills || 0;
+    R.active = null;
+    if (node) {
+      if (R.done.indexOf(node.id) < 0) R.done.push(node.id);
+      R.node = node.id;
+    }
+    if (!node || node.type !== 'boss') {
+      // 清理单个节点：少量成长与恢复，然后继续在本层地图前进
+      const xm = extremeMul();
+      R.bonusHp += Math.round(2 * xm);
+      R.bonusAtk += 0.4 * xm;
+      R.bonusDef += 0.2 * xm;
+      R.hp = Math.min(effStats().maxHp, R.hp + Math.round(effStats().maxHp * 0.05));
+      runView = 'map';
+      saveRunState();
+      checkAch();
+      renderRun();
+      showScreen('run');
+      return;
+    }
+    // 击败本层首领：发放整层奖励，并进入「深渊的馈赠与代偿」
     const xm = extremeMul();
     R.bonusHp += Math.round(11 * xm); R.bonusAtk += 2.2 * xm; R.bonusDef += 1.2 * xm;
     R.hp = Math.min(effStats().maxHp, R.hp + Math.round(effStats().maxHp * 0.1));
     let step = 1;
     if (R.skipFloor) { step = 2; R.skipFloor = false; }
     R.depth += step;
-    S.stats.maxDepth = Math.max(S.stats.maxDepth, R.extreme ? Math.min(R.depth, EXTREME_MAX_DEPTH) : R.depth);
-    runView = 'choices';
-    R.choicesFor = -1;
+    R.map = null; R.mapFor = -1; R.node = null; R.done = []; R.active = null; R.shopFor = -1; R.shopReroll = 0;
+    const clearedDepth = R.depth - step;
+    const capNow = depthCapOf();
+    S.stats.maxDepth = Math.max(S.stats.maxDepth, Math.min(R.depth, capNow));
     const cap = depthCapOf();
     if (R.depth > cap) {
-      // 通过第 13 层（基础深渊最终层）：按本局开局锁定的极限模式状态决定是否弹出提升层数的提示
-      if (!R.extreme && R.extremeAllowed && (R.ng || 0) >= EXTREME_UNLOCK_NG) {
-        promptExtreme();
+      // 本模式已到最后一层：不再展示馈赠，直接进入跨模式或结算流程
+      runView = 'map';
+      const m = modeOf(R);
+      if (m === 0 && (R.ng || 0) >= STACK_UNLOCK_NG) {
+        if (R.stackEnabled === false) { finishRun(true); return; }
+        promptStack();
+        return;
+      }
+      if (m === 1) {
+        if (R.stackEnabled === false) { finishRun(true); return; }
+        promptLimit();
         return;
       }
       finishRun(true);
       return;
     }
+    // 每一层结束后：深渊的馈赠与代偿（极限模式 11-14 层结束后还需签署条约）
+    const nextView = (modeOf(R) === 2 && clearedDepth >= 11 && clearedDepth <= 14) ? 'treaty' : 'map';
+    startGift(nextView, clearedDepth);
     saveRunState();
     checkAch();
     renderRun();
@@ -2698,55 +3560,68 @@ function clearRoom() {
   });
 }
 
-/* ---------------- 极限模式 ---------------- */
-function promptExtreme() {
-  R.depth = MAX_DEPTH + 1;
+/* ---------------- 深渊叠加 / 深渊叠加 · 极限 ---------------- */
+function toggleStackEnabled() {
+  if (S.runSave) { toast('冒险进行中，结算前无法更改深渊叠加开关', '🔒'); return; }
+  if ((S.meta.ngPlus || 0) < STACK_UNLOCK_NG) { toast(`轮回难度达到 ${STACK_UNLOCK_NG} 后解锁`, '🔒'); return; }
+  S.meta.stackEnabled = S.meta.stackEnabled === false;
+  saveGame();
+  sfx('click');
+  renderHub();
+  toast(S.meta.stackEnabled ? '深渊叠加已开启' : '深渊叠加已关闭 · 第 5 层结束后直接结算', '🩸', S.meta.stackEnabled ? 'success' : 'warning');
+}
+
+function promptStack() {
+  R.depth = MAX_DEPTH;
   saveRunState();
   modal({
-    title: '极限模式现已可用', sub: 'EXTREME MODE · 越界之后，深渊仍有尽头',
-    body: `<div style="font-size:13.5px;line-height:2">极限模式现已可用，是否要启用该模式并将探索的层数提高到 <b style="color:#ff8b9a">20</b>？<br>
+    title: '深渊叠加模式现已可用', sub: 'ABYSS STACK · 越界之后，深渊仍在增厚',
+    body: `<div style="font-size:13.5px;line-height:2">深渊叠加模式现已可用，是否要进入该模式并将层数上限提升至 <b style="color:#ff8b9a">10 层</b>？<br>
       <span class="small dim" style="display:block;margin-top:10px;line-height:1.9">
-        · 深红深渊笼罩整座遗迹，敌人数值大幅提升；<br>
-        · 全新精英与三位极限首领登场；<br>
+        · 第 6-10 层敌人的生命与攻击大幅提高；<br>
+        · 全新的精英与首领登场；<br>
         · 你的增益与事件馈赠同样被深渊放大；<br>
-        · 通关后魂尘奖励大幅提升。
+        · 通关后的魂尘奖励大幅增加。<br>
+        · 若不进入，将直接结算第 5 层进度并领取对应奖励。
       </span></div>`,
     buttons: [
-      { label: '暂不启用 · 结算本局', cls: 'btn-ghost', fn: () => finishRun(true) },
-      { label: '启用极限模式', cls: 'btn-danger', fn: () => enterExtreme() },
+      { label: '暂不进入 · 结算本局', cls: 'btn-ghost', fn: () => finishRun(true) },
+      { label: '进入深渊叠加', cls: 'btn-danger', fn: () => enterStackMode(1) },
     ],
     size: 'extreme',
   });
 }
 
-function enterExtreme() {
-  R.extreme = true;
-  R.depth = MAX_DEPTH + 1;
-  renderTopbar();
+function promptLimit() {
+  R.depth = STACK_MAX_DEPTH;
   saveRunState();
-  toast('极限模式已启用 · 探索上限提升至 20 层', '🩸', 'warning');
-  runView = 'choices';
-  R.choicesFor = -1;
-  renderRun();
-  showScreen('run');
+  modal({
+    title: '深渊叠加 · 极限模式现已可用', sub: 'ABYSS LIMIT · 15 层与深渊条约',
+    body: `<div style="font-size:13.5px;line-height:2">深渊叠加 · 极限模式现已可用，是否要进入该模式并将层数上限提升至 <b style="color:#ff8b9a">15 层</b>？<br>
+      <span class="small dim" style="display:block;margin-top:10px;line-height:1.9">
+        · 第 11-15 层敌人/精英与首领的数值将产生巨大变化；<br>
+        · 连带启用「深渊条约」：11-14 层每层结束后可从六条条约中选择签署；<br>
+        · 共 24 条条约、总计 60 分，分数越高，对敌我双方的总体难度提升越大；<br>
+        · 若不进入，将直接结算第 10 层进度并领取对应奖励。
+      </span></div>`,
+    buttons: [
+      { label: '暂不进入 · 结算本局', cls: 'btn-ghost', fn: () => finishRun(true) },
+      { label: '进入深渊叠加 · 极限', cls: 'btn-danger', fn: () => enterStackMode(2) },
+    ],
+    size: 'extreme',
+  });
 }
 
-/* 圣所 · 极限模式开关（轮回难度 ≥ 10 才可开启；冒险进行中不可调整） */
-function toggleExtremeMode() {
-  if (S.runSave) {
-    toast('冒险进行中 · 本局结束前无法调整极限模式', '🔒', 'warning');
-    return;
-  }
-  if ((S.meta.ngPlus || 0) < EXTREME_UNLOCK_NG) {
-    toast(`轮回难度达到 ${EXTREME_UNLOCK_NG} 后才可开启极限模式`, '🔒', 'warning');
-    return;
-  }
-  S.meta.extreme = !S.meta.extreme;
-  saveGame();
-  sfx('click');
-  toast(S.meta.extreme ? '极限模式已开启 · 通关第 13 层后可进入 20 层深渊' : '极限模式已关闭 · 通关第 13 层后直接结算',
-    '🩸', S.meta.extreme ? 'success' : 'info');
-  renderHub();
+function enterStackMode(mode) {
+  R.stackMode = mode;
+  R.depth = mode === 2 ? STACK_MAX_DEPTH + 1 : MAX_DEPTH + 1;
+  R.map = null; R.mapFor = -1; R.node = null; R.done = []; R.active = null; R.shopFor = -1;
+  runView = 'map';
+  renderTopbar();
+  saveRunState();
+  toast(mode === 2 ? '已进入深渊叠加 · 极限 · 上限提升至 15 层' : '已进入深渊叠加 · 上限提升至 10 层', '🩸', 'warning');
+  renderRun();
+  showScreen('run');
 }
 
 /* ---------------- 装备获取 ---------------- */
@@ -2850,14 +3725,58 @@ function showBackpack() {
   });
 }
 
+/* ---------------- 苦难 / 条约标签弹窗 ---------------- */
+function showHardshipTags() {
+  if (!R) return;
+  const ids = R.hardships || [];
+  const rows = ids.length ? ids.map(id => {
+    const h = hardshipById(id);
+    if (!h) return '';
+    return `<div class="cx" style="padding:10px 12px">
+      <div class="row between"><div style="font-weight:700;color:#ff9fae">${h.i} ${h.n}</div><span class="pill tag-rose">苦难</span></div>
+      <div class="small dim" style="margin-top:5px;line-height:1.7">${h.d}</div>
+    </div>`;
+  }).join('') : '<div class="small dim">本局尚未背负苦难。</div>';
+  const hm = hardshipMods();
+  const total = `敌方生命 +${Math.round(hm.enemyHp * 100)}% · 攻击 +${Math.round(hm.enemyAtk * 100)}% · 防御 +${Math.round(hm.enemyDef * 100)}%`;
+  modal({
+    title: '☠ 已背负的苦难', sub: `HARDSHIPS · ${ids.length} 项`,
+    size: 'wide',
+    body: `<div class="col" style="gap:8px">${rows}</div>
+      <div class="small dim" style="margin-top:10px;line-height:1.8">当前苦难总增益：${total}（每项上限 +80%）。</div>`,
+    buttons: [{ label: '关闭', cls: 'btn-primary' }],
+  });
+}
+
+function showTreatyTags() {
+  if (!R) return;
+  const ids = R.treatyIds || [];
+  const rows = ids.length ? ids.map(id => {
+    const t = treatyById(id);
+    if (!t) return '';
+    return `<div class="cx" style="padding:10px 12px">
+      <div class="row between"><div style="font-weight:700;color:#ffb3c0">${t.i} ${t.n}</div><span class="pill tag-rose">${t.s} 分</span></div>
+      <div class="small dim" style="margin-top:5px;line-height:1.7">${t.d}</div>
+    </div>`;
+  }).join('') : '<div class="small dim">尚未签署任何条约。</div>';
+  modal({
+    title: '📜 已签署的深渊条约', sub: `TREATIES · ${ids.length} 条 · ${treatyScore()} 分`,
+    size: 'wide',
+    body: `<div class="col" style="gap:8px">${rows}</div>
+      <div class="small dim" style="margin-top:10px;line-height:1.8">条约分数越高，结算时的深渊评价越高，但敌我双方也会承受更强的变化。</div>`,
+    buttons: [{ label: '关闭', cls: 'btn-primary' }],
+  });
+}
+
 /* ---------------- 商店 ---------------- */
 function buildShop() {
   const offers = [];
+  const mul = 1 + treatyMods().shopPrice;
   for (let i = 0; i < 3; i++) {
     const it = genItem(R.depth, rollRarity(R.depth + 1));
-    offers.push({ kind: 'item', it, price: Math.round(it.price * 1.15), sold: false });
+    offers.push({ kind: 'item', it, price: Math.max(1, Math.round(it.price * 1.15 * mul)), sold: false });
   }
-  offers.push({ kind: 'potion', price: 34, sold: false });
+  offers.push({ kind: 'potion', price: Math.max(1, Math.round(34 * mul)), sold: false });
   const buffs = [
     { k: 'bonusHp', v: 26, n: '生命药剂', d: '最大生命 +26', i: '❤️' },
     { k: 'bonusAtk', v: 4, n: '力量药剂', d: '攻击 +4', i: '⚔️' },
@@ -2865,18 +3784,24 @@ function buildShop() {
     { k: 'bonusCrit', v: 6, n: '锐目药剂', d: '暴击率 +6%', i: '🎯' },
   ];
   const bf = pick(buffs);
-  offers.push({ kind: 'buff', ...bf, price: 62, sold: false });
+  offers.push({ kind: 'buff', ...bf, price: Math.max(1, Math.round(62 * mul)), sold: false });
   const known = R.skills;
   const avail = SKILL_POOL.filter(s => !known.includes(s));
   if (avail.length) {
     const sid = pick(avail);
-    offers.push({ kind: 'skill', sid, price: 120 + R.depth * 6, sold: false });
+    offers.push({ kind: 'skill', sid, price: Math.max(1, Math.round((120 + R.depth * 6) * mul)), sold: false });
   }
   return offers;
 }
 
 function renderShop() {
-  if (!R.shop || R.shopFor !== R.depth) { R.shop = buildShop(); R.shopFor = R.depth; }
+  if (!R.shop || R.shopFor !== R.depth) {
+    R.shop = buildShop();
+    R.shopFor = R.depth;
+    R.shopReroll = 0;
+  } else if (R.shopReroll === undefined) {
+    R.shopReroll = 0;
+  }
   renderRun();
 }
 
@@ -2909,13 +3834,15 @@ function shopHtml() {
     </div>`;
   }).join('');
 
+  const tm = treatyMods();
+  const priceTag = tm.shopPrice ? `<span class="pill tag-rose" style="margin-left:6px">📜 价格 ×${(1 + tm.shopPrice).toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}</span>` : '';
   return `<div class="card">
-    <div class="card-h"><span>🛒</span><div><div class="card-t">流浪商人</div><div class="card-sub">"金币在深渊里也会腐坏，不如交给我。"</div></div>
-      <div style="margin-left:auto" class="pill tag-gold">💰 ${fmt(R.gold)}</div></div>
+    <div class="card-h"><span>🛒</span><div><div class="card-t">深渊商店</div><div class="card-sub">"金币在深渊里也会腐坏，不如交给我。"</div></div>
+      <div style="margin-left:auto" class="row" style="gap:6px">${priceTag}<span class="pill tag-gold">💰 ${fmt(R.gold)}</span></div></div>
     <div class="col" style="gap:10px">${rows}</div>
     <div class="divider"></div>
     <div class="row" style="gap:10px;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" ${R.gold >= 30 ? '' : 'disabled'} onclick="rerollShop()">🔄 刷新商品（30 金）</button>
+      <button class="btn btn-ghost btn-sm" ${R.gold >= rerollCost() ? '' : 'disabled'} onclick="rerollShop()">🔄 刷新商品（${rerollCost()} 金）</button>
       <button class="btn btn-jade btn-sm" style="margin-left:auto" onclick="leaveShop()">离开商店 →</button>
     </div>
   </div>`;
@@ -2942,81 +3869,30 @@ function buyOffer(i) {
   else renderRun();
 }
 
+// 刷新费用等比递增：30 → 45 → 68 → 101 …
+function rerollCost() {
+  const n = (R && R.shopReroll) || 0;
+  return Math.round(30 * Math.pow(1.5, n));
+}
+
 function rerollShop() {
-  if (R.gold < 30) return;
-  R.gold -= 30; sfx('click');
+  const cost = rerollCost();
+  if (R.gold < cost) return;
+  R.gold -= cost; sfx('click');
+  R.shopReroll = (R.shopReroll || 0) + 1;
   R.shop = buildShop(); R.shopFor = R.depth;
+  saveRunState();
   renderRun();
 }
 
 function leaveShop() { clearRoom(); }
 
-/* ---------------- 营火 ---------------- */
-function campfireHtml() {
-  const s = effStats();
-  const opts = [
-    { i: '🌙', n: '休息', d: `回复 ${Math.round(s.maxHp * 0.45)} 点生命`, fn: 'campHeal' },
-    { i: '⚔️', n: '磨砺武器', d: '攻击永久 +3', fn: 'campAtk' },
-    { i: '🛡️', n: '加固护甲', d: '防御永久 +3', fn: 'campDef' },
-    { i: '❤️', n: '锻炼体魄', d: `最大生命永久 +24（并回复）`, fn: 'campHp' },
-  ];
-  return `<div class="card">
-    <div class="card-h"><span>🔥</span><div><div class="card-t">营火</div><div class="card-sub">火焰温暖，但时间不多——只能选择一件事</div></div></div>
-    <div class="rooms" style="grid-template-columns:repeat(2,1fr)">
-      ${opts.map(o => `<div class="room" onclick="${o.fn}()">
-        <div class="room-icon">${o.i}</div>
-        <div class="room-name">${o.n}</div>
-        <div class="room-desc">${o.d}</div>
-      </div>`).join('')}
-    </div>
-  </div>`;
-}
-function campHeal() { healPlayer(Math.round(effStats().maxHp * 0.45)); toast('你休息了一会儿', '🌙'); clearRoom(); }
-function campAtk() { R.bonusAtk += 3; toast('武器更加锋利（攻击 +3）', '⚔️'); clearRoom(); }
-function campDef() { R.bonusDef += 3; toast('护甲更加坚固（防御 +3）', '🛡️'); clearRoom(); }
-function campHp() { R.bonusHp += 24; healPlayer(24); toast('体格更加强健（最大生命 +24）', '❤️'); clearRoom(); }
-
-/* ---------------- 宝箱 ---------------- */
-function genTreasure() {
-  R.treasure = {
-    items: [genItem(R.depth, rollRarity(R.depth + 1)), genItem(R.depth, rollRarity(R.depth + 1))],
-    gold: rnd(50, 110) + R.depth * 14,
-  };
-}
-function treasureHtml() {
-  const t = R.treasure;
-  return `<div class="card">
-    <div class="card-h"><span>🎁</span><div><div class="card-t">尘封的宝箱</div><div class="card-sub">选择一件带走，宝箱随之崩解</div></div></div>
-    <div class="col" style="gap:10px">
-      ${t.items.map((it, i) => {
-        const rr = RARITY[it.rarity];
-        return `<div class="offer" style="--rc:${rr.color};cursor:pointer" onclick="takeTreasure(${i})">
-          <div class="offer-ico" style="border-color:${rr.color};box-shadow:0 0 22px -12px ${rr.color}">${it.ico}</div>
-          <div><div class="offer-name" style="color:${rr.color}">${it.name}</div>
-          <div class="offer-desc">${SLOT_NAME[it.slot]} · ${statLines(it.stats).join(' · ')}</div></div>
-          <div class="cost">选择 →</div>
-        </div>`;
-      }).join('')}
-      <div class="offer" style="--rc:var(--gold);cursor:pointer" onclick="takeTreasure(9)">
-        <div class="offer-ico">💰</div>
-        <div><div class="offer-name" style="color:var(--gold)">一把金币</div><div class="offer-desc">直接获得 ${t.gold} 金币</div></div>
-        <div class="cost">选择 →</div>
-      </div>
-    </div>
-  </div>`;
-}
-function takeTreasure(i) {
-  if (i === 9) { addGold(R.treasure.gold); toast('+' + R.treasure.gold + ' 金币', '💰'); }
-  else { pendingItems.push(R.treasure.items[i]); }
-  sfx('buy');
-  clearRoom();
-}
-
 /* ---------------- 奇遇事件 ---------------- */
 function genEvent() {
   const used = R.usedEvents || (R.usedEvents = []);
-  let pool = EVENTS.filter(e => !used.includes(e.id));
-  if (!pool.length) { used.length = 0; pool = EVENTS; }
+  const m = modeOf(R);
+  let pool = EVENTS.filter(e => !used.includes(e.id) && (!e.extremeOnly || m === 2));
+  if (!pool.length) { used.length = 0; pool = EVENTS.filter(e => !e.extremeOnly || m === 2); }
   const ev = pick(pool);
   used.push(ev.id);
   R.ev = ev;
@@ -3038,18 +3914,21 @@ function doEvent(i) {
   S.stats.events++;
   let text = '';
   try { text = choice.fn() || '什么也没有发生。'; } catch (e) { text = '命运拒绝了你的选择。'; console.warn(e); }
-  // 极限模式：事件给予的效果被深渊放大
-  if (R.extreme) {
-    R.bonusAtk += 5; R.bonusDef += 4; R.bonusHp += 30; R.bonusCrit += 4;
-    R.hp = Math.min(effStats().maxHp, R.hp + 20);
-    text += '<br><span style="color:#ff9aa8">极限的馈赠：攻击 +5 · 防御 +4 · 生命上限 +30 · 暴击率 +4% · 回复 20 生命。</span>';
+  // 深渊叠加：事件给予的效果被深渊放大
+  const m = modeOf(R);
+  if (m > 0) {
+    const k = m === 2 ? 1.6 : 1;
+    const atk = Math.round(5 * k), def = Math.round(4 * k), hp = Math.round(30 * k), crit = Math.round(4 * k), heal = Math.round(20 * k);
+    R.bonusAtk += atk; R.bonusDef += def; R.bonusHp += hp; R.bonusCrit += crit;
+    R.hp = Math.min(effStats().maxHp, R.hp + heal);
+    text += `<br><span style="color:#ff9aa8">${m === 2 ? '极限' : '叠加'}的馈赠：攻击 +${atk} · 防御 +${def} · 生命上限 +${hp} · 暴击率 +${crit}% · 回复 ${heal} 生命。</span>`;
   }
   saveRunState();
   checkAch();
   modal({
     title: '命运的回音', sub: ev.n,
     body: `<div style="font-size:14px;line-height:2;color:#d8e2f5">${text}</div>`,
-    buttons: [{ label: '继续深入 →', cls: 'btn-primary', fn: () => { runView = 'choices'; clearRoom(); } }],
+    buttons: [{ label: '继续深入 →', cls: 'btn-primary', fn: () => { clearRoom(); } }],
   });
   renderRun();
 }
@@ -3072,21 +3951,37 @@ function grantRandomSkill() {
 function startBattle(kind) {
   const bm = biomeOf(R.depth);
   const ng = R.ng || 0;
-  const key = kind === 'boss' ? bossKeyOf(R.depth) : pick(bm.enemies);
+  const m = modeOf(R);
+  const tm = treatyMods();
+  let key;
+  if (kind === 'boss') key = bossKeyOf(R.depth);
+  else if (kind === 'elite' && m > 0) key = pick(['xelite1', 'xelite2']);
+  else key = pick(bm.enemies);
   const base = kind === 'boss' ? BOSSES[key] : ENEMIES[key];
   let hpMul = 1 + (R.depth - 1) * 0.075 + ng * 0.35;
   let atkMul = 1 + (R.depth - 1) * 0.042 + ng * 0.25;
-  if (kind === 'boss') { hpMul = 1 + ng * 0.45; atkMul = 1 + ng * 0.3; }
+  if (kind === 'boss') { hpMul = 1 + (R.depth - 1) * 0.09 + ng * 0.45; atkMul = 1 + (R.depth - 1) * 0.05 + ng * 0.3; }
   if (kind === 'elite') { hpMul *= 1.9; atkMul *= 1.22; }
-  // 极限模式：敌人数值大幅提高
-  if (R.extreme) { hpMul *= 2.4; atkMul *= 1.9; }
+  // 深渊叠加 / 极限：敌人数值大幅提高
+  let defMul = kind === 'elite' ? 1.15 : 1;
+  if (m === 1) { hpMul *= 2.4; atkMul *= 1.9; defMul *= 1.5; }
+  if (m === 2) { hpMul *= 3.8; atkMul *= 2.8; defMul *= 2.0; }
+  // 深渊条约：敌方增益
+  hpMul *= (1 + tm.enemyHp);
+  atkMul *= (1 + tm.enemyAtk);
+  defMul *= (1 + tm.enemyDef);
+  // 深渊苦难：层间馈赠的代偿，永久累积
+  const hm = hardshipMods();
+  hpMul *= (1 + hm.enemyHp);
+  atkMul *= (1 + hm.enemyAtk);
+  defMul *= (1 + hm.enemyDef);
   const hp = Math.round(base.hp * hpMul);
   const enemy = {
     key, ico: base.i,
     name: (kind === 'elite' ? '精英 · ' : '') + base.n,
     hp, maxHp: hp,
     atk: base.atk * atkMul,
-    def: base.def * (kind === 'elite' ? 1.15 : 1) * (R.extreme ? 1.5 : 1),
+    def: base.def * defMul,
     tags: base.tags || [], boss: !!base.boss,
     intents: base.intents, lore: base.lore, gold: base.gold,
   };
@@ -3138,9 +4033,11 @@ async function winBattle() {
   if (!B || !R) return;
   S.stats.kills++;
   R.kills = (R.kills || 0) + 1;
+  R.enemyLog = R.enemyLog || [];
+  R.enemyLog.push({ n: e.name, i: e.ico, boss: !!e.boss, elite: B.kind === 'elite' });
   if (B.kind === 'elite') {
     S.stats.eliteKills++;
-    if (R.extreme) S.stats.extremeEliteKills = (S.stats.extremeEliteKills || 0) + 1;
+    if (modeOf(R) > 0) S.stats.extremeEliteKills = (S.stats.extremeEliteKills || 0) + 1;
     if (B.dmgTaken === 0) S.stats.flawlessElite++;
   }
   if (e.boss) {
@@ -3149,8 +4046,8 @@ async function winBattle() {
     R.bossLog = R.bossLog || [];
     R.bossLog.push(e.name);
   }
-  const goldMul = 1 + effStats().goldFind / 100 + (R.ng || 0) * 0.3;
-  const gold = Math.round(rnd(e.gold[0], e.gold[1]) * goldMul * (B.kind === 'elite' ? 2.2 : 1));
+  const goldMul = 1 + effStats().goldFind / 100 + (R.ng || 0) * 0.08;
+  const gold = Math.round(rnd(e.gold[0], e.gold[1]) * GOLD_SCALE * goldMul * (B.kind === 'elite' ? 1.7 : 1));
   addGold(gold);
   let dropTxt = '';
   const chance = B.kind === 'boss' ? 1 : (B.kind === 'elite' ? 0.65 : 0.28);
@@ -3198,8 +4095,9 @@ async function loseRun() {
 
 function finishRun(win, abandoned) {
   if (!R) return;
-  const extreme = !!R.extreme;
-  const cap = extreme ? EXTREME_MAX_DEPTH : MAX_DEPTH;
+  const mode = modeOf(R);
+  const extreme = mode === 2;
+  const cap = depthCapOf();
   const depthReached = Math.min(R.depth, cap);
   const ng = R.ng || 0;
   const bossKills = R.bossKills || 0;
@@ -3207,7 +4105,9 @@ function finishRun(win, abandoned) {
   const items = (R.itemsLog || []).slice();
   const bossList = (R.bossLog || []).slice();
   const boonCost = (R.preBoon && R.preBoon.cost) ? R.preBoon.cost : 0;
-  const extremeClear = win && extreme && depthReached >= EXTREME_MAX_DEPTH;
+  const extremeClear = win && extreme && depthReached >= LIMIT_MAX_DEPTH;
+  const treatyCount = (R.treatyIds || []).length;
+  const treatyScoreRun = treatyScore();
 
   // 主动放弃冒险：退还本局开局增益消耗的魂尘
   let refund = 0;
@@ -3220,11 +4120,14 @@ function finishRun(win, abandoned) {
   if (win) S.stats.wins++; else S.stats.deaths++;
   if (win && !R.usedPotion) S.stats.winsNoPotion++;
   if (extremeClear) S.stats.extremeWins = (S.stats.extremeWins || 0) + 1;
-  S.stats.maxDepth = Math.max(S.stats.maxDepth, extreme ? Math.min(R.depth, EXTREME_MAX_DEPTH) : R.depth);
+  S.stats.maxDepth = Math.max(S.stats.maxDepth, Math.min(R.depth, cap));
+  S.stats.maxTreatiesRun = Math.max(S.stats.maxTreatiesRun || 0, treatyCount);
+  S.stats.maxTreatyScore = Math.max(S.stats.maxTreatyScore || 0, treatyScoreRun);
 
-  const dustBase = depthReached * 4 + bossKills * 12 + (win ? 45 : 0);
-  // 极限模式通关：魂尘奖励大幅提升
-  const dust = Math.round(dustBase * (1 + S.meta.upgrades.dust * 0.1) * (1 + ng * 0.25) * (extreme ? 2.2 : 1));
+  const dustBase = depthReached * 2 + bossKills * 5 + (win ? 20 : 0);
+  // 深渊叠加通关：魂尘奖励提升
+  const dustMul = mode === 2 ? 2.4 : (mode === 1 ? 1.7 : 1);
+  const dust = Math.round(dustBase * (1 + S.meta.upgrades.dust * 0.06) * (1 + ng * 0.08) * dustMul);
 
   let ngUp = false;
   if (win) {
@@ -3243,27 +4146,59 @@ function finishRun(win, abandoned) {
     S.stats.maxHpRun = Math.max(S.stats.maxHpRun || 0, R.maxHp || 0);
   }
 
-  // 通行证经验（难度 6-15 通关一次 +10；极限模式完整通关可使用每周加成 → +40）
+  // 通行证经验与每周加成：
+  // · 轮回难度 6-15 普通模式（5 层）通关 → +10 经验（1 级）
+  // · 深渊叠加（10 层）通关 → 可领取 1 次每周加成（+40 经验 / 4 级）
+  // · 深渊叠加 · 极限（15 层）完整通关 → 可一次性领取全部剩余加成（最多 3 次 / 12 级）
+  // 每周经验总量 120 封顶，全部领取完毕后需等下周刷新
   const weekly = ensurePassWeekly();
-  let passXp = 0, canBonus = false;
-  if (win && ng >= 6) {
-    passXp = PASS_XP_CLEAR;
-    if (extremeClear && ng >= EXTREME_UNLOCK_NG && weekly.bonusLeft > 0 && weekly.xpLeft >= PASS_XP_BONUS) canBonus = true;
-  } else if (extreme && depthReached >= MAX_DEPTH + 1 && ng >= 6) {
-    // 已通过基础深渊但未完整通过极限模式（放弃 / 阵亡）：仅可领取 10 经验，不可使用每周加成
-    passXp = PASS_XP_CLEAR;
+  const seasonActive = passWeeklySeasonActive();
+  let passXp = 0, bonusUses = 0;
+  if (seasonActive && win && ng >= 6) {
+    if (mode === 0) {
+      passXp = weekly.xpLeft >= PASS_XP_CLEAR ? PASS_XP_CLEAR : 0;
+    } else if (extremeClear) {
+      bonusUses = Math.min(weekly.bonusLeft, Math.floor(weekly.xpLeft / PASS_XP_BONUS));
+    } else if (mode === 1 && depthReached >= STACK_MAX_DEPTH) {
+      bonusUses = Math.min(1, weekly.bonusLeft, Math.floor(weekly.xpLeft / PASS_XP_BONUS));
+    }
   }
-  const st = { dust: dust, passXp: passXp, canBonus: canBonus, extremeClear: extremeClear, refund: refund, boonCost: boonCost };
+  const bonusXp = bonusUses * PASS_XP_BONUS;
+  const st = {
+    dust: dust, passXp: passXp, bonusUses: bonusUses, bonusXp: bonusXp,
+    canBonus: bonusUses > 0, extremeClear: extremeClear, refund: refund, boonCost: boonCost,
+  };
+
+  // 战绩回顾：记录本局详情，仅保留最近 10 局
+  S.history = Array.isArray(S.history) ? S.history : [];
+  S.history.unshift({
+    ts: Date.now(),
+    win: !!win, abandoned: !!abandoned,
+    extreme: extreme, extremeClear: extremeClear, stackMode: mode,
+    treatyCount: treatyCount, treatyScore: treatyScoreRun,
+    ng: ng, depth: depthReached,
+    kills: kills, bossKills: bossKills, dust: dust,
+    items: items, bosses: bossList,
+    enemies: (R.enemyLog || []).slice(),
+    skills: (R.skills || []).slice(),
+    usedPotion: !!R.usedPotion,
+  });
+  if (S.history.length > 10) S.history.length = 10;
 
   // 结算数据持久化：避免弹窗弹出后意外刷新导致奖励丢失
-  const title = win ? (extremeClear ? '你踏穿了极限' : '深渊已被穿透') : '你坠落了';
-  const sub = win ? (extremeClear ? 'EXTREME CLEARED · 极限之主已陨落' : 'VICTORY · 深渊之主已陨落') : 'DEFEAT · 深渊记住了你的名字';
+  const title = win
+    ? (extremeClear ? '你踏穿了深渊叠加 · 极限' : mode === 1 ? '深渊已被叠加' : '深渊已被穿透')
+    : '你坠落了';
+  const sub = win
+    ? (extremeClear ? 'ABYSS LIMIT CLEARED · 深渊主宰已陨落' : mode === 1 ? 'ABYSS STACK CLEARED · 十层尽处' : 'VICTORY · 深渊之主已陨落')
+    : 'DEFEAT · 深渊记住了你的名字';
   S.pendingSettlement = {
     st: st,
     title: title, sub: sub, win: win, extreme: extreme, extremeClear: extremeClear,
-    depthReached: depthReached, ng: ng, kills: kills, bossKills: bossKills,
+    mode: mode, depthReached: depthReached, ng: ng, kills: kills, bossKills: bossKills,
+    treatyCount: treatyCount, treatyScore: treatyScoreRun,
     items: items, bossList: bossList, boonCost: boonCost, refund: refund,
-    dust: dust, passXp: passXp, canBonus: canBonus, ngUp: ngUp,
+    dust: dust, passXp: passXp, bonusUses: bonusUses, bonusXp: bonusXp, canBonus: bonusUses > 0, ngUp: ngUp,
     ngPlusAfter: S.meta.ngPlus,
   };
 
@@ -3290,6 +4225,15 @@ function showSettlementModal(d) {
   const bossHtml = d.bossList.length
     ? d.bossList.map(n => `<span class="pill" style="border-color:rgba(176,107,255,.5);color:#cfaeff">👑 ${n}</span>`).join('')
     : '<span class="small dim">本局没有击败首领</span>';
+  const modeLabel = d.extreme ? '深渊叠加 · 极限' : (d.mode === 1 ? '深渊叠加' : '正常模式');
+  const capLabel = d.extreme ? LIMIT_MAX_DEPTH : (d.mode === 1 ? STACK_MAX_DEPTH : MAX_DEPTH);
+  const treatyCount = d.treatyCount || 0;
+  const treatyScoreVal = d.treatyScore || 0;
+  const bonusUses = d.bonusUses !== undefined ? d.bonusUses : (d.canBonus ? 1 : 0);
+  const bonusXp = d.bonusXp !== undefined ? d.bonusXp : bonusUses * PASS_XP_BONUS;
+  const passXpText = bonusUses > 0
+    ? `每周加成 ×${bonusUses} · +${bonusXp} 经验（${bonusUses * PASS_XP_BONUS / 10} 级）`
+    : (d.passXp > 0 ? `+${d.passXp} 经验（${d.passXp / 10} 级）` : '本局无');
 
   const bodyHtml = `
     <div class="settle-grid">
@@ -3297,16 +4241,17 @@ function showSettlementModal(d) {
         <div class="center" style="margin-bottom:14px">
           <div style="font-size:50px;line-height:1;filter:drop-shadow(0 10px 30px rgba(255,150,70,.5))">${d.win ? '🌅' : '💀'}</div>
           <div style="font-family:var(--serif);font-size:18px;letter-spacing:3px;margin-top:10px;color:#ffd9a8">${d.title}</div>
-          <div class="small dim" style="margin-top:5px">本局难度 · ${ngInfo(d.ng).name}${d.extreme ? ' · 极限模式' : ''}</div>
+          <div class="small dim" style="margin-top:5px">本局难度 · ${ngInfo(d.ng).name} · ${modeLabel}</div>
         </div>
         <div class="col" style="gap:7px">
-          <div class="stat"><span class="stat-k">抵达层数</span><span class="stat-v">第 ${d.depthReached} 层${d.extreme ? ' / 20' : ''}</span></div>
+          <div class="stat"><span class="stat-k">抵达层数</span><span class="stat-v">第 ${d.depthReached} 层 / ${capLabel}</span></div>
           <div class="stat"><span class="stat-k">击败敌人</span><span class="stat-v">${d.kills} 个</span></div>
           <div class="stat"><span class="stat-k">击杀首领</span><span class="stat-v">${d.bossKills} 位</span></div>
+          ${treatyCount || d.extreme ? `<div class="stat"><span class="stat-k">选取条约</span><span class="stat-v" style="color:#ff9aa8">${treatyCount} 条 · ${treatyScoreVal} 分</span></div>` : ''}
           <div class="stat"><span class="stat-k">获得魂尘</span><span class="stat-v" style="color:var(--gold)">✨ +${fmt(d.dust)}</span></div>
           ${d.boonCost ? `<div class="stat"><span class="stat-k">开局增益花费</span><span class="stat-v" style="color:#ff8b9a">✨ -${fmt(d.boonCost)}</span></div>` : ''}
           ${d.refund ? `<div class="stat"><span class="stat-k">开局增益退还</span><span class="stat-v" style="color:var(--jade)">✨ +${fmt(d.refund)}</span></div>` : ''}
-          <div class="stat"><span class="stat-k">通行证经验</span><span class="stat-v" style="color:#8fc4ff">${d.passXp > 0 ? '+' + d.passXp + ' 经验' + (d.canBonus ? '（可使用每周加成 → +40）' : '') : '本局无'}</span></div>
+          <div class="stat"><span class="stat-k">通行证经验</span><span class="stat-v" style="color:#8fc4ff">${passXpText}</span></div>
         </div>
         ${d.ngUp ? `<div class="center" style="margin-top:12px;color:#b5a8ff;font-size:12.5px">轮回难度提升至 ${d.ngPlusAfter} —— 深渊更深了。</div>` : ''}
       </div>
@@ -3316,38 +4261,49 @@ function showSettlementModal(d) {
         <div class="cx-sec">击败的首领 · ${d.bossList.length} 位</div>
         <div class="settle-items">${bossHtml}</div>
         <div class="settle-btns">
-          ${d.canBonus ? `<button class="btn btn-arcane" onclick="settleFinish(S.pendingSettlement.st,true,true)">使用每周加成领取（+${PASS_XP_BONUS} 经验）</button>` : ''}
+          ${bonusUses > 0 ? `<button class="btn btn-arcane" onclick="settleFinish(S.pendingSettlement.st,true,true)">${d.extreme ? '全部领取每周加成' : '领取每周加成'}（+${bonusXp} 经验 · ${bonusUses * PASS_XP_BONUS / 10} 级）</button>` : ''}
           <button class="btn btn-primary" onclick="settleFinish(S.pendingSettlement.st,true,false)">领取奖励</button>
           <button class="btn btn-ghost" onclick="settleFinish(S.pendingSettlement.st,false,false)">放弃领取</button>
         </div>
-        <div class="small dim" style="line-height:1.7">领取后将获得本次的魂尘与通行证经验；放弃领取则不会获得任何奖励。</div>
+        <div class="small dim" style="line-height:1.7">领取后将获得本次的魂尘与通行证经验；选择每周加成会消耗本周剩余加成次数。放弃领取则不会获得任何奖励。</div>
       </div>
     </div>`;
 
   modal({
     title: d.win ? 'THE ABYSS FALLS' : 'YOU HAVE FALLEN',
-    sub: d.sub, body: bodyHtml, buttons: [], size: 'wide',
+    sub: d.sub, body: bodyHtml, buttons: [], size: 'wide settle-wide',
   });
 }
 
 /* ---------------- 结算领取 ---------------- */
 function settleFinish(st, claim, useBonus) {
   closeModal();
+  const seasonActive = passWeeklySeasonActive();
   if (claim) {
     S.meta.soulDust += st.dust;
     S.stats.dustEarned += st.dust;
     if (st.passXp > 0 || useBonus) {
-      const w = ensurePassWeekly();
-      let xp = st.passXp;
-      if (useBonus && st.canBonus && w.bonusLeft > 0 && w.xpLeft >= PASS_XP_BONUS) {
-        xp = PASS_XP_BONUS;
-        w.bonusLeft = Math.max(0, w.bonusLeft - 1);
-      }
-      const give = Math.min(xp, w.xpLeft);
-      if (give > 0) {
-        w.xpLeft -= give;
-        addPassExpExternal(give);
-        toast(`通行证经验 +${give}`, '🎫', 'success');
+      if (!seasonActive) {
+        // 休赛期兜底：结算弹窗跨过赛季结束时间时，不再发放通行证经验
+        toast('通行证已进入休赛期，本次不发放通行证经验', '📅');
+      } else {
+        const w = ensurePassWeekly();
+        let xp = st.passXp || 0;
+        if (useBonus) {
+          const uses = Math.min(st.bonusUses || 0, w.bonusLeft, Math.floor(w.xpLeft / PASS_XP_BONUS));
+          if (uses > 0) {
+            xp = uses * PASS_XP_BONUS;
+            w.bonusLeft = Math.max(0, w.bonusLeft - uses);
+          }
+        }
+        const give = Math.min(xp, w.xpLeft);
+        if (give > 0) {
+          w.xpLeft -= give;
+          addPassExpExternal(give);
+          toast(`通行证经验 +${give}` + (w.xpLeft <= 0 ? ' · 本周经验已全部领取' : ''), '🎫', 'success');
+        } else if (useBonus) {
+          toast('本周加成次数或通行证经验已用完，待下周刷新', '📅');
+        }
       }
     }
   }
@@ -3363,6 +4319,24 @@ const PASS_WEEK_XP = 120;      // 每周可获得通行证经验上限（12 级�
 const PASS_BONUS_MAX = 3;      // 每周加成次数
 const PASS_XP_CLEAR = 10;      // 难度 6-15 通关一次 → 10 经验（1 级）
 const PASS_XP_BONUS = 40;      // 使用一次每周加成 → 40 经验（4 级）
+
+// 每周加成与通行证赛季时间绑定：时间窗由 pass.js 同步到 localStorage（PASS_CONFIG.weeklyBonusSeasonWindow）
+const PASS_WEEKLY_SEASON_KEY = 'pre_pass_weekly_bonus_window';
+const PASS_WEEKLY_SEASON_FALLBACK = ['2026-09-30T20:00:00Z', '2026-11-30T20:00:00Z'];
+function passWeeklySeasonState() {
+  let win = PASS_WEEKLY_SEASON_FALLBACK;
+  try {
+    const raw = JSON.parse(localStorage.getItem(PASS_WEEKLY_SEASON_KEY) || 'null');
+    if (Array.isArray(raw) && raw.length === 2 && raw[0] && raw[1]) win = raw;
+  } catch (e) {}
+  const start = new Date(win[0]).getTime();
+  const end = new Date(win[1]).getTime();
+  const now = Date.now();
+  if (!isNaN(start) && now < start) return { active: false, phase: 'before', start: start, end: end };
+  if (!isNaN(end) && now >= end) return { active: false, phase: 'off', start: start, end: end };
+  return { active: true, phase: 'in', start: start, end: end };
+}
+function passWeeklySeasonActive() { return passWeeklySeasonState().active; }
 
 // 每周刷新周期：与启动器通行证保持一致 —— 每周一凌晨 4 点（UTC+8）
 function passWeekStartTs() {

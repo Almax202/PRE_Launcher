@@ -34305,7 +34305,7 @@
             }
             
             // 计算成就完成度
-            var totalAchievements = 140; // 10+10+10+10+10+10+10+10 + 8特殊成就(含光影恐龙) + 深渊回响52
+            var totalAchievements = 143; // 10+10+10+10+10+10+10+10 + 8特殊成就(含光影恐龙) + 深渊回响55
             var completedAchievements = 0;
             
             // 从用户的gameData中获取成就数据
@@ -41674,7 +41674,7 @@ ID：${user ? user.userId : '---'}
                     name: '深渊回响',
                     icon: 'fas fa-moon',
                     iconBg: 'linear-gradient(135deg, #2b2350 0%, #5a3b8c 45%, #d45d79 100%)',
-                    total: 52,
+                    total: 55,
                     dataKey: 'abyssAchievements',
                     achievements: [
                         { id: 'first_run', name: '初次坠落', desc: '完成第一次冒险（无论成败）', icon: 'fas fa-seedling' },
@@ -41705,14 +41705,17 @@ ID：${user ? user.userId : '---'}
                         { id: 'nopotion', name: '纯粹主义者', desc: '通关一局且从未使用药水', icon: 'fas fa-ban' },
                         { id: 'ng1', name: '轮回者', desc: '开启轮回难度 1', icon: 'fas fa-redo' },
                         { id: 'elite20', name: '精英猎手', desc: '累计击杀 20 个精英敌人', icon: 'fas fa-trident' },
-                        { id: 'items30', name: '拾荒之王', desc: '累计拾取 30 件装备', icon: 'fas fa-gift' },
+                        { id: 'scavenger30', name: '拾荒之王', desc: '累计拾取 30 件装备', icon: 'fas fa-gift' },
                         { id: 'depth14', name: '触界者', desc: '抵达第 14 层', icon: 'fas fa-fire' },
-                        { id: 'depth20', name: '极限之地', desc: '抵达第 20 层', icon: 'fas fa-mountain' },
-                        { id: 'extreme_clear', name: '极限征服者', desc: '完整通过一次极限模式', icon: 'fas fa-burst' },
-                        { id: 'xelite10', name: '极限猎人', desc: '在极限模式中击杀 10 个精英敌人', icon: 'fas fa-dragon' },
+                        { id: 'depth20', name: '极限之地', desc: '抵达第 15 层', icon: 'fas fa-mountain' },
+                        { id: 'extreme_clear', name: '深渊征服者', desc: '完整通过一次深渊叠加 · 极限（15 层）', icon: 'fas fa-burst' },
+                        { id: 'xelite10', name: '叠加猎人', desc: '在深渊叠加中击杀 10 个精英敌人', icon: 'fas fa-dragon' },
                         { id: 'xboss1', name: '裂痕终结', desc: '击败深渊裂痕 · 卡俄斯', icon: 'fas fa-hurricane' },
                         { id: 'xboss2', name: '无光终焉', desc: '击败无光之祖 · 乌尔', icon: 'fas fa-circle-notch' },
                         { id: 'xboss3', name: '极限主宰', desc: '击败极限之主 · 绝', icon: 'fas fa-chess-king' },
+                        { id: 'xboss4', name: '深渊主宰', desc: '击败深渊主宰 · 阒', icon: 'fas fa-moon' },
+                        { id: 'treaty10', name: '条约收集者', desc: '单局选取 10 条深渊条约', icon: 'fas fa-scroll' },
+                        { id: 'treaty30', name: '与深渊同谋', desc: '单局条约总分达到 30 分', icon: 'fas fa-pen-nib' },
                         { id: 'ng10', name: '轮回十重', desc: '通关轮回难度 10', icon: 'fas fa-layer-group' },
                         { id: 'ng15', name: '轮回终焉', desc: '通关轮回难度 15（最高）', icon: 'fas fa-infinity' },
                         { id: 'items15', name: '行囊初满', desc: '单局持有 15 件装备并通关', icon: 'fas fa-backpack' },
@@ -41728,7 +41731,7 @@ ID：${user ? user.userId : '---'}
                         { id: 'hp1000', name: '生命强化', desc: '单局生命值 ≥ 1000 并通关', icon: 'fas fa-heart' },
                         { id: 'hp2000', name: '生命不息', desc: '单局生命值 ≥ 2000 并通关', icon: 'fas fa-heart-pulse' },
                         { id: 'hp3000', name: '不朽之躯', desc: '单局生命值 ≥ 3000 并通关', icon: 'fas fa-heart-circle-check' },
-                        { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 51 项成就，加冕为深渊之主', icon: 'fas fa-gem' }
+                        { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 54 项成就，加冕为深渊之主', icon: 'fas fa-gem' }
                     ]
                 }
             };

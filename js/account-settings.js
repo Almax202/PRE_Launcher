@@ -6261,8 +6261,8 @@
         updateGameProgress(colorAchievements, 10, 'color');
         updateGameProgress(cube3dAchievements, 10, 'cube3d');
         updateGameProgress(dinoAchievements, 10, 'dino');
-        updateGameProgress(abyssAchievements, 52, 'abyss');
-        updateGameProgress(allAchievements, 132, 'all');
+        updateGameProgress(abyssAchievements, 55, 'abyss');
+        updateGameProgress(allAchievements, 135, 'all');
 
         fkAchievements.forEach(function(achievementId) {
             saveAchievementTime(achievementId);
@@ -6483,8 +6483,8 @@
                 updateGameProgress(colorAchievements, 10, 'color');
                 updateGameProgress(cube3dAchievements, 10, 'cube3d');
                 updateGameProgress(dinoAchievements, 10, 'dino');
-                updateGameProgress(abyssAchievements, 52, 'abyss');
-                updateGameProgress(allAchievements, 132, 'all');
+                updateGameProgress(abyssAchievements, 55, 'abyss');
+                updateGameProgress(allAchievements, 135, 'all');
 
                 var specialAchievements = [];
                 if (fkAchievements.length >= 10) {
@@ -7258,14 +7258,17 @@
             { id: 'nopotion', name: '纯粹主义者', desc: '通关一局且从未使用药水', icon: 'fa-ban', game: 'abyss', condition: () => false },
             { id: 'ng1', name: '轮回者', desc: '开启轮回难度 1', icon: 'fa-rotate', game: 'abyss', condition: () => false },
             { id: 'elite20', name: '精英猎手', desc: '累计击杀 20 个精英敌人', icon: 'fa-dragon', game: 'abyss', condition: () => false },
-            { id: 'items30', name: '拾荒之王', desc: '累计拾取 30 件装备', icon: 'fa-gift', game: 'abyss', condition: () => false },
+            { id: 'scavenger30', name: '拾荒之王', desc: '累计拾取 30 件装备', icon: 'fa-gift', game: 'abyss', condition: () => false },
             { id: 'depth14', name: '触界者', desc: '抵达第 14 层', icon: 'fa-fire', game: 'abyss', condition: () => abyssMaxDepth >= 14 },
-            { id: 'depth20', name: '极限之地', desc: '抵达第 20 层', icon: 'fa-mountain', game: 'abyss', condition: () => abyssMaxDepth >= 20 },
-            { id: 'extreme_clear', name: '极限征服者', desc: '完整通过一次极限模式', icon: 'fa-burst', game: 'abyss', condition: () => false },
-            { id: 'xelite10', name: '极限猎人', desc: '在极限模式中击杀 10 个精英敌人', icon: 'fa-dragon', game: 'abyss', condition: () => false },
+            { id: 'depth20', name: '极限之地', desc: '抵达第 15 层', icon: 'fa-mountain', game: 'abyss', condition: () => abyssMaxDepth >= 15 },
+            { id: 'extreme_clear', name: '深渊征服者', desc: '完整通过一次深渊叠加 · 极限（15 层）', icon: 'fa-burst', game: 'abyss', condition: () => false },
+            { id: 'xelite10', name: '叠加猎人', desc: '在深渊叠加中击杀 10 个精英敌人', icon: 'fa-dragon', game: 'abyss', condition: () => false },
             { id: 'xboss1', name: '裂痕终结', desc: '击败深渊裂痕 · 卡俄斯', icon: 'fa-hurricane', game: 'abyss', condition: () => false },
             { id: 'xboss2', name: '无光终焉', desc: '击败无光之祖 · 乌尔', icon: 'fa-circle-notch', game: 'abyss', condition: () => false },
             { id: 'xboss3', name: '极限主宰', desc: '击败极限之主 · 绝', icon: 'fa-chess-king', game: 'abyss', condition: () => false },
+            { id: 'xboss4', name: '深渊主宰', desc: '击败深渊主宰 · 阒', icon: 'fa-moon', game: 'abyss', condition: () => false },
+            { id: 'treaty10', name: '条约收集者', desc: '单局选取 10 条深渊条约', icon: 'fa-scroll', game: 'abyss', condition: () => false },
+            { id: 'treaty30', name: '与深渊同谋', desc: '单局条约总分达到 30 分', icon: 'fa-pen-nib', game: 'abyss', condition: () => false },
             { id: 'ng10', name: '轮回十重', desc: '通关轮回难度 10', icon: 'fa-layer-group', game: 'abyss', condition: () => false },
             { id: 'ng15', name: '轮回终焉', desc: '通关轮回难度 15（最高）', icon: 'fa-infinity', game: 'abyss', condition: () => false },
             { id: 'items15', name: '行囊初满', desc: '单局持有 15 件装备并通关', icon: 'fa-backpack', game: 'abyss', condition: () => false },
@@ -7281,7 +7284,7 @@
             { id: 'hp1000', name: '生命强化', desc: '单局生命值 ≥ 1000 并通关', icon: 'fa-heart', game: 'abyss', condition: () => false },
             { id: 'hp2000', name: '生命不息', desc: '单局生命值 ≥ 2000 并通关', icon: 'fa-heart-pulse', game: 'abyss', condition: () => false },
             { id: 'hp3000', name: '不朽之躯', desc: '单局生命值 ≥ 3000 并通关', icon: 'fa-heart-circle-check', game: 'abyss', condition: () => false },
-            { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 51 项成就，加冕为深渊之主', icon: 'fa-crown', game: 'abyss', condition: () => abyssUnlockedAchievements.length >= 51 }
+            { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 54 项成就，加冕为深渊之主', icon: 'fa-crown', game: 'abyss', condition: () => abyssUnlockedAchievements.length >= 54 }
         ];
 
         var allUnlocked = fkUnlockedAchievements.concat(fxqUnlockedAchievements, wzqUnlockedAchievements, snakeUnlockedAchievements, memoryUnlockedAchievements, colorUnlockedAchievements, cube3dUnlockedAchievements, dinoUnlockedAchievements, abyssUnlockedAchievements);
@@ -8094,7 +8097,7 @@
         var allColorAchievements = ['color_first_game', 'color_score_100', 'color_score_200', 'color_games_10', 'color_perfect_match', 'color_speed_master', 'color_total_score_1000', 'color_games_50', 'color_games_100', 'color_total_score_2000'];
         var allCube3dAchievements = ['cube3d_first_game', 'cube3d_score_100', 'cube3d_score_300', 'cube3d_score_600', 'cube3d_games_5', 'cube3d_games_15', 'cube3d_orbs_10', 'cube3d_orbs_25', 'cube3d_survivor_30', 'cube3d_survivor_60'];
         var allDinoAchievements = ['dino_first_game', 'dino_score_100', 'dino_score_300', 'dino_score_500', 'dino_games_5', 'dino_games_10', 'dino_jumps_100', 'dino_total_1000', 'dino_dodger', 'dino_survivor'];
-        var allAbyssAchievements = ['first_run', 'depth5', 'depth10', 'boss1', 'boss2', 'boss3', 'boss4', 'win', 'kill50', 'kill200', 'kill500', 'rich', 'collector', 'legendary', 'fullset', 'crit100', 'flawless', 'potions', 'skills', 'bigHit', 'healer', 'explorer', 'death10', 'allboss', 'dust500', 'nopotion', 'ng1', 'elite20', 'items30', 'depth14', 'depth20', 'extreme_clear', 'xelite10', 'xboss1', 'xboss2', 'xboss3', 'ng10', 'ng15', 'items15', 'items30', 'items50', 'atk500', 'atk1000', 'def200', 'def500', 'critdmg200', 'critdmg500', 'critdmg1000', 'hp1000', 'hp2000', 'hp3000', 'abyss_ruler'];
+        var allAbyssAchievements = ['first_run', 'depth5', 'depth10', 'boss1', 'boss2', 'boss3', 'boss4', 'win', 'kill50', 'kill200', 'kill500', 'rich', 'collector', 'legendary', 'fullset', 'crit100', 'flawless', 'potions', 'skills', 'bigHit', 'healer', 'explorer', 'death10', 'allboss', 'dust500', 'nopotion', 'ng1', 'elite20', 'scavenger30', 'depth14', 'depth20', 'extreme_clear', 'xelite10', 'xboss1', 'xboss2', 'xboss3', 'xboss4', 'treaty10', 'treaty30', 'ng10', 'ng15', 'items15', 'items30', 'items50', 'atk500', 'atk1000', 'def200', 'def500', 'critdmg200', 'critdmg500', 'critdmg1000', 'hp1000', 'hp2000', 'hp3000', 'abyss_ruler'];
 
         var totalAchievements = allFkAchievements.length + allFxqAchievements.length + allWzqAchievements.length + allSnakeAchievements.length + allMemoryAchievements.length + allColorAchievements.length + allCube3dAchievements.length + allDinoAchievements.length + allAbyssAchievements.length;
 

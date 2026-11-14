@@ -29,8 +29,13 @@ var PASS_CONFIG = {
     exPremiumItem: 'rand_box_3', // EX 溢出：付费每级额外奖励「随机物品箱 · 高级」×1
     startTime: '2026-09-30T20:00:00Z',   // 赛季起始时间 (UTC) = 2026-10-01 04:00 (UTC+8)
     endTime: '2026-11-30T20:00:00Z',     // 赛季结束时间 (UTC) = 2026-12-01 04:00 (UTC+8)
+    // ★ 每周加成（深渊回响）赛季时间绑定：仅在此时间窗内可获取通行证经验；null = 跟随 startTime ~ endTime（赛季结束后自动进入休赛期，下一赛季开启后自动恢复），也可填 ['开始ISO','结束ISO'] 快速调整
+    weeklyBonusSeasonWindow: null,
     seasonLabel: '第一赛季'              // 赛季限定物品标记：等级奖励物品名称后缀与赛季继承折算依据
 };
+
+// 将每周加成的赛季时间窗同步到 localStorage，供「深渊回响」独立页面读取（该页面不加载本文件）
+try { localStorage.setItem('pre_pass_weekly_bonus_window', JSON.stringify(PASS_CONFIG.weeklyBonusSeasonWindow || [PASS_CONFIG.startTime, PASS_CONFIG.endTime])); } catch (e) {}
 
 // ==================== 奖励表生成 ====================
 // 动态生成 120 级的奖励配置

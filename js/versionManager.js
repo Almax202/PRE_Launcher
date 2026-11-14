@@ -1,7 +1,7 @@
 // 版本管理文件，统一管理所有页面的版本号
 const versionInfo = {
     // 登录页版本号
-    login: "RC 3.0.4.3 (c6)",
+    login: "RC 3.0.4.4 (c6)",
 
     // 点击方块游戏版本号
     fkgame: "RC 1.3.1",
@@ -22,11 +22,11 @@ const versionInfo = {
     colormatchgame: "RC 1.2.0",
 
     // 深渊回响（回合制 Roguelike）版本号
-    abyss: "RC 1.0.2",
+    abyss: "RC 1.1.0",
 
     // 内部版本号
     // 格式：年月日.版本号四位数.补丁批次.累积更新次数.组件版本
-    launcher: "20261111.3043.c6.153.l7",
+    launcher: "20261114.3044.c6.154.l7",
     
     // 主题版本信息
     // status字段可选值说明：
@@ -245,7 +245,7 @@ const launcherInfo = {
     version: getVersion('login'),
     internalVersion: getVersion('launcher'),    
     buildDate: "2026-11-01",
-    patchDate: "2026-11-11",
+    patchDate: "2026-11-14",
     copyright: "© 2014-2026 PREAlmax, All rights reserved.",
     developer: "PREAlmax",
     fontUsage: "",
