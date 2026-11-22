@@ -6261,8 +6261,8 @@
         updateGameProgress(colorAchievements, 10, 'color');
         updateGameProgress(cube3dAchievements, 10, 'cube3d');
         updateGameProgress(dinoAchievements, 10, 'dino');
-        updateGameProgress(abyssAchievements, 55, 'abyss');
-        updateGameProgress(allAchievements, 135, 'all');
+        updateGameProgress(abyssAchievements, 88, 'abyss');
+        updateGameProgress(allAchievements, 168, 'all');
 
         fkAchievements.forEach(function(achievementId) {
             saveAchievementTime(achievementId);
@@ -6483,8 +6483,8 @@
                 updateGameProgress(colorAchievements, 10, 'color');
                 updateGameProgress(cube3dAchievements, 10, 'cube3d');
                 updateGameProgress(dinoAchievements, 10, 'dino');
-                updateGameProgress(abyssAchievements, 55, 'abyss');
-                updateGameProgress(allAchievements, 135, 'all');
+                updateGameProgress(abyssAchievements, 88, 'abyss');
+                updateGameProgress(allAchievements, 168, 'all');
 
                 var specialAchievements = [];
                 if (fkAchievements.length >= 10) {
@@ -7231,8 +7231,8 @@
             },
             /* ============ 深渊回响 ============ */
             { id: 'first_run', name: '初次坠落', desc: '完成第一次冒险（无论成败）', icon: 'fa-seedling', game: 'abyss', condition: () => abyssGamesPlayed >= 1 },
-            { id: 'depth5', name: '深潜者', desc: '抵达第 5 层', icon: 'fa-arrow-down', game: 'abyss', condition: () => abyssMaxDepth >= 5 },
-            { id: 'depth10', name: '无光之处', desc: '抵达第 10 层', icon: 'fa-moon', game: 'abyss', condition: () => abyssMaxDepth >= 10 },
+            { id: 'depth5', name: '深潜者', desc: '通过第 5 层', icon: 'fa-arrow-down', game: 'abyss', condition: () => abyssMaxDepth >= 5 },
+            { id: 'depth10', name: '无光之处', desc: '通过第 10 层', icon: 'fa-moon', game: 'abyss', condition: () => abyssMaxDepth >= 10 },
             { id: 'boss1', name: '地窟征服者', desc: '击败地窟领主 · 格拉姆', icon: 'fa-shield-halved', game: 'abyss', condition: () => false },
             { id: 'boss2', name: '影之猎手', desc: '击败幽影君主 · 维尔', icon: 'fa-user-secret', game: 'abyss', condition: () => false },
             { id: 'boss3', name: '熔火克星', desc: '击败熔火巨兽 · 伊格尼斯', icon: 'fa-fire', game: 'abyss', condition: () => false },
@@ -7241,7 +7241,8 @@
             { id: 'kill50', name: '击溃者', desc: '累计击杀 50 个敌人', icon: 'fa-crosshairs', game: 'abyss', condition: () => false },
             { id: 'kill200', name: '屠戮者', desc: '累计击杀 200 个敌人', icon: 'fa-biohazard', game: 'abyss', condition: () => false },
             { id: 'kill500', name: '深渊收割者', desc: '累计击杀 500 个敌人', icon: 'fa-skull-crossbones', game: 'abyss', condition: () => false },
-            { id: 'rich', name: '富甲一方', desc: '单局持有 800 金币', icon: 'fa-coins', game: 'abyss', condition: () => false },
+            { id: 'rich', name: '富甲一方', desc: '单局持有 800 金币并通过游戏', icon: 'fa-coins', game: 'abyss', condition: () => false },
+            { id: 'rich2000', name: '富可敌国', desc: '单局持有 2000 金币并通过游戏', icon: 'fa-building-columns', game: 'abyss', condition: () => false },
             { id: 'collector', name: '收藏家', desc: '累计购买 30 件商品', icon: 'fa-shopping-cart', game: 'abyss', condition: () => false },
             { id: 'legendary', name: '神话装备', desc: '装备一件传说品质物品', icon: 'fa-star', game: 'abyss', condition: () => false },
             { id: 'fullset', name: '全身武装', desc: '同时装备三件装备', icon: 'fa-shirt', game: 'abyss', condition: () => false },
@@ -7259,21 +7260,20 @@
             { id: 'ng1', name: '轮回者', desc: '开启轮回难度 1', icon: 'fa-rotate', game: 'abyss', condition: () => false },
             { id: 'elite20', name: '精英猎手', desc: '累计击杀 20 个精英敌人', icon: 'fa-dragon', game: 'abyss', condition: () => false },
             { id: 'scavenger30', name: '拾荒之王', desc: '累计拾取 30 件装备', icon: 'fa-gift', game: 'abyss', condition: () => false },
-            { id: 'depth14', name: '触界者', desc: '抵达第 14 层', icon: 'fa-fire', game: 'abyss', condition: () => abyssMaxDepth >= 14 },
-            { id: 'depth20', name: '极限之地', desc: '抵达第 15 层', icon: 'fa-mountain', game: 'abyss', condition: () => abyssMaxDepth >= 15 },
-            { id: 'extreme_clear', name: '深渊征服者', desc: '完整通过一次深渊叠加 · 极限（15 层）', icon: 'fa-burst', game: 'abyss', condition: () => false },
+            { id: 'depth20', name: '极限之地', desc: '通过第 15 层', icon: 'fa-mountain', game: 'abyss', condition: () => abyssMaxDepth >= 15 },
             { id: 'xelite10', name: '叠加猎人', desc: '在深渊叠加中击杀 10 个精英敌人', icon: 'fa-dragon', game: 'abyss', condition: () => false },
             { id: 'xboss1', name: '裂痕终结', desc: '击败深渊裂痕 · 卡俄斯', icon: 'fa-hurricane', game: 'abyss', condition: () => false },
             { id: 'xboss2', name: '无光终焉', desc: '击败无光之祖 · 乌尔', icon: 'fa-circle-notch', game: 'abyss', condition: () => false },
             { id: 'xboss3', name: '极限主宰', desc: '击败极限之主 · 绝', icon: 'fa-chess-king', game: 'abyss', condition: () => false },
             { id: 'xboss4', name: '深渊主宰', desc: '击败深渊主宰 · 阒', icon: 'fa-moon', game: 'abyss', condition: () => false },
-            { id: 'treaty10', name: '条约收集者', desc: '单局选取 10 条深渊条约', icon: 'fa-scroll', game: 'abyss', condition: () => false },
-            { id: 'treaty30', name: '与深渊同谋', desc: '单局条约总分达到 30 分', icon: 'fa-pen-nib', game: 'abyss', condition: () => false },
             { id: 'ng10', name: '轮回十重', desc: '通关轮回难度 10', icon: 'fa-layer-group', game: 'abyss', condition: () => false },
+            { id: 'ng6', name: '轮回六重', desc: '通关轮回难度 6', icon: 'fa-list-ol', game: 'abyss', condition: () => false },
             { id: 'ng15', name: '轮回终焉', desc: '通关轮回难度 15（最高）', icon: 'fa-infinity', game: 'abyss', condition: () => false },
             { id: 'items15', name: '行囊初满', desc: '单局持有 15 件装备并通关', icon: 'fa-backpack', game: 'abyss', condition: () => false },
             { id: 'items30', name: '装备收藏家', desc: '单局持有 30 件装备并通关', icon: 'fa-box', game: 'abyss', condition: () => false },
             { id: 'items50', name: '囤积狂魔', desc: '单局持有 50 件装备并通关', icon: 'fa-warehouse', game: 'abyss', condition: () => false },
+            { id: 'items100', name: '军械库', desc: '单局持有 100 件装备并通关', icon: 'fa-industry', game: 'abyss', condition: () => false },
+            { id: 'items200', name: '万宝阁', desc: '单局持有 200 件装备并通关', icon: 'fa-landmark', game: 'abyss', condition: () => false },
             { id: 'atk500', name: '千钧之力', desc: '单局攻击力 ≥ 500 并通关', icon: 'fa-dumbbell', game: 'abyss', condition: () => false },
             { id: 'atk1000', name: '毁灭之力', desc: '单局攻击力 ≥ 1000 并通关', icon: 'fa-bolt', game: 'abyss', condition: () => false },
             { id: 'def200', name: '铜墙铁壁', desc: '单局防御力 ≥ 200 并通关', icon: 'fa-shield', game: 'abyss', condition: () => false },
@@ -7284,7 +7284,40 @@
             { id: 'hp1000', name: '生命强化', desc: '单局生命值 ≥ 1000 并通关', icon: 'fa-heart', game: 'abyss', condition: () => false },
             { id: 'hp2000', name: '生命不息', desc: '单局生命值 ≥ 2000 并通关', icon: 'fa-heart-pulse', game: 'abyss', condition: () => false },
             { id: 'hp3000', name: '不朽之躯', desc: '单局生命值 ≥ 3000 并通关', icon: 'fa-heart-circle-check', game: 'abyss', condition: () => false },
-            { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 54 项成就，加冕为深渊之主', icon: 'fa-crown', game: 'abyss', condition: () => abyssUnlockedAchievements.length >= 54 }
+            { id: 'hit500', name: '重击者', desc: '单次造成 500 点伤害', icon: 'fa-hammer', game: 'abyss', condition: () => false },
+            { id: 'hit1000', name: '破军者', desc: '单次造成 1000 点伤害', icon: 'fa-bolt', game: 'abyss', condition: () => false },
+            { id: 'hit5000', name: '崩山者', desc: '单次造成 5000 点伤害', icon: 'fa-mountain', game: 'abyss', condition: () => false },
+            { id: 'hit10000', name: '灭城者', desc: '单次造成 10000 点伤害', icon: 'fa-meteor', game: 'abyss', condition: () => false },
+            { id: 'hit20000', name: '弑神者', desc: '单次造成 20000 点伤害', icon: 'fa-galaxy', game: 'abyss', condition: () => false },
+            { id: 'treaty_hp1', name: '血肉契约', desc: '签署条约「生命增幅」并通过 15 层', icon: 'fa-heart', game: 'abyss', condition: () => false },
+            { id: 'treaty_atk1', name: '锋刃契约', desc: '签署条约「攻击增幅」并通过 15 层', icon: 'fa-khanda', game: 'abyss', condition: () => false },
+            { id: 'treaty_def1', name: '坚壁契约', desc: '签署条约「铁壁」并通过 15 层', icon: 'fa-chess-rook', game: 'abyss', condition: () => false },
+            { id: 'treaty_gold1', name: '贪欲契约', desc: '签署条约「贪婪税」并通过 15 层', icon: 'fa-sack-dollar', game: 'abyss', condition: () => false },
+            { id: 'treaty_pdef1', name: '侵蚀契约', desc: '签署条约「虚弱侵蚀」并通过 15 层', icon: 'fa-band-aid', game: 'abyss', condition: () => false },
+            { id: 'treaty_patk1', name: '钝锋契约', desc: '签署条约「钝刃」并通过 15 层', icon: 'fa-bolt', game: 'abyss', condition: () => false },
+            { id: 'treaty_pcrt1', name: '迟滞契约', desc: '签署条约「迟缓」并通过 15 层', icon: 'fa-hourglass-half', game: 'abyss', condition: () => false },
+            { id: 'treaty_shop1', name: '涨价契约', desc: '签署条约「物价微涨」并通过 15 层', icon: 'fa-tag', game: 'abyss', condition: () => false },
+            { id: 'treaty_hp2', name: '血肉契约 II', desc: '签署条约「生命增幅 II」并通过 15 层', icon: 'fa-heart-pulse', game: 'abyss', condition: () => false },
+            { id: 'treaty_atk2', name: '锋刃契约 II', desc: '签署条约「攻击增幅 II」并通过 15 层', icon: 'fa-swords', game: 'abyss', condition: () => false },
+            { id: 'treaty_def2', name: '硬壳契约', desc: '签署条约「硬壳」并通过 15 层', icon: 'fa-shield-halved', game: 'abyss', condition: () => false },
+            { id: 'treaty_pcd2', name: '心压契约', desc: '签署条约「精神压迫」并通过 15 层', icon: 'fa-brain', game: 'abyss', condition: () => false },
+            { id: 'treaty_pdef2', name: '疲惫契约', desc: '签署条约「疲惫之躯」并通过 15 层', icon: 'fa-bed', game: 'abyss', condition: () => false },
+            { id: 'treaty_gold2', name: '贫瘠契约', desc: '签署条约「贫瘠」并通过 15 层', icon: 'fa-coins', game: 'abyss', condition: () => false },
+            { id: 'treaty_shop2', name: '通胀契约', desc: '签署条约「通货膨胀」并通过 15 层', icon: 'fa-money-bill-trend-up', game: 'abyss', condition: () => false },
+            { id: 'treaty_patk3', name: '萎缩契约', desc: '签署条约「肌肉萎缩」并通过 15 层', icon: 'fa-dumbbell', game: 'abyss', condition: () => false },
+            { id: 'treaty_atk3', name: '回响契约', desc: '签署条约「深渊回响」并通过 15 层', icon: 'fa-volume-high', game: 'abyss', condition: () => false },
+            { id: 'treaty_php3', name: '血价契约', desc: '签署条约「血之代价」并通过 15 层', icon: 'fa-droplet', game: 'abyss', condition: () => false },
+            { id: 'treaty_patk4', name: '至萎契约', desc: '签署条约「肌肉萎缩 · 极」并通过 15 层', icon: 'fa-skull', game: 'abyss', condition: () => false },
+            { id: 'treaty_hp4', name: '至血契约', desc: '签署条约「生命增幅 · 极」并通过 15 层', icon: 'fa-heart', game: 'abyss', condition: () => false },
+            { id: 'treaty_pcd5', name: '衰竭契约', desc: '签署条约「精神衰竭」并通过 15 层', icon: 'fa-face-tired', game: 'abyss', condition: () => false },
+            { id: 'treaty_atk5', name: '凝视契约', desc: '签署条约「深渊凝视」并通过 15 层', icon: 'fa-eye', game: 'abyss', condition: () => false },
+            { id: 'treaty_shop5', name: '万物通胀', desc: '签署条约「万物通胀」并通过 15 层', icon: 'fa-chart-line', game: 'abyss', condition: () => false },
+            { id: 'treaty_pall5', name: '枯竭契约', desc: '签署条约「灵魂枯竭」并通过 15 层', icon: 'fa-leaf', game: 'abyss', condition: () => false },
+            { id: 'treaty_score10', name: '契约学徒', desc: '单局累计签署条约达 10 分并通过 15 层', icon: 'fa-scroll', game: 'abyss', condition: () => false },
+            { id: 'treaty_score30', name: '契约行者', desc: '单局累计签署条约达 30 分并通过 15 层', icon: 'fa-pen-nib', game: 'abyss', condition: () => false },
+            { id: 'treaty_score45', name: '契约大师', desc: '单局累计签署条约达 45 分并通过 15 层', icon: 'fa-book', game: 'abyss', condition: () => false },
+            { id: 'treaty_score60', name: '深渊同谋', desc: '单局累计签署条约达 60 分并通过 15 层', icon: 'fa-handshake', game: 'abyss', condition: () => false },
+            { id: 'abyss_ruler', name: '深渊统治者', desc: '解锁全部 87 项成就，加冕为深渊之主', icon: 'fa-crown', game: 'abyss', condition: () => abyssUnlockedAchievements.length >= 87 }
         ];
 
         var allUnlocked = fkUnlockedAchievements.concat(fxqUnlockedAchievements, wzqUnlockedAchievements, snakeUnlockedAchievements, memoryUnlockedAchievements, colorUnlockedAchievements, cube3dUnlockedAchievements, dinoUnlockedAchievements, abyssUnlockedAchievements);
@@ -7481,12 +7514,9 @@
             } else if (achievement.id === 'depth10') {
                 progressPercent = Math.min((abyssMaxDepth / 10) * 100, 100);
                 progressText = abyssMaxDepth + '/10';
-            } else if (achievement.id === 'depth14') {
-                progressPercent = Math.min((abyssMaxDepth / 14) * 100, 100);
-                progressText = abyssMaxDepth + '/14';
             } else if (achievement.id === 'depth20') {
-                progressPercent = Math.min((abyssMaxDepth / 20) * 100, 100);
-                progressText = abyssMaxDepth + '/20';
+                progressPercent = Math.min((abyssMaxDepth / 15) * 100, 100);
+                progressText = abyssMaxDepth + '/15';
             } else if (achievement.game === 'abyss') {
                 progressPercent = isCompleted ? 100 : 0;
                 progressText = isCompleted ? '已完成' : '未完成';
@@ -8097,7 +8127,7 @@
         var allColorAchievements = ['color_first_game', 'color_score_100', 'color_score_200', 'color_games_10', 'color_perfect_match', 'color_speed_master', 'color_total_score_1000', 'color_games_50', 'color_games_100', 'color_total_score_2000'];
         var allCube3dAchievements = ['cube3d_first_game', 'cube3d_score_100', 'cube3d_score_300', 'cube3d_score_600', 'cube3d_games_5', 'cube3d_games_15', 'cube3d_orbs_10', 'cube3d_orbs_25', 'cube3d_survivor_30', 'cube3d_survivor_60'];
         var allDinoAchievements = ['dino_first_game', 'dino_score_100', 'dino_score_300', 'dino_score_500', 'dino_games_5', 'dino_games_10', 'dino_jumps_100', 'dino_total_1000', 'dino_dodger', 'dino_survivor'];
-        var allAbyssAchievements = ['first_run', 'depth5', 'depth10', 'boss1', 'boss2', 'boss3', 'boss4', 'win', 'kill50', 'kill200', 'kill500', 'rich', 'collector', 'legendary', 'fullset', 'crit100', 'flawless', 'potions', 'skills', 'bigHit', 'healer', 'explorer', 'death10', 'allboss', 'dust500', 'nopotion', 'ng1', 'elite20', 'scavenger30', 'depth14', 'depth20', 'extreme_clear', 'xelite10', 'xboss1', 'xboss2', 'xboss3', 'xboss4', 'treaty10', 'treaty30', 'ng10', 'ng15', 'items15', 'items30', 'items50', 'atk500', 'atk1000', 'def200', 'def500', 'critdmg200', 'critdmg500', 'critdmg1000', 'hp1000', 'hp2000', 'hp3000', 'abyss_ruler'];
+        var allAbyssAchievements = ['first_run', 'depth5', 'depth10', 'boss1', 'boss2', 'boss3', 'boss4', 'win', 'kill50', 'kill200', 'kill500', 'rich', 'rich2000', 'collector', 'legendary', 'fullset', 'crit100', 'flawless', 'potions', 'skills', 'bigHit', 'healer', 'explorer', 'death10', 'allboss', 'dust500', 'nopotion', 'ng1', 'elite20', 'scavenger30', 'depth20', 'xelite10', 'xboss1', 'xboss2', 'xboss3', 'xboss4', 'ng10', 'ng6', 'ng15', 'items15', 'items30', 'items50', 'items100', 'items200', 'atk500', 'atk1000', 'def200', 'def500', 'critdmg200', 'critdmg500', 'critdmg1000', 'hp1000', 'hp2000', 'hp3000', 'hit500', 'hit1000', 'hit5000', 'hit10000', 'hit20000', 'treaty_hp1', 'treaty_atk1', 'treaty_def1', 'treaty_gold1', 'treaty_pdef1', 'treaty_patk1', 'treaty_pcrt1', 'treaty_shop1', 'treaty_hp2', 'treaty_atk2', 'treaty_def2', 'treaty_pcd2', 'treaty_pdef2', 'treaty_gold2', 'treaty_shop2', 'treaty_patk3', 'treaty_atk3', 'treaty_php3', 'treaty_patk4', 'treaty_hp4', 'treaty_pcd5', 'treaty_atk5', 'treaty_shop5', 'treaty_pall5', 'treaty_score10', 'treaty_score30', 'treaty_score45', 'treaty_score60', 'abyss_ruler'];
 
         var totalAchievements = allFkAchievements.length + allFxqAchievements.length + allWzqAchievements.length + allSnakeAchievements.length + allMemoryAchievements.length + allColorAchievements.length + allCube3dAchievements.length + allDinoAchievements.length + allAbyssAchievements.length;
 

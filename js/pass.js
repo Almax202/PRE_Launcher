@@ -36,6 +36,8 @@ var PASS_CONFIG = {
 
 // 将每周加成的赛季时间窗同步到 localStorage，供「深渊回响」独立页面读取（该页面不加载本文件）
 try { localStorage.setItem('pre_pass_weekly_bonus_window', JSON.stringify(PASS_CONFIG.weeklyBonusSeasonWindow || [PASS_CONFIG.startTime, PASS_CONFIG.endTime])); } catch (e) {}
+// Dev 休赛期开关为会话级：页面加载时重置，避免刷新/重登后残留并影响「深渊回响」的每周加成与挑战经验
+try { localStorage.setItem('pre_pass_dev_offseason', '0'); } catch (e) {}
 
 // ==================== 奖励表生成 ====================
 // 动态生成 120 级的奖励配置
@@ -1071,6 +1073,8 @@ function passDevToggleOffSeason() {
     _passDevOffSeason = !_passDevOffSeason;
     // 进入休赛期时自动关闭「关闭通行证进行状态」，避免状态冲突
     if (_passDevOffSeason && _passDevForceLocked) _passDevForceLocked = false;
+    // 同步到 localStorage，供「深渊回响」同步暂停/恢复每周加成、通行证经验与周期挑战经验（不影响真实赛季时间）
+    try { localStorage.setItem('pre_pass_dev_offseason', _passDevOffSeason ? '1' : '0'); } catch (e) {}
     if (typeof showToast === 'function') {
         showToast({ type: 'info', title: '通行证 Dev', message: _passDevOffSeason
             ? '已进入休赛期：通行证内容隐藏，仅显示休赛期提示'

@@ -29,6 +29,16 @@ const GOLD_SCALE = 0.55;
 
 /* ---------------- 存档键 ---------------- */
 const SAVE_KEY = 'echoes_of_abyss_v1';
+/* 多存档位：最多 10 个，当前存档位下标单独持久化 */
+const SAVE_SLOT_COUNT = 10;
+const SLOTS_KEY = 'echoes_of_abyss_slots_v1';
+const ACTIVE_SLOT_KEY = 'echoes_of_abyss_active_slot_v1';
+let activeSlot = (() => {
+  try {
+    const v = parseInt(localStorage.getItem(ACTIVE_SLOT_KEY), 10);
+    return (isFinite(v) && v >= 0 && v < SAVE_SLOT_COUNT) ? v : null;
+  } catch (e) { return null; }
+})();
 
 /* ---------------- 稀有度 ---------------- */
 const RARITY = {
@@ -451,6 +461,69 @@ function addHardship(id) {
   R.hardships.push(id);
 }
 
+/* 「心神不宁」：古老的石龛标记，随机为某一类战斗附加敌方增益 */
+const UNEASE_EFFECTS = [
+  { id: 'u_elite_hp',  kind: 'elite', n: '精英战斗时，敌方生命值 +20%', hp: 0.2 },
+  { id: 'u_elite_atk', kind: 'elite', n: '精英战斗时，敌方攻击力 +15%', atk: 0.15 },
+  { id: 'u_elite_def', kind: 'elite', n: '精英战斗时，敌方防御力 +25%', def: 0.25 },
+  { id: 'u_elite_all', kind: 'elite', n: '精英战斗时，敌方生命 +10%、攻击 +10%', hp: 0.1, atk: 0.1 },
+  { id: 'u_boss_atk',  kind: 'boss',  n: '首领战斗时，敌方攻击力 +35%', atk: 0.35 },
+  { id: 'u_boss_hp',   kind: 'boss',  n: '首领战斗时，敌方生命值 +25%', hp: 0.25 },
+  { id: 'u_boss_def',  kind: 'boss',  n: '首领战斗时，敌方防御力 +20%', def: 0.2 },
+  { id: 'u_boss_all',  kind: 'boss',  n: '首领战斗时，敌方全属性 +15%', atk: 0.15, hp: 0.15, def: 0.15 },
+  { id: 'u_normal_hp', kind: 'normal', n: '普通战斗时，敌方生命值 +15%', hp: 0.15 },
+  { id: 'u_normal_atk', kind: 'normal', n: '普通战斗时，敌方攻击力 +10%', atk: 0.1 },
+  { id: 'u_normal_def', kind: 'normal', n: '普通战斗时，敌方防御力 +18%', def: 0.18 },
+  { id: 'u_normal_all', kind: 'normal', n: '普通战斗时，敌方生命 +8%、攻击 +8%', hp: 0.08, atk: 0.08 },
+];
+function uneaseMods(kind) {
+  const u = R && R.unease;
+  if (!u) return null;
+  const active = u.kind === kind;
+  return {
+    n: u.n,
+    active: active,
+    hp: active ? (u.hp || 0) : 0,
+    atk: active ? (u.atk || 0) : 0,
+    def: active ? (u.def || 0) : 0,
+  };
+}
+function rollUnease() {
+  return JSON.parse(JSON.stringify(pick(UNEASE_EFFECTS)));
+}
+
+// 战斗界面：苦难 / 条约 的加成比例标签
+function pctSigned(v) {
+  const n = Math.round((v || 0) * 100);
+  return (n > 0 ? '+' : '') + n + '%';
+}
+function enemyModTagsHtml() {
+  const hm = hardshipMods(), tm = treatyMods();
+  const tags = [];
+  if (hm.enemyHp || hm.enemyAtk || hm.enemyDef) {
+    tags.push(`<span class="mod-tag hard">☠ 苦难 · 生命 ${pctSigned(hm.enemyHp)} · 攻击 ${pctSigned(hm.enemyAtk)} · 防御 ${pctSigned(hm.enemyDef)}</span>`);
+  }
+  if (tm.enemyHp || tm.enemyAtk || tm.enemyDef) {
+    tags.push(`<span class="mod-tag treaty">📜 条约 · 生命 ${pctSigned(tm.enemyHp)} · 攻击 ${pctSigned(tm.enemyAtk)} · 防御 ${pctSigned(tm.enemyDef)}</span>`);
+  }
+  if (R && R.unease) {
+    const active = B && B.kind === R.unease.kind;
+    tags.push(`<span class="mod-tag unease">😖 心神不宁 · ${R.unease.n}${active ? ' · 本场生效' : ''}</span>`);
+  }
+  return tags.join('');
+}
+function playerModTagsHtml() {
+  const tm = treatyMods();
+  const parts = [];
+  if (tm.playerAtk) parts.push(`攻击 ${pctSigned(tm.playerAtk)}`);
+  if (tm.playerHp) parts.push(`生命 ${pctSigned(tm.playerHp)}`);
+  if (tm.playerDef) parts.push(`防御 ${pctSigned(tm.playerDef)}`);
+  if (tm.playerCrit) parts.push(`暴击 ${(tm.playerCrit > 0 ? '+' : '') + Math.round(tm.playerCrit)}%`);
+  if (tm.playerCritDmg) parts.push(`暴伤 ${pctSigned(tm.playerCritDmg)}`);
+  if (!parts.length) return '';
+  return `<span class="mod-tag treaty">📜 条约 · 我方 ${parts.join(' · ')}</span>`;
+}
+
 /* ---------------- 事件 ---------------- */
 const EVENTS = [
   {
@@ -527,14 +600,44 @@ const EVENTS = [
     d: '一个没有脸的铁匠正捶打着什么。他指了指你身上的装备，又指了指炉火。',
     choices: [
       { label: '强化武器（消耗 60 金币，攻击 +4）', fn() {
+          const list = (R.equip.weapon || []).slice();
+          if (!list.length) {
+            openEventItemPicker({ title: '选择要强化的武器', sub: '无名的铁匠 · 攻击 +4', items: [], emptyText: '暂无可强化武器' });
+            return null;
+          }
           if (R.gold < 60) return '铁匠摇了摇头，继续捶打空气。';
-          R.gold -= 60; R.bonusAtk += 4;
-          return '锤声停了，你的武器泛出新的寒光（攻击 +4）。';
+          openEventItemPicker({
+            title: '选择要强化的武器', sub: '无名的铁匠 · 攻击 +4',
+            items: list,
+            emptyText: '暂无可强化武器',
+            onPick(it) {
+              R.gold -= 60;
+              it.stats.atk = Math.round(((it.stats.atk || 0) + 4) * 10) / 10;
+              recalcItemPower(it);
+              finishEventOutcome(`锤声落在 <b style="color:${RARITY[it.rarity].color}">${it.name}</b> 上，武器泛出新的寒光（攻击 +4）。`);
+            },
+          });
+          return null;
         } },
       { label: '强化护甲（消耗 60 金币，防御 +3）', fn() {
+          const list = (R.equip.armor || []).slice();
+          if (!list.length) {
+            openEventItemPicker({ title: '选择要强化的护甲', sub: '无名的铁匠 · 防御 +3', items: [], emptyText: '暂无可强化护甲' });
+            return null;
+          }
           if (R.gold < 60) return '铁匠摇了摇头，继续捶打空气。';
-          R.gold -= 60; R.bonusDef += 3;
-          return '护甲被敲得更厚实了一些（防御 +3）。';
+          openEventItemPicker({
+            title: '选择要强化的护甲', sub: '无名的铁匠 · 防御 +3',
+            items: list,
+            emptyText: '暂无可强化护甲',
+            onPick(it) {
+              R.gold -= 60;
+              it.stats.def = Math.round(((it.stats.def || 0) + 3) * 10) / 10;
+              recalcItemPower(it);
+              finishEventOutcome(`护甲被敲得更厚实了一些：<b style="color:${RARITY[it.rarity].color}">${it.name}</b>（防御 +3）。`);
+            },
+          });
+          return null;
         } },
       { label: '索取他的锤子（获得随机装备）', fn() {
           const it = genItem(R.depth, 'rare');
@@ -550,11 +653,19 @@ const EVENTS = [
       { label: '触碰镜面（复制一件装备）', fn() {
           const eq = Object.values(R.equip).flat().filter(Boolean);
           if (!eq.length) return '镜中的你一无所有，镜子黯淡下去。';
-          const src = pick(eq);
-          const copy = JSON.parse(JSON.stringify(src));
-          copy.name = '镜像 · ' + src.name;
-          addItem(copy);
-          return `镜面泛起波纹，一件复制品落进你的怀中：<b style="color:${RARITY[copy.rarity].color}">${copy.name}</b>。`;
+          openEventItemPicker({
+            title: '选择要复制的装备', sub: '裂纹之镜 · 复制一件已有装备',
+            items: eq,
+            emptyText: '暂无可复制物品',
+            onPick(src) {
+              const copy = JSON.parse(JSON.stringify(src));
+              copy.uid = 'it' + Date.now() + Math.floor(Math.random() * 9999);
+              copy.name = '镜像 · ' + src.name;
+              addItem(copy);
+              finishEventOutcome(`镜面泛起波纹，一件复制品落进你的怀中：<b style="color:${RARITY[copy.rarity].color}">${copy.name}</b>。`);
+            },
+          });
+          return null;
         } },
       { label: '问它“我会死吗”（获得暴击 +8%，最大生命 -10）', fn() {
           R.bonusCrit += 8; R.bonusHp -= 10; R.hp = Math.min(R.hp, effStats().maxHp);
@@ -571,10 +682,11 @@ const EVENTS = [
     id: 'prisoner', n: '铁笼中的囚徒', i: '⛓️',
     d: '一个瘦骨嶙峋的人被锁在笼中，他恳求你放他出来，说他知道这层的秘密。',
     choices: [
-      { label: '放他出来（他给你一条捷径：直接 +1 层）', fn() {
-          const g = rnd(30, 70); addGold(g);
-          R.skipFloor = true;
-          return `他吻了你的手背，然后消失在阴影里。你发现了一条向下的裂隙（额外深入一层，+${g} 金币）。`;
+      { label: '放他出来（获得 200 金币与一件史诗物品）', fn() {
+          addGold(200);
+          const it = genItem(R.depth, 'epic');
+          addItem(it);
+          return `他吻了你的手背，把藏了多年的财宝塞进你手里（+200 金币），又留下一件 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>，随后消失在阴影里。`;
         } },
       { label: '抢走他的东西（获得金币与物品）', fn() {
           const g = rnd(60, 120); addGold(g);
@@ -596,11 +708,12 @@ const EVENTS = [
           R.bonusAtk += 2; R.bonusDef += 2; R.bonusHp += 12; R.bonusCrit += 3;
           return `鳞片吸走了你的血（-${d} 生命），你的身体变得更加强韧（攻击/防御/生命/暴击全面提升）。`;
         } },
-      { label: '取走鳞片（获得一件传说物品，但被标记）', fn() {
+      { label: '取走鳞片（获得一件传说物品，但被“心神不宁”标记）', fn() {
           const it = genItem(R.depth, 'legend');
           addItem(it);
-          R.marked = true;
-          return `你获得了 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>……但同时，深渊也记住了你的气味。`;
+          const u = rollUnease();
+          R.unease = u;
+          return `你获得了 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>……但同时，深渊在你心里留下了「心神不宁」：<b style="color:#d6a7ff">${u.n}</b>。此状态会持续到本局结束。`;
         } },
       { label: '祈祷（回复少量生命，获得魂尘）', fn() {
           healPlayer(Math.round(effStats().maxHp * 0.2));
@@ -623,13 +736,20 @@ const EVENTS = [
           R.potions = Math.min(R.potionCap, R.potions + 2); return '药剂化作两瓶普通药水（药水 +2）。';
         } },
       { label: '用一件装备交换金币', fn() {
-          const eq = Object.values(R.equip).flat().filter(Boolean).sort((a, b) => a.price - b.price);
+          const eq = Object.values(R.equip).flat().filter(Boolean);
           if (!eq.length) return '你身上没有可以交换的东西。';
-          const it = eq[0];
-          const g = Math.round(it.price * 0.8);
-          removeEquip(it);
-          addGold(g);
-          return `你卖掉了 <b>${it.name}</b>，换来 ${g} 金币。`;
+          openEventItemPicker({
+            title: '选择要交换的装备', sub: '幽灵商队 · 按估价 80% 换取金币',
+            items: eq,
+            emptyText: '暂无可交换物品',
+            onPick(it) {
+              const g = Math.round(it.price * 0.8);
+              removeEquip(it);
+              addGold(g);
+              finishEventOutcome(`你卖掉了 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>，换来 ${g} 金币。`);
+            },
+          });
+          return null;
         } },
       { label: '目送他们远去', fn() { return '驼铃声始终没有响起，商队消失在地平线下。'; } },
     ]
@@ -720,6 +840,332 @@ const EVENTS = [
         } },
     ]
   },
+  {
+    id: 'bridge', n: '断桥的守夜人', i: '🌉',
+    d: '一位披着破旧斗篷的守夜人守在断桥前。他说桥下藏着会吞人的东西，除非你付出过桥的代价。',
+    choices: [
+      { label: '支付 50 金币过桥（获得魂尘）', fn() {
+          if (R.gold < 50) return '守夜人看了看你空荡的钱袋，侧身让开了半步——桥却在你脚下断裂。';
+          R.gold -= 50;
+          const dust = 16 + R.depth * 3;
+          S.meta.soulDust += dust; S.stats.dustEarned += dust;
+          return `守夜人收起金币，替你照亮了桥面。你在桥心拾起一捧魂尘（+${dust} 魂尘）。`;
+        } },
+      { label: '斩杀桥下的东西（-12% 生命，获得稀有装备）', fn() {
+          const d = Math.round(effStats().maxHp * 0.12);
+          R.hp = Math.max(1, R.hp - d);
+          const it = genItem(R.depth, 'rare');
+          addItem(it);
+          return `你拖出桥下的怪物并将其斩杀（-${d} 生命），从它腹中取出 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>。`;
+        } },
+      { label: '绕路而行（回复 15% 生命）', fn() {
+          const h = Math.round(effStats().maxHp * 0.15);
+          healPlayer(h);
+          return `你沿河岸绕行，顺手采了几株止血草（+${h} 生命）。`;
+        } },
+    ]
+  },
+  {
+    id: 'weepingStatue', n: '哭泣的雕像', i: '🗿',
+    d: '一尊无名的女性雕像跪在路旁，石眼里不断渗出真正的泪水。',
+    choices: [
+      { label: '替她擦去泪水（回复 25% 生命，获得魂尘）', fn() {
+          healPlayer(Math.round(effStats().maxHp * 0.25));
+          const dust = 10 + R.depth * 2;
+          S.meta.soulDust += dust; S.stats.dustEarned += dust;
+          return `泪水落在你手上，化作温暖的光（回复生命，+${dust} 魂尘）。`;
+        } },
+      { label: '凿下她眼中的宝石（获得金币）', fn() {
+          const g = 90 + R.depth * 18;
+          addGold(g);
+          return `雕像停止了哭泣。你带走两颗浑浊的宝石，换来 ${g} 金币。`;
+        } },
+      { label: '陪她坐一会儿（最大生命 +18）', fn() {
+          R.bonusHp += 18; healPlayer(18);
+          return '你什么也没做，只是陪着她。离开时，你感觉自己的心跳更沉稳了（最大生命 +18）。';
+        } },
+    ]
+  },
+  {
+    id: 'courier', n: '深渊邮差', i: '📨',
+    d: '一个背着巨大邮袋的佝偻身影在岔路口打转。他说自己找不到收信人了。',
+    choices: [
+      { label: '护送他找到收信人（获得金币）', fn() {
+          const g = 70 + R.depth * 15;
+          addGold(g);
+          return `收信人早已死去，但邮差仍郑重地把谢礼塞给你（+${g} 金币）。`;
+        } },
+      { label: '抢走邮袋（获得稀有装备与金币）', fn() {
+          const g = 40 + R.depth * 8;
+          addGold(g);
+          const it = genItem(R.depth, 'rare');
+          addItem(it);
+          S.stats.evil = (S.stats.evil || 0) + 1;
+          return `你夺过邮袋，里面除了 ${g} 金币，还有 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>。`;
+        } },
+      { label: '拆开一封信（可能获得技能）', fn() {
+          if (Math.random() < 0.6) {
+            const s = grantRandomSkill();
+            return s ? `信里写着一套失传的战技，你学会了 <b>${s.n}</b>。` : '信纸在你手中化为灰烬，什么也没有留下。';
+          }
+          const d = Math.round(effStats().maxHp * 0.1);
+          R.hp = Math.max(1, R.hp - d);
+          return `信上的诅咒灼伤了你的眼睛（-${d} 生命）。`;
+        } },
+    ]
+  },
+  {
+    id: 'theater', n: '无光剧场', i: '🎭',
+    d: '一座没有观众的剧场仍在演出。舞台上的影子重复着同一场悲剧，幕布后传来掌声。',
+    choices: [
+      { label: '登台替演（暴击率 +6%）', fn() {
+          R.bonusCrit += 6;
+          return '你在台上完成了那记致命一击，影子们为你鼓掌。你记住了那个角度（暴击率 +6%）。';
+        } },
+      { label: '坐在前排看完（回复 30% 生命，获得魂尘）', fn() {
+          healPlayer(Math.round(effStats().maxHp * 0.3));
+          const dust = 8 + R.depth * 2;
+          S.meta.soulDust += dust; S.stats.dustEarned += dust;
+          return `悲剧落幕时，你发现自己泪流满面，伤口却愈合了（+${dust} 魂尘）。`;
+        } },
+      { label: '放火烧掉幕布（获得金币，损失生命）', fn() {
+          const g = 120 + R.depth * 20;
+          addGold(g);
+          const d = Math.round(effStats().maxHp * 0.12);
+          R.hp = Math.max(1, R.hp - d);
+          return `火焰吞没舞台，影子们在火中尖叫（+${g} 金币，-${d} 生命）。`;
+        } },
+    ]
+  },
+  {
+    id: 'boneClass', n: '骸骨课堂', i: '🦴',
+    d: '十几具骸骨整齐地坐在石凳上，讲台上的骷髅仍在讲课，黑板上写着“如何杀死自己”。',
+    choices: [
+      { label: '坐下听课（攻击 +3，防御 +2）', fn() {
+          R.bonusAtk += 3; R.bonusDef += 2;
+          return '你听完了一整节课，学会了如何让刀锋更省力地切开骨头（攻击 +3，防御 +2）。';
+        } },
+      { label: '举手回答问题（可能获得魂尘）', fn() {
+          if (Math.random() < 0.6) {
+            const dust = 20 + R.depth * 4;
+            S.meta.soulDust += dust; S.stats.dustEarned += dust;
+            return `骷髅老师满意地点了点头，把一罐魂尘作为奖励递给你（+${dust} 魂尘）。`;
+          }
+          const d = Math.round(effStats().maxHp * 0.12);
+          R.hp = Math.max(1, R.hp - d);
+          return `你答错了。戒尺落下时，你才明白那也是一根骨头（-${d} 生命）。`;
+        } },
+      { label: '掀翻讲台（获得金币）', fn() {
+          const g = 80 + R.depth * 12;
+          addGold(g);
+          return `骸骨们四散奔逃，石凳下藏着的金币滚了一地（+${g} 金币）。`;
+        } },
+    ]
+  },
+  {
+    id: 'echoWell', n: '回声井', i: '🕳️',
+    d: '一口深不见底的井。你每说一句话，井里都会用你的声音回答，只是慢半拍。',
+    choices: [
+      { label: '对着井口呼喊（可能获得随机技能）', fn() {
+          const s = grantRandomSkill();
+          if (s) return `井底传来一句陌生的咒语，你跟着念了出来：<b>${s.n}</b>。`;
+          const dust = 14 + R.depth * 3;
+          S.meta.soulDust += dust; S.stats.dustEarned += dust;
+          return `你已经学会了一切，回声只好化作魂尘（+${dust} 魂尘）。`;
+        } },
+      { label: '投入 30 金币许愿（暴击率 +6%）', fn() {
+          if (R.gold < 30) return '金币落进井里，连回声都没有。井水似乎在嘲笑你。';
+          R.gold -= 30;
+          R.bonusCrit += 6;
+          return '井底亮起一点光。你忽然看懂了所有事物的裂缝（暴击率 +6%）。';
+        } },
+      { label: '垂下绳子下井（获得精良装备，损失生命）', fn() {
+          const it = genItem(R.depth, 'rare');
+          addItem(it);
+          const d = Math.round(effStats().maxHp * 0.1);
+          R.hp = Math.max(1, R.hp - d);
+          return `井底堆满了旧物，你找到 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>，爬上来时磨破了手（-${d} 生命）。`;
+        } },
+    ]
+  },
+  {
+    id: 'wishMachine', n: '锈蚀的许愿机', i: '🎰',
+    d: '一台锈迹斑斑的机器，投币口上刻着“愿望有价”。它的摇柄还在缓慢转动。',
+    choices: [
+      { label: '投入 30 金币许愿（随机结果）', fn() {
+          if (R.gold < 30) return '机器吞不下空气，摇柄停住了。';
+          R.gold -= 30;
+          if (Math.random() < 0.5) {
+            R.bonusAtk += 2; R.bonusDef += 2; R.bonusHp += 15; R.bonusCrit += 2;
+            healPlayer(15);
+            return '机器吐出一张发光的票据，你的身体被微弱地重塑（攻击/防御/生命/暴击小幅提升）。';
+          }
+          const d = Math.round(effStats().maxHp * 0.14);
+          R.hp = Math.max(1, R.hp - d);
+          return `机器发出刺耳的尖啸并炸开火花（-${d} 生命）。愿望没有实现。`;
+        } },
+      { label: '拆解机器（获得金币）', fn() {
+          const g = 60 + R.depth * 14;
+          addGold(g);
+          return `你拆下齿轮与铜线，卖给路过的东西（+${g} 金币）。`;
+        } },
+      { label: '砸碎它（获得魂尘）', fn() {
+          const dust = 22 + R.depth * 4;
+          S.meta.soulDust += dust; S.stats.dustEarned += dust;
+          return `机器碎裂的瞬间，无数未实现的愿望化作魂尘（+${dust} 魂尘）。`;
+        } },
+    ]
+  },
+  {
+    id: 'thornCell', n: '荆棘囚室', i: '🌿',
+    d: '一间被荆棘封死的石室，里面隐约有东西在动。藤蔓上的刺滴着黑色的汁液。',
+    choices: [
+      { label: '强行破门（-15% 生命，获得史诗装备）', fn() {
+          const d = Math.round(effStats().maxHp * 0.15);
+          R.hp = Math.max(1, R.hp - d);
+          const it = genItem(R.depth, 'epic');
+          addItem(it);
+          return `荆棘划破你的皮肉（-${d} 生命），石室里只有 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>。`;
+        } },
+      { label: '寻找机关（可能获得金币）', fn() {
+          if (Math.random() < 0.65) {
+            const g = 100 + R.depth * 18;
+            addGold(g);
+            return `你按下墙上的暗格，石室后方的金币倾泻而出（+${g} 金币）。`;
+          }
+          const d = Math.round(effStats().maxHp * 0.12);
+          R.hp = Math.max(1, R.hp - d);
+          return `机关触发了毒刺（-${d} 生命）。你狼狈地退了出来。`;
+        } },
+      { label: '转身离开（回复 10% 生命）', fn() {
+          healPlayer(Math.round(effStats().maxHp * 0.1));
+          return '你没有招惹那些荆棘。离开时，呼吸反而顺畅了一些（回复生命）。';
+        } },
+    ]
+  },
+  {
+    id: 'astrologer', n: '倒吊的占星师', i: '🔭',
+    d: '一个占星师被倒吊在穹顶下，星图从他袖口滑落。他倒着看你，说这才是正确的方向。',
+    choices: [
+      { label: '听预言（暴击率 +7%）', fn() {
+          R.bonusCrit += 7;
+          return '他告诉你，你的死星在第七次挥刀时闪烁。你决定让那一次更致命（暴击率 +7%）。';
+        } },
+      { label: '买下他的星图（消耗 60 金币，最大生命 +40）', fn() {
+          if (R.gold < 60) return '占星师摇了摇头：“穷人的星图，只能自己画。”';
+          R.gold -= 60;
+          R.bonusHp += 40; healPlayer(40);
+          return '你把星图铺在胸口，星线慢慢缝进血肉（最大生命 +40）。';
+        } },
+      { label: '割断绳索（获得稀有装备与魂尘）', fn() {
+          const it = genItem(R.depth, 'rare');
+          addItem(it);
+          const dust = 12 + R.depth * 2;
+          S.meta.soulDust += dust; S.stats.dustEarned += dust;
+          return `占星师落地后化作星尘（+${dust} 魂尘），留下一件 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>。`;
+        } },
+    ]
+  },
+  {
+    id: 'hungryFlame', n: '饥饿的祭火', i: '🔥',
+    d: '一团没有柴薪的祭火蜷缩在石台上，火舌不断舔向你的行囊。它在饿。',
+    choices: [
+      { label: '投入 40 金币（攻击 +4）', fn() {
+          if (R.gold < 40) return '祭火嗅了嗅你的空钱袋，失望地缩成一团。';
+          R.gold -= 40;
+          R.bonusAtk += 4;
+          return '金币在火中融成金色的液体，渗进你的手臂（攻击 +4）。';
+        } },
+      { label: '献上血（-12% 生命，暴击率 +7%）', fn() {
+          const d = Math.round(effStats().maxHp * 0.12);
+          R.hp = Math.max(1, R.hp - d);
+          R.bonusCrit += 7;
+          return `祭火舔舐你的伤口（-${d} 生命），你的视线变得锐利（暴击率 +7%）。`;
+        } },
+      { label: '倒入一瓶药水（药水 -1，最大生命 +25）', fn() {
+          if (R.potions <= 0) return '你摇了摇空瓶，祭火打了个哈欠。';
+          R.potions--;
+          R.bonusHp += 25; healPlayer(25);
+          return '药水被火焰吞下，化作暖流反哺你的身体（最大生命 +25）。';
+        } },
+    ]
+  },
+  {
+    id: 'mistInn', n: '迷雾旅店', i: '🏮',
+    d: '雾中亮着一盏灯，旅店的招牌上没有字。老板说，这里的房价取决于你有多累。',
+    choices: [
+      { label: '睡一觉（消耗 20 金币，回复 55% 生命）', fn() {
+          if (R.gold < 20) return '老板看了看你，替你留了一夜门廊——风很大，但你还是睡着了。';
+          R.gold -= 20;
+          healPlayer(Math.round(effStats().maxHp * 0.55));
+          return '你睡得很沉，没有做梦。醒来时伤口已经结痂（回复 55% 生命）。';
+        } },
+      { label: '吃一顿（消耗 40 金币，攻击 +2、防御 +2、生命 +20）', fn() {
+          if (R.gold < 40) return '老板端来一碗热水：“至少这个不要钱。”';
+          R.gold -= 40;
+          R.bonusAtk += 2; R.bonusDef += 2; R.bonusHp += 20; healPlayer(20);
+          return '炖肉里有种说不出的香料（攻击 +2、防御 +2、最大生命 +20）。';
+        } },
+      { label: '向旅人打听消息（获得金币与药水）', fn() {
+          const g = 50 + R.depth * 10;
+          addGold(g);
+          const add = Math.min(1, R.potionCap - R.potions);
+          R.potions += add;
+          return `一个独眼旅人塞给你 ${g} 金币${add ? '和一瓶药水' : ''}，让你别往东边走。`;
+        } },
+    ]
+  },
+  {
+    id: 'twinDoor', n: '双子石门', i: '🚪',
+    d: '两扇一模一样的石门并排而立。左边的门缝里渗出冷气，右边的门缝里渗出金光。',
+    choices: [
+      { label: '推开左门（获得史诗装备，损失生命）', fn() {
+          const it = genItem(R.depth, 'epic');
+          addItem(it);
+          const d = Math.round(effStats().maxHp * 0.15);
+          R.hp = Math.max(1, R.hp - d);
+          return `寒气割开你的皮肤（-${d} 生命），门后只有 <b style="color:${RARITY[it.rarity].color}">${it.name}</b>。`;
+        } },
+      { label: '推开右门（获得金币，暴击率 +5%）', fn() {
+          const g = 180 + R.depth * 20;
+          addGold(g);
+          R.bonusCrit += 5;
+          return `金光刺得你睁不开眼（+${g} 金币）。等视力恢复，你发现自己更擅长寻找要害了（暴击率 +5%）。`;
+        } },
+      { label: '把两扇门都砸开（获得魂尘，损失生命）', fn() {
+          const dust = 18 + R.depth * 3;
+          S.meta.soulDust += dust; S.stats.dustEarned += dust;
+          const d = Math.round(effStats().maxHp * 0.08);
+          R.hp = Math.max(1, R.hp - d);
+          return `门后什么也没有，只有一地碎石与魂尘（+${dust} 魂尘，-${d} 生命）。`;
+        } },
+    ]
+  },
+  {
+    id: 'mushroomGarden', n: '菌菇苗圃', i: '🍄',
+    d: '一片发光的菌菇在黑暗中缓慢呼吸。空气里有甜腻的味道，也有腐败的味道。',
+    choices: [
+      { label: '摘一朵吃下（随机回复或中毒）', fn() {
+          if (Math.random() < 0.6) {
+            healPlayer(Math.round(effStats().maxHp * 0.35));
+            return '菌菇在嘴里化开，暖流涌遍全身（回复 35% 生命）。';
+          }
+          const d = Math.round(effStats().maxHp * 0.1);
+          R.hp = Math.max(1, R.hp - d);
+          return `你的视野开始旋转，喉咙像被火烧（-${d} 生命）。`;
+        } },
+      { label: '采集一些带走（药水 +2）', fn() {
+          const add = Math.min(2, R.potionCap - R.potions);
+          R.potions += add;
+          return add > 0 ? `你小心地采下菌菇，装进空瓶（药水 +${add}）。` : '你的药水袋已经满了。';
+        } },
+      { label: '连根烧毁（获得金币）', fn() {
+          const g = 80 + R.depth * 15;
+          addGold(g);
+          return `火焰顺着菌丝蔓延，烧出一窝藏在土里的金币（+${g} 金币）。`;
+        } },
+    ]
+  },
 ];
 
 /* ---------------- 成就 ---------------- */
@@ -733,7 +1179,8 @@ const ACHIEVEMENTS = [
   { id: 'kill50',     n: '击溃者', d: '累计击杀 50 个敌人', i: '⚔️', r: 18, c: s => s.stats.kills >= 50 },
   { id: 'kill200',    n: '屠戮者', d: '累计击杀 200 个敌人', i: '💀', r: 35, c: s => s.stats.kills >= 200 },
   { id: 'kill500',    n: '深渊收割者', d: '累计击杀 500 个敌人', i: '☠️', r: 70, c: s => s.stats.kills >= 500 },
-  { id: 'rich',       n: '富甲一方', d: '单局持有 800 金币', i: '💰', r: 25, c: s => s.stats.maxGold >= 800 },
+  { id: 'rich',       n: '富甲一方', d: '单局持有 800 金币并通过游戏', i: '💰', r: 25, c: s => (s.stats.maxGoldRun || 0) >= 800 },
+  { id: 'rich2000',   n: '富可敌国', d: '单局持有 2000 金币并通过游戏', i: '🏦', r: 60, c: s => (s.stats.maxGoldRun || 0) >= 2000 },
   { id: 'collector',  n: '收藏家', d: '累计购买 30 件商品', i: '🛒', r: 25, c: s => s.stats.buys >= 30 },
   { id: 'legendary',  n: '神话装备', d: '装备一件传说品质物品', i: '🌟', r: 30, c: s => s.stats.legendEquipped >= 1 },
   { id: 'fullset',    n: '全身武装', d: '同时装备三件装备', i: '🎽', r: 15, c: s => s.stats.fullSet >= 1 },
@@ -752,24 +1199,23 @@ const ACHIEVEMENTS = [
   { id: 'elite20',    n: '精英猎手', d: '累计击杀 20 个精英敌人', i: '🔱', r: 30, c: s => s.stats.eliteKills >= 20 },
   { id: 'scavenger30', n: '拾荒之王', d: '累计拾取 30 件装备', i: '🎁', r: 25, c: s => s.stats.itemsFound >= 30 },
   /* —— 深渊叠加 / 深渊叠加 · 极限 —— */
-  { id: 'depth5',     n: '五层尽处', d: '通关第 5 层', i: '🕯️', r: 30, c: s => s.stats.maxDepth >= 5 },
-  { id: 'depth10',    n: '叠加之底', d: '抵达第 10 层', i: '🌋', r: 60, c: s => s.stats.maxDepth >= 10 },
-  { id: 'depth14',    n: '触界者', d: '抵达第 14 层', i: '🔥', r: 70, c: s => s.stats.maxDepth >= 14 },
-  { id: 'depth20',    n: '极限之地', d: '抵达第 15 层', i: '🌑', r: 100, c: s => s.stats.maxDepth >= 15 },
-  { id: 'extreme_clear', n: '深渊征服者', d: '完整通过一次深渊叠加 · 极限（15 层）', i: '💥', r: 150, c: s => s.stats.extremeWins >= 1 },
+  { id: 'depth5',     n: '五层尽处', d: '通过第 5 层', i: '🕯️', r: 30, c: s => (s.stats.maxWinDepth || 0) >= 5 },
+  { id: 'depth10',    n: '叠加之底', d: '通过第 10 层', i: '🌋', r: 60, c: s => (s.stats.maxWinDepth || 0) >= 10 },
+  { id: 'depth20',    n: '极限之地', d: '通过第 15 层', i: '🌑', r: 100, c: s => (s.stats.maxWinDepth || 0) >= 15 },
   { id: 'xelite10',   n: '叠加猎人', d: '在深渊叠加中击杀 10 个精英敌人', i: '🔺', r: 50, c: s => s.stats.extremeEliteKills >= 10 },
-  { id: 'treaty10',   n: '条约收集者', d: '单局选取 10 条深渊条约', i: '📜', r: 70, c: s => (s.stats.maxTreatiesRun || 0) >= 10 },
-  { id: 'treaty30',   n: '与深渊同谋', d: '单局条约总分达到 30 分', i: '🖋️', r: 120, c: s => (s.stats.maxTreatyScore || 0) >= 30 },
   { id: 'xboss1',     n: '裂痕终结', d: '击败深渊裂痕 · 卡俄斯', i: '🌀', r: 90, c: s => s.stats.bosses.xboss1 >= 1 },
   { id: 'xboss2',     n: '无光终焉', d: '击败无光之祖 · 乌尔', i: '🌚', r: 110, c: s => s.stats.bosses.xboss2 >= 1 },
   { id: 'xboss3',     n: '极限主宰', d: '击败极限之主 · 绝', i: '👑', r: 160, c: s => s.stats.bosses.xboss3 >= 1 },
   { id: 'xboss4',     n: '深渊主宰', d: '击败深渊主宰 · 阒', i: '🌑', r: 220, c: s => s.stats.bosses.xboss4 >= 1 },
   /* —— 数值与轮回极限 —— */
+  { id: 'ng6',         n: '轮回六重', d: '通关轮回难度 6', i: '6️⃣', r: 60,  c: s => (s.stats.maxNgClear || 0) >= 6 },
   { id: 'ng10',        n: '轮回十重', d: '通关轮回难度 10', i: '🔟', r: 80,  c: s => (s.stats.maxNgClear || 0) >= 10 },
   { id: 'ng15',        n: '轮回终焉', d: '通关轮回难度 15（最高）', i: '♾️', r: 160, c: s => (s.stats.maxNgClear || 0) >= 15 },
   { id: 'items15',     n: '行囊初满', d: '单局持有 15 件装备并通关', i: '🎒', r: 50,  c: s => (s.stats.maxItemsRun || 0) >= 15 },
   { id: 'items30',     n: '装备收藏家', d: '单局持有 30 件装备并通关', i: '📦', r: 80,  c: s => (s.stats.maxItemsRun || 0) >= 30 },
   { id: 'items50',     n: '囤积狂魔', d: '单局持有 50 件装备并通关', i: '🗃️', r: 120, c: s => (s.stats.maxItemsRun || 0) >= 50 },
+  { id: 'items100',    n: '军械库', d: '单局持有 100 件装备并通关', i: '🏗️', r: 180, c: s => (s.stats.maxItemsRun || 0) >= 100 },
+  { id: 'items200',    n: '万宝阁', d: '单局持有 200 件装备并通关', i: '🏛️', r: 260, c: s => (s.stats.maxItemsRun || 0) >= 200 },
   { id: 'atk500',      n: '千钧之力', d: '单局攻击力 ≥ 500 并通关', i: '💪', r: 50,  c: s => (s.stats.maxAtkRun || 0) >= 500 },
   { id: 'atk1000',     n: '毁灭之力', d: '单局攻击力 ≥ 1000 并通关', i: '⚡', r: 90,  c: s => (s.stats.maxAtkRun || 0) >= 1000 },
   { id: 'def200',      n: '铜墙铁壁', d: '单局防御力 ≥ 200 并通关', i: '🛡️', r: 50,  c: s => (s.stats.maxDefRun || 0) >= 200 },
@@ -780,20 +1226,179 @@ const ACHIEVEMENTS = [
   { id: 'hp1000',      n: '生命强化', d: '单局生命值 ≥ 1000 并通关', i: '❤️', r: 50,  c: s => (s.stats.maxHpRun || 0) >= 1000 },
   { id: 'hp2000',      n: '生命不息', d: '单局生命值 ≥ 2000 并通关', i: '💖', r: 90,  c: s => (s.stats.maxHpRun || 0) >= 2000 },
   { id: 'hp3000',      n: '不朽之躯', d: '单局生命值 ≥ 3000 并通关', i: '💗', r: 130, c: s => (s.stats.maxHpRun || 0) >= 3000 },
+  /* —— 单次爆发伤害 —— */
+  { id: 'hit500',      n: '重击者', d: '单次造成 500 点伤害', i: '🔨', r: 45,  c: s => (s.stats.bestHit || 0) >= 500 },
+  { id: 'hit1000',     n: '破军者', d: '单次造成 1000 点伤害', i: '💢', r: 70,  c: s => (s.stats.bestHit || 0) >= 1000 },
+  { id: 'hit5000',     n: '崩山者', d: '单次造成 5000 点伤害', i: '🌄', r: 120, c: s => (s.stats.bestHit || 0) >= 5000 },
+  { id: 'hit10000',    n: '灭城者', d: '单次造成 10000 点伤害', i: '☄️', r: 180, c: s => (s.stats.bestHit || 0) >= 10000 },
+  { id: 'hit20000',    n: '弑神者', d: '单次造成 20000 点伤害', i: '🌌', r: 260, c: s => (s.stats.bestHit || 0) >= 20000 },
+  /* —— 条约 · 单条条约（签署并通过 15 层） —— */
+  { id: 'treaty_hp1',   n: '血肉契约',   d: '签署条约「生命增幅」并通过 15 层',   i: '❤️', r: 60,  c: s => ((s.stats.treatyClear || {})['t_hp1'] || 0) >= 1 },
+  { id: 'treaty_atk1',  n: '锋刃契约',   d: '签署条约「攻击增幅」并通过 15 层',   i: '⚔️', r: 60,  c: s => ((s.stats.treatyClear || {})['t_atk1'] || 0) >= 1 },
+  { id: 'treaty_def1',  n: '坚壁契约',   d: '签署条约「铁壁」并通过 15 层',       i: '🏰', r: 60,  c: s => ((s.stats.treatyClear || {})['t_def1'] || 0) >= 1 },
+  { id: 'treaty_gold1', n: '贪欲契约',   d: '签署条约「贪婪税」并通过 15 层',     i: '💵', r: 60,  c: s => ((s.stats.treatyClear || {})['t_gold1'] || 0) >= 1 },
+  { id: 'treaty_pdef1', n: '侵蚀契约',   d: '签署条约「虚弱侵蚀」并通过 15 层',   i: '🩹', r: 60,  c: s => ((s.stats.treatyClear || {})['t_pdef1'] || 0) >= 1 },
+  { id: 'treaty_patk1', n: '钝锋契约',   d: '签署条约「钝刃」并通过 15 层',       i: '🗡️', r: 60,  c: s => ((s.stats.treatyClear || {})['t_patk1'] || 0) >= 1 },
+  { id: 'treaty_pcrt1', n: '迟滞契约',   d: '签署条约「迟缓」并通过 15 层',       i: '🐌', r: 60,  c: s => ((s.stats.treatyClear || {})['t_pcrt1'] || 0) >= 1 },
+  { id: 'treaty_shop1', n: '涨价契约',   d: '签署条约「物价微涨」并通过 15 层',   i: '🏷️', r: 60,  c: s => ((s.stats.treatyClear || {})['t_shop1'] || 0) >= 1 },
+  { id: 'treaty_hp2',   n: '血肉契约 II', d: '签署条约「生命增幅 II」并通过 15 层', i: '💗', r: 80, c: s => ((s.stats.treatyClear || {})['t_hp2'] || 0) >= 1 },
+  { id: 'treaty_atk2',  n: '锋刃契约 II', d: '签署条约「攻击增幅 II」并通过 15 层', i: '🔱', r: 80, c: s => ((s.stats.treatyClear || {})['t_atk2'] || 0) >= 1 },
+  { id: 'treaty_def2',  n: '硬壳契约',   d: '签署条约「硬壳」并通过 15 层',       i: '🐢', r: 80,  c: s => ((s.stats.treatyClear || {})['t_def2'] || 0) >= 1 },
+  { id: 'treaty_pcd2',  n: '心压契约',   d: '签署条约「精神压迫」并通过 15 层',   i: '🧠', r: 80,  c: s => ((s.stats.treatyClear || {})['t_pcd2'] || 0) >= 1 },
+  { id: 'treaty_pdef2', n: '疲惫契约',   d: '签署条约「疲惫之躯」并通过 15 层',   i: '😵', r: 80,  c: s => ((s.stats.treatyClear || {})['t_pdef2'] || 0) >= 1 },
+  { id: 'treaty_gold2', n: '贫瘠契约',   d: '签署条约「贫瘠」并通过 15 层',       i: '💲', r: 80,  c: s => ((s.stats.treatyClear || {})['t_gold2'] || 0) >= 1 },
+  { id: 'treaty_shop2', n: '通胀契约',   d: '签署条约「通货膨胀」并通过 15 层',   i: '💸', r: 100, c: s => ((s.stats.treatyClear || {})['t_shop2'] || 0) >= 1 },
+  { id: 'treaty_patk3', n: '萎缩契约',   d: '签署条约「肌肉萎缩」并通过 15 层',   i: '💪', r: 100, c: s => ((s.stats.treatyClear || {})['t_patk3'] || 0) >= 1 },
+  { id: 'treaty_atk3',  n: '回响契约',   d: '签署条约「深渊回响」并通过 15 层',   i: '🔊', r: 100, c: s => ((s.stats.treatyClear || {})['t_atk3'] || 0) >= 1 },
+  { id: 'treaty_php3',  n: '血价契约',   d: '签署条约「血之代价」并通过 15 层',   i: '🩸', r: 100, c: s => ((s.stats.treatyClear || {})['t_php3'] || 0) >= 1 },
+  { id: 'treaty_patk4', n: '至萎契约',   d: '签署条约「肌肉萎缩 · 极」并通过 15 层', i: '💀', r: 120, c: s => ((s.stats.treatyClear || {})['t_patk4'] || 0) >= 1 },
+  { id: 'treaty_hp4',   n: '至血契约',   d: '签署条约「生命增幅 · 极」并通过 15 层', i: '💓', r: 120, c: s => ((s.stats.treatyClear || {})['t_hp4'] || 0) >= 1 },
+  { id: 'treaty_pcd5',  n: '衰竭契约',   d: '签署条约「精神衰竭」并通过 15 层',   i: '💫', r: 150, c: s => ((s.stats.treatyClear || {})['t_pcd5'] || 0) >= 1 },
+  { id: 'treaty_atk5',  n: '凝视契约',   d: '签署条约「深渊凝视」并通过 15 层',   i: '👁️', r: 150, c: s => ((s.stats.treatyClear || {})['t_atk5'] || 0) >= 1 },
+  { id: 'treaty_shop5', n: '万物通胀',   d: '签署条约「万物通胀」并通过 15 层',   i: '📈', r: 150, c: s => ((s.stats.treatyClear || {})['t_shop5'] || 0) >= 1 },
+  { id: 'treaty_pall5', n: '枯竭契约',   d: '签署条约「灵魂枯竭」并通过 15 层',   i: '🥀', r: 150, c: s => ((s.stats.treatyClear || {})['t_pall5'] || 0) >= 1 },
+  /* —— 条约 · 单局条约总分（通过 15 层） —— */
+  { id: 'treaty_score10', n: '契约学徒', d: '单局累计签署条约达 10 分并通过 15 层', i: '📜', r: 70,  c: s => (s.stats.maxTreatyScoreClear || 0) >= 10 },
+  { id: 'treaty_score30', n: '契约行者', d: '单局累计签署条约达 30 分并通过 15 层', i: '🖋️', r: 120, c: s => (s.stats.maxTreatyScoreClear || 0) >= 30 },
+  { id: 'treaty_score45', n: '契约大师', d: '单局累计签署条约达 45 分并通过 15 层', i: '📖', r: 180, c: s => (s.stats.maxTreatyScoreClear || 0) >= 45 },
+  { id: 'treaty_score60', n: '深渊同谋', d: '单局累计签署条约达 60 分并通过 15 层', i: '🕋', r: 260, c: s => (s.stats.maxTreatyScoreClear || 0) >= 60 },
 ];
 
-/* ---------------- 永久升级 ---------------- */
-const UPGRADES = [
-  { id: 'hp',     n: '坚韧之魂', d: '最大生命 +9',       max: 25, i: '❤️', cost: l => 8 + l * 6 },
-  { id: 'atk',    n: '力量之魂', d: '攻击 +1.5',         max: 25, i: '⚔️', cost: l => 10 + l * 8 },
-  { id: 'def',    n: '守护之魂', d: '防御 +1',           max: 25, i: '🛡️', cost: l => 10 + l * 8 },
-  { id: 'crit',   n: '敏锐之魂', d: '暴击率 +3%',        max: 12, i: '🎯', cost: l => 16 + l * 12 },
-  { id: 'gold',   n: '财富之魂', d: '金币获取 +5%',      max: 10, i: '💰', cost: l => 14 + l * 10 },
-  { id: 'dust',   n: '共鸣之魂', d: '魂尘获取 +6%',      max: 10, i: '✨', cost: l => 18 + l * 14 },
-  { id: 'potion', n: '行囊扩容', d: '药水携带上限 +1',   max: 4,  i: '🧪', cost: l => 30 + l * 25 },
-  { id: 'memory', n: '远古记忆', d: '开局多一个随机技能', max: 3,  i: '📜', cost: l => 45 + l * 45 },
-  { id: 'revive', n: '不灭之魂', d: '每局可复活一次',     max: 1,  i: '🕯️', cost: l => 150 },
+/* ---------------- 成就分类（侧边栏） ---------------- */
+const ACH_CATS = [
+  { id: 'all',       n: '全部', i: '🏆' },
+  { id: 'clear',     n: '清剿', i: '⚔️' },
+  { id: 'collect',   n: '收集', i: '🎁' },
+  { id: 'accum',     n: '累计', i: '📈' },
+  { id: 'treaty',    n: '条约', i: '📜' },
+  { id: 'challenge', n: '挑战', i: '🔥' },
 ];
+const ACH_CAT_MAP = {
+  /* 清剿：首领 */
+  boss1: 'clear', boss2: 'clear', boss3: 'clear', boss4: 'clear', allboss: 'clear',
+  xboss1: 'clear', xboss2: 'clear', xboss3: 'clear', xboss4: 'clear',
+  flawless: 'challenge',
+  /* 收集：装备 / 金币 / 魂尘 / 商品 */
+  rich: 'collect', rich2000: 'collect', collector: 'collect', legendary: 'collect',
+  fullset: 'collect', scavenger30: 'collect', dust500: 'collect',
+  items15: 'collect', items30: 'collect', items50: 'collect',
+  items100: 'collect', items200: 'collect',
+  /* 累计：击杀累计 / 长期累计行为 / 单次伤害 */
+  kill50: 'accum', kill200: 'accum', kill500: 'accum', elite20: 'accum', xelite10: 'accum',
+  first_run: 'accum', crit100: 'accum', potions: 'accum', skills: 'accum',
+  healer: 'accum', explorer: 'accum', death10: 'accum', bigHit: 'accum',
+  hit500: 'accum', hit1000: 'accum', hit5000: 'accum', hit10000: 'accum', hit20000: 'accum',
+  /* 条约：单条条约 / 单局条约总分 */
+  treaty_hp1: 'treaty', treaty_atk1: 'treaty', treaty_def1: 'treaty', treaty_gold1: 'treaty',
+  treaty_pdef1: 'treaty', treaty_patk1: 'treaty', treaty_pcrt1: 'treaty', treaty_shop1: 'treaty',
+  treaty_hp2: 'treaty', treaty_atk2: 'treaty', treaty_def2: 'treaty', treaty_pcd2: 'treaty',
+  treaty_pdef2: 'treaty', treaty_gold2: 'treaty', treaty_shop2: 'treaty', treaty_patk3: 'treaty',
+  treaty_atk3: 'treaty', treaty_php3: 'treaty', treaty_patk4: 'treaty', treaty_hp4: 'treaty',
+  treaty_pcd5: 'treaty', treaty_atk5: 'treaty', treaty_shop5: 'treaty', treaty_pall5: 'treaty',
+  treaty_score10: 'treaty', treaty_score30: 'treaty', treaty_score45: 'treaty', treaty_score60: 'treaty',
+  /* 挑战：通关 / 层数 / 轮回 / 极限数值 */
+  win: 'challenge', depth5: 'challenge', depth10: 'challenge', depth20: 'challenge',
+  ng1: 'challenge', ng6: 'challenge', ng10: 'challenge', ng15: 'challenge', nopotion: 'challenge',
+  atk500: 'challenge', atk1000: 'challenge', def200: 'challenge', def500: 'challenge',
+  critdmg200: 'challenge', critdmg500: 'challenge', critdmg1000: 'challenge',
+  hp1000: 'challenge', hp2000: 'challenge', hp3000: 'challenge',
+};
+function achCatOf(id) { return ACH_CAT_MAP[id] || 'accum'; }
+function setAchCat(c) {
+  achCat = ACH_CATS.some(x => x.id === c) ? c : 'all';
+  sfx('click');
+  renderHub();
+}
+
+/* ---------------- 永久升级（科技树分层） ---------------- */
+// tier: 1=基础三围, 2=次级属性/资源, 3=功能强化, 4=终极能力
+// 每层全部满级后才会解锁下一层
+const UPGRADES = [
+  { id: 'hp',     n: '坚韧之魂', d: '最大生命 +9',       max: 25, i: '❤️', cost: l => 8 + l * 6,   tier: 1 },
+  { id: 'atk',    n: '力量之魂', d: '攻击 +1.5',         max: 25, i: '⚔️', cost: l => 10 + l * 8,  tier: 1 },
+  { id: 'def',    n: '守护之魂', d: '防御 +1',           max: 25, i: '🛡️', cost: l => 10 + l * 8,  tier: 1 },
+  { id: 'crit',   n: '敏锐之魂', d: '暴击率 +3%',        max: 12, i: '🎯', cost: l => 16 + l * 12, tier: 2 },
+  { id: 'gold',   n: '财富之魂', d: '金币获取 +5%',      max: 10, i: '💰', cost: l => 14 + l * 10, tier: 2 },
+  { id: 'dust',   n: '共鸣之魂', d: '魂尘获取 +6%',      max: 10, i: '✨', cost: l => 18 + l * 14, tier: 2 },
+  { id: 'potion', n: '行囊扩容', d: '药水携带上限 +1',   max: 4,  i: '🧪', cost: l => 30 + l * 25, tier: 3 },
+  { id: 'memory', n: '远古记忆', d: '开局多一个随机技能', max: 3,  i: '📜', cost: l => 45 + l * 45, tier: 3 },
+  { id: 'revive', n: '不灭之魂', d: '每局可复活一次',     max: 1,  i: '🕯️', cost: l => 150,        tier: 4 },
+];
+const UPGRADE_TIERS = [1, 2, 3, 4];
+function tierMaxed(tier) {
+  const u = S.meta.upgrades || {};
+  return UPGRADES.filter(up => up.tier === tier).every(up => (u[up.id] || 0) >= up.max);
+}
+function tierUnlocked(tier) {
+  if (tier <= 1) return true;
+  return tierMaxed(tier - 1);
+}
+
+/* ---------------- 周期挑战 ---------------- */
+// 轮换时更新周期 id 与挑战列表；新周期会自动获得一套全新的奖励领取记录。
+const CHALLENGE_NG = STACK_UNLOCK_NG;
+const CHALLENGE_PASS_XP = 10;
+const CHALLENGE_CYCLE = {
+  id: 'cycle_1', name: '第一期', rotation: '不定期轮换',
+  startsAt: null, endsAt: null,
+};
+const CHALLENGES = [
+  {
+    id: 'vital_lock', n: '命铠试炼', i: '🛡️', reward: CHALLENGE_PASS_XP,
+    short: '生命上限固定 200 · 防御固定 50',
+    desc: '以轮回难度 X 为基础，在生命值上限固定为 200、防御力固定为 50 的情况下通过第十层。攻击力、暴击率和暴伤等无限制。',
+    note: '生命值与防御力不可通过购买物品或其他手段提升；「深渊统治者」与魂尘强化中仅对应的生命、防御增益失效，其他增益不受影响。',
+    fixed: { maxHp: 200, def: 50 }, restrictedBoons: ['hp', 'def'],
+  },
+  {
+    id: 'blade_lock', n: '锋刃封印', i: '⚔️', reward: CHALLENGE_PASS_XP,
+    short: '攻击固定 300 · 暴击率固定 50%',
+    desc: '以轮回难度 X 为基础，在攻击力固定为 300、暴击率固定为 50% 的情况下通过第十层。生命值、防御力和暴伤等无限制。',
+    note: '攻击力与暴击率不可通过购买物品或其他手段提升；「深渊统治者」与魂尘强化中仅对应的攻击、暴击增益失效，其他增益不受影响。',
+    fixed: { atk: 300, crit: 50 }, restrictedBoons: ['atk', 'crit'],
+  },
+  {
+    id: 'inflation', n: '通胀深渊', i: '💰', reward: CHALLENGE_PASS_XP,
+    short: '金币获取加成固定 20% · 物价逐层 ×1',
+    desc: '以轮回难度 X 为基础，常规金币获取加成固定至 20%，并且每一层深渊商店中所有物品的售价逐层加倍（第 1 层 ×1、第 2 层 ×2，以此类推），通过第十层。',
+    note: '金币获取加成不可通过购买物品或其他手段提升；魂尘强化的金币获取增益失效，其余「深渊统治者」与魂尘强化增益不受影响。',
+    fixed: { goldFind: 20 }, restrictedBoons: [],
+  },
+];
+function challengeById(id) { return CHALLENGES.find(c => c.id === id) || null; }
+function currentChallenge(r = R) { return r && r.challengeId ? challengeById(r.challengeId) : null; }
+function challengesUnlocked() { return (S.meta.ngPlus || 0) >= STACK_UNLOCK_NG; }
+function challengeStatLocked(key) {
+  const ch = currentChallenge();
+  return !!(ch && ch.fixed && ch.fixed[key] !== undefined);
+}
+function challengeShopPriceMul() {
+  const ch = currentChallenge();
+  return ch && ch.id === 'inflation' ? Math.max(1, R.depth || 1) : 1;
+}
+
+// 奖励按启动器账号记录，避免切换游戏存档位后重复领取同一周期奖励。
+function challengeClaimStorageKey() {
+  let cur = {};
+  try { cur = JSON.parse(localStorage.getItem('currentUser') || '{}'); } catch (e) {}
+  return 'pre_abyss_challenge_claims_v1_' + (cur.username || 'anonymous');
+}
+function challengeClaimData() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(challengeClaimStorageKey()) || 'null'); } catch (e) {}
+  if (!data || data.cycle !== CHALLENGE_CYCLE.id || !data.claimed || typeof data.claimed !== 'object') {
+    data = { cycle: CHALLENGE_CYCLE.id, claimed: {} };
+  }
+  return data;
+}
+function challengeRewardClaimed(id) { return !!challengeClaimData().claimed[id]; }
+function markChallengeRewardClaimed(id) {
+  const data = challengeClaimData();
+  if (data.claimed[id]) return false;
+  data.claimed[id] = Date.now();
+  try { localStorage.setItem(challengeClaimStorageKey(), JSON.stringify(data)); return true; }
+  catch (e) { return false; }
+}
 
 /* ---------------- 开局增益（全部魂尘强化满级后解锁） ---------------- */
 const BOON_SKILL_MAX = 3;   // 最多选择 3 个技能
@@ -852,6 +1457,30 @@ function ngInfo(lv) {
   return { lv, name: NG_NAMES[lv] || `轮回 ${lv}`, effects, hp, atk, score, dust };
 }
 
+/* 玩家所选轮回难度：单独持久化，不再每局重新选择 */
+function currentNgSelect() {
+  const max = Math.min(S.meta.ngPlus || 0, MAX_NG);
+  const v = (S.meta.ngSelect == null) ? max : (S.meta.ngSelect | 0);
+  return clamp(v, 0, max);
+}
+function setNgSelect(lv) {
+  const max = Math.min(S.meta.ngPlus || 0, MAX_NG);
+  S.meta.ngSelect = clamp(lv | 0, 0, max);
+  saveGame();
+  sfx('click');
+  renderHub();
+  toast(`轮回难度已设置为「${ngInfo(S.meta.ngSelect).name}」`, '🔄', 'success');
+}
+function toggleNgMenu(e) {
+  if (e) e.stopPropagation();
+  const m = $('#ng-menu');
+  if (m) m.classList.toggle('on');
+}
+function closeNgMenu() {
+  const m = $('#ng-menu');
+  if (m) m.classList.remove('on');
+}
+
 /* ---------------- 元成就（深渊统治者） ---------------- */
 const META_ACHIEVEMENTS = [
   {
@@ -874,14 +1503,16 @@ let S = null;   // 全局档案
 let R = null;   // 当前局
 let B = null;   // 当前战斗
 let hubTab = 'sanctum';
+let achCat = 'all';
 
 /* ---------------- 档案 ---------------- */
 function defaultState() {
   return {
     meta: {
-      soulDust: 0, ngPlus: 0,
+      soulDust: 0, ngPlus: 0, ngSelect: 0,
       upgrades: { hp: 0, atk: 0, def: 0, crit: 0, gold: 0, dust: 0, potion: 0, memory: 0, revive: 0 },
       extreme: false, passWeekly: null, stackEnabled: true,
+      rulerBuffOn: true,
     },
     stats: {
       runs: 0, wins: 0, deaths: 0, kills: 0, eliteKills: 0,
@@ -892,6 +1523,7 @@ function defaultState() {
       damageDealt: 0, battles: 0, extremeWins: 0, extremeEliteKills: 0,
       maxTreatiesRun: 0, maxTreatyScore: 0,
       maxNgClear: 0, maxItemsRun: 0, maxAtkRun: 0, maxDefRun: 0, maxCritDmgRun: 0, maxHpRun: 0,
+      maxGoldRun: 0, maxWinDepth: 0, maxTreatyScoreClear: 0, treatyClear: {},
     },
     ach: {},
     codex: {},
@@ -900,28 +1532,76 @@ function defaultState() {
   };
 }
 
+function normalizeState(d) {
+  const base = defaultState();
+  d = d || {};
+  // 深合并，避免版本升级缺字段
+  const merged = Object.assign(base, d);
+  merged.meta = Object.assign({}, base.meta, d.meta || {});
+  merged.meta.upgrades = Object.assign({}, base.meta.upgrades, (d.meta && d.meta.upgrades) || {});
+  merged.stats = Object.assign({}, base.stats, d.stats || {});
+  merged.stats.bosses = Object.assign({}, base.stats.bosses, (d.stats && d.stats.bosses) || {});
+  merged.stats.treatyClear = Object.assign({}, base.stats.treatyClear, (d.stats && d.stats.treatyClear) || {});
+  merged.settings = Object.assign({}, base.settings, d.settings || {});
+  merged.ach = d.ach || {};
+  // 成就体系扩充后：若新增成就尚未达成，深渊统治者回退为未解锁（不影响已获得魂尘）
+  if (merged.ach['abyss_ruler'] && !ACHIEVEMENTS.every(a => merged.ach[a.id])) {
+    delete merged.ach['abyss_ruler'];
+  }
+  merged.codex = d.codex || {};
+  merged.meta.ngPlus = Math.min(MAX_NG, merged.meta.ngPlus || 0);
+  // 旧存档没有单独保存所选难度时，默认沿用已解锁的最高难度
+  if (!d.meta || d.meta.ngSelect == null) merged.meta.ngSelect = merged.meta.ngPlus;
+  merged.meta.ngSelect = Math.max(0, Math.min(merged.meta.ngPlus, merged.meta.ngSelect | 0));
+  return merged;
+}
+
 function loadGame() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return defaultState();
     const d = JSON.parse(raw);
-    const base = defaultState();
-    // 深合并，避免版本升级缺字段
-    const merged = Object.assign(base, d);
-    merged.meta = Object.assign(base.meta, d.meta || {});
-    merged.meta.upgrades = Object.assign(base.meta.upgrades, (d.meta && d.meta.upgrades) || {});
-    merged.stats = Object.assign(base.stats, d.stats || {});
-    merged.stats.bosses = Object.assign(base.stats.bosses, (d.stats && d.stats.bosses) || {});
-    merged.settings = Object.assign(base.settings, d.settings || {});
-    merged.ach = d.ach || {};
-    merged.codex = d.codex || {};
-    merged.meta.ngPlus = Math.min(MAX_NG, merged.meta.ngPlus || 0);
-    return merged;
+    const hadRuler = !!(d.ach && d.ach['abyss_ruler']);
+    const st = normalizeState(d);
+    // 成就体系扩充后元成就已回退：立即回写，保证启动器同步显示未解锁
+    if (hadRuler && !st.ach['abyss_ruler']) {
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(st)); } catch (e) {}
+    }
+    return st;
   } catch (e) { console.warn('存档读取失败', e); return defaultState(); }
+}
+
+/* ---------------- 多存档位 ---------------- */
+function loadSlots() {
+  let raw = [];
+  try { raw = JSON.parse(localStorage.getItem(SLOTS_KEY) || '[]') || []; } catch (e) { raw = []; }
+  const out = [];
+  for (let i = 0; i < SAVE_SLOT_COUNT; i++) out.push(raw[i] || null);
+  return out;
+}
+function persistSlots(arr) {
+  try { localStorage.setItem(SLOTS_KEY, JSON.stringify(arr)); } catch (e) { console.warn('存档位写入失败', e); }
+}
+function snapshotState() { return { ts: Date.now(), data: JSON.parse(JSON.stringify(S)) }; }
+function syncActiveSlot() {
+  if (activeSlot === null) return;
+  const arr = loadSlots();
+  if (!arr[activeSlot]) return;
+  arr[activeSlot].data = JSON.parse(JSON.stringify(S));
+  arr[activeSlot].ts = Date.now();
+  persistSlots(arr);
+}
+function setActiveSlot(idx) {
+  activeSlot = idx;
+  try {
+    if (idx === null) localStorage.removeItem(ACTIVE_SLOT_KEY);
+    else localStorage.setItem(ACTIVE_SLOT_KEY, String(idx));
+  } catch (e) {}
 }
 
 function saveGame() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { console.warn('存档失败', e); }
+  syncActiveSlot();
   syncLauncherData();
 }
 
@@ -1095,8 +1775,17 @@ function sfx(type) {
 }
 
 /* ---------------- 属性 ---------------- */
-function hasRulerBuff() { return !!(S && S.ach && S.ach['abyss_ruler']); }
+function rulerUnlocked() { return !!(S && S.ach && S.ach['abyss_ruler']); }
+// 总成就开关关闭时不提供全局 buff，但不影响成就解锁进度
+function hasRulerBuff() { return rulerUnlocked() && S.meta.rulerBuffOn !== false; }
 function rulerBuff() { return hasRulerBuff() ? META_ACHIEVEMENTS[0].buff : null; }
+function rulerTagHtml() {
+  if (!rulerUnlocked()) return '';
+  return hasRulerBuff()
+    ? '<span class="pill tag-jade">👑 深渊统治者 · 激活中</span>'
+    : '<span class="pill tag-rose">👑 深渊统治者 · 未激活</span>';
+}
+
 
 function equipTotals() {
   const t = { atk: 0, def: 0, hp: 0, crit: 0, critDmg: 0, lifesteal: 0, gold: 0 };
@@ -1124,7 +1813,7 @@ function effStats() {
   const critAdd = (rb ? rb.critAdd : 0) + tm.playerCrit;
   const hasHp = dv && dv.hp != null, hasAtk = dv && dv.atk != null;
   const hasDef = dv && dv.def != null, hasCrit = dv && dv.crit != null;
-  return {
+  const stats = {
     maxHp: Math.max(1, Math.round((hasHp ? dv.hp : (100 + u.hp * 10 + eq.hp + bonusHp)) * hpMul)),
     atk: Math.max(1, (hasAtk ? dv.atk : (14 + u.atk * 1.5 + eq.atk + bonusAtk)) * atkMul),
     def: Math.max(0, (hasDef ? dv.def : (3 + u.def * 1 + eq.def + bonusDef)) * defMul),
@@ -1133,6 +1822,10 @@ function effStats() {
     lifesteal: eq.lifesteal,
     goldFind: u.gold * 5 + eq.gold,
   };
+  // 挑战固定值最后覆盖：装备、魂尘、统治者、事件、开发者数值均无法绕过。
+  const ch = currentChallenge();
+  if (ch && ch.fixed) Object.keys(ch.fixed).forEach(k => { stats[k] = ch.fixed[k]; });
+  return stats;
 }
 
 /* ---------------- 单局峰值追踪（用于数值成就） ---------------- */
@@ -1214,6 +1907,7 @@ function addGold(n) {
     n = Math.round(n * modeMul * Math.max(0, 1 + treatyMods().goldGain));
   }
   R.gold += n;
+  R.maxGold = Math.max(R.maxGold || 0, R.gold);
   if (n > 0) { S.stats.goldEarned += n; S.stats.maxGold = Math.max(S.stats.maxGold, R.gold); }
 }
 
@@ -1279,10 +1973,12 @@ function dmgFormula(atk, def, crit, critDmg, mult) {
 function hitEnemy(mult = 1, opt = {}) {
   if (!B || B.over) return 0;
   const s = effStats();
-  const atk = s.atk * (1 + buffVal(B.pBuffs, 'atkUp')) * (1 - buffVal(B.pBuffs, 'weak'));
+  const atkUp = challengeStatLocked('atk') ? 0 : buffVal(B.pBuffs, 'atkUp');
+  const critBonus = challengeStatLocked('crit') ? 0 : (opt.critBonus || 0);
+  const atk = s.atk * (1 + atkUp) * (1 - buffVal(B.pBuffs, 'weak'));
   let def = B.enemy.def * (1 + buffVal(B.eBuffs, 'defUp'));
   if (opt.trueDmg) def = 0;
-  const res = dmgFormula(atk, def, s.crit + (opt.critBonus || 0), s.critDmg, mult);
+  const res = dmgFormula(atk, def, s.crit + critBonus, s.critDmg, mult);
   let dmg = res.dmg;
   if (B.eBuffs.vuln) dmg = Math.round(dmg * 1.35);
 
@@ -1315,7 +2011,8 @@ function hitEnemy(mult = 1, opt = {}) {
 function damagePlayer(raw, mult, label) {
   if (!B) return 0;
   const s = effStats();
-  const def = s.def * (1 + buffVal(B.pBuffs, 'defUp'));
+  const defUp = challengeStatLocked('def') ? 0 : buffVal(B.pBuffs, 'defUp');
+  const def = s.def * (1 + defUp);
   const res = dmgFormula(raw, def, 4, 150, mult);
   let dmg = res.dmg;
   if (B.pBuffs.vuln) dmg = Math.round(dmg * 1.35);
@@ -1387,7 +2084,8 @@ function rollIntent() {
 function intentInfo(it) {
   const e = B.enemy;
   const atk = e.atk * (1 + buffVal(B.eBuffs, 'atkUp'));
-  const def = effStats().def * (1 + buffVal(B.pBuffs, 'defUp'));
+  const defUp = challengeStatLocked('def') ? 0 : buffVal(B.pBuffs, 'defUp');
+  const def = effStats().def * (1 + defUp);
   const est = m => Math.max(1, Math.round(atk * m * (1 - mitigation(def))));
   switch (it.t) {
     case 'atk':    return { txt: `攻击 · 约 ${est(it.m)} 伤害`, cls: '' };
@@ -1568,6 +2266,9 @@ function tryFlee() {
 
 let runView = 'map';
 let pendingItems = [];
+let shopMode = 'buy';
+let sellSelected = new Set();
+let batchSell = false;
 
 /* ---------------- 屏幕切换 ---------------- */
 function showScreen(name) {
@@ -1690,12 +2391,21 @@ function checkAch() {
 function achCount() { return Object.keys(S.ach).filter(k => ACHIEVEMENTS.some(a => a.id === k)).length; }
 function metaAchCount() { return META_ACHIEVEMENTS.filter(m => S.ach[m.id]).length; }
 
+// 总成就全局 buff 开关：不影响解锁进度，仅控制 buff 是否生效
+function toggleRulerBuff() {
+  if (!rulerUnlocked()) return;
+  S.meta.rulerBuffOn = !hasRulerBuff();
+  sfx('click');
+  saveGame();
+  renderHub();
+}
+
 /* ---------------- 标题屏 ---------------- */
 function renderTitle() {
   const hasRun = !!S.runSave;
   const pending = !!S.pendingSettlement;
   const played = S.stats.runs > 0 || S.meta.soulDust > 0 || S.stats.maxDepth > 0;
-  const settleBtn = `<button class="btn btn-danger btn-lg" onclick="showSettlementModal(S.pendingSettlement)">⏳ 待结算</button>`;
+  const settleBtn = `<button class="btn btn-danger btn-lg" onclick="showSettlementModal(S.pendingSettlement)">有待领取内容</button>`;
   $('#screen-title').innerHTML = `
   <div class="title-wrap">
     <div>
@@ -1710,7 +2420,7 @@ function renderTitle() {
       <div class="title-btns">
         ${pending ? settleBtn : hasRun ? `<button class="btn btn-primary btn-lg" onclick="continueRun()">继续冒险</button>` : ''}
         ${pending ? '' : `<button class="btn ${hasRun ? 'btn-ghost' : 'btn-primary'} btn-lg" onclick="startNewRun()">${played ? '开始新的冒险' : '踏入深渊'}</button>`}
-        ${played ? `<button class="btn btn-ghost btn-lg" onclick="goHub()">灵魂圣所</button>` : ''}
+        ${played ? `<button class="btn btn-ghost btn-lg" onclick="goHubWithLoading()">灵魂圣所</button>` : ''}
       </div>
       <div class="title-foot">
         魂尘 ${fmt(S.meta.soulDust)} · 最深 ${S.stats.maxDepth} 层 · 成就 ${achCount()}/${ACHIEVEMENTS.length}
@@ -1720,41 +2430,73 @@ function renderTitle() {
 }
 
 /* ---------------- 圣所 ---------------- */
-function goHub() {
-  hubTab = 'sanctum';
+function goHub(tab) {
+  hubTab = tab || 'sanctum';
   renderHub();
   showScreen('hub');
 }
 
+/* 返回圣所：播放与进入深渊一致的加载动画；已经在圣所时直接切换，避免重复加载 */
+function goHubWithLoading(tab) {
+  const target = tab || 'sanctum';
+  if (runLoadingBusy) { goHub(target); return; }
+  const hubEl = $('#screen-hub');
+  if (hubEl && hubEl.classList.contains('active')) { goHub(target); return; }
+  showRunLoading(() => goHub(target), { title: '正在返回圣所', duration: 2200 });
+}
+
 function renderHub() {
   const u = S.meta.upgrades;
+  const challengeOpen = challengesUnlocked();
+  if (hubTab === 'challenge' && !challengeOpen) hubTab = 'sanctum';
   const tabs = [
-    ['sanctum', '⚒️ 圣所'], ['ach', '🏆 成就'], ['codex', '📖 图鉴'],
+    ['sanctum', '⚒️ 圣所'],
+    ['challenge', challengeOpen ? '🏆 挑战' : '🔒 挑战', !challengeOpen],
+    ['ach', '🏆 成就'], ['codex', '📖 图鉴'],
     ['weapon', '⚔️ 武器'], ['skill', '✨ 技能'], ['stats', '📊 统计'], ['settings', '⚙️ 设置'],
   ];
   let content = '';
 
   if (hubTab === 'sanctum') {
-    const upgHtml = UPGRADES.map(up => {
-      const lv = u[up.id] || 0;
-      const maxed = lv >= up.max;
-      const cost = up.cost(lv);
-      const can = !maxed && S.meta.soulDust >= cost;
-      const pct = Math.round(lv / up.max * 100);
-      return `<div class="upg">
-        <div class="upg-ico">${up.i}</div>
-        <div style="min-width:0;flex:1">
-          <div class="upg-name">${up.n} <span class="upg-lv">Lv.${lv}/${up.max}</span></div>
-          <div class="upg-desc">${up.d}</div>
-          <div class="bar slim" style="margin-top:8px"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#ffcb5c,#ff8a3d)"></div></div>
+    // 科技树渲染：按层分组，每层横向排列节点，层间用连接线相连
+    const tierNames = { 1: '基础三围', 2: '次级属性', 3: '功能强化', 4: '终极能力' };
+    const tierHtml = UPGRADE_TIERS.map((tier, idx) => {
+      const unlocked = tierUnlocked(tier);
+      const maxed = tierMaxed(tier);
+      const nodes = UPGRADES.filter(up => up.tier === tier).map(up => {
+        const lv = u[up.id] || 0;
+        const upMaxed = lv >= up.max;
+        const cost = up.cost(lv);
+        const can = unlocked && !upMaxed && S.meta.soulDust >= cost;
+        const pct = Math.round(lv / up.max * 100);
+        return `<div class="tech-node ${upMaxed ? 'maxed' : ''} ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'data-locked="1"'}>
+          <div class="tech-node-ico">${up.i}</div>
+          <div class="tech-node-name">${up.n} <span class="tech-node-lv">Lv.${lv}/${up.max}</span></div>
+          <div class="tech-node-desc">${up.d}</div>
+          <div class="bar slim" style="margin-top:7px"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#ffcb5c,#ff8a3d)"></div></div>
+          <div class="tech-node-foot">
+            ${upMaxed
+              ? `<span class="pill tag-gold">已满级</span>`
+              : unlocked
+                ? `<span class="cost">✨ ${fmt(cost)}</span>
+                   <button class="btn btn-sm ${can ? 'btn-arcane' : 'btn-ghost'}" ${can ? '' : 'disabled'} onclick="buyUpgrade('${up.id}')">升级</button>`
+                : `<span class="pill" style="color:var(--dim)">🔒 未解锁</span>`}
+          </div>
+        </div>`;
+      }).join('');
+      const connector = idx < UPGRADE_TIERS.length - 1
+        ? `<div class="tech-connector ${maxed ? 'done' : ''}"><div class="tech-connector-line"></div><div class="tech-connector-label">${maxed ? '✦ 已解锁下一层' : '↑ 满级后解锁下一层'}</div></div>`
+        : '';
+      return `<div class="tech-tier" data-tier="${tier}">
+        <div class="tech-tier-head">
+          <span class="tech-tier-badge">F${['1','2','3','4'][idx]}</span>
+          <span class="tech-tier-name">${tierNames[tier]}</span>
+          ${maxed ? '<span class="pill tag-jade" style="margin-left:auto">已完成</span>' : unlocked ? '<span class="pill" style="margin-left:auto">进行中</span>' : '<span class="pill" style="margin-left:auto">🔒 锁定</span>'}
         </div>
-        <div class="col" style="align-items:flex-end;gap:4px">
-          ${maxed ? `<span class="pill tag-gold">已满级</span>`
-            : `<span class="cost">✨ ${fmt(cost)}</span>
-               <button class="btn btn-sm ${can ? 'btn-arcane' : 'btn-ghost'}" ${can ? '' : 'disabled'} onclick="buyUpgrade('${up.id}')">升级</button>`}
-        </div>
-      </div>`;
+        <div class="tech-nodes">${nodes}</div>
+      </div>${connector}`;
     }).join('');
+    const upgHtml = `<div class="tech-tree">${tierHtml}</div>`;
 
     const boonUnlocked = allUpgradesMaxed();
     const boonMaxedCnt = UPGRADES.filter(up => (u[up.id] || 0) >= up.max).length;
@@ -1764,7 +2506,7 @@ function renderHub() {
       </div>
       <div class="small dim" style="line-height:1.9">
         ${boonUnlocked
-          ? '踏入深渊前可配置开局增益：最多选择 <b>3</b> 个技能与 <b>2</b> 项属性增益，并使用魂尘购买。属性增益可点击「+ / ++」突破，消耗魂尘大幅提升，两者互斥。<br>若本局选择「放弃冒险」，开局增益消耗的魂尘将<b style="color:var(--jade)">全额退还</b>。'
+          ? '踏入深渊前可配置开局增益：最多选择 <b>3</b> 个技能与 <b>2</b> 项属性增益，并使用魂尘购买。属性增益可点击「+ / ++」突破，消耗魂尘大幅提升，两者互斥。<br>若本局选择「放弃冒险」，结算时选择「放弃领取」会把开局增益消耗的魂尘<b style="color:var(--jade)">全额退还</b>，但本局魂尘奖励一并放弃；选择「领取奖励」则保留魂尘奖励，开局增益花费不退还。'
           : '将全部魂尘强化升至满级后解锁：进入游戏前可用魂尘购买技能与属性增益（最多 3 个技能 + 2 项属性增益，可突破）。'}
       </div>
     </div>`;
@@ -1810,7 +2552,9 @@ function renderHub() {
       ${pwOffSeason ? `<div class="small dim sanctum-foot" style="line-height:1.9">
         ${pwSeason.phase === 'before'
           ? '通行证赛季尚未开启，每周加成暂时处于休赛期，无法获取通行证经验；赛季开启后将自动恢复。'
-          : '当前赛季已结束，每周加成已进入 <b>休赛期</b>，期间无法通过深渊冒险获取通行证经验。<br>下一赛季开启后，本功能将自动恢复。'}
+          : pwSeason.phase === 'dev'
+            ? '开发者调试：已强制进入 <b>休赛期</b>，每周加成、通行证经验与周期挑战经验同步暂停发放（不影响真实赛季时间）；关闭调试后自动恢复。'
+            : '当前赛季已结束，每周加成已进入 <b>休赛期</b>，期间无法通过深渊冒险获取通行证经验。<br>下一赛季开启后，本功能将自动恢复。'}
       </div>` : pwUnlocked ? `
       <div class="pw-label"><span>本周剩余可获取通行证经验</span><span style="color:#8fc4ff">${pw.xpLeft} / ${PASS_WEEK_XP}</span></div>
       <div class="pw-bar"><div class="pw-bar-fill" style="width:${xpPct}%"></div></div>
@@ -1825,27 +2569,45 @@ function renderHub() {
       </div>` : `<div class="small dim sanctum-foot" style="line-height:1.9">轮回难度达到 <b>6</b> 后解锁（当前 ${S.meta.ngPlus}/${MAX_NG}）。<br>普通模式（5 层）每次通关可领取 ${PASS_XP_CLEAR} 点通行证经验；深渊叠加 / 极限通关可领取每周加成次数。</div>`}
     </div>`;
 
+    // 轮回难度下拉菜单：仅列出已解锁难度，选择后立即保存
+    const ngSel = currentNgSelect();
+    const ngMax = Math.min(S.meta.ngPlus || 0, MAX_NG);
+    let ngMenuItems = '';
+    for (let lv = 0; lv <= ngMax; lv++) {
+      const info = ngInfo(lv);
+      ngMenuItems += `<button class="ng-item ${lv === ngSel ? 'active' : ''}" onclick="setNgSelect(${lv})">
+        <b>${info.name}</b>
+        <span class="small dim">${info.effects.join('　·　')}</span>
+      </button>`;
+    }
+
     content = `
     <div class="sanctum-grid">
-      <div class="card sanctum-card">
+      <div class="card sanctum-card hero-card">
         <div class="hero-panel">
           <div class="hero-avatar">🧝</div>
           <div>
             <div style="font-family:var(--serif);font-size:19px;letter-spacing:2px">无名者</div>
-            <div class="small muted" style="margin-top:4px">轮回难度 ${ngInfo(S.meta.ngPlus).name}（0-${MAX_NG}） · 最深 ${S.stats.maxDepth} 层</div>
+            <div class="small muted" style="margin-top:4px">轮回难度 ${ngInfo(ngSel).name}（0-${MAX_NG}） · 最深 ${S.stats.maxDepth} 层</div>
             <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
               <span class="pill tag-gold">✨ 魂尘 ${fmt(S.meta.soulDust)}</span>
               <span class="pill tag-jade">🏆 ${achCount()}/${ACHIEVEMENTS.length}</span>
-              ${hasRulerBuff() ? '<span class="pill tag-jade">👑 深渊统治者</span>' : ''}
+              ${rulerTagHtml()}
             </div>
           </div>
         </div>
         <div class="divider"></div>
-        <div class="grid2" style="gap:8px">
+        <div class="grid2" style="gap:8px;align-items:start">
+          <div class="col" style="gap:8px;min-width:0">
+            <button class="btn btn-primary btn-block btn-lg" ${S.pendingSettlement ? 'disabled' : ''} onclick="startNewRun()">踏入深渊</button>
+            <div class="ng-set-wrap">
+              <button class="btn btn-ghost btn-block btn-lg" onclick="toggleNgMenu(event)">轮回难度设置</button>
+              <div class="ng-menu" id="ng-menu">${ngMenuItems}</div>
+            </div>
+          </div>
           ${S.pendingSettlement
-            ? `<button class="btn btn-danger btn-block btn-lg" style="grid-column:1/-1" onclick="showSettlementModal(S.pendingSettlement)">⏳ 待结算</button>`
-            : `<button class="btn btn-primary btn-block btn-lg" onclick="startNewRun()">踏入深渊</button>
-               <button class="btn btn-ghost btn-block btn-lg" ${S.runSave ? '' : 'disabled'} onclick="continueRun()">继续未完成的冒险</button>`}
+            ? `<button class="btn btn-danger btn-block btn-lg" onclick="showSettlementModal(S.pendingSettlement)">有待领取内容</button>`
+            : `<button class="btn btn-ghost btn-block btn-lg" ${S.runSave ? '' : 'disabled'} onclick="continueRun()">${S.runSave ? '继续未完成的冒险' : '无记录'}</button>`}
         </div>
         <div class="small dim center sanctum-foot" style="line-height:1.8">
           生命 ${effStats().maxHp} · 攻击 ${Math.round(effStats().atk)} · 防御 ${Math.round(effStats().def)} · 暴击 ${Math.round(effStats().crit)}%
@@ -1868,39 +2630,120 @@ function renderHub() {
       ${weeklyCard}
     </div>
     <div class="card" style="margin-top:16px">
-      <div class="card-h"><span>⚒️</span><div><div class="card-t">魂尘强化</div><div class="card-sub">PERMANENT UPGRADES · 永久生效</div></div>
+      <div class="card-h"><span>⚒️</span><div><div class="card-t">魂尘强化</div><div class="card-sub">PERMANENT UPGRADES · 永久生效 · 逐层解锁</div></div>
         <div style="margin-left:auto" class="pill tag-gold">✨ ${fmt(S.meta.soulDust)} 可用</div>
       </div>
-      <div class="col" style="gap:9px">${upgHtml}</div>
+      ${upgHtml}
     </div>
     ${boonCard}`;
     startPwRefreshTimer();
   }
 
+  if (hubTab === 'challenge') {
+    const claimedCount = CHALLENGES.filter(c => challengeRewardClaimed(c.id)).length;
+    const boonReady = allUpgradesMaxed();
+    const season = passWeeklySeasonState();
+    const seasonActive = season.active;
+    const cards = CHALLENGES.map((c, idx) => {
+      const claimed = challengeRewardClaimed(c.id);
+      const active = !!(S.runSave && S.runSave.challengeId === c.id);
+      const pending = !!(S.pendingSettlement && S.pendingSettlement.challengeId === c.id);
+      const action = pending ? 'showSettlementModal(S.pendingSettlement)' : active ? 'continueRun()' : `startChallenge('${c.id}')`;
+      const actionText = pending ? '查看挑战结算' : active ? '继续挑战' : claimed ? '再次挑战' : '开始挑战';
+      const rewardPill = claimed
+        ? '<span class="pill tag-jade">✓ 本期奖励已领取</span>'
+        : seasonActive
+          ? `<span class="pill tag-gold">🎫 +${c.reward} 经验</span>`
+          : '<span class="pill">📅 休赛期 · 暂不发放经验</span>';
+      const footText = claimed
+        ? '可无限重复游玩，本期不再重复获得通行证经验'
+        : seasonActive
+          ? `首次通关并在结算时领取：通行证经验 +${c.reward}（${c.reward / 10} 级）`
+          : '休赛期仍可正常挑战，但不发放通行证经验；新赛季开启后自动恢复';
+      return `<div class="card challenge-card ${claimed ? 'claimed' : ''}">
+        <div class="challenge-card-head">
+          <div class="challenge-icon">${c.i}</div>
+          <div style="min-width:0;flex:1">
+            <div class="challenge-index">CHALLENGE ${String(idx + 1).padStart(2, '0')} · ${ngInfo(CHALLENGE_NG).name} · 10 层</div>
+            <div class="card-t" style="margin-top:4px">${c.n}</div>
+          </div>
+          ${rewardPill}
+        </div>
+        <div class="challenge-short">${c.short}</div>
+        <div class="challenge-desc">${c.desc}</div>
+        <div class="challenge-note">${c.note}</div>
+        <div class="challenge-card-foot">
+          <div class="small ${claimed || !seasonActive ? 'dim' : ''}">${footText}</div>
+          <button class="btn ${claimed ? 'btn-ghost' : 'btn-arcane'}" onclick="${action}">${actionText} →</button>
+        </div>
+      </div>`;
+    }).join('');
+    content = `<div class="card challenge-hero">
+      <div class="card-h"><span>🏆</span><div><div class="card-t">周期挑战</div><div class="card-sub">PERIODIC CHALLENGES · ${CHALLENGE_CYCLE.name}</div></div>
+        <div style="margin-left:auto" class="pill tag-rose">${claimedCount} / ${CHALLENGES.length} 奖励已领取</div>
+      </div>
+      <div class="challenge-cycle-row">
+        <span class="pill tag-gold">🔄 ${ngInfo(CHALLENGE_NG).name} 基础</span>
+        <span class="pill">⛏️ 固定 10 层</span>
+        <span class="pill">📅 ${CHALLENGE_CYCLE.rotation}</span>
+        <span class="pill ${seasonActive ? 'tag-jade' : 'tag-rose'}">${seasonActive ? '🎫 通行证经验发放中' : '📅 休赛期 · 不发放经验'}</span>
+      </div>
+      <div class="small dim" style="line-height:1.9;margin-top:12px">
+        每项挑战首次通过并领取结算奖励时获得 <b style="color:#8fc4ff">10 点通行证经验（1 级）</b>，每项每周期仅可领取一次；领取后仍可无限重复游玩。后续周期轮换时，挑战内容与领取状态将一并更新。
+        ${seasonActive ? '' : '<br><b style="color:#ff9aa8">通行证当前处于休赛期：挑战仍可正常游玩，但不会发放任何通行证经验；待新赛季开启后该限制自动解除并恢复发放。</b>'}
+      </div>
+      <div class="challenge-boon-tip ${boonReady ? 'ready' : ''}">
+        ${boonReady
+          ? '🌠 开局增益已解锁：可选至多 <b>1 个技能</b>与 <b>1 项属性增益</b>，也可不选并直接进入；挑战固定的属性不可选择。'
+          : '🔒 全部魂尘强化满级后可在挑战开局前选择增益；未解锁时会直接进入挑战，不影响挑战参与。'}
+      </div>
+    </div>
+    <div class="challenge-list">${cards}</div>`;
+  }
+
   if (hubTab === 'ach') {
-    const list = ACHIEVEMENTS.map(a => {
+    // 侧边栏分类：统计各分类的解锁进度
+    const catStats = ACH_CATS.map(c => {
+      const items = c.id === 'all' ? ACHIEVEMENTS : ACHIEVEMENTS.filter(a => achCatOf(a.id) === c.id);
+      return { ...c, total: items.length, done: items.filter(a => S.ach[a.id]).length };
+    });
+    const visible = achCat === 'all' ? ACHIEVEMENTS : ACHIEVEMENTS.filter(a => achCatOf(a.id) === achCat);
+    const sideHtml = catStats.map(c => `<button class="ach-side-item ${achCat === c.id ? 'on' : ''}" onclick="setAchCat('${c.id}')">
+        <span>${c.i}</span><span>${c.n}</span><span class="ach-side-num">${c.done}/${c.total}</span>
+      </button>`).join('');
+    const list = visible.map(a => {
       const done = !!S.ach[a.id];
       return `<div class="ach ${done ? 'done' : 'locked'}">
         <div class="ach-icon">${done ? a.i : '🔒'}</div>
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="ach-name">${a.n}</div>
           <div class="ach-desc">${a.d}</div>
           <div class="ach-reward">${done ? '✦ 已达成' : `奖励 ✨ ${a.r} 魂尘`}</div>
         </div>
+        <span class="ach-state">${done ? '已达成' : '未达成'}</span>
       </div>`;
     }).join('');
     const pct = Math.round(achCount() / ACHIEVEMENTS.length * 100);
     const rulerDone = metaAchCount() > 0;
+    const rulerOn = hasRulerBuff();
     const rb = META_ACHIEVEMENTS[0].buff;
     const metaCard = `<div class="ach ${rulerDone ? 'done' : 'locked'}" style="${rulerDone ? '' : 'opacity:.55'}">
       <div class="ach-icon" style="font-size:28px">${rulerDone ? '👑' : '🔒'}</div>
-      <div style="flex:1">
+      <div style="flex:1;min-width:0">
         <div class="ach-name">${META_ACHIEVEMENTS[0].n} <span class="pill tag-gold" style="margin-left:6px">总成就</span></div>
         <div class="ach-desc">${META_ACHIEVEMENTS[0].d}</div>
         <div class="ach-reward" style="color:${rulerDone ? 'var(--jade)' : 'var(--gold)'}">
           全局 buff：攻击 +${Math.round(rb.atkPct * 100)}% · 防御 +${Math.round(rb.defPct * 100)}% · 暴击率 +${rb.critAdd}% · 回合末回血 ${rb.regen}
-          ${rulerDone ? '　✦ 已激活' : `　（奖励 ✨ ${META_ACHIEVEMENTS[0].r} 魂尘）`}
+          ${rulerDone ? (rulerOn ? '　✦ 已激活' : '　✦ 已关闭') : `　（奖励 ✨ ${META_ACHIEVEMENTS[0].r} 魂尘）`}
         </div>
+      </div>
+      <div class="ach-switch-wrap">
+        <button class="ach-switch ${rulerOn ? 'on' : ''}" ${rulerDone ? '' : 'disabled'} onclick="toggleRulerBuff()" aria-label="切换深渊统治者全局 buff">
+          <span class="ach-switch-knob"></span>
+        </button>
+        <div class="ach-switch-desc">${rulerDone
+          ? (rulerOn ? '激活：全局 buff 生效中' : '关闭：全局 buff 已停用')
+          : '解锁全部成就后可切换'}</div>
       </div>
     </div>`;
     content = `<div class="card">
@@ -1909,7 +2752,10 @@ function renderHub() {
       <div class="bar xp" style="margin-bottom:16px"><div class="bar-fill" style="width:${pct}%"></div></div>
       ${metaCard}
       <div class="divider" style="margin:16px 0"></div>
-      <div class="grid-auto">${list}</div>
+      <div class="ach-body">
+        <div class="ach-side">${sideHtml}</div>
+        <div class="ach-list">${list}</div>
+      </div>
     </div>`;
   }
 
@@ -2035,7 +2881,8 @@ function renderHub() {
     const histHtml = hist.length
       ? hist.map((r, i) => {
           const rMode = r.stackMode !== undefined ? r.stackMode : (r.extreme ? 2 : 0);
-          const res = r.win ? (r.extremeClear ? '极限通关' : '通关') : (r.abandoned ? '放弃' : '坠落');
+          const rChallengeLabel = r.challengeId ? `周期挑战 · ${r.challengeName || '未知挑战'}` : '';
+          const res = r.win ? (r.extremeClear ? '极限通关' : r.challengeId ? '挑战通关' : '通关') : (r.abandoned ? '放弃' : '坠落');
           const cls = r.win ? 'tag-jade' : (r.abandoned ? '' : 'tag-rose');
           const ico = r.win ? '🌅' : (r.abandoned ? '🚪' : '💀');
           const icoStyle = r.win
@@ -2044,7 +2891,7 @@ function renderHub() {
           return `<div class="upg" style="cursor:pointer" onclick="openRunRecord(${i})">
             <div class="upg-ico" style="${icoStyle}">${ico}</div>
             <div style="min-width:0;flex:1">
-              <div class="upg-name">第 ${r.depth} 层 · ${ngInfo(r.ng || 0).name} · ${rMode === 2 ? '深渊叠加 · 极限' : rMode === 1 ? '深渊叠加' : '正常模式'}
+              <div class="upg-name">第 ${r.depth} 层 · ${ngInfo(r.ng || 0).name} · ${rChallengeLabel || (rMode === 2 ? '深渊叠加 · 极限' : rMode === 1 ? '深渊叠加' : '正常模式')}
                 <span class="pill ${cls}" style="margin-left:6px">${res}</span></div>
               <div class="upg-desc">${fmtRunTime(r.ts)} · 击败 ${r.kills || 0} 个敌人 · 首领 ${r.bossKills || 0} 位 · 装备 ${(r.items || []).length} 件</div>
             </div>
@@ -2123,6 +2970,8 @@ function renderHub() {
           <div class="card-h"><span>🛠️</span><div><div class="card-t">存档与数据</div><div class="card-sub">DATA</div></div></div>
           <div class="col" style="gap:10px">
             <button class="btn btn-ghost btn-block" onclick="renderAchieveDebug()">🔄 重新检测成就</button>
+            <button class="btn btn-ghost btn-block" onclick="openSaveSlots()">🗂️ 切换存档</button>
+            <div class="small dim">当前存档位：${activeSlot === null ? '未关联（点击「切换存档」可保存到空闲存档位）' : '存档 ' + String(activeSlot + 1).padStart(2, '0')}</div>
             <div class="divider"></div>
             <button class="btn btn-danger btn-block" onclick="confirmReset()">⚠️ 重置游戏进度</button>
             <div class="small dim" style="line-height:1.9">
@@ -2138,12 +2987,17 @@ function renderHub() {
   $('#screen-hub').innerHTML = `
     <div class="hub-head">
       <div class="hub-title">灵魂圣所<small>SANCTUM OF SOULS</small></div>
-      <div class="tabs">${tabs.map(([k, n]) => `<button class="tab ${hubTab === k ? 'active' : ''}" onclick="switchTab('${k}')">${n}</button>`).join('')}</div>
+      <div class="tabs">${tabs.map(([k, n, locked]) => `<button class="tab ${hubTab === k ? 'active' : ''}" ${locked ? 'disabled title="解锁深渊叠加后开放"' : ''} onclick="switchTab('${k}')">${n}</button>`).join('')}</div>
     </div>
     ${content}`;
 }
 
-function switchTab(k) { hubTab = k; sfx('click'); renderHub(); }
+function switchTab(k) {
+  if (k === 'challenge' && !challengesUnlocked()) { toast('解锁深渊叠加后开放周期挑战', '🔒', 'warning'); return; }
+  hubTab = k;
+  sfx('click');
+  renderHub();
+}
 
 /* ---------------- 战绩回顾 ---------------- */
 function fmtRunTime(ts) {
@@ -2180,9 +3034,9 @@ function openRunRecord(i) {
       }).join('')
     : '<span class="small dim">本局没有习得技能</span>';
   const rMode = r.stackMode !== undefined ? r.stackMode : (r.extreme ? 2 : 0);
-  const rCap = rMode === 2 ? LIMIT_MAX_DEPTH : rMode === 1 ? STACK_MAX_DEPTH : MAX_DEPTH;
-  const rModeLabel = rMode === 2 ? '深渊叠加 · 极限' : rMode === 1 ? '深渊叠加' : '正常模式';
-  const result = r.win ? (r.extremeClear ? '深渊叠加 · 极限通关' : '通关成功') : (r.abandoned ? '主动放弃' : '冒险失败');
+  const rCap = r.challengeId ? STACK_MAX_DEPTH : (rMode === 2 ? LIMIT_MAX_DEPTH : rMode === 1 ? STACK_MAX_DEPTH : MAX_DEPTH);
+  const rModeLabel = r.challengeId ? `周期挑战 · ${r.challengeName || '未知挑战'}` : (rMode === 2 ? '深渊叠加 · 极限' : rMode === 1 ? '深渊叠加' : '正常模式');
+  const result = r.challengeId ? (r.win ? '挑战通关' : r.abandoned ? '主动放弃挑战' : '挑战失败') : (r.win ? (r.extremeClear ? '深渊叠加 · 极限通关' : '通关成功') : (r.abandoned ? '主动放弃' : '冒险失败'));
   const extremeText = rMode === 2 ? (r.extremeClear ? '已进入并完整通关' : '已进入 · 未通关') : rMode === 1 ? '已进入 · 未进入极限' : '未进入深渊叠加';
   const bodyHtml = `
     <div class="settle-grid">
@@ -2217,6 +3071,8 @@ function openRunRecord(i) {
 
 function buyUpgrade(id) {
   const up = UPGRADES.find(x => x.id === id);
+  if (!up) return;
+  if (!tierUnlocked(up.tier)) { toast('需先将上一层全部升至满级', '🔒', 'warning'); return; }
   const lv = S.meta.upgrades[id] || 0;
   if (lv >= up.max) return;
   const cost = up.cost(lv);
@@ -2245,6 +3101,7 @@ function confirmReset() {
           S.ach = keepAch;
           if (keepWeekly) S.meta.passWeekly = keepWeekly;
           R = null; B = null;
+          if (activeSlot !== null) setActiveSlot(null);
           saveGame(); renderTitle(); showScreen('title');
           toast('游戏进度已重置（成就与每周加成已保留）', '🗑️');
         } },
@@ -2252,9 +3109,175 @@ function confirmReset() {
   });
 }
 
+/* ---------------- 多存档位：切换 / 新建 / 覆盖 / 删除 ---------------- */
+function slotNo(i) { return '存档 ' + String(i + 1).padStart(2, '0'); }
+function saveSlotCardHtml(slot, i) {
+  if (!slot) {
+    return `<div class="save-slot empty" onclick="saveToEmptySlot(${i})">
+      <div style="font-size:24px;line-height:1">＋</div>
+      <div class="save-slot-name">${slotNo(i)}</div>
+      <div class="small dim">空闲 · 点击保存当前进度</div>
+    </div>`;
+  }
+  const d = slot.data || {};
+  const dust = (d.meta && d.meta.soulDust) || 0;
+  const depth = (d.stats && d.stats.maxDepth) || 0;
+  const achN = Object.keys(d.ach || {}).filter(k => d.ach[k]).length;
+  const active = activeSlot === i;
+  return `<div class="save-slot ${active ? 'active' : ''}" onclick="loadSlot(${i})">
+    <div class="row between" style="gap:6px">
+      <div class="save-slot-name">${slotNo(i)}</div>
+      ${active ? '<span class="pill tag-jade">当前</span>' : ''}
+    </div>
+    <div class="save-slot-meta">🕒 ${fmtRunTime(slot.ts)}<br>✨ 魂尘 ${fmt(dust)}<br>⛏️ 最深 ${depth} 层 · 🏆 ${achN} 成就</div>
+    <div class="save-slot-actions">
+      ${active ? '' : `<button class="btn btn-ghost" onclick="event.stopPropagation();loadSlot(${i})">载入</button>`}
+      <button class="btn btn-ghost" onclick="event.stopPropagation();confirmOverwriteSlot(${i})">覆盖</button>
+      <button class="btn btn-danger" onclick="event.stopPropagation();confirmDeleteSlot(${i})">删除</button>
+    </div>
+  </div>`;
+}
+
+function openSaveSlots() {
+  if (!R) renderHub();
+  const slots = loadSlots();
+  const used = slots.filter(Boolean).length;
+  const body = `
+    <div class="row between" style="gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="small dim" style="line-height:1.9;max-width:760px">
+        点击空闲存档位即可保存当前整个游戏进度；点击已保存的存档位可切换至该存档，再次点击当前存档位可覆盖它。<br>
+        新建存档会以全新初始数据开始，<b style="color:var(--jade)">成就进度与每周加成进度受系统保护</b>，不会被重置或替换。
+      </div>
+      <button class="btn btn-arcane" onclick="createNewSave()">＋ 新建存档</button>
+    </div>
+    <div class="save-slot-grid">${slots.map((s, i) => saveSlotCardHtml(s, i)).join('')}</div>
+    <div class="small dim" style="margin-top:14px;line-height:1.8">已使用 ${used} / ${SAVE_SLOT_COUNT} 个存档位 · 删除后的存档数据不可恢复。</div>`;
+  modal({ title: '切换存档', sub: `SAVE SLOTS · 最多 ${SAVE_SLOT_COUNT} 个存档位`, body, buttons: [{ label: '关闭', cls: 'btn-ghost' }], size: 'wide settle-wide' });
+}
+
+function saveToEmptySlot(i) {
+  if (R) saveRunState();
+  setActiveSlot(i);
+  const arr = loadSlots();
+  arr[i] = snapshotState();
+  persistSlots(arr);
+  saveGame();
+  sfx('buy');
+  toast(`当前进度已保存到${slotNo(i)}`, '🗂️', 'success');
+  openSaveSlots();
+}
+
+function confirmOverwriteSlot(i) {
+  modal({
+    title: '覆盖存档？', sub: 'OVERWRITE SAVE',
+    body: `${slotNo(i)} 原有的进度将被<b style="color:#ff8b9a">当前游戏进度</b>覆盖，被覆盖的数据不可恢复。`,
+    buttons: [
+      { label: '取消', cls: 'btn-ghost', fn: () => openSaveSlots() },
+      { label: '确认覆盖', cls: 'btn-danger', fn: () => {
+          if (R) saveRunState();
+          setActiveSlot(i);
+          const arr = loadSlots();
+          arr[i] = snapshotState();
+          persistSlots(arr);
+          saveGame();
+          toast(`已覆盖${slotNo(i)}`, '🗂️', 'success');
+          openSaveSlots();
+        } },
+    ],
+  });
+}
+
+function loadSlot(i) {
+  if (activeSlot === i) { confirmOverwriteSlot(i); return; }
+  const slots = loadSlots();
+  if (!slots[i]) { saveToEmptySlot(i); return; }
+  modal({
+    title: '切换到该存档？', sub: 'SWITCH SAVE',
+    body: `将载入${slotNo(i)}。当前游戏进度会先保存到当前存档位（若已关联），随后切换。`,
+    buttons: [
+      { label: '取消', cls: 'btn-ghost', fn: () => openSaveSlots() },
+      { label: '确认切换', cls: 'btn-primary', fn: () => doLoadSlot(i) },
+    ],
+  });
+}
+
+function doLoadSlot(i) {
+  if (R) saveRunState();
+  if (activeSlot !== null) syncActiveSlot();
+  const slot = loadSlots()[i];
+  if (!slot) { openSaveSlots(); return; }
+  const next = normalizeState(JSON.parse(JSON.stringify(slot.data)));
+  // 系统保护：成就与每周加成进度不随存档切换被替换
+  next.ach = Object.assign({}, next.ach || {}, S.ach || {});
+  if (S.meta && S.meta.passWeekly) next.meta.passWeekly = JSON.parse(JSON.stringify(S.meta.passWeekly));
+  S = next;
+  R = null; B = null;
+  setActiveSlot(i);
+  saveGame();
+  applyMotion();
+  $('#btn-sound').textContent = S.settings.sound ? '🔊' : '🔇';
+  $('#btn-sound').classList.toggle('off', !S.settings.sound);
+  closeModal();
+  renderTitle();
+  renderHub();
+  renderTopbar();
+  showScreen('hub');
+  toast(`已切换到${slotNo(i)}`, '🗂️', 'success');
+  if (S.pendingSettlement) showSettlementModal(S.pendingSettlement);
+}
+
+function confirmDeleteSlot(i) {
+  const isActive = activeSlot === i;
+  modal({
+    title: '删除存档？', sub: 'DELETE SAVE',
+    body: `${slotNo(i)} 将被永久删除，数据<b style="color:#ff8b9a">不可恢复</b>。${isActive ? '<br><br>该存档位正在使用中，删除后当前进度仍会保留，但不再关联任何存档位。' : ''}`,
+    buttons: [
+      { label: '取消', cls: 'btn-ghost', fn: () => openSaveSlots() },
+      { label: '确认删除', cls: 'btn-danger', fn: () => {
+          const arr = loadSlots();
+          arr[i] = null;
+          persistSlots(arr);
+          if (isActive) { setActiveSlot(null); saveGame(); }
+          toast(`${slotNo(i)} 已删除，数据不可恢复`, '🗑️');
+          openSaveSlots();
+        } },
+    ],
+  });
+}
+
+function createNewSave() {
+  const slots = loadSlots();
+  const i = slots.findIndex(s => !s);
+  if (i < 0) { toast('存档位已满，请先删除一个存档', '🗂️', 'warning'); return; }
+  if (R) saveRunState();
+  if (activeSlot !== null) syncActiveSlot();
+  // 成就与每周加成受系统保护，其余内容替换为新的初始数据
+  const keepAch = Object.assign({}, S.ach || {});
+  const keepWeekly = (S.meta && S.meta.passWeekly) ? JSON.parse(JSON.stringify(S.meta.passWeekly)) : null;
+  const fresh = defaultState();
+  fresh.ach = keepAch;
+  if (keepWeekly) fresh.meta.passWeekly = keepWeekly;
+  S = fresh;
+  R = null; B = null;
+  setActiveSlot(i);
+  saveGame();
+  // 新存档位尚未写入数据，这里显式落盘
+  const arr2 = loadSlots();
+  arr2[i] = snapshotState();
+  persistSlots(arr2);
+  applyMotion();
+  $('#btn-sound').textContent = S.settings.sound ? '🔊' : '🔇';
+  $('#btn-sound').classList.toggle('off', !S.settings.sound);
+  closeModal();
+  renderTitle();
+  renderHub();
+  renderTopbar();
+  showScreen('hub');
+  toast(`已新建${slotNo(i)}，当前内容已替换为初始数据`, '🗂️', 'success');
+}
+
 function toggleSound() {
   S.settings.sound = !S.settings.sound;
-  $('#btn-sound').classList.toggle('off', !S.settings.sound);
   $('#btn-sound').textContent = S.settings.sound ? '🔊' : '🔇';
   saveGame();
   if (hubTab === 'stats' || hubTab === 'settings') renderHub();
@@ -2590,48 +3613,42 @@ function startNewRun() {
   if (S.runSave) {
     modal({
       title: '放弃当前的冒险？', sub: 'YOUR RUN IS STILL ACTIVE',
-      body: '你还记得深渊的气味。开始新的冒险会失去当前未完成的进度（已获得的魂尘保留）。',
+      body: '你还记得深渊的气味。开始新的冒险会失去当前未完成的进度并放弃本局魂尘奖励，但会全额退还开局增益消耗的魂尘。',
       buttons: [
         { label: '继续当前冒险', cls: 'btn-primary', fn: () => continueRun() },
-        { label: '开始新冒险', cls: 'btn-danger', fn: () => { discardCurrentRun(); showDifficultySelect(); } },
+        { label: '开始新冒险', cls: 'btn-danger', fn: () => { discardCurrentRun(); startRunWithSelectedNg(); } },
       ],
     });
     return;
   }
-  showDifficultySelect();
+  startRunWithSelectedNg();
 }
 
-function showDifficultySelect() {
-  const maxUnlocked = Math.min(S.meta.ngPlus || 0, MAX_NG);
-  const rows = [];
-  for (let lv = 0; lv <= maxUnlocked; lv++) {
-    const info = ngInfo(lv);
-    const isMax = lv === maxUnlocked && lv < MAX_NG;
-    rows.push(`<div class="choice" onclick="confirmDifficulty(${lv})">
-      <b>${info.name}</b>${isMax ? ' <span class="pill tag-gold">当前最高</span>' : ''}${lv === 0 ? ' <span class="pill">标准</span>' : ''}
-      <div class="small dim" style="margin-top:5px;line-height:1.7">${info.effects.join('　·　')}</div>
-    </div>`);
+function startChallenge(id) {
+  const ch = challengeById(id);
+  if (!ch || !challengesUnlocked()) { toast('解锁深渊叠加后开放周期挑战', '🔒', 'warning'); return; }
+  if (S.pendingSettlement) { showSettlementModal(S.pendingSettlement); return; }
+  const launch = () => {
+    if (allUpgradesMaxed()) openPreRunBuffs(CHALLENGE_NG, id);
+    else beginRun(CHALLENGE_NG, null, id);
+  };
+  if (S.runSave) {
+    modal({
+      title: '放弃当前冒险并进入挑战？', sub: ch.n + ' · PERIODIC CHALLENGE',
+      body: `当前未完成的冒险进度将会丢失，并放弃其魂尘奖励；开局增益消耗的魂尘会全额退还。随后将以${ngInfo(CHALLENGE_NG).name}开始「${ch.n}」。`,
+      buttons: [
+        { label: '继续当前冒险', cls: 'btn-primary', fn: () => continueRun() },
+        { label: '放弃并开始挑战', cls: 'btn-danger', fn: () => { discardCurrentRun(); launch(); } },
+      ],
+    });
+    return;
   }
-  // 预览未解锁的下两级
-  for (let lv = maxUnlocked + 1; lv <= Math.min(maxUnlocked + 2, MAX_NG); lv++) {
-    const info = ngInfo(lv);
-    rows.push(`<div class="choice" style="opacity:.42;cursor:not-allowed">
-      <b>🔒 ${info.name}</b>
-      <div class="small dim" style="margin-top:5px;line-height:1.7">通关【${ngInfo(lv - 1).name}】解锁　·　${info.effects.join('　·　')}</div>
-    </div>`);
-  }
-  modal({
-    title: '选择轮回难度', sub: 'REINCARNATION DIFFICULTY · 最高 ' + MAX_NG,
-    body: `<div class="small dim" style="margin-bottom:12px;line-height:1.8">
-        已解锁至 <b style="color:var(--gold)">${ngInfo(maxUnlocked).name}</b>。难度越高，敌人越强，魂尘与得分倍率也越丰厚。<br>
-        深渊统治者全局 buff 在所有难度中均生效。
-      </div>${rows.join('')}`,
-    buttons: [{ label: '取消', cls: 'btn-ghost' }],
-  });
+  launch();
 }
 
-function confirmDifficulty(lv) {
-  closeModal();
+// 直接使用已保存的轮回难度开局（不再弹出难度选择弹窗）
+function startRunWithSelectedNg() {
+  const lv = currentNgSelect();
   if (allUpgradesMaxed()) openPreRunBuffs(lv);
   else beginRun(lv);
 }
@@ -2640,9 +3657,17 @@ function confirmDifficulty(lv) {
 let preRunSel = null;
 const BOON_RAR_TEXT = { common: '普通', rare: '精良', epic: '史诗', legend: '传说' };
 
-function openPreRunBuffs(difficulty) {
-  preRunSel = { difficulty: difficulty, skills: [], buffs: { hp: 0, atk: 0, def: 0, crit: 0 } };
+function openPreRunBuffs(difficulty, challengeId) {
+  preRunSel = { difficulty: difficulty, challengeId: challengeId || null, skills: [], buffs: { hp: 0, atk: 0, def: 0, crit: 0 } };
   renderPreRunModal();
+}
+
+function preRunChallenge(sel) {
+  return sel && sel.challengeId ? challengeById(sel.challengeId) : null;
+}
+function preRunBoonRestricted(sel, id) {
+  const ch = preRunChallenge(sel);
+  return !!(ch && (ch.restrictedBoons || []).includes(id));
 }
 
 function toggleBoonSkill(id) {
@@ -2651,7 +3676,8 @@ function toggleBoonSkill(id) {
   const i = sel.skills.indexOf(id);
   if (i >= 0) sel.skills.splice(i, 1);
   else {
-    if (sel.skills.length >= BOON_SKILL_MAX) { toast(`最多选择 ${BOON_SKILL_MAX} 个技能`, '⚠️', 'warning'); return; }
+    const max = preRunChallenge(sel) ? 1 : BOON_SKILL_MAX;
+    if (sel.skills.length >= max) { toast(`最多选择 ${max} 个技能`, '⚠️', 'warning'); return; }
     sel.skills.push(id);
   }
   renderPreRunModal(true);
@@ -2660,9 +3686,11 @@ function toggleBoonSkill(id) {
 function toggleBoonBuff(id) {
   const sel = preRunSel;
   if (!sel) return;
+  if (preRunBoonRestricted(sel, id)) { toast('本挑战已固定该属性，对应开局增益不可选择', '🔒', 'warning'); return; }
   const cur = sel.buffs[id] || 0;
-  if (cur === 0 && boonBuffCount(sel) >= BOON_BUFF_MAX) {
-    toast(`最多选择 ${BOON_BUFF_MAX} 项属性增益`, '⚠️', 'warning');
+  const max = preRunChallenge(sel) ? 1 : BOON_BUFF_MAX;
+  if (cur === 0 && boonBuffCount(sel) >= max) {
+    toast(`最多选择 ${max} 项属性增益`, '⚠️', 'warning');
     return;
   }
   sel.buffs[id] = cur > 0 ? 0 : 1;
@@ -2672,9 +3700,11 @@ function toggleBoonBuff(id) {
 function setBoonBuffTier(id, tier) {
   const sel = preRunSel;
   if (!sel) return;
+  if (preRunBoonRestricted(sel, id)) { toast('本挑战已固定该属性，对应开局增益不可选择', '🔒', 'warning'); return; }
   const cur = sel.buffs[id] || 0;
-  if (cur === 0 && boonBuffCount(sel) >= BOON_BUFF_MAX) {
-    toast(`最多选择 ${BOON_BUFF_MAX} 项属性增益`, '⚠️', 'warning');
+  const max = preRunChallenge(sel) ? 1 : BOON_BUFF_MAX;
+  if (cur === 0 && boonBuffCount(sel) >= max) {
+    toast(`最多选择 ${max} 项属性增益`, '⚠️', 'warning');
     return;
   }
   // 再次点击同一突破按钮则回退到基础档；「+」与「++」互斥
@@ -2688,6 +3718,9 @@ function preRunBodyHtml(sel) {
   const lack = cost > dust;
   const skillCnt = sel.skills.length;
   const buffCnt = boonBuffCount(sel);
+  const ch = preRunChallenge(sel);
+  const skillMax = ch ? 1 : BOON_SKILL_MAX;
+  const buffMax = ch ? 1 : BOON_BUFF_MAX;
 
   const skillCards = SKILL_POOL.map(id => {
     const sk = SKILLS[id];
@@ -2703,32 +3736,36 @@ function preRunBodyHtml(sel) {
   const buffRows = BOON_BUFFS.map(b => {
     const t = sel.buffs[b.id] || 0;
     const on = t > 0;
+    const restricted = preRunBoonRestricted(sel, b.id);
     const val = on ? b.vals[t - 1] : b.vals[0];
-    return `<div class="boon-buff ${on ? 'sel' : ''}">
-      <div class="boon-buff-main" onclick="toggleBoonBuff('${b.id}')">
-        <div class="boon-buff-name">${b.i} ${b.n}</div>
-        <div class="small dim" style="margin-top:2px">${b.key} +${val}${b.unit}${on ? `　<span style="color:var(--jade)">${t === 1 ? '基础' : (t === 2 ? '突破 +' : '突破 ++')}</span>` : '　（未选择）'}</div>
+    return `<div class="boon-buff ${on ? 'sel' : ''} ${restricted ? 'locked' : ''}">
+      <div class="boon-buff-main" ${restricted ? '' : `onclick="toggleBoonBuff('${b.id}')"`}>
+        <div class="boon-buff-name">${b.i} ${b.n}${restricted ? '　🔒' : ''}</div>
+        <div class="small dim" style="margin-top:2px">${restricted ? '本挑战固定该属性，不可选择对应增益' : `${b.key} +${val}${b.unit}${on ? `　<span style="color:var(--jade)">${t === 1 ? '基础' : (t === 2 ? '突破 +' : '突破 ++')}</span>` : '　（未选择）'}`}</div>
       </div>
-      <div class="boon-btns">
-        <button class="boon-plus ${t === 2 ? 'on' : ''}" title="突破：${b.key} +${b.vals[1]}${b.unit}" onclick="setBoonBuffTier('${b.id}',2)">+</button>
-        <button class="boon-plus ${t === 3 ? 'on' : ''}" title="突破：${b.key} +${b.vals[2]}${b.unit}" onclick="setBoonBuffTier('${b.id}',3)">++</button>
+      <div class="boon-buff-foot">
+        <div class="boon-btns">
+          <button class="boon-plus ${t === 2 ? 'on' : ''}" title="突破：${b.key} +${b.vals[1]}${b.unit}" ${restricted ? 'disabled' : ''} onclick="setBoonBuffTier('${b.id}',2)">+</button>
+          <button class="boon-plus ${t === 3 ? 'on' : ''}" title="突破：${b.key} +${b.vals[2]}${b.unit}" ${restricted ? 'disabled' : ''} onclick="setBoonBuffTier('${b.id}',3)">++</button>
+        </div>
+        <span class="cost">${on ? '✨ ' + fmt(b.costs[t - 1]) : '—'}</span>
       </div>
-      <span class="cost" style="min-width:74px;justify-content:flex-end">${on ? '✨ ' + fmt(b.costs[t - 1]) : '—'}</span>
     </div>`;
   }).join('');
 
   return `
+    ${ch ? `<div class="challenge-boon-tip ready" style="margin-bottom:12px">🏆 <b>${ch.n}</b> · ${ch.short}<br>挑战开局至多选择 1 个技能与 1 项属性增益；被挑战固定的属性已锁定，也可不选任何增益直接开始。</div>` : ''}
     <div class="small dim" style="margin-bottom:12px;line-height:1.9">
       本局难度：<b style="color:var(--gold)">${ngInfo(sel.difficulty).name}</b>　可用魂尘：<b style="color:var(--gold)">✨ ${fmt(dust)}</b><br>
-      最多选择 <b>${BOON_SKILL_MAX}</b> 个技能（${skillCnt}/${BOON_SKILL_MAX}）与 <b>${BOON_BUFF_MAX}</b> 项属性增益（${buffCnt}/${BOON_BUFF_MAX}）。
+      最多选择 <b>${skillMax}</b> 个技能（${skillCnt}/${skillMax}）与 <b>${buffMax}</b> 项属性增益（${buffCnt}/${buffMax}）。
       属性增益可点击「+ / ++」进行突破，消耗魂尘将大幅提升；两者互斥，只可点击其中一个。
     </div>
-    <div class="card-t" style="font-size:14px;margin-bottom:8px">技能 · ${skillCnt}/${BOON_SKILL_MAX}</div>
+    <div class="card-t" style="font-size:14px;margin-bottom:8px">技能 · ${skillCnt}/${skillMax}</div>
     <div class="boon-skills">${skillCards}</div>
-    <div class="card-t" style="font-size:14px;margin:16px 0 8px">属性增益 · ${buffCnt}/${BOON_BUFF_MAX}</div>
-    <div class="col" style="gap:8px">${buffRows}</div>
+    <div class="card-t" style="font-size:14px;margin:16px 0 8px">属性增益 · ${buffCnt}/${buffMax}</div>
+    <div class="boon-buffs">${buffRows}</div>
     <div class="row between" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
-      <span class="small muted">本局开局增益消耗（放弃冒险将全额退还）</span>
+      <span class="small muted">本局开局增益消耗（放弃领取时全额退还）</span>
       <span class="cost" style="color:${lack ? '#ff8b9a' : 'var(--gold)'}">✨ ${fmt(cost)}</span>
     </div>
     ${lack ? '<div class="small" style="color:#ff8b9a;margin-top:8px">魂尘不足，请减少所选增益后再开始。</div>' : ''}`;
@@ -2758,11 +3795,11 @@ function renderPreRunModal(updateOnly) {
 
   const prevScroll = $('#modal-root .modal-body') ? $('#modal-root .modal-body').scrollTop : 0;
   modal({
-    size: 'wide',
+    size: 'wide settle-wide',
     title: '开局增益', sub: 'PRE-RUN BOONS · 以魂尘换取这一次的开局优势',
     body: preRunBodyHtml(sel),
     buttons: [
-      { label: '返回难度选择', cls: 'btn-ghost', fn: () => showDifficultySelect() },
+      { label: '取消', cls: 'btn-ghost' },
       { label: preRunConfirmLabel(cost), cls: 'btn-primary', fn: () => purchasePreRun() },
     ],
   });
@@ -2781,13 +3818,123 @@ function purchasePreRun() {
     buffs: Object.assign({}, sel.buffs),
   };
   const difficulty = sel.difficulty;
+  const challengeId = sel.challengeId || null;
   preRunSel = null;
   closeModal();
-  beginRun(difficulty, boon);
+  beginRun(difficulty, boon, challengeId);
 }
 
-function beginRun(difficulty, boon) {
-  const ng = difficulty !== undefined ? Math.max(0, Math.min(MAX_NG, difficulty | 0)) : (S.meta.ngPlus || 0);
+/* ---------------- 开局加载动画 ---------------- */
+let runLoadingBusy = false;
+const RUN_LOADING_TIPS = [
+  '深渊正在调整它的呼吸……',
+  '你的名字正在被写在潮湿的石壁上。',
+  '魂尘在空中缓慢聚拢，像一场不肯落下的雨。',
+  '有人在很深的地方，替你翻开了下一页。',
+  '这里的回响，总是比脚步早一步抵达。',
+  '火把点燃之前，黑暗先学会了你走路的样子。',
+  '小心：深渊记得每一个曾经转身离开的人。',
+  '契约尚未落笔，墨迹已经在颤抖。',
+  '你的心跳被石壁复制了一份，作为备份。',
+  '若听见有人叫你的名字，请先确认它还属于你。',
+];
+
+// 生成可无缝循环的波浪路径（每 720 单位一个周期，多留一个周期避免右侧断裂）
+function runLoadingWavePath(base, amp, phase, period) {
+  const W = 2880, step = period / 48;
+  let d = '';
+  for (let x = 0; x <= W; x += step) {
+    const y = base + amp * Math.sin((x / period) * Math.PI * 2 + phase);
+    d += (x === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+  }
+  return d;
+}
+
+function beginRun(difficulty, boon, challengeId) {
+  const ch = challengeById(challengeId);
+  showRunLoading(() => beginRunNow(difficulty, boon, challengeId), { title: ch ? '正在进入周期挑战' : '正在渗入深渊', duration: 3200 });
+}
+
+function showRunLoading(done, opts) {
+  if (runLoadingBusy) return;
+  opts = opts || {};
+  const title = opts.title || '正在渗入深渊';
+  const duration = opts.duration || 3200;
+  runLoadingBusy = true;
+  const waves = [
+    { b: 70,  a: 30, p: 0.0, dur: 9.5, c: ['#4fd7ff', '#8b7cff'] },
+    { b: 102, a: 22, p: 1.1, dur: 12,  c: ['#8b7cff', '#ff5d7a'] },
+    { b: 134, a: 34, p: 2.2, dur: 7.5, c: ['#3fe0a4', '#4fd7ff'] },
+    { b: 166, a: 18, p: 3.3, dur: 14,  c: ['#ffcb5c', '#ff8a3d'] },
+    { b: 198, a: 26, p: 4.4, dur: 10,  c: ['#ff5d7a', '#b06bff'] },
+  ];
+  const defs = waves.map((w, i) => `<linearGradient id="rlG${i}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="${w.c[0]}"/>
+      <stop offset="50%" stop-color="${w.c[1]}"/>
+      <stop offset="100%" stop-color="${w.c[0]}"/>
+    </linearGradient>`).join('');
+  const paths = waves.map((w, i) => `<path class="rl-wave" d="${runLoadingWavePath(w.b, w.a, w.p, 720)}"
+      vector-effect="non-scaling-stroke"
+      stroke="url(#rlG${i})" style="animation-duration:${w.dur}s;animation-direction:${i % 2 ? 'reverse' : 'normal'}"/>`).join('');
+
+  const el = document.createElement('div');
+  el.id = 'runLoading';
+  el.className = 'run-loading';
+  el.innerHTML = `
+    <div class="rl-waves">
+      <svg viewBox="0 0 2160 240" preserveAspectRatio="none" aria-hidden="true">
+        <defs>${defs}</defs>
+        ${paths}
+      </svg>
+    </div>
+    <div class="rl-center">
+      <div class="rl-title">${title}</div>
+      <div class="rl-bar"><i class="rl-fill"></i></div>
+      <div class="rl-meta"><span class="rl-tip"></span><span class="rl-pct">0%</span></div>
+    </div>`;
+  document.body.appendChild(el);
+  document.body.style.overflow = 'hidden';
+
+  const tipEl = el.querySelector('.rl-tip');
+  const setTip = () => {
+    tipEl.classList.remove('swap');
+    void tipEl.offsetWidth;
+    tipEl.textContent = pick(RUN_LOADING_TIPS);
+    tipEl.classList.add('swap');
+  };
+  setTip();
+  const tipTimer = setInterval(setTip, 1050);
+
+  const fill = el.querySelector('.rl-fill');
+  const pctEl = el.querySelector('.rl-pct');
+  const DUR = duration - 200;
+  requestAnimationFrame(() => {
+    fill.style.transition = `width ${DUR}ms cubic-bezier(.25,.8,.35,1)`;
+    fill.style.width = '100%';
+  });
+  const t0 = performance.now();
+  const tick = now => {
+    const p = Math.min(1, (now - t0) / DUR);
+    pctEl.textContent = Math.round(p * 100) + '%';
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+
+  setTimeout(() => {
+    clearInterval(tipTimer);
+    el.classList.add('out');
+    setTimeout(() => {
+      el.remove();
+      document.body.style.overflow = '';
+      runLoadingBusy = false;
+      done();
+    }, 420);
+  }, duration);
+}
+
+function beginRunNow(difficulty, boon, challengeId) {
+  const ch = challengeById(challengeId);
+  const ng = ch ? CHALLENGE_NG : (difficulty !== undefined ? Math.max(0, Math.min(MAX_NG, difficulty | 0)) : currentNgSelect());
   const u = S.meta.upgrades;
   R = {
     depth: 1, gold: 70 + ng * 20, hp: 0, potions: 2 + (u.potion || 0),
@@ -2795,13 +3942,14 @@ function beginRun(difficulty, boon) {
     bonusHp: 0, bonusAtk: 0, bonusDef: 0, bonusCrit: 0,
     skills: [], equip: { weapon: [], armor: [], trinket: [] },
     revived: false, usedPotion: false, bossKills: 0, ng: ng, ngAtStart: ng,
+    challengeId: ch ? ch.id : null,
     map: null, mapFor: -1, node: null, active: null, done: [],
     shop: null, shopFor: -1, shopReroll: 0, hardships: [], gift: null, giftNext: null,
     skipFloor: false, cursed: false, stackMode: 0,
-    stackEnabled: S.meta.stackEnabled !== false,
+    stackEnabled: ch ? false : S.meta.stackEnabled !== false,
     treatyIds: [], treatySeen: [], treatyOptions: [], treatySel: [],
     kills: 0, itemsLog: [], bossLog: [], enemyLog: [],
-    maxItems: 0, maxAtk: 0, maxDef: 0, maxCritDmg: 0, maxHp: 0,
+    maxItems: 0, maxAtk: 0, maxDef: 0, maxCritDmg: 0, maxHp: 0, maxGold: 0,
     dev: S.meta.dev ? Object.assign({}, S.meta.dev) : undefined,
   };
   const pool = shuffle(STARTER_SKILLS.slice());
@@ -2810,7 +3958,7 @@ function beginRun(difficulty, boon) {
     const avail = SKILL_POOL.filter(s => !R.skills.includes(s));
     if (avail.length) R.skills.push(pick(avail));
   }
-  // 开局增益：扣魂尘、发放技能与属性增益（放弃冒险时全额退还）
+  // 开局增益：扣魂尘、发放技能与属性增益（放弃领取时全额退还）
   if (boon && boon.cost > 0) {
     S.meta.soulDust -= boon.cost;
     R.preBoon = { cost: boon.cost };
@@ -2841,6 +3989,10 @@ function beginRun(difficulty, boon) {
 function continueRun() {
   if (S.pendingSettlement) { showSettlementModal(S.pendingSettlement); return; }
   if (!S.runSave) { toast('没有可继续的冒险', '❔'); return; }
+  showRunLoading(() => continueRunNow(), { title: '正在渗入深渊', duration: 3400 });
+}
+
+function continueRunNow() {
   R = JSON.parse(JSON.stringify(S.runSave));
   if (!R.skills) R.skills = ['fireSlash'];
   if (!R.equip) R.equip = { weapon: [], armor: [], trinket: [] };
@@ -2861,17 +4013,19 @@ function continueRun() {
   if (!Array.isArray(R.hardships)) R.hardships = [];
   if (R.shopReroll === undefined) R.shopReroll = 0;
   if (R.giftNext === undefined) R.giftNext = null;
-  if (R.ng === undefined) R.ng = R.ngAtStart !== undefined ? R.ngAtStart : (S.meta.ngPlus || 0);
+  if (R.ng === undefined) R.ng = R.ngAtStart !== undefined ? R.ngAtStart : currentNgSelect();
   R.ngAtStart = R.ng;
   if (R.maxItems === undefined) R.maxItems = 0;
   if (R.maxAtk === undefined) R.maxAtk = 0;
   if (R.maxDef === undefined) R.maxDef = 0;
   if (R.maxCritDmg === undefined) R.maxCritDmg = 0;
   if (R.maxHp === undefined) R.maxHp = 0;
+  if (R.maxGold === undefined) R.maxGold = R.gold || 0;
   if (!Array.isArray(R.done)) R.done = [];
   if (!R.map || R.mapFor !== R.depth) { R.map = null; R.mapFor = -1; R.node = null; R.done = []; }
   R.active = null;
-  R.shopFor = -1;
+  // 保留本层商店数据：返回圣所再继续时不应刷新商品
+  if (!R.shop) R.shopFor = -1;
   runView = R.gift ? 'gift' : ((modeOf(R) === 2 && R.treatyOptions.length && R.depth >= 12 && R.depth <= 15) ? 'treaty' : 'map');
   pendingItems = [];
   renderRun();
@@ -2900,20 +4054,12 @@ const ROOM_META = {
 };
 
 function genMap(depth) {
-  const rows = rnd(2, 3);
+  const rows = 3;
+  const spineRow = Math.floor(rows / 2);
+  // 主路线 4-5 列：所有行从第 1 列到最后 1 列全部填满，不再出现空缺
   const middleCols = rnd(4, 5);
-  // 本层总节点数 = 入口 + 中间节点 + 深渊商店 + 首领，控制在 8-9 个
-  const totalMiddle = Math.max(middleCols + 1, rnd(5, 6));
-  const battles = clamp(rnd(4, 5), 4, totalMiddle - 1);
-  const events = totalMiddle - battles;
-
-  const types = [];
-  for (let i = 0; i < battles; i++) types.push(Math.random() < 0.24 ? 'elite' : 'battle');
-  for (let i = 0; i < events; i++) types.push('event');
-  shuffle(types);
 
   const nodes = [];
-  const colNodes = [];
   let uid = 0;
   function mkNode(c, r, type) {
     const n = { id: 'm' + (uid++), c: c, r: r, type: type, links: [] };
@@ -2925,93 +4071,65 @@ function genMap(depth) {
     if (a.links.indexOf(b.id) < 0) a.links.push(b.id);
     if (b.links.indexOf(a.id) < 0) b.links.push(a.id);
   }
-
-  for (let c = 0; c <= middleCols + 2; c++) colNodes.push([]);
-
-  const startRow = rnd(0, rows - 1);
-  colNodes[0].push(mkNode(0, startRow, 'start'));
-
-  // 中间列：每列至少一个节点，额外节点优先补在首列与末列以形成分叉/汇流
-  const slotRows = [];
-  for (let c = 0; c < middleCols; c++) slotRows.push([rnd(0, rows - 1)]);
-  let extra = totalMiddle - middleCols;
-  const preferred = [];
-  const firstFree = [], lastFree = [];
-  for (let r = 0; r < rows; r++) {
-    if (slotRows[0].indexOf(r) < 0) firstFree.push(r);
-    if (slotRows[middleCols - 1].indexOf(r) < 0) lastFree.push(r);
-  }
-  const pairCount = Math.max(firstFree.length, lastFree.length);
-  for (let i = 0; i < pairCount; i++) {
-    if (firstFree[i] !== undefined) preferred.push([0, firstFree[i]]);
-    if (lastFree[i] !== undefined) preferred.push([middleCols - 1, lastFree[i]]);
-  }
-  while (extra > 0) {
-    let p = preferred.shift();
-    if (!p) {
-      const cand = [];
-      for (let c = 0; c < middleCols; c++) {
-        for (let r = 0; r < rows; r++) {
-          if (slotRows[c].indexOf(r) < 0) cand.push([c, r]);
-        }
-      }
-      if (!cand.length) break;
-      p = pick(cand);
-    }
-    if (slotRows[p[0]].indexOf(p[1]) >= 0) continue;
-    slotRows[p[0]].push(p[1]);
-    extra--;
-  }
-  for (let c = 0; c < middleCols; c++) {
-    shuffle(slotRows[c]);
-    for (let i = 0; i < slotRows[c].length; i++) {
-      colNodes[c + 1].push(mkNode(c + 1, slotRows[c][i], types.pop() || 'battle'));
-    }
+  function rollType() {
+    const x = Math.random();
+    if (x < 0.2) return 'elite';
+    if (x < 0.44) return 'event';
+    return 'battle';
   }
 
-  const shopRow = rnd(0, rows - 1);
-  const bossRow = rnd(0, rows - 1);
-  colNodes[middleCols + 1].push(mkNode(middleCols + 1, shopRow, 'shop'));
-  colNodes[middleCols + 2].push(mkNode(middleCols + 2, bossRow, 'boss'));
+  // 固定位：入口、深渊商店、首领始终在同一水平线上
+  const start = mkNode(0, spineRow, 'start');
+  const shop = mkNode(middleCols + 1, spineRow, 'shop');
+  const boss = mkNode(middleCols + 2, spineRow, 'boss');
 
-  const start = colNodes[0][0];
-  const shop = colNodes[middleCols + 1][0];
-  const boss = colNodes[middleCols + 2][0];
-
-  // 入口一分多
-  colNodes[1].forEach(n => connect(start, n));
-
-  // 相邻列之间按行距连通（允许斜向上下换行）
-  for (let c = 1; c < middleCols + 1; c++) {
-    const A = colNodes[c], B = colNodes[c + 1];
-    A.forEach(a => B.forEach(b => { if (Math.abs(a.r - b.r) <= 1) connect(a, b); }));
-    A.forEach(a => {
-      if (!B.some(b => a.links.indexOf(b.id) >= 0)) {
-        const b = B.reduce((best, x) => (Math.abs(x.r - a.r) < Math.abs(best.r - a.r) ? x : best), B[0]);
-        connect(a, b);
-      }
-    });
-    B.forEach(b => {
-      if (!A.some(a => a.links.indexOf(b.id) >= 0)) {
-        const a = A.reduce((best, x) => (Math.abs(x.r - b.r) < Math.abs(best.r - b.r) ? x : best), A[0]);
-        connect(a, b);
-      }
-    });
-  }
-
-  // 同列上下连通：部分节点可纵向移动
+  // 三行道路全部填满：每一行在第 1 列到第 N 列都有节点
   for (let c = 1; c <= middleCols; c++) {
-    const arr = colNodes[c].slice().sort((a, b) => a.r - b.r);
-    for (let i = 0; i < arr.length - 1; i++) {
-      if (arr[i + 1].r - arr[i].r === 1 && Math.random() < 0.65) connect(arr[i], arr[i + 1]);
-    }
+    for (let r = 0; r < rows; r++) mkNode(c, r, rollType());
   }
 
-  // 末列节点汇入深渊商店，再由商店通往首领
-  colNodes[middleCols].forEach(n => connect(n, shop));
+  const grid = {};
+  nodes.forEach(n => { grid[n.c + ',' + n.r] = n; });
+  const at = (c, r) => grid[c + ',' + r] || null;
+
+  // 同一行内按列顺序连接，避免出现同列上下移动
+  for (let r = 0; r < rows; r++) {
+    const list = nodes.filter(n => n.r === r).sort((a, b) => a.c - b.c);
+    for (let i = 0; i < list.length - 1; i++) connect(list[i], list[i + 1]);
+  }
+  // 入口连接第一列的上/下节点（中行由入口自身延伸）
+  [0, 2].forEach(r => { if (at(1, r)) connect(start, at(1, r)); });
+
+  // 换行：只随机开放 1-2 个岔口，且每个岔口只连通「中行 <-> 上行/下行」
+  const gapCandidates = [];
+  for (let g = 1; g < middleCols; g++) {
+    [0, 2].forEach(side => {
+      const linkA = at(g, spineRow) && at(g + 1, side);
+      const linkB = at(g, side) && at(g + 1, spineRow);
+      if (linkA || linkB) gapCandidates.push({ g: g, side: side });
+    });
+  }
+  const usedGaps = {};
+  const laneGapLimit = rnd(1, 2);
+  shuffle(gapCandidates).forEach(cand => {
+    if (Object.keys(usedGaps).length >= laneGapLimit) return;
+    if (usedGaps[cand.g]) return;
+    usedGaps[cand.g] = 1;
+    const a1 = at(cand.g, spineRow), b1 = at(cand.g + 1, cand.side);
+    const a2 = at(cand.g, cand.side), b2 = at(cand.g + 1, spineRow);
+    if (a1 && b1) connect(a1, b1);
+    if (a2 && b2) connect(a2, b2);
+  });
+
+  // 末列各行汇入商店：每一行的最后一个节点都能直达商店（上下行在终点回到中线）
+  for (let r = 0; r < rows; r++) {
+    const list = nodes.filter(n => n.r === r).sort((a, b) => a.c - b.c);
+    if (list.length) connect(list[list.length - 1], shop);
+  }
   connect(shop, boss);
 
   return {
+    key: 'map_' + Date.now() + '_' + Math.floor(Math.random() * 1e6),
     rows: rows, cols: middleCols + 3, middleCols: middleCols,
     nodes: nodes, start: start.id, shop: shop.id, boss: boss.id,
     w: (middleCols + 3) * MAP_COL_W, h: rows * MAP_ROW_H,
@@ -3084,6 +4202,8 @@ function playerPanelHtml() {
     ? `<span class="pill tag-rose" title="点击查看已签署的条约" style="cursor:pointer" onclick="showTreatyTags()">📜 条约 ${R.treatyIds.length} 条 · ${treatyScore()} 分</span>` : '';
   const hardshipPill = (R.hardships && R.hardships.length)
     ? `<span class="pill tag-rose" title="点击查看已背负的苦难" style="cursor:pointer" onclick="showHardshipTags()">☠ 苦难 ${R.hardships.length}</span>` : '';
+  const uneasePill = R.unease
+    ? `<span class="pill" title="${R.unease.n}" style="border-color:rgba(170,110,255,.45);color:#d6a7ff">😖 心神不宁</span>` : '';
   return `<div class="card hero-strip">
     <div class="hs-col hs-id">
       <div class="row between" style="margin-bottom:9px">
@@ -3095,7 +4215,7 @@ function playerPanelHtml() {
         <span class="muted">❤ ${Math.round(R.hp)} / ${s.maxHp}</span>
         <span class="muted">🧪 ${R.potions} / ${R.potionCap}</span>
       </div>
-      ${(treatyPill || hardshipPill) ? `<div class="row" style="margin-top:9px;flex-wrap:wrap;gap:6px">${treatyPill}${hardshipPill}</div>` : ''}
+      ${(treatyPill || hardshipPill || uneasePill) ? `<div class="row" style="margin-top:9px;flex-wrap:wrap;gap:6px">${treatyPill}${hardshipPill}${uneasePill}</div>` : ''}
     </div>
     <div class="hs-col hs-stat">
       <div class="pstat-grid" style="margin-top:0">
@@ -3161,7 +4281,7 @@ function mapHtml() {
   const cleared = (R.done || []).length;
   const hint = R.active ? '正在探索当前节点……'
     : (R.node === map.shop ? '离开商店后即可挑战本层首领。'
-      : '只能继续向右或在本列上下移动，无法返回已走过的列。');
+      : '只能沿路线向右前进，部分岔口可上下换行，无法回头。');
   return `<div class="card map-card">
     <div class="card-h">
       <span>🧭</span>
@@ -3178,24 +4298,122 @@ function mapHtml() {
       <span><i class="lg shop"></i>深渊商店</span>
       <span><i class="lg boss"></i>首领</span>
     </div>
-    <div class="map-scroll">
-      <div class="abyss-map" style="width:${map.w}px;height:${map.h}px">
+    <div class="map-viewport" id="map-viewport">
+      <div class="map-stage abyss-map" id="map-stage" style="width:${map.w}px;height:${map.h}px">
         <svg class="map-links" width="${map.w}" height="${map.h}" viewBox="0 0 ${map.w} ${map.h}">${edges}</svg>
         ${nodeHtml}
       </div>
+      <div class="map-zoom-tip">🖱 滚轮缩放 · 按住拖拽查看完整路线</div>
     </div>
     <div class="map-hint">${hint}</div>
   </div>`;
 }
 
-function scrollMapToCurrent() {
-  requestAnimationFrame(() => {
-    const wrap = document.querySelector('.map-scroll');
-    const cur = document.querySelector('.abyss-map .mn.cur');
-    if (!wrap || !cur) return;
-    const target = cur.offsetLeft - wrap.clientWidth / 2 + cur.offsetWidth / 2;
-    wrap.scrollLeft = Math.max(0, target);
+/* ---------------- 地图摄像机：滚轮缩放 + 拖拽平移 ---------------- */
+const MAP_MIN_SCALE = 0.42;
+const MAP_MAX_SCALE = 2.2;
+const MAP_INITIAL_SCALE = 1.35;
+const MAP_EDGE_MARGIN = 36;
+let mapCam = { depth: null, key: null, scale: MAP_INITIAL_SCALE, tx: 0, ty: 0 };
+let mapDrag = null;
+let mapSuppressClickUntil = 0;
+
+function clampMapCamera() {
+  const vp = document.getElementById('map-viewport');
+  if (!vp || !R || !R.map) return;
+  const vw = vp.clientWidth, vh = vp.clientHeight;
+  if (!vw || !vh) return;
+  const mw = R.map.w * mapCam.scale, mh = R.map.h * mapCam.scale;
+  mapCam.tx = mw <= vw - MAP_EDGE_MARGIN * 2
+    ? (vw - mw) / 2
+    : clamp(mapCam.tx, vw - mw - MAP_EDGE_MARGIN, MAP_EDGE_MARGIN);
+  mapCam.ty = mh <= vh - MAP_EDGE_MARGIN * 2
+    ? (vh - mh) / 2
+    : clamp(mapCam.ty, vh - mh - MAP_EDGE_MARGIN, MAP_EDGE_MARGIN);
+}
+
+function applyMapCamera() {
+  const stage = document.getElementById('map-stage');
+  if (!stage) return;
+  clampMapCamera();
+  stage.style.transform = `translate3d(${mapCam.tx}px, ${mapCam.ty}px, 0) scale(${mapCam.scale})`;
+  stage.style.visibility = 'visible';
+}
+
+function mapZoomAt(px, py, nextScale) {
+  const next = clamp(nextScale, MAP_MIN_SCALE, MAP_MAX_SCALE);
+  if (Math.abs(next - mapCam.scale) < 0.0005) return;
+  const k = next / mapCam.scale;
+  mapCam.tx = px - (px - mapCam.tx) * k;
+  mapCam.ty = py - (py - mapCam.ty) * k;
+  mapCam.scale = next;
+  applyMapCamera();
+}
+
+function bindMapCamera() {
+  const vp = document.getElementById('map-viewport');
+  if (!vp) return;
+  vp.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = vp.getBoundingClientRect();
+    const factor = Math.pow(1.0015, -e.deltaY);
+    mapZoomAt(e.clientX - rect.left, e.clientY - rect.top, mapCam.scale * factor);
+  }, { passive: false });
+
+  vp.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
+    mapDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, tx: mapCam.tx, ty: mapCam.ty, moved: false };
+    vp.classList.add('dragging');
+
+    const onMove = ev => {
+      if (!mapDrag || ev.pointerId !== mapDrag.id) return;
+      const dx = ev.clientX - mapDrag.x;
+      const dy = ev.clientY - mapDrag.y;
+      if (!mapDrag.moved && Math.hypot(dx, dy) > 5) mapDrag.moved = true;
+      if (!mapDrag.moved) return;
+      mapCam.tx = mapDrag.tx + dx;
+      mapCam.ty = mapDrag.ty + dy;
+      applyMapCamera();
+    };
+    const onUp = ev => {
+      if (!mapDrag || ev.pointerId !== mapDrag.id) return;
+      if (mapDrag.moved) mapSuppressClickUntil = Date.now() + 320;
+      mapDrag = null;
+      vp.classList.remove('dragging');
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
   });
+}
+
+// 进入新一层或身处入口时，摄像机定位到地图最左侧的入口处并保持整体放大比例
+function setupMapCamera() {
+  const vp = document.getElementById('map-viewport');
+  if (!vp || !R || !R.map) return;
+  const map = R.map;
+  const vw = vp.clientWidth, vh = vp.clientHeight;
+  if (!vw || !vh) return;
+  if (mapCam.key !== map.key || R.node === map.start) {
+    const atStart = R.node === map.start;
+    const focusNode = atStart ? nodeById(map.start) : (nodeById(R.node) || nodeById(map.start));
+    // 初始比例略放大，同时保证三行节点基本完整可见
+    const scale = clamp(Math.min(MAP_INITIAL_SCALE, vh * 1.12 / map.h), MAP_MIN_SCALE, MAP_MAX_SCALE);
+    const focusX = ((focusNode ? focusNode.c : 0) + 0.5) * MAP_COL_W;
+    const focusY = ((focusNode ? focusNode.r : 0) + 0.5) * MAP_ROW_H;
+    mapCam = {
+      depth: R.depth,
+      key: map.key,
+      scale: scale,
+      tx: atStart ? vw * 0.14 - focusX * scale : vw / 2 - focusX * scale,
+      ty: atStart ? vh / 2 - (map.h / 2) * scale : vh / 2 - focusY * scale,
+    };
+  }
+  applyMapCamera();
+  bindMapCamera();
 }
 
 function floorTrackHtml() {
@@ -3447,7 +4665,8 @@ function renderRun() {
       <div style="margin-left:auto" class="row" style="gap:8px;flex-wrap:wrap">
         <span class="pill tag-gold">🔄 ${ngInfo(R.ng || 0).name}</span>
         ${R.stackMode ? `<span class="pill tag-rose">🩸 ${modeName(R)}</span>` : ''}
-        ${hasRulerBuff() ? '<span class="pill tag-jade">👑 深渊统治者</span>' : ''}
+        ${currentChallenge() ? `<span class="pill tag-gold">🏆 ${currentChallenge().n}</span>` : ''}
+        ${rulerTagHtml()}
         <button class="btn btn-sm btn-ghost" onclick="abandonRun()">放弃冒险</button>
       </div>
     </div>
@@ -3457,13 +4676,13 @@ function renderRun() {
       <div class="player-rail">${playerPanelHtml()}</div>
     </div>`;
   renderTopbar();
-  if (runView === 'map') scrollMapToCurrent();
+  if (runView === 'map') requestAnimationFrame(setupMapCamera);
 }
 
 function abandonRun() {
   modal({
     title: '放弃这次冒险？', sub: 'ABANDON RUN',
-    body: '你会带着已获得的魂尘回到圣所，本局的成长会全部消失。若本局购买过开局增益，消耗的魂尘将全额退还。',
+    body: '你将以「放弃冒险」结束本局。结算时选择「放弃领取」会全额退还开局增益消耗的魂尘，但本局魂尘奖励一并放弃；选择「领取奖励」则保留本局魂尘奖励，开局增益消耗不退还。',
     buttons: [
       { label: '继续深入', cls: 'btn-primary' },
       { label: '放弃', cls: 'btn-danger', fn: () => { finishRun(false, true); } },
@@ -3483,6 +4702,7 @@ function closeBattleAndContinue() {
 }
 
 function enterNode(id) {
+  if (Date.now() < mapSuppressClickUntil) return;
   const n = nodeById(id);
   if (!canEnterNode(n)) return;
   R.active = id;
@@ -3538,6 +4758,8 @@ function clearRoom() {
       runView = 'map';
       const m = modeOf(R);
       if (m === 0 && (R.ng || 0) >= STACK_UNLOCK_NG) {
+        // 挑战保留正常前五层的首领进程，第五层后自动进入叠加层，第十层直接结算。
+        if (currentChallenge()) { enterStackMode(1); return; }
         if (R.stackEnabled === false) { finishRun(true); return; }
         promptStack();
         return;
@@ -3552,11 +4774,14 @@ function clearRoom() {
     }
     // 每一层结束后：深渊的馈赠与代偿（极限模式 11-14 层结束后还需签署条约）
     const nextView = (modeOf(R) === 2 && clearedDepth >= 11 && clearedDepth <= 14) ? 'treaty' : 'map';
-    startGift(nextView, clearedDepth);
-    saveRunState();
-    checkAch();
-    renderRun();
-    showScreen('run');
+    const enterNext = () => {
+      startGift(nextView, clearedDepth);
+      saveRunState();
+      checkAch();
+      renderRun();
+      showScreen('run');
+    };
+    showRunLoading(enterNext, { title: '正在前往下一层', duration: 3400 });
   });
 }
 
@@ -3620,8 +4845,15 @@ function enterStackMode(mode) {
   renderTopbar();
   saveRunState();
   toast(mode === 2 ? '已进入深渊叠加 · 极限 · 上限提升至 15 层' : '已进入深渊叠加 · 上限提升至 10 层', '🩸', 'warning');
-  renderRun();
-  showScreen('run');
+  // 进入叠加层同样播放「正在前往下一层」，并补齐上一层的深渊的馈赠与代偿
+  const clearedDepth = mode === 2 ? STACK_MAX_DEPTH : MAX_DEPTH;
+  showRunLoading(() => {
+    startGift('map', clearedDepth);
+    saveRunState();
+    checkAch();
+    renderRun();
+    showScreen('run');
+  }, { title: '正在前往下一层', duration: 3400 });
 }
 
 /* ---------------- 装备获取 ---------------- */
@@ -3771,7 +5003,7 @@ function showTreatyTags() {
 /* ---------------- 商店 ---------------- */
 function buildShop() {
   const offers = [];
-  const mul = 1 + treatyMods().shopPrice;
+  const mul = (1 + treatyMods().shopPrice) * challengeShopPriceMul();
   for (let i = 0; i < 3; i++) {
     const it = genItem(R.depth, rollRarity(R.depth + 1));
     offers.push({ kind: 'item', it, price: Math.max(1, Math.round(it.price * 1.15 * mul)), sold: false });
@@ -3783,7 +5015,8 @@ function buildShop() {
     { k: 'bonusDef', v: 3, n: '石肤药剂', d: '防御 +3', i: '🛡️' },
     { k: 'bonusCrit', v: 6, n: '锐目药剂', d: '暴击率 +6%', i: '🎯' },
   ];
-  const bf = pick(buffs);
+  const buffStatKey = { bonusHp: 'maxHp', bonusAtk: 'atk', bonusDef: 'def', bonusCrit: 'crit' };
+  const bf = pick(buffs.filter(b => !challengeStatLocked(buffStatKey[b.k])));
   offers.push({ kind: 'buff', ...bf, price: Math.max(1, Math.round(62 * mul)), sold: false });
   const known = R.skills;
   const avail = SKILL_POOL.filter(s => !known.includes(s));
@@ -3799,14 +5032,28 @@ function renderShop() {
     R.shop = buildShop();
     R.shopFor = R.depth;
     R.shopReroll = 0;
+    sellSelected.clear();
+    batchSell = false;
+    shopMode = 'buy';
   } else if (R.shopReroll === undefined) {
     R.shopReroll = 0;
   }
   renderRun();
 }
 
-function shopHtml() {
-  const rows = R.shop.map((o, i) => {
+function setShopMode(m) {
+  shopMode = m === 'sell' ? 'sell' : 'buy';
+  if (shopMode === 'buy') sellSelected.clear();
+  batchSell = false;
+  sfx('click');
+  renderRun();
+}
+
+// 出售价：按装备估价等比折算
+function sellPriceOf(it) { return Math.max(1, Math.round((it.price || 0) * 0.8)); }
+
+function shopBuyHtml() {
+  const cards = R.shop.map((o, i) => {
     let ico = '❔', name = '', desc = '', rc = '#9fb6e6';
     if (o.kind === 'item') {
       ico = o.it.ico; name = o.it.name; rc = RARITY[o.it.rarity].color;
@@ -3821,28 +5068,146 @@ function shopHtml() {
       ico = sk.i; name = sk.n; desc = sk.d + ` （冷却 ${sk.cd} 回合）`; rc = '#b9a8ff';
     }
     const can = !o.sold && R.gold >= o.price;
-    return `<div class="offer ${o.sold ? 'sold' : ''}" style="--rc:${rc}">
-      <div class="offer-ico">${ico}</div>
-      <div style="min-width:0">
-        <div class="offer-name">${name}</div>
-        <div class="offer-desc">${desc}</div>
-      </div>
-      <div class="col" style="align-items:flex-end;gap:5px">
+    return `<div class="shop-card ${o.sold ? 'sold' : ''}" style="--rc:${rc}">
+      <div class="si-head"><span class="si-ico">${ico}</span><span class="si-name">${name}</span></div>
+      <div class="si-desc">${desc}</div>
+      <div class="si-foot">
         <span class="cost">💰 ${o.price}</span>
         <button class="btn btn-sm ${can ? 'btn-primary' : 'btn-ghost'}" ${can ? '' : 'disabled'} onclick="buyOffer(${i})">${o.sold ? '已售出' : '购买'}</button>
       </div>
     </div>`;
   }).join('');
+  return `<div class="shop-grid">${cards}</div>`;
+}
 
+function shopSellEntries() {
+  const entries = [];
+  ['weapon', 'armor', 'trinket'].forEach(slot => {
+    (R.equip[slot] || []).forEach((it, idx) => entries.push({ key: slot + ':' + idx, slot, idx, it }));
+  });
+  return entries;
+}
+
+function shopSellHtml() {
+  const entries = shopSellEntries();
+  const selCount = entries.filter(e => sellSelected.has(e.key)).length;
+  const total = entries.reduce((a, e) => a + (sellSelected.has(e.key) ? sellPriceOf(e.it) : 0), 0);
+  const cards = entries.map(({ key, slot, idx, it }) => {
+    const rc = RARITY[it.rarity].color;
+    const on = sellSelected.has(key);
+    return `<div class="shop-card sell-card ${batchSell ? 'pick' : ''} ${on ? 'on' : ''}" style="--rc:${rc}"
+        ${batchSell ? `onclick="toggleSellItem('${key}',${!on})"` : ''}>
+      ${batchSell ? `<span class="sell-check ${on ? 'on' : ''}">${on ? '✓' : ''}</span>` : ''}
+      <div class="si-head"><span class="si-ico">${it.ico}</span><span class="si-name" style="color:${rc}">${it.name}</span></div>
+      <div class="si-desc">${SLOT_NAME[slot]} · ${statLines(it.stats).join(' · ')}</div>
+      <div class="si-foot">
+        <span class="cost">💰 ${sellPriceOf(it)}</span>
+        ${batchSell ? '' : `<button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();sellOneItem('${slot}',${idx})">出售</button>`}
+      </div>
+    </div>`;
+  }).join('');
+  const empty = `<div class="small dim" style="grid-column:1/-1;padding:24px 0;text-align:center">背包中没有可出售的装备。</div>`;
+  const head = `<div class="sell-head">
+      <span class="small dim">${batchSell
+        ? `背包 ${entries.length} 件 · 已选 ${selCount} 件 · 合计 💰 ${fmt(total)}`
+        : `背包 ${entries.length} 件 · 估价合计 💰 ${fmt(entries.reduce((a, e) => a + sellPriceOf(e.it), 0))}`}</span>
+      <span class="row" style="gap:8px">
+        ${batchSell
+          ? `<button class="btn btn-ghost btn-sm" onclick="exitBatchSell()">退出批量</button>
+             <button class="btn btn-primary btn-sm" ${selCount ? '' : 'disabled'} onclick="sellSelectedItems()">全部出售</button>`
+          : `<button class="btn btn-ghost btn-sm" ${entries.length ? '' : 'disabled'} onclick="batchSelectSell()">批量出售</button>`}
+      </span>
+    </div>`;
+  return `${head}<div class="shop-grid">${entries.length ? cards : empty}</div>`;
+}
+
+// 渲染后保留商店网格的滚动位置
+function renderKeepShopScroll() {
+  const box = $('.shop-grid');
+  const st = box ? box.scrollTop : 0;
+  renderRun();
+  const nb = $('.shop-grid');
+  if (nb) nb.scrollTop = st;
+}
+
+function toggleSellItem(key, on) {
+  if (on) sellSelected.add(key); else sellSelected.delete(key);
+  renderKeepShopScroll();
+}
+
+function batchSelectSell() {
+  // 进入批量选择模式：不默认勾选，由玩家自行选择
+  batchSell = true;
+  sellSelected.clear();
+  sfx('click');
+  renderKeepShopScroll();
+}
+
+function exitBatchSell() {
+  batchSell = false;
+  sellSelected.clear();
+  sfx('click');
+  renderKeepShopScroll();
+}
+
+// 单件出售
+function sellOneItem(slot, idx) {
+  const arr = R.equip[slot] || [];
+  const it = arr[idx];
+  if (!it) return;
+  const gain = sellPriceOf(it);
+  arr.splice(idx, 1);
+  addGold(gain);
+  R.hp = Math.min(R.hp, effStats().maxHp);
+  sellSelected.clear();
+  sfx('buy');
+  toast(`已出售 ${it.name}，获得 💰 ${fmt(gain)}`, '💰', 'success');
+  checkAch();
+  saveRunState();
+  renderKeepShopScroll();
+}
+
+function sellSelectedItems() {
+  const slots = ['weapon', 'armor', 'trinket'];
+  let total = 0, count = 0;
+  slots.forEach(slot => {
+    const arr = R.equip[slot] || [];
+    arr.forEach((it, idx) => {
+      if (sellSelected.has(slot + ':' + idx)) { total += sellPriceOf(it); count++; }
+    });
+    R.equip[slot] = arr.filter((it, idx) => !sellSelected.has(slot + ':' + idx));
+  });
+  if (!count) return;
+  addGold(total);
+  R.hp = Math.min(R.hp, effStats().maxHp);
+  sellSelected.clear();
+  batchSell = false;
+  sfx('buy');
+  toast(`已出售 ${count} 件装备，获得 💰 ${fmt(total)}`, '💰', 'success');
+  checkAch();
+  saveRunState();
+  renderKeepShopScroll();
+}
+
+function shopHtml() {
   const tm = treatyMods();
   const priceTag = tm.shopPrice ? `<span class="pill tag-rose" style="margin-left:6px">📜 价格 ×${(1 + tm.shopPrice).toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}</span>` : '';
+  const challengePriceTag = currentChallenge() && currentChallenge().id === 'inflation' ? `<span class="pill tag-rose" style="margin-left:6px">🏆 挑战物价 ×${challengeShopPriceMul()}</span>` : '';
+  const body = shopMode === 'sell' ? shopSellHtml() : shopBuyHtml();
+  const foot = shopMode === 'sell'
+    ? `<span class="small dim">出售按装备估价的 80% 折算</span>`
+    : `<button class="btn btn-ghost btn-sm" ${R.gold >= rerollCost() ? '' : 'disabled'} onclick="rerollShop()">🔄 刷新商品（${rerollCost()} 金）</button>`;
   return `<div class="card">
     <div class="card-h"><span>🛒</span><div><div class="card-t">深渊商店</div><div class="card-sub">"金币在深渊里也会腐坏，不如交给我。"</div></div>
-      <div style="margin-left:auto" class="row" style="gap:6px">${priceTag}<span class="pill tag-gold">💰 ${fmt(R.gold)}</span></div></div>
-    <div class="col" style="gap:10px">${rows}</div>
+      <div style="margin-left:auto" class="row">${priceTag}${challengePriceTag}<span class="pill tag-gold">💰 ${fmt(R.gold)}</span></div></div>
+    <div class="shop-tabs">
+      <button class="shop-tab ${shopMode === 'buy' ? 'on' : ''}" onclick="setShopMode('buy')">购入</button>
+      <button class="shop-tab ${shopMode === 'sell' ? 'on' : ''}" onclick="setShopMode('sell')">出售</button>
+    </div>
+    ${body}
     <div class="divider"></div>
     <div class="row" style="gap:10px;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" ${R.gold >= rerollCost() ? '' : 'disabled'} onclick="rerollShop()">🔄 刷新商品（${rerollCost()} 金）</button>
+      ${foot}
       <button class="btn btn-jade btn-sm" style="margin-left:auto" onclick="leaveShop()">离开商店 →</button>
     </div>
   </div>`;
@@ -3909,11 +5274,72 @@ function eventHtml() {
   </div>`;
 }
 function doEvent(i) {
+  if (eventPickCtx) return;
   const ev = R.ev;
   const choice = ev.choices[i];
   S.stats.events++;
-  let text = '';
-  try { text = choice.fn() || '什么也没有发生。'; } catch (e) { text = '命运拒绝了你的选择。'; console.warn(e); }
+  let text = null;
+  let deferred = false;
+  try {
+    const r = choice.fn();
+    if (r === null) deferred = true;
+    else text = r || '什么也没有发生。';
+  } catch (e) { text = '命运拒绝了你的选择。'; console.warn(e); }
+  renderRun();
+  if (deferred) return;
+  finishEventOutcome(text);
+}
+
+/* ---------------- 事件物品选择器（铁匠 / 裂纹之镜 / 幽灵商队共用） ---------------- */
+let eventPickCtx = null;
+function recalcItemPower(it) {
+  const s = it.stats || {};
+  const score = (s.atk || 0) * 3 + (s.def || 0) * 2.5 + (s.hp || 0) * 0.5 +
+    (s.crit || 0) * 1.2 + (s.critDmg || 0) * 0.4 + (s.lifesteal || 0) * 2 + (s.gold || 0) * 0.2;
+  it.score = Math.round(score);
+  const rr = RARITY[it.rarity] || RARITY.common;
+  it.price = Math.round((16 + score * 0.62) * rr.mult * (1 + ((R ? R.depth : 1) - 1) * 0.06));
+}
+function eventItemPickHtml(items) {
+  return items.map((it, i) => {
+    const rr = RARITY[it.rarity] || RARITY.common;
+    return `<button class="cx clickable" style="text-align:left;width:100%;font-family:inherit;color:inherit;cursor:pointer;border-color:${rr.color}55" onclick="eventPickItem(${i})">
+      <div class="cx-top">
+        <div class="cx-emoji" style="border-color:${rr.color};width:38px;height:38px;font-size:19px">${it.ico}</div>
+        <div style="min-width:0;flex:1">
+          <div class="cx-n" style="color:${rr.color}">${it.name}</div>
+          <div class="small dim">${SLOT_NAME[it.slot]} · 估价 ${it.price} 金</div>
+        </div>
+        <span class="pill">选择</span>
+      </div>
+      <div class="small" style="color:#9fc0ff;line-height:1.7">${statLines(it.stats).join(' · ')}</div>
+    </button>`;
+  }).join('');
+}
+function openEventItemPicker({ title, sub = '', items, emptyText, onPick }) {
+  eventPickCtx = { items: items, onPick: onPick };
+  const body = items.length
+    ? `<div class="col" style="gap:8px">${eventItemPickHtml(items)}</div>`
+    : `<div class="center muted" style="padding:26px 10px;font-size:13.5px;line-height:1.9">${emptyText}</div>`;
+  modal({
+    title: title,
+    sub: sub || '命运的回音',
+    body: body,
+    buttons: items.length
+      ? [{ label: '离开', cls: 'btn-ghost', fn: () => { eventPickCtx = null; finishEventOutcome('你最终什么也没有选择，转身离开。', true); } }]
+      : [{ label: '确定', cls: 'btn-primary', fn: () => { eventPickCtx = null; finishEventOutcome(emptyText, true); } }],
+    size: 'wide',
+  });
+}
+function eventPickItem(i) {
+  const ctx = eventPickCtx;
+  eventPickCtx = null;
+  const it = ctx && ctx.items ? ctx.items[i] : null;
+  closeModal();
+  if (it && ctx.onPick) ctx.onPick(it);
+}
+function finishEventOutcome(text, immediate) {
+  const ev = R && R.ev;
   // 深渊叠加：事件给予的效果被深渊放大
   const m = modeOf(R);
   if (m > 0) {
@@ -3925,8 +5351,9 @@ function doEvent(i) {
   }
   saveRunState();
   checkAch();
+  if (immediate) { clearRoom(); return; }
   modal({
-    title: '命运的回音', sub: ev.n,
+    title: '命运的回音', sub: ev ? ev.n : '',
     body: `<div style="font-size:14px;line-height:2;color:#d8e2f5">${text}</div>`,
     buttons: [{ label: '继续深入 →', cls: 'btn-primary', fn: () => { clearRoom(); } }],
   });
@@ -3975,6 +5402,13 @@ function startBattle(kind) {
   hpMul *= (1 + hm.enemyHp);
   atkMul *= (1 + hm.enemyAtk);
   defMul *= (1 + hm.enemyDef);
+  // 心神不宁：石龛标记触发对应战斗类型的敌方增益
+  const um = uneaseMods(kind);
+  if (um) {
+    hpMul *= (1 + um.hp);
+    atkMul *= (1 + um.atk);
+    defMul *= (1 + um.def);
+  }
   const hp = Math.round(base.hp * hpMul);
   const enemy = {
     key, ico: base.i,
@@ -4095,6 +5529,7 @@ async function loseRun() {
 
 function finishRun(win, abandoned) {
   if (!R) return;
+  const ch = currentChallenge();
   const mode = modeOf(R);
   const extreme = mode === 2;
   const cap = depthCapOf();
@@ -4105,16 +5540,11 @@ function finishRun(win, abandoned) {
   const items = (R.itemsLog || []).slice();
   const bossList = (R.bossLog || []).slice();
   const boonCost = (R.preBoon && R.preBoon.cost) ? R.preBoon.cost : 0;
+  // 休赛期（含开发者调试强制休赛期）挑战仍可游玩，但不发放通行证经验
+  const challengeXp = ch && win && passWeeklySeasonActive() && !challengeRewardClaimed(ch.id) ? ch.reward : 0;
   const extremeClear = win && extreme && depthReached >= LIMIT_MAX_DEPTH;
   const treatyCount = (R.treatyIds || []).length;
   const treatyScoreRun = treatyScore();
-
-  // 主动放弃冒险：退还本局开局增益消耗的魂尘
-  let refund = 0;
-  if (abandoned && R.preBoon && R.preBoon.cost > 0) {
-    refund = R.preBoon.cost;
-    S.meta.soulDust += refund;
-  }
 
   S.stats.runs++;
   if (win) S.stats.wins++; else S.stats.deaths++;
@@ -4123,6 +5553,13 @@ function finishRun(win, abandoned) {
   S.stats.maxDepth = Math.max(S.stats.maxDepth, Math.min(R.depth, cap));
   S.stats.maxTreatiesRun = Math.max(S.stats.maxTreatiesRun || 0, treatyCount);
   S.stats.maxTreatyScore = Math.max(S.stats.maxTreatyScore || 0, treatyScoreRun);
+  if (win) S.stats.maxWinDepth = Math.max(S.stats.maxWinDepth || 0, depthReached);
+  // 通过 15 层时记录本局签署的条约，用于条约类成就
+  if (win && depthReached >= 15) {
+    const tc = S.stats.treatyClear = S.stats.treatyClear || {};
+    (R.treatyIds || []).forEach(id => { tc[id] = (tc[id] || 0) + 1; });
+    S.stats.maxTreatyScoreClear = Math.max(S.stats.maxTreatyScoreClear || 0, treatyScoreRun);
+  }
 
   const dustBase = depthReached * 2 + bossKills * 5 + (win ? 20 : 0);
   // 深渊叠加通关：魂尘奖励提升
@@ -4132,7 +5569,7 @@ function finishRun(win, abandoned) {
   let ngUp = false;
   if (win) {
     // 仅在以当前已解锁的最高难度通关时，解锁下一级轮回
-    if (ng >= (S.meta.ngPlus || 0) && ng < MAX_NG) {
+    if (!ch && ng >= (S.meta.ngPlus || 0) && ng < MAX_NG) {
       S.meta.ngPlus = ng + 1;
       ngUp = true;
     }
@@ -4144,6 +5581,7 @@ function finishRun(win, abandoned) {
     S.stats.maxDefRun = Math.max(S.stats.maxDefRun || 0, R.maxDef || 0);
     S.stats.maxCritDmgRun = Math.max(S.stats.maxCritDmgRun || 0, R.maxCritDmg || 0);
     S.stats.maxHpRun = Math.max(S.stats.maxHpRun || 0, R.maxHp || 0);
+    S.stats.maxGoldRun = Math.max(S.stats.maxGoldRun || 0, R.maxGold || 0, R.gold || 0);
   }
 
   // 通行证经验与每周加成：
@@ -4154,7 +5592,7 @@ function finishRun(win, abandoned) {
   const weekly = ensurePassWeekly();
   const seasonActive = passWeeklySeasonActive();
   let passXp = 0, bonusUses = 0;
-  if (seasonActive && win && ng >= 6) {
+  if (!ch && seasonActive && win && ng >= 6) {
     if (mode === 0) {
       passXp = weekly.xpLeft >= PASS_XP_CLEAR ? PASS_XP_CLEAR : 0;
     } else if (extremeClear) {
@@ -4166,7 +5604,9 @@ function finishRun(win, abandoned) {
   const bonusXp = bonusUses * PASS_XP_BONUS;
   const st = {
     dust: dust, passXp: passXp, bonusUses: bonusUses, bonusXp: bonusXp,
-    canBonus: bonusUses > 0, extremeClear: extremeClear, refund: refund, boonCost: boonCost,
+    canBonus: bonusUses > 0, extremeClear: extremeClear, boonCost: boonCost,
+    challengeId: ch ? ch.id : null, challengeCycle: ch ? CHALLENGE_CYCLE.id : null, challengeXp: challengeXp,
+    abandoned: !!abandoned,
   };
 
   // 战绩回顾：记录本局详情，仅保留最近 10 局
@@ -4176,7 +5616,7 @@ function finishRun(win, abandoned) {
     win: !!win, abandoned: !!abandoned,
     extreme: extreme, extremeClear: extremeClear, stackMode: mode,
     treatyCount: treatyCount, treatyScore: treatyScoreRun,
-    ng: ng, depth: depthReached,
+    ng: ng, depth: depthReached, challengeId: ch ? ch.id : null, challengeName: ch ? ch.n : null,
     kills: kills, bossKills: bossKills, dust: dust,
     items: items, bosses: bossList,
     enemies: (R.enemyLog || []).slice(),
@@ -4186,19 +5626,24 @@ function finishRun(win, abandoned) {
   if (S.history.length > 10) S.history.length = 10;
 
   // 结算数据持久化：避免弹窗弹出后意外刷新导致奖励丢失
-  const title = win
-    ? (extremeClear ? '你踏穿了深渊叠加 · 极限' : mode === 1 ? '深渊已被叠加' : '深渊已被穿透')
-    : '你坠落了';
-  const sub = win
-    ? (extremeClear ? 'ABYSS LIMIT CLEARED · 深渊主宰已陨落' : mode === 1 ? 'ABYSS STACK CLEARED · 十层尽处' : 'VICTORY · 深渊之主已陨落')
-    : 'DEFEAT · 深渊记住了你的名字';
+  const title = ch
+    ? (win ? `挑战完成 · ${ch.n}` : abandoned ? `已放弃挑战 · ${ch.n}` : `挑战失败 · ${ch.n}`)
+    : win
+      ? (extremeClear ? '你踏穿了深渊叠加 · 极限' : mode === 1 ? '深渊已被叠加' : '深渊已被穿透')
+      : '你坠落了';
+  const sub = ch
+    ? (win ? 'CHALLENGE CLEARED · 十层试炼完成' : 'CHALLENGE ENDED · 深渊等待你的再次挑战')
+    : win
+      ? (extremeClear ? 'ABYSS LIMIT CLEARED · 深渊主宰已陨落' : mode === 1 ? 'ABYSS STACK CLEARED · 十层尽处' : 'VICTORY · 深渊之主已陨落')
+      : 'DEFEAT · 深渊记住了你的名字';
   S.pendingSettlement = {
     st: st,
     title: title, sub: sub, win: win, extreme: extreme, extremeClear: extremeClear,
     mode: mode, depthReached: depthReached, ng: ng, kills: kills, bossKills: bossKills,
     treatyCount: treatyCount, treatyScore: treatyScoreRun,
-    items: items, bossList: bossList, boonCost: boonCost, refund: refund,
+    items: items, bossList: bossList, boonCost: boonCost, abandoned: !!abandoned,
     dust: dust, passXp: passXp, bonusUses: bonusUses, bonusXp: bonusXp, canBonus: bonusUses > 0, ngUp: ngUp,
+    challengeId: ch ? ch.id : null, challengeCycle: ch ? CHALLENGE_CYCLE.id : null, challengeXp: challengeXp,
     ngPlusAfter: S.meta.ngPlus,
   };
 
@@ -4207,12 +5652,17 @@ function finishRun(win, abandoned) {
   saveGame();
   checkAch();
   renderTitle();
-  hubTab = 'sanctum';
+  hubTab = ch ? 'challenge' : 'sanctum';
   renderHub();
   showScreen('hub');
   renderTopbar();
 
-  showSettlementModal(S.pendingSettlement);
+  // 通关结算前先播放结算加载动画
+  if (win) {
+    showRunLoading(() => showSettlementModal(S.pendingSettlement), { title: '正在进行结算', duration: 5000 });
+  } else {
+    showSettlementModal(S.pendingSettlement);
+  }
 }
 
 /* ---------------- 结算弹窗（横向双栏） ---------------- */
@@ -4225,15 +5675,19 @@ function showSettlementModal(d) {
   const bossHtml = d.bossList.length
     ? d.bossList.map(n => `<span class="pill" style="border-color:rgba(176,107,255,.5);color:#cfaeff">👑 ${n}</span>`).join('')
     : '<span class="small dim">本局没有击败首领</span>';
-  const modeLabel = d.extreme ? '深渊叠加 · 极限' : (d.mode === 1 ? '深渊叠加' : '正常模式');
-  const capLabel = d.extreme ? LIMIT_MAX_DEPTH : (d.mode === 1 ? STACK_MAX_DEPTH : MAX_DEPTH);
+  const challenge = d.challengeId ? challengeById(d.challengeId) : null;
+  const challengeXp = d.challengeXp !== undefined ? d.challengeXp : ((d.st && d.st.challengeXp) || 0);
+  const modeLabel = challenge ? `周期挑战 · ${challenge.n}` : (d.extreme ? '深渊叠加 · 极限' : (d.mode === 1 ? '深渊叠加' : '正常模式'));
+  const capLabel = challenge ? STACK_MAX_DEPTH : (d.extreme ? LIMIT_MAX_DEPTH : (d.mode === 1 ? STACK_MAX_DEPTH : MAX_DEPTH));
   const treatyCount = d.treatyCount || 0;
   const treatyScoreVal = d.treatyScore || 0;
   const bonusUses = d.bonusUses !== undefined ? d.bonusUses : (d.canBonus ? 1 : 0);
   const bonusXp = d.bonusXp !== undefined ? d.bonusXp : bonusUses * PASS_XP_BONUS;
-  const passXpText = bonusUses > 0
-    ? `每周加成 ×${bonusUses} · +${bonusXp} 经验（${bonusUses * PASS_XP_BONUS / 10} 级）`
-    : (d.passXp > 0 ? `+${d.passXp} 经验（${d.passXp / 10} 级）` : '本局无');
+  const passXpText = challenge
+    ? (!d.win ? '挑战未通过' : !passWeeklySeasonActive() ? '休赛期 · 不发放挑战经验' : challengeXp > 0 ? `挑战奖励 +${challengeXp} 经验（${challengeXp / 10} 级）` : '本期已领取 · 不重复发放')
+    : bonusUses > 0
+      ? `每周加成 ×${bonusUses} · +${bonusXp} 经验（${bonusUses * PASS_XP_BONUS / 10} 级）`
+      : (d.passXp > 0 ? `+${d.passXp} 经验（${d.passXp / 10} 级）` : '本局无');
 
   const bodyHtml = `
     <div class="settle-grid">
@@ -4250,22 +5704,29 @@ function showSettlementModal(d) {
           ${treatyCount || d.extreme ? `<div class="stat"><span class="stat-k">选取条约</span><span class="stat-v" style="color:#ff9aa8">${treatyCount} 条 · ${treatyScoreVal} 分</span></div>` : ''}
           <div class="stat"><span class="stat-k">获得魂尘</span><span class="stat-v" style="color:var(--gold)">✨ +${fmt(d.dust)}</span></div>
           ${d.boonCost ? `<div class="stat"><span class="stat-k">开局增益花费</span><span class="stat-v" style="color:#ff8b9a">✨ -${fmt(d.boonCost)}</span></div>` : ''}
-          ${d.refund ? `<div class="stat"><span class="stat-k">开局增益退还</span><span class="stat-v" style="color:var(--jade)">✨ +${fmt(d.refund)}</span></div>` : ''}
+          ${d.abandoned && d.boonCost ? `<div class="stat"><span class="stat-k">放弃领取可退还</span><span class="stat-v" style="color:var(--jade)">✨ +${fmt(d.boonCost)}</span></div>` : ''}
           <div class="stat"><span class="stat-k">通行证经验</span><span class="stat-v" style="color:#8fc4ff">${passXpText}</span></div>
         </div>
         ${d.ngUp ? `<div class="center" style="margin-top:12px;color:#b5a8ff;font-size:12.5px">轮回难度提升至 ${d.ngPlusAfter} —— 深渊更深了。</div>` : ''}
+        <div class="settle-btns">
+          ${bonusUses > 0 ? `<button class="btn btn-arcane" onclick="settleFinish(S.pendingSettlement.st,true,true)">${d.extreme ? '全部领取每周加成' : '领取每周加成'}（+${bonusXp} 经验 · ${bonusUses * PASS_XP_BONUS / 10} 级）</button>` : ''}
+          <button class="btn btn-primary" onclick="settleFinish(S.pendingSettlement.st,true,false)">领取奖励</button>
+          <button class="btn btn-ghost" onclick="settleDefer()">暂不领取，返回圣所</button>
+          <button class="btn btn-ghost" onclick="settleFinish(S.pendingSettlement.st,false,false)">放弃领取</button>
+        </div>
+        <div class="small dim" style="line-height:1.7;margin-top:10px">${d.abandoned
+          ? '主动放弃：选择「领取奖励」将获得本局魂尘，但开局增益花费不退还；选择「放弃领取」将放弃本局全部魂尘奖励，并全额退还开局增益花费。'
+          : challenge
+            ? (passWeeklySeasonActive()
+              ? '挑战通关后，领取奖励可获得本局魂尘与首次挑战通行证经验；每项挑战每周期仅发放一次，不占用每周经验上限或加成次数。本期已领取过的挑战仍可重复游玩，但不会再次获得挑战经验。'
+              : '通行证当前处于休赛期：挑战仍可正常游玩与结算，但本次不会发放任何挑战通行证经验；新赛季开启后将自动恢复发放。')
+            : '领取后将获得本次的魂尘与通行证经验；选择每周加成会消耗本周剩余加成次数。放弃领取则不会获得任何奖励；暂不领取则返回圣所，待领取内容将保留便于后续领取。'}</div>
       </div>
       <div class="settle-right">
         <div class="cx-sec" style="margin-top:0">获得物品 · ${d.items.length} 件</div>
         <div class="settle-items">${itemHtml}</div>
         <div class="cx-sec">击败的首领 · ${d.bossList.length} 位</div>
         <div class="settle-items">${bossHtml}</div>
-        <div class="settle-btns">
-          ${bonusUses > 0 ? `<button class="btn btn-arcane" onclick="settleFinish(S.pendingSettlement.st,true,true)">${d.extreme ? '全部领取每周加成' : '领取每周加成'}（+${bonusXp} 经验 · ${bonusUses * PASS_XP_BONUS / 10} 级）</button>` : ''}
-          <button class="btn btn-primary" onclick="settleFinish(S.pendingSettlement.st,true,false)">领取奖励</button>
-          <button class="btn btn-ghost" onclick="settleFinish(S.pendingSettlement.st,false,false)">放弃领取</button>
-        </div>
-        <div class="small dim" style="line-height:1.7">领取后将获得本次的魂尘与通行证经验；选择每周加成会消耗本周剩余加成次数。放弃领取则不会获得任何奖励。</div>
       </div>
     </div>`;
 
@@ -4306,12 +5767,41 @@ function settleFinish(st, claim, useBonus) {
         }
       }
     }
+    // 挑战经验独立于每周上限与加成次数；领取时再次校验，避免多存档位或待结算页面重复发奖。
+    if (st.challengeId && (st.challengeXp || 0) > 0) {
+      const ch = challengeById(st.challengeId);
+      if (!seasonActive) {
+        toast('通行证已进入休赛期，本次不发放挑战经验', '📅', 'warning');
+      } else if (!ch || st.challengeCycle !== CHALLENGE_CYCLE.id) {
+        toast('该挑战所属周期已轮换，本次不发放挑战经验', '🔄', 'warning');
+      } else if (challengeRewardClaimed(ch.id)) {
+        toast('本期挑战经验已领取，不会重复发放', '🎫', 'warning');
+      } else if (markChallengeRewardClaimed(ch.id)) {
+        addPassExpExternal(ch.reward);
+        toast(`挑战奖励 · 通行证经验 +${ch.reward}（${ch.reward / 10} 级）`, '🎫', 'success');
+      } else {
+        toast('挑战奖励记录保存失败，本次未发放挑战经验', '⚠️', 'error');
+      }
+    }
   }
   S.pendingSettlement = null;
+  // 主动放弃且选择「放弃领取」：全额退还开局增益消耗；选择「领取奖励」则花费保留
+  if (!claim && st.abandoned && (st.boonCost || 0) > 0) {
+    S.meta.soulDust += st.boonCost;
+    toast(`已退还开局增益消耗 ✨ +${fmt(st.boonCost)}`, '💰', 'success');
+  }
   saveGame();
   checkAch();
   renderTitle();
-  goHub();
+  goHubWithLoading(st.challengeId ? 'challenge' : 'sanctum');
+}
+
+/* 暂不领取：保留待结算数据，返回圣所（踏入深渊禁用，继续按钮变为「有待领取内容」） */
+function settleDefer() {
+  closeModal();
+  saveGame();
+  renderTitle();
+  goHubWithLoading(S.pendingSettlement && S.pendingSettlement.challengeId ? 'challenge' : 'sanctum');
 }
 
 /* ---------------- 每周加成 / 通行证经验 ---------------- */
@@ -4322,7 +5812,12 @@ const PASS_XP_BONUS = 40;      // 使用一次每周加成 → 40 经验（4 级
 
 // 每周加成与通行证赛季时间绑定：时间窗由 pass.js 同步到 localStorage（PASS_CONFIG.weeklyBonusSeasonWindow）
 const PASS_WEEKLY_SEASON_KEY = 'pre_pass_weekly_bonus_window';
+// 通行证开发者调试「进入休赛期 / 关闭休赛期」开关，由 pass.js 写入，深渊回响读取后同步生效
+const PASS_DEV_OFFSEASON_KEY = 'pre_pass_dev_offseason';
 const PASS_WEEKLY_SEASON_FALLBACK = ['2026-09-30T20:00:00Z', '2026-11-30T20:00:00Z'];
+function passDevOffSeasonForced() {
+  try { return localStorage.getItem(PASS_DEV_OFFSEASON_KEY) === '1'; } catch (e) { return false; }
+}
 function passWeeklySeasonState() {
   let win = PASS_WEEKLY_SEASON_FALLBACK;
   try {
@@ -4332,6 +5827,8 @@ function passWeeklySeasonState() {
   const start = new Date(win[0]).getTime();
   const end = new Date(win[1]).getTime();
   const now = Date.now();
+  // 开发者调试强制休赛期：不影响真实日期，仅用于调试，关闭后恢复真实时间判定
+  if (passDevOffSeasonForced()) return { active: false, phase: 'dev', start: start, end: end };
   if (!isNaN(start) && now < start) return { active: false, phase: 'before', start: start, end: end };
   if (!isNaN(end) && now >= end) return { active: false, phase: 'off', start: start, end: end };
   return { active: true, phase: 'in', start: start, end: end };
@@ -4433,6 +5930,8 @@ function renderBattle() {
   const e = B.enemy, s = effStats();
   const ii = intentInfo(B.intent || { t: 'atk', m: 1 });
   const hpPct = clamp(e.hp / e.maxHp * 100, 0, 100);
+  const eMods = enemyModTagsHtml();
+  const pMods = playerModTagsHtml();
 
   $('#battle-main').innerHTML = `
     <div class="enemy-card ${B.kind === 'elite' ? 'elite' : ''} ${e.boss ? 'boss' : ''}">
@@ -4442,6 +5941,7 @@ function renderBattle() {
       <div class="bar hp" style="max-width:440px;margin:0 auto 6px"><div class="bar-fill" style="width:${hpPct}%"></div></div>
       <div class="small dim" style="margin-bottom:12px">${Math.max(0, Math.round(e.hp))} / ${e.maxHp}</div>
       <div class="intent ${ii.cls}">意图 · ${ii.txt}</div>
+      ${eMods ? `<div class="mod-row">${eMods}</div>` : ''}
       <div class="chips" style="justify-content:center">${chipHtml(B.eBuffs)}</div>
     </div>`;
 
@@ -4497,6 +5997,7 @@ function renderBattle() {
         <div class="pstat"><b>${Math.round(s.critDmg)}%</b><span>暴伤</span></div>
       </div>
       <div class="chips">${chipHtml(B.pBuffs)}</div>
+      ${pMods ? `<div class="mod-row left">${pMods}</div>` : ''}
     </div>
     <div class="card" style="padding:12px">
       <div class="card-sub" style="margin-bottom:8px">战斗记录</div>
@@ -4578,7 +6079,16 @@ function init() {
   $('#btn-home').addEventListener('click', () => {
     if (B && !B.over) { toast('战斗中无法返回圣所', '⚔️'); return; }
     if (R) { saveRunState(); R = null; B = null; }
-    goHub();
+    goHubWithLoading();
+  });
+  // 通行证页面切换赛季时间窗 / 开发者调试休赛期后，深渊回响立即同步刷新
+  window.addEventListener('storage', e => {
+    if (!S) return;
+    if (e.key !== PASS_DEV_OFFSEASON_KEY && e.key !== PASS_WEEKLY_SEASON_KEY) return;
+    renderTitle();
+    const hubScr = $('#screen-hub');
+    if (hubScr && hubScr.classList.contains('active')) renderHub();
+    renderTopbar();
   });
   document.addEventListener('keydown', e => {
     if (!B || B.over || B.busy) return;
@@ -4590,6 +6100,9 @@ function init() {
       if (R.skills[idx]) useSkill(R.skills[idx]);
     }
   });
+  document.addEventListener('click', e => {
+    if (!e.target.closest || !e.target.closest('.ng-set-wrap')) closeNgMenu();
+  });
   renderTitle();
   showScreen('title');
   initEmbers();
@@ -4599,6 +6112,117 @@ function init() {
   renderTopbar();
   // 若上一局结算未领取（意外刷新/重进），重新弹出结算弹窗
   if (S.pendingSettlement) showSettlementModal(S.pendingSettlement);
+  // 进入游戏页时在游戏页面内播放加载动画（固定 5 秒）
+  showRunLoading(() => {}, { title: '正在加载程序', duration: 5000 });
+}
+
+/* ============================================================
+   Lucide 图标升级
+   把界面文本中的 emoji / 符号统一替换为 Lucide 内联 SVG 图标。
+   采用文本节点后处理，覆盖静态模板与动态渲染，未收录的字符保持原样。
+   ============================================================ */
+const EMOJI_LUCIDE = {
+  '✨': 'sparkles', '💰': 'coins', '⚔': 'swords', '🔒': 'lock', '🛡': 'shield',
+  '🧪': 'flask-conical', '📜': 'scroll-text', '👑': 'crown', '🩸': 'droplet',
+  '🏆': 'trophy', '🔄': 'refresh-cw', '💀': 'skull', '🔥': 'flame',
+  '📅': 'calendar-days', '❤': 'heart', '🔊': 'volume2', '🎯': 'target',
+  '⚠': 'triangle-alert', '🕯': 'lamp', '🎁': 'gift', '🗂': 'archive',
+  '🔱': 'swords', '💥': 'zap', '☠': 'skull', '📖': 'book-open', '✓': 'check',
+  '🎫': 'ticket', '⚡': 'zap', '🗿': 'landmark', '🌑': 'moon', '🚪': 'door-open',
+  '🌅': 'sunrise', '✦': 'sparkle', '🔇': 'volume-x', '⚒': 'hammer', '🗡': 'sword',
+  '🔮': 'gem', '👁': 'eye', '🌀': 'tornado', '🐗': 'paw-print', '🏰': 'castle',
+  '💗': 'heart', '💪': 'dumbbell', '📈': 'chart-line', '🛒': 'shopping-cart',
+  '🎒': 'backpack', '🌠': 'star', '🕒': 'clock', '⛏': 'pickaxe',
+  '❔': 'circle-help', '❄': 'snowflake', '🌪': 'wind', '💧': 'droplet',
+  '☀': 'sun', '🌋': 'mountain', '🎭': 'drama', '🧛': 'venetian-mask',
+  '🐉': 'flame', '😈': 'annoyed', '🌚': 'moon', '💵': 'banknote',
+  '🩹': 'bandage', '🐌': 'snail', '🏷': 'tag', '🐢': 'turtle', '🧠': 'brain',
+  '😵': 'annoyed', '💲': 'dollar-sign', '💸': 'banknote', '💓': 'heart-pulse',
+  '💫': 'sparkle', '🥀': 'flower', '💨': 'wind', '😖': 'frown', '🔨': 'hammer',
+  '🌱': 'sprout', '🌟': 'star', '🧭': 'compass', '✕': 'x', '📊': 'chart-column',
+  '⚙': 'settings', '🔳': 'square', '⛶': 'maximize', '🗑': 'trash2', '🥋': 'shirt',
+  '👘': 'shirt', '🦺': 'shield', '📿': 'circle-dot', '💍': 'gem', '🧣': 'shirt',
+  '💎': 'gem', '🐀': 'rat', '🦇': 'bird', '🕷': 'bug', '👻': 'ghost',
+  '👤': 'user', '🐛': 'bug', '🐺': 'dog', '🕸': 'grid3x3', '🔪': 'pocket-knife',
+  '🦂': 'bug', '🦷': 'bone', '🦀': 'shell', '🏯': 'castle', '⛲': 'droplets',
+  '🎲': 'dices', '⛓': 'link', '🐫': 'footprints', '📚': 'library',
+  '👺': 'venetian-mask', '🌉': 'route', '📨': 'mail', '🦴': 'bone',
+  '🕳': 'circle-dashed', '🎰': 'dices', '🌿': 'leaf', '🔭': 'telescope',
+  '🏮': 'lamp', '🍄': 'sprout', '🏦': 'landmark', '🎽': 'shirt', '💚': 'heart',
+  '⚰': 'skull', '🚫': 'ban', '🔺': 'triangle', '🔟': 'hash', '♾': 'infinity',
+  '📦': 'package', '🗃': 'archive', '🏗': 'construction', '🏛': 'landmark',
+  '💖': 'heart', '💢': 'annoyed', '🌄': 'sunrise', '☄': 'star', '🌌': 'orbit',
+  '🖋': 'pen-tool', '🕋': 'landmark', '↑': 'arrow-up', '🧝': 'user-round',
+  '🛠': 'wrench', '👹': 'venetian-mask', '🎚': 'sliders-horizontal',
+  '▸': 'chevron-right', '❓': 'circle-help', '🖱': 'mouse-pointer',
+  '▲': 'chevron-up', '▼': 'chevron-down', '◈': 'gem', '→': 'arrow-right',
+  '6️⃣': 'hash', '🏠': 'house'
+};
+const ICON_SKIP_TAGS = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, OPTION: 1, SELECT: 1, NOSCRIPT: 1 };
+const EMOJI_RE = new RegExp('(' + Object.keys(EMOJI_LUCIDE)
+  .sort((a, b) => b.length - a.length)
+  .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .join('|') + ')\\uFE0F?', 'g');
+
+function upgradeEmojiIcons(root) {
+  if (!root || typeof window.preIcon !== 'function') return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const p = node.parentNode;
+      if (!p || !node.nodeValue || ICON_SKIP_TAGS[p.tagName]) return NodeFilter.FILTER_REJECT;
+      if (p.classList && p.classList.contains('pre-lucide')) return NodeFilter.FILTER_REJECT;
+      EMOJI_RE.lastIndex = 0;
+      return EMOJI_RE.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  const targets = [];
+  while (walker.nextNode()) targets.push(walker.currentNode);
+  targets.forEach(node => {
+    const text = node.nodeValue;
+    const frag = document.createDocumentFragment();
+    let last = 0, m;
+    EMOJI_RE.lastIndex = 0;
+    while ((m = EMOJI_RE.exec(text))) {
+      if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const holder = document.createElement('span');
+      holder.innerHTML = window.preIcon(EMOJI_LUCIDE[m[1]], { cls: 'emoji-ic' });
+      while (holder.firstChild) frag.appendChild(holder.firstChild);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    if (node.parentNode) node.parentNode.replaceChild(frag, node);
+  });
+}
+
+let iconScheduled = false;
+function scheduleEmojiIcons() {
+  if (iconScheduled) return;
+  iconScheduled = true;
+  // 微任务中同步替换：在浏览器绘制前完成，避免 emoji 闪现一帧
+  Promise.resolve().then(() => {
+    iconScheduled = false;
+    upgradeEmojiIcons(document.body);
+  });
+}
+function startEmojiIcons() {
+  if (!document.body) return;
+  upgradeEmojiIcons(document.body);
+  if (window.MutationObserver) {
+    new MutationObserver(records => {
+      // 加载动画每秒数十次刷新进度文字，跳过它可避免无意义的全量扫描
+      for (let i = 0; i < records.length; i++) {
+        const target = records[i].target;
+        if (target && target.closest && target.closest('.run-loading')) continue;
+        scheduleEmojiIcons();
+        return;
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startEmojiIcons);
+} else {
+  setTimeout(startEmojiIcons, 0);
 }
 
 document.addEventListener('DOMContentLoaded', init);
